@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Round Ledger — shot-by-shot</title>
+<link href="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/theme/mermaid.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/gridjs.umd.js" integrity="sha384-/XXDzxe4FsGiAe50i/u9pY/Vy/uX654MHB1xoc1BJNnH1WXHhqHga9g3q5tF4gj7" crossorigin="anonymous"></script>
+<style>
+:root{
+  color-scheme: light;
+  --pine:#0f3a2c; --fairway:#1f7a4d; --moss:#3f9c6d; --sand:#d8c48c; --sand-deep:#b89a52;
+  --clay:#c2502e; --clay-soft:#e07a52; --cream:#f6f2e7; --paper:#fffdf7; --ink:#20261f;
+  --ink-soft:#5c6357; --line:#e2ddcc; --line-soft:#eee9da; --blue:#2f6f9c; --amber:#c99a1e;
+  --serif:'Iowan Old Style','Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+  --sans:'Optima','Segoe UI',Candara,'Gill Sans','Trebuchet MS',sans-serif;
+  --cond:'Trebuchet MS','Gill Sans',var(--sans);
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 85% -10%, #eef4ea 0%, transparent 55%),var(--cream);
+  color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:1080px;margin:0 auto;padding:32px 28px 64px;}
+.playertabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--line);}
+.playertabs button{font-family:var(--serif);font-size:17px;padding:10px 22px 12px;border:none;background:none;color:var(--ink-soft);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px;transition:all .18s;}
+.playertabs button:hover{color:var(--pine);}
+.playertabs button.on{color:var(--pine);border-bottom-color:var(--fairway);font-weight:500;}
+.masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;border-bottom:2px solid var(--pine);padding-bottom:18px;margin-bottom:8px;flex-wrap:wrap;}
+.masthead h1{font-family:var(--serif);font-weight:600;font-size:34px;line-height:1.05;margin:0;letter-spacing:-0.01em;color:var(--pine);}
+.masthead .sub{font-family:var(--cond);text-transform:uppercase;letter-spacing:.18em;font-size:12px;color:var(--ink-soft);margin-top:6px;}
+.flag{font-family:var(--cond);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--fairway);text-align:right;}
+.flag b{display:block;font-family:var(--serif);font-size:28px;font-weight:600;color:var(--pine);letter-spacing:0;}
+section{margin-top:42px;}
+h2{font-family:var(--serif);font-weight:500;font-size:21px;margin:0 0 4px;color:var(--pine);display:flex;align-items:baseline;gap:10px;}
+h2 .n{font-family:var(--cond);font-size:12px;letter-spacing:.2em;color:var(--sand-deep);border:1px solid var(--sand-deep);border-radius:999px;padding:2px 9px;}
+.lead{color:var(--ink-soft);font-size:14.5px;margin:2px 0 20px;max-width:74ch;}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:22px;}
+.kpi{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s;}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 10px 26px -14px rgba(15,58,44,.4);}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--fairway);}
+.kpi.warn::before{background:var(--clay);} .kpi.good::before{background:var(--moss);}
+.kpi .lbl{font-family:var(--cond);text-transform:uppercase;letter-spacing:.13em;font-size:11.5px;color:var(--ink-soft);}
+.kpi .val{font-family:var(--serif);font-weight:600;font-size:30px;line-height:1.1;margin-top:6px;font-variant-numeric:tabular-nums;}
+.kpi .cap{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px 22px;}
+.chartbox{position:relative;width:100%;}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;}
+.controls button{font-family:var(--cond);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:12px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);cursor:pointer;transition:all .18s;}
+.controls button:hover{border-color:var(--moss);color:var(--fairway);}
+.controls button.on{background:var(--pine);border-color:var(--pine);color:#fff;}
+.mrhead{font-family:var(--cond);text-transform:uppercase;letter-spacing:.14em;font-size:11.5px;color:var(--ink-soft);margin:20px 0 4px;border-top:1px dashed var(--line);padding-top:14px;}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft);margin:14px 0 4px;align-items:center;}
+.legend span{display:flex;align-items:center;gap:6px;}
+.dot{width:11px;height:11px;border-radius:50%;} .dash{width:20px;height:0;border-top:2px dashed;}
+.sig{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px;font-size:14px;}
+.sig b{color:var(--pine);font-weight:600;}
+.pill{display:inline-block;font-family:var(--cond);font-size:12px;letter-spacing:.06em;padding:2px 9px;border-radius:999px;margin:2px 4px 2px 0;}
+.pill.r1{background:#f7e0d7;color:#8f3418;} .pill.r2{background:#dcefe1;color:#1c5e3b;} .pill.r4{background:#f6ecd4;color:#7a5a10;}
+.gridjs-th{background:var(--pine)!important;color:#fff!important;font-family:var(--cond)!important;letter-spacing:.06em;text-transform:uppercase;font-size:11.5px!important;}
+.foot{margin-top:48px;border-top:1px solid var(--line);padding-top:14px;font-size:12px;color:var(--ink-soft);font-family:var(--cond);letter-spacing:.04em;}
+.neg{color:var(--clay);font-weight:600;} .pos{color:var(--fairway);font-weight:600;}
+/* priority */
+.prow{display:grid;grid-template-columns:34px 150px 1fr 120px;gap:14px;align-items:center;padding:13px 0;border-top:1px solid var(--line-soft);}
+.prow:first-child{border-top:none;}
+.prank{font-family:var(--serif);font-size:26px;font-weight:600;color:var(--sand-deep);text-align:center;line-height:1;}
+.prow.top1 .prank{color:var(--clay);}
+.pname{font-size:15px;font-weight:500;color:var(--ink);} .pname small{display:block;font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:10.5px;color:var(--ink-soft);font-weight:400;margin-top:2px;}
+.ptrack{height:12px;border-radius:6px;background:var(--line-soft);overflow:hidden;}
+.pfill{height:100%;border-radius:6px;transition:width .6s cubic-bezier(.2,.8,.2,1);}
+.pval{text-align:right;font-family:var(--serif);font-variant-numeric:tabular-nums;}
+.pval b{font-size:19px;font-weight:600;} .pval small{display:block;font-family:var(--cond);text-transform:uppercase;letter-spacing:.06em;font-size:10px;color:var(--ink-soft);}
+/* engine */
+.rowline{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+.fld{display:flex;flex-direction:column;gap:3px;}
+.fld label{font-family:var(--cond);text-transform:uppercase;letter-spacing:.1em;font-size:10.5px;color:var(--ink-soft);}
+.fld input,.fld select{font-family:var(--sans);font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);}
+.fld input:focus,.fld select:focus{outline:none;border-color:var(--moss);box-shadow:0 0 0 3px rgba(63,156,109,.15);}
+.holenav{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 18px;}
+.holenav button{position:relative;width:46px;height:52px;border-radius:10px;border:1px solid var(--line);background:var(--paper);cursor:pointer;font-family:var(--cond);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all .15s;}
+.holenav button .hn{font-size:14px;font-weight:600;color:var(--ink);}
+.holenav button .hs{font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+.holenav button.on{background:var(--pine);border-color:var(--pine);}
+.holenav button.on .hn,.holenav button.on .hs{color:#fff;}
+.holenav button.done{border-color:var(--moss);}
+.holeditor{border:1px solid var(--line);border-radius:14px;padding:18px 20px;background:#fffef9;}
+.holeditor .top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;}
+.holeditor .top h3{font-family:var(--serif);font-size:19px;margin:0;color:var(--pine);}
+.slot{display:grid;grid-template-columns:120px 1fr 96px 74px;gap:10px;align-items:center;padding:7px 0;border-top:1px dashed var(--line-soft);}
+.slot .role{font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft);}
+.slot select,.slot input{font-size:14px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;width:100%;}
+.slot .unit{font-size:11px;color:var(--ink-soft);}
+.holenavbtns{display:flex;gap:10px;margin-top:14px;}
+.live{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px;margin-top:18px;}
+.livecard{background:var(--surface,#f3efe3);background:var(--sand);background:rgba(216,196,140,.28);border-radius:10px;padding:10px 12px;text-align:center;}
+.livecard .l{font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:10px;color:var(--ink-soft);}
+.livecard .v{font-family:var(--serif);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px;}
+.btn{font-family:var(--cond);font-weight:600;letter-spacing:.09em;text-transform:uppercase;font-size:12.5px;padding:11px 22px;border-radius:999px;border:none;cursor:pointer;transition:all .18s;}
+.btn.primary{background:var(--fairway);color:#fff;} .btn.primary:hover{background:var(--pine);}
+.btn.ghost{background:transparent;color:var(--clay);border:1px solid var(--line);} .btn.ghost:hover{border-color:var(--clay);}
+.btn.mini{padding:7px 14px;font-size:11.5px;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);}
+.btn.mini:hover{border-color:var(--moss);color:var(--fairway);}
+.formactions{display:flex;gap:12px;align-items:center;margin-top:18px;flex-wrap:wrap;}
+.msg{font-size:13px;color:var(--fairway);font-weight:600;}
+.badge{display:inline-block;background:var(--sand);color:#5a4712;font-family:var(--cond);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:2px 10px;border-radius:999px;margin-left:8px;}
+.note{font-size:12.5px;color:var(--ink-soft);margin-top:10px;font-style:italic;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="playertabs" id="playertabs"></div>
+  <header class="masthead">
+    <div><h1>Round Ledger</h1><div class="sub" id="subName">Guido · shot-by-shot strokes gained</div></div>
+    <div class="flag" id="flagBox"></div>
+  </header>
+
+  
+
+  <section id="kpi"><div class="kpis" id="kpis"></div></section>
+
+  <section id="briefing">
+    <div class="card" style="padding:18px 22px">
+      <div id="lastRound" style="font-size:16px;line-height:1.6;color:var(--ink)"></div>
+      <div id="focusRec" style="font-size:15px;line-height:1.55;color:var(--ink);margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">01</span> Scoring trend</h2>
+    <p class="lead">Score relative to par across all logged rounds. Below zero is the goal.</p>
+    <div class="card"><div class="chartbox" style="height:280px"><canvas id="scoreChart" role="img" aria-label="Score to par per round"></canvas></div></div>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span> Where shots are won &amp; lost</h2>
+    <p class="lead">Average strokes gained per round by phase. Bars left of zero cost you shots.</p>
+    <div class="card"><div class="chartbox" style="height:230px"><canvas id="sgBar" role="img" aria-label="Average strokes gained by category"></canvas></div></div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span> Process control · XmR</h2>
+    <p class="lead" style="font-size:16.5px;max-width:none;line-height:1.6">Individuals chart (X) left, moving-range (mR) below, distribution vs a normal curve (dashed) on the right. Whenever a signal is detected the limits are recalculated and drawn as a fresh set of dashed lines, with a dotted divider marking each recalculation — so every stable stretch is measured against its own limits.</p>
+    <div class="controls" id="xmrCtrl"></div>
+    <div class="card">
+      <div id="xmrExpl" style="margin:0 0 16px;padding:14px 16px;background:rgba(216,196,140,.16);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;font-size:15px;line-height:1.55;color:var(--ink)"></div>
+      <div style="display:flex;gap:10px;align-items:stretch">
+        <div class="chartbox" style="height:250px;flex:1;min-width:0"><canvas id="xmrChart" role="img" aria-label="XmR individuals chart"></canvas></div>
+        <div class="chartbox" style="height:250px;width:132px;flex:none"><canvas id="distChart" role="img" aria-label="Distribution of values vs a normal curve"></canvas></div>
+      </div>
+      <div id="distNote" style="font-size:12px;color:var(--ink-soft);font-family:var(--cond);letter-spacing:.03em;margin-top:6px;text-align:right"></div>
+      <div class="mrhead">Moving range (mR)</div>
+      <div style="display:flex;gap:10px;align-items:stretch">
+        <div class="chartbox" style="height:150px;flex:1;min-width:0"><canvas id="mrChart" role="img" aria-label="Moving range chart"></canvas></div>
+        <div style="width:132px;flex:none" aria-hidden="true"></div>
+      </div>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--blue)"></span>in control</span>
+        <span><span class="dot" style="background:#8a63d2;border:2px solid #4a3aa7"></span>signal (triggered a recalculation)</span>
+        <span><span class="dot" style="background:var(--clay)"></span>outside stage limit</span>
+        <span><span class="dot" style="background:#c99a1e"></span>mR range spike</span>
+        <span><span class="dash" style="border-color:var(--ink-soft)"></span>stage centre</span>
+        <span><span class="dash" style="border-color:var(--clay)"></span>stage limits</span>
+        <span><span class="dash" style="border-color:var(--ink-soft);border-top-style:dotted"></span>new-limits divider</span>
+      </div>
+      <div class="sig" id="xmrSig"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span> Mistake ledger</h2>
+    <p class="lead">Tiger's five mistakes per round, stacked. Lower and flatter is better.</p>
+    <div class="card"><div class="chartbox" style="height:260px"><canvas id="mistChart" role="img" aria-label="Mistakes per round"></canvas></div></div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span> Every round</h2>
+    <p class="lead">Sortable — click any header. Green is under par or shots gained; clay is over par or shots lost.</p>
+    <div><div id="grid"></div></div>
+  </section>
+
+  <section id="addsec">
+    <h2 id="addToggle" style="cursor:pointer;user-select:none"><span class="n">+</span> Log a round, shot by shot <span id="customBadge"></span> <span id="addCaret" style="margin-left:auto;font-family:var(--cond);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">show ▸</span></h2>
+    <div id="addBody" style="display:none">
+    <p class="lead">Enter every shot with its lie and distance-to-hole; strokes gained, score and mistakes compute live using the same Broadie benchmark tables as your spreadsheet. Fill only the shots you played — leave the rest blank.</p>
+    <div class="card">
+      <div class="rowline">
+        <div class="fld"><label>Date</label><input type="date" id="r_date"></div>
+        <div class="fld"><label>Course</label><input type="text" id="r_course" placeholder="CGC" style="width:90px"></div>
+        <div class="fld"><label>Rating</label><input type="number" step="0.1" id="r_cr" value="70" style="width:80px"></div>
+        <div class="fld"><label>Slope</label><input type="number" id="r_slope" value="113" style="width:80px"></div>
+      </div>
+      <div class="holenav" id="holenav"></div>
+      <div class="holeditor" id="holeditor"></div>
+      <div class="live" id="live"></div>
+      <p class="note" id="engnote"></p>
+      <div class="formactions">
+        <button class="btn primary" id="saveBtn">Save round</button>
+        <button class="btn mini" id="draftBtn">Clear this draft</button>
+        <button class="btn ghost" id="clearBtn">Clear my saved rounds</button>
+        <span class="msg" id="formMsg"></span>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+const LG=[[10,null,2.2,2.4,2.41,3.35],[15,null,2.3,2.5,2.47,3.38],[20,null,2.4,2.57,2.53,3.4],[25,null,2.45,2.64,2.59,3.43],[30,null,2.5,2.69,2.67,3.45],[35,null,2.55,2.74,2.76,3.48],[40,null,2.6,2.78,2.82,3.5],[45,null,2.62,2.82,2.9,3.53],[50,null,2.65,2.85,2.98,3.55],[55,null,2.67,2.88,3.07,3.58],[60,null,2.7,2.91,3.15,3.6],[65,null,2.72,2.92,3.17,3.63],[70,null,2.73,2.93,3.19,3.65],[75,null,2.74,2.95,3.22,3.68],[80,null,2.75,2.96,3.24,3.7],[85,null,2.77,2.97,3.24,3.73],[90,null,2.78,2.99,3.23,3.75],[95,null,2.79,3.01,3.23,3.78],[100,2.92,2.8,3.02,3.23,3.8],[105,2.93,2.81,3.03,3.23,3.8],[110,2.95,2.83,3.04,3.22,3.8],[115,2.97,2.84,3.06,3.21,3.8],[120,2.99,2.85,3.08,3.21,3.78],[125,2.99,2.86,3.09,3.21,3.78],[130,2.97,2.88,3.11,3.21,3.78],[135,2.97,2.9,3.13,3.22,3.78],[140,2.97,2.91,3.15,3.22,3.8],[145,2.97,2.93,3.17,3.23,3.8],[150,2.99,2.95,3.19,3.25,3.8],[155,2.99,2.97,3.21,3.26,3.8],[160,2.99,2.98,3.23,3.28,3.81],[165,3.01,3,3.25,3.3,3.81],[170,3.02,3.03,3.27,3.33,3.81],[175,3.04,3.06,3.29,3.36,3.81],[180,3.05,3.08,3.31,3.4,3.82],[185,3.07,3.11,3.34,3.43,3.83],[190,3.09,3.13,3.37,3.47,3.84],[195,3.11,3.16,3.4,3.51,3.86],[200,3.12,3.19,3.42,3.55,3.87],[210,3.14,3.26,3.48,3.62,3.89],[220,3.17,3.32,3.53,3.7,3.92],[230,3.21,3.39,3.6,3.77,3.95],[240,3.25,3.45,3.64,3.84,3.97],[250,3.35,3.52,3.69,3.88,4],[260,3.45,3.58,3.74,3.93,4.03],[270,3.55,3.63,3.78,3.96,4.07],[280,3.65,3.69,3.83,4,4.1],[290,3.68,3.74,3.87,4.02,4.15],[300,3.71,3.78,3.9,4.04,4.2],[320,3.79,3.84,3.95,4.12,4.31],[340,3.86,3.88,4.02,4.26,4.44],[360,3.92,3.95,4.11,4.41,4.56],[380,3.96,4.03,4.21,4.55,4.66],[400,3.99,4.11,4.3,4.69,4.75],[420,4.02,4.15,4.34,4.73,4.79],[440,4.08,4.2,4.39,4.78,4.84],[460,4.17,4.29,4.48,4.87,4.93],[480,4.28,4.4,4.59,4.98,5.04],[500,4.41,4.53,4.72,5.11,5.17],[520,4.54,4.85,4.85,5.24,5.3],[540,4.65,4.97,4.97,5.36,5.42],[560,4.74,5.05,5.05,5.44,5.5],[580,4.79,5.1,5.1,5.49,5.55],[600,4.82,5.13,5.13,5.52,5.58],[620,4.91,null,null,null,null],[640,5,null,null,null,null]];
+const PT=[[1,1],[2,1],[3,1.04],[4,1.13],[5,1.23],[6,1.34],[7,1.42],[8,1.5],[9,1.56],[10,1.61],[11,1.65],[12,1.69],[13,1.72],[14,1.75],[15,1.78],[16,1.81],[17,1.83],[18,1.85],[20,1.87],[22,1.89],[25,1.93],[27,1.95],[30,1.98],[32,2],[35,2.02],[37,2.04],[40,2.06],[45,2.1],[47,2.12],[50,2.14],[55,2.18],[60,2.21],[65,2.25],[70,2.28],[75,2.31],[80,2.34],[85,2.37],[90,2.4],[100,2.44],[110,2.48]];
+const LIECOL={tee:1,fw:2,rough:3,sand:4,rec:5};
+function flook(tbl,x,col){let best=null;for(const row of tbl){if(row[0]<=x)best=row;else break;}if(!best)best=tbl[0];return best[col];}
+function Estart(lie,dist){if(lie==='putt')return flook(PT,dist,1);const v=flook(LG,dist,LIECOL[lie]);if(v==null)return flook(LG,dist,2);return v;}
+
+const GUIDO=[{"course":"CGC","date":"2025-09-07","score":81,"par":72,"stp":9,"fw":4,"gir":8,"putts":33,"dist":297.1,"p3":0,"db":1,"bp5":1,"f150":5,"fx":9,"mtot":16,"ott":-2.42,"app":-4.06,"atg":-0.46,"putt":-4.25,"sgtot":-11.19},{"course":"CGC","date":"2025-09-11","score":71,"par":72,"stp":-1,"fw":6,"gir":13,"putts":30,"dist":305.3,"p3":0,"db":1,"bp5":0,"f150":1,"fx":4,"mtot":6,"ott":1.26,"app":-2.32,"atg":-2.23,"putt":2.08,"sgtot":-1.21},{"course":"CGC","date":"2025-09-13","score":71,"par":72,"stp":-1,"fw":6,"gir":10,"putts":26,"dist":311.9,"p3":0,"db":1,"bp5":0,"f150":3,"fx":5,"mtot":9,"ott":1.27,"app":-5.02,"atg":-0.53,"putt":3.07,"sgtot":-1.21},{"course":"VDG","date":"2025-09-19","score":40,"par":36,"stp":4,"fw":3,"gir":4,"putts":17,"dist":285.1,"p3":1,"db":1,"bp5":1,"f150":1,"fx":4,"mtot":8,"ott":-0.8,"app":-0.18,"atg":-1.87,"putt":-1.84,"sgtot":-4.69},{"course":"VDG","date":"2025-09-20","score":83,"par":72,"stp":11,"fw":6,"gir":5,"putts":28,"dist":305.5,"p3":0,"db":2,"bp5":1,"f150":5,"fx":10,"mtot":18,"ott":0.04,"app":-8.21,"atg":-4.07,"putt":0.57,"sgtot":-11.67},{"course":"CGC","date":"2025-09-25","score":75,"par":72,"stp":3,"fw":2,"gir":9,"putts":30,"dist":289.1,"p3":1,"db":0,"bp5":1,"f150":3,"fx":4,"mtot":9,"ott":-1.32,"app":-3.0,"atg":0.53,"putt":-1.4,"sgtot":-5.19},{"course":"CGC","date":"2025-10-03","score":75,"par":72,"stp":3,"fw":2,"gir":12,"putts":35,"dist":288.5,"p3":4,"db":0,"bp5":0,"f150":2,"fx":3,"mtot":9,"ott":-0.64,"app":-0.89,"atg":-0.14,"putt":-3.6,"sgtot":-5.27},{"course":"CGC","date":"2025-10-09","score":81,"par":72,"stp":9,"fw":3,"gir":10,"putts":34,"dist":279.6,"p3":2,"db":2,"bp5":1,"f150":4,"fx":6,"mtot":15,"ott":-3.66,"app":-2.17,"atg":-1.35,"putt":-3.03,"sgtot":-10.21},{"course":"CGC","date":"2025-10-10","score":78,"par":72,"stp":6,"fw":5,"gir":11,"putts":34,"dist":299.7,"p3":1,"db":2,"bp5":0,"f150":4,"fx":9,"mtot":16,"ott":0.22,"app":-2.9,"atg":-3.28,"putt":-2.23,"sgtot":-8.19},{"course":"CGC","date":"2025-10-11","score":77,"par":72,"stp":5,"fw":1,"gir":9,"putts":32,"dist":307.9,"p3":1,"db":0,"bp5":0,"f150":5,"fx":7,"mtot":13,"ott":-0.65,"app":-3.33,"atg":-0.18,"putt":-3.03,"sgtot":-7.19},{"course":"CGC","date":"2025-10-12","score":75,"par":72,"stp":3,"fw":3,"gir":10,"putts":30,"dist":280.9,"p3":1,"db":1,"bp5":0,"f150":2,"fx":8,"mtot":12,"ott":-2.02,"app":-2.16,"atg":-1.34,"putt":0.33,"sgtot":-5.19},{"course":"NGC","date":"2025-10-21","score":79,"par":72,"stp":7,"fw":5,"gir":11,"putts":34,"dist":265.7,"p3":3,"db":3,"bp5":1,"f150":4,"fx":3,"mtot":14,"ott":-4.27,"app":-0.14,"atg":-0.76,"putt":-2.81,"sgtot":-7.98},{"course":"NGC","date":"2025-10-23","score":81,"par":72,"stp":9,"fw":6,"gir":8,"putts":33,"dist":267.0,"p3":2,"db":3,"bp5":1,"f150":4,"fx":6,"mtot":16,"ott":-3.2,"app":-1.96,"atg":-3.35,"putt":-1.47,"sgtot":-9.98},{"course":"EL TERRON","date":"2025-10-31","score":81,"par":72,"stp":9,"fw":6,"gir":8,"putts":33,"dist":267.0,"p3":2,"db":4,"bp5":0,"f150":4,"fx":6,"mtot":16,"ott":-3.2,"app":-1.96,"atg":-3.35,"putt":-1.47,"sgtot":-9.98},{"course":"CGC","date":"2025-11-01","score":72,"par":72,"stp":0,"fw":2,"gir":11,"putts":27,"dist":304.2,"p3":0,"db":1,"bp5":0,"f150":1,"fx":6,"mtot":8,"ott":-1.01,"app":-0.53,"atg":-3.13,"putt":2.48,"sgtot":-2.19},{"course":"CGC","date":"2025-11-20","score":79,"par":72,"stp":7,"fw":5,"gir":9,"putts":30,"dist":281.9,"p3":0,"db":2,"bp5":1,"f150":4,"fx":8,"mtot":15,"ott":-1.48,"app":-3.79,"atg":-1.89,"putt":-2.03,"sgtot":-9.19},{"course":"CGC","date":"2025-11-27","score":76,"par":72,"stp":4,"fw":1,"gir":8,"putts":30,"dist":291.5,"p3":0,"db":0,"bp5":1,"f150":2,"fx":5,"mtot":8,"ott":-2.15,"app":-3.52,"atg":0.49,"putt":-1.01,"sgtot":-6.19},{"course":"CGC","date":"2025-11-29","score":74,"par":72,"stp":2,"fw":2,"gir":11,"putts":31,"dist":298.5,"p3":2,"db":1,"bp5":0,"f150":2,"fx":2,"mtot":7,"ott":-1.04,"app":-1.18,"atg":-0.51,"putt":-0.46,"sgtot":-3.19},{"course":"CGC","date":"2025-11-30","score":76,"par":72,"stp":4,"fw":2,"gir":9,"putts":28,"dist":283.4,"p3":1,"db":1,"bp5":0,"f150":1,"fx":4,"mtot":7,"ott":-1.97,"app":-1.91,"atg":0.85,"putt":-2.16,"sgtot":-5.19},{"course":"CGC","date":"2025-12-04","score":72,"par":72,"stp":0,"fw":8,"gir":13,"putts":31,"dist":322.0,"p3":0,"db":1,"bp5":1,"f150":1,"fx":4,"mtot":7,"ott":-2.02,"app":0.24,"atg":-0.18,"putt":-0.23,"sgtot":-2.19},{"course":"CGC","date":"2025-12-05","score":78,"par":72,"stp":6,"fw":2,"gir":9,"putts":31,"dist":293.4,"p3":1,"db":1,"bp5":0,"f150":4,"fx":6,"mtot":12,"ott":-2.58,"app":-3.44,"atg":2.1,"putt":-4.27,"sgtot":-8.19},{"course":"PDL","date":"2025-12-10","score":68,"par":72,"stp":-4,"fw":6,"gir":11,"putts":26,"dist":329.5,"p3":0,"db":0,"bp5":0,"f150":0,"fx":2,"mtot":2,"ott":0.97,"app":-1.48,"atg":2.59,"putt":0.62,"sgtot":2.7},{"course":"CGC","date":"2026-02-21","score":84,"par":72,"stp":12,"fw":1,"gir":9,"putts":35,"dist":267.6,"p3":2,"db":2,"bp5":0,"f150":5,"fx":6,"mtot":15,"ott":-7.65,"app":-0.31,"atg":0.72,"putt":-6.95,"sgtot":-14.19},{"course":"CGC","date":"2026-02-28","score":77,"par":72,"stp":5,"fw":3,"gir":7,"putts":30,"dist":276.8,"p3":1,"db":0,"bp5":2,"f150":4,"fx":3,"mtot":10,"ott":-4.84,"app":-2.36,"atg":2.34,"putt":-1.33,"sgtot":-6.19},{"course":"CGC","date":"2026-03-07","score":70,"par":72,"stp":-2,"fw":5,"gir":10,"putts":26,"dist":275.6,"p3":1,"db":0,"bp5":0,"f150":0,"fx":1,"mtot":2,"ott":-1.08,"app":0.93,"atg":0.43,"putt":0.53,"sgtot":0.81},{"course":"CGC","date":"2026-03-12","score":67,"par":72,"stp":-5,"fw":9,"gir":14,"putts":29,"dist":311.1,"p3":1,"db":0,"bp5":0,"f150":2,"fx":2,"mtot":5,"ott":1.33,"app":1.81,"atg":0.32,"putt":-0.65,"sgtot":2.81},{"course":"CGC","date":"2026-03-19","score":75,"par":72,"stp":3,"fw":5,"gir":7,"putts":28,"dist":289.8,"p3":1,"db":0,"bp5":1,"f150":2,"fx":4,"mtot":8,"ott":-2.59,"app":-3.49,"atg":0.65,"putt":0.24,"sgtot":-5.19},{"course":"CGC","date":"2026-03-21","score":74,"par":72,"stp":2,"fw":5,"gir":11,"putts":33,"dist":289.0,"p3":2,"db":0,"bp5":0,"f150":4,"fx":2,"mtot":8,"ott":-0.4,"app":-0.76,"atg":0.35,"putt":-3.38,"sgtot":-4.19},{"course":"CGC","date":"2026-03-24","score":75,"par":72,"stp":3,"fw":3,"gir":11,"putts":31,"dist":308.4,"p3":2,"db":2,"bp5":1,"f150":3,"fx":1,"mtot":9,"ott":-1.98,"app":-2.29,"atg":0.96,"putt":-1.88,"sgtot":-5.19},{"course":"CGC","date":"2026-04-01","score":73,"par":72,"stp":1,"fw":5,"gir":10,"putts":29,"dist":292.1,"p3":1,"db":0,"bp5":1,"f150":1,"fx":3,"mtot":6,"ott":-0.4,"app":-2.83,"atg":-0.38,"putt":0.42,"sgtot":-3.19},{"course":"CGC","date":"2026-04-02","score":73,"par":72,"stp":1,"fw":4,"gir":13,"putts":34,"dist":300.4,"p3":2,"db":0,"bp5":1,"f150":3,"fx":1,"mtot":7,"ott":0.26,"app":-1.13,"atg":0.18,"putt":-2.5,"sgtot":-3.19},{"course":"CGC","date":"2026-04-03","score":76,"par":72,"stp":4,"fw":3,"gir":11,"putts":32,"dist":281.8,"p3":1,"db":2,"bp5":0,"f150":2,"fx":3,"mtot":8,"ott":-1.85,"app":-3.32,"atg":0.06,"putt":-1.08,"sgtot":-6.19},{"course":"CGC","date":"2026-04-11","score":71,"par":72,"stp":-1,"fw":2,"gir":11,"putts":28,"dist":294.4,"p3":1,"db":2,"bp5":0,"f150":3,"fx":4,"mtot":10,"ott":-0.52,"app":-1.75,"atg":-0.39,"putt":1.47,"sgtot":-1.19},{"course":"CGC","date":"2026-06-06","score":74,"par":72,"stp":2,"fw":6,"gir":11,"putts":30,"dist":291.6,"p3":2,"db":1,"bp5":1,"f150":3,"fx":2,"mtot":9,"ott":-0.55,"app":-0.36,"atg":0.71,"putt":-3.99,"sgtot":-4.19},{"course":"CGC","date":"2026-06-11","score":78,"par":72,"stp":6,"fw":5,"gir":9,"putts":32,"dist":285.4,"p3":1,"db":2,"bp5":1,"f150":5,"fx":5,"mtot":14,"ott":-1.28,"app":-2.89,"atg":-2.13,"putt":-1.89,"sgtot":-8.19},{"course":"CGC","date":"2026-06-13","score":75,"par":72,"stp":3,"fw":1,"gir":9,"putts":26,"dist":283.6,"p3":1,"db":1,"bp5":1,"f150":3,"fx":4,"mtot":10,"ott":-4.06,"app":-1.37,"atg":0.84,"putt":-0.6,"sgtot":-5.19},{"course":"CGC","date":"2026-06-19","score":75,"par":72,"stp":3,"fw":5,"gir":8,"putts":29,"dist":279.0,"p3":0,"db":0,"bp5":2,"f150":3,"fx":4,"mtot":9,"ott":-1.0,"app":-2.96,"atg":0.26,"putt":-0.49,"sgtot":-4.19},{"course":"CGC","date":"2026-06-27","score":69,"par":72,"stp":-3,"fw":4,"gir":12,"putts":27,"dist":287.4,"p3":1,"db":0,"bp5":0,"f150":1,"fx":2,"mtot":4,"ott":-0.57,"app":0.43,"atg":-0.07,"putt":1.02,"sgtot":0.81},{"course":"CGC","date":"2026-07-04","score":76,"par":72,"stp":4,"fw":4,"gir":13,"putts":34,"dist":284.8,"p3":3,"db":1,"bp5":0,"f150":4,"fx":5,"mtot":13,"ott":-1.01,"app":-1.24,"atg":0.86,"putt":-4.8,"sgtot":-6.19},{"course":"CGC","date":"2026-07-11","score":79,"par":72,"stp":7,"fw":1,"gir":12,"putts":37,"dist":293.7,"p3":4,"db":3,"bp5":1,"f150":6,"fx":5,"mtot":19,"ott":-1.24,"app":-1.6,"atg":-0.82,"putt":-5.53,"sgtot":-9.19},{"course":"CGC-Azules","date":"2026-07-25","score":73,"par":72,"stp":1,"fw":1,"gir":13,"putts":30,"dist":279.9,"p3":2,"db":3,"bp5":1,"f150":3,"fx":2,"mtot":11,"ott":-3.37,"app":1.09,"atg":-1.5,"putt":-0.48,"sgtot":-4.26},{"course":"CGC","date":"2026-07-30","score":81,"par":72,"stp":9,"fw":4,"gir":7,"putts":30,"dist":297.8,"p3":1,"db":3,"bp5":1,"f150":5,"fx":7,"mtot":17,"ott":-0.46,"app":-4.7,"atg":-5.18,"putt":-0.94,"sgtot":-11.28},{"course":"CGC","date":"2026-08-01","score":71,"par":72,"stp":-1,"fw":2,"gir":13,"putts":30,"dist":294.1,"p3":1,"db":0,"bp5":0,"f150":0,"fx":1,"mtot":2,"ott":-1.15,"app":-1.62,"atg":0.55,"putt":1.01,"sgtot":-1.21},{"course":"CGC","date":"2026-08-06","score":77,"par":72,"stp":5,"fw":2,"gir":7,"putts":29,"dist":290.0,"p3":0,"db":1,"bp5":1,"f150":3,"fx":6,"mtot":11,"ott":-3.37,"app":-2.95,"atg":1.11,"putt":-2.0,"sgtot":-7.21},{"course":"CGC","date":"2026-08-08","score":77,"par":72,"stp":5,"fw":3,"gir":6,"putts":29,"dist":285.8,"p3":0,"db":1,"bp5":1,"f150":4,"fx":7,"mtot":13,"ott":-1.28,"app":-6.09,"atg":3.35,"putt":-3.19,"sgtot":-7.21},{"course":"CGC","date":"2026-08-13","score":80,"par":72,"stp":8,"fw":2,"gir":9,"putts":32,"dist":284.4,"p3":2,"db":3,"bp5":1,"f150":5,"fx":5,"mtot":16,"ott":-4.5,"app":-1.74,"atg":-1.76,"putt":-2.21,"sgtot":-10.21},{"course":"CGC","date":"2026-08-15","score":74,"par":72,"stp":2,"fw":5,"gir":8,"putts":24,"dist":293.1,"p3":0,"db":1,"bp5":0,"f150":4,"fx":3,"mtot":8,"ott":-0.91,"app":-6.42,"atg":2.04,"putt":1.08,"sgtot":-4.21},{"course":"CGC","date":"2026-08-17","score":73,"par":72,"stp":1,"fw":6,"gir":8,"putts":26,"dist":291.9,"p3":0,"db":1,"bp5":0,"f150":2,"fx":3,"mtot":6,"ott":-1.75,"app":-2.5,"atg":-0.36,"putt":1.4,"sgtot":-3.21}];
+
+const NICO=[
+{"course":"CGC","date":"2026-03-24","score":82,"par":72,"stp":10,"fw":3,"gir":7,"putts":34,"dist":264.2,"p3":3,"db":2,"bp5":3,"f150":7,"fx":5,"mtot":20,"ott":1.12,"app":-2.20,"atg":1.21,"putt":-0.98,"sgtot":-0.85},
+{"course":"CGC","date":"2026-06-06","score":85,"par":72,"stp":13,"fw":2,"gir":6,"putts":36,"dist":269.9,"p3":1,"db":3,"bp5":1,"f150":7,"fx":8,"mtot":20,"ott":-0.11,"app":0.69,"atg":0.82,"putt":-5.33,"sgtot":-3.93},
+{"course":"CGC","date":"2026-06-13","score":89,"par":72,"stp":17,"fw":2,"gir":5,"putts":33,"dist":272.7,"p3":2,"db":5,"bp5":1,"f150":7,"fx":7,"mtot":22,"ott":-4.09,"app":0.85,"atg":-2.93,"putt":-1.86,"sgtot":-8.04},
+{"course":"CGC","date":"2026-06-20","score":82,"par":72,"stp":10,"fw":3,"gir":9,"putts":31,"dist":259.2,"p3":1,"db":2,"bp5":1,"f150":3,"fx":4,"mtot":11,"ott":-1.71,"app":3.49,"atg":-2.53,"putt":-0.10,"sgtot":-0.85},
+{"course":"CGC","date":"2026-06-27","score":86,"par":72,"stp":14,"fw":3,"gir":5,"putts":32,"dist":275.0,"p3":1,"db":2,"bp5":3,"f150":8,"fx":10,"mtot":24,"ott":-1.64,"app":0.16,"atg":-2.45,"putt":-1.02,"sgtot":-4.96}
+];
+const MANU=[{"course":"CGC","date":"2026-06-06","score":83,"par":72,"stp":11,"fw":7,"gir":6,"putts":27,"dist":258.1,"p3":0,"db":5,"bp5":1,"f150":6,"fx":6,"mtot":18,"ott":1.54,"app":-2.25,"atg":-0.07,"putt":2.63,"sgtot":1.86},{"course":"CGC","date":"2026-06-13","score":88,"par":72,"stp":16,"fw":4,"gir":2,"putts":32,"dist":249.5,"p3":3,"db":3,"bp5":1,"f150":7,"fx":7,"mtot":21,"ott":-0.55,"app":0.55,"atg":-2.02,"putt":-0.54,"sgtot":-2.56},{"course":"CGC","date":"2026-06-20","score":89,"par":72,"stp":17,"fw":3,"gir":3,"putts":33,"dist":255.2,"p3":4,"db":3,"bp5":2,"f150":9,"fx":7,"mtot":25,"ott":0.37,"app":-2.86,"atg":1.57,"putt":-2.74,"sgtot":-3.65},{"course":"CGC","date":"2026-06-26","score":86,"par":72,"stp":14,"fw":7,"gir":7,"putts":35,"dist":269.1,"p3":3,"db":4,"bp5":2,"f150":7,"fx":7,"mtot":23,"ott":1.94,"app":2.75,"atg":-3.43,"putt":-1.63,"sgtot":-0.37},{"course":"CGC","date":"2026-07-04","score":82,"par":72,"stp":10,"fw":7,"gir":6,"putts":31,"dist":262.0,"p3":1,"db":1,"bp5":2,"f150":7,"fx":8,"mtot":19,"ott":2.65,"app":-0.29,"atg":1.62,"putt":-0.5,"sgtot":3.48},{"course":"CGC","date":"2026-07-11","score":88,"par":72,"stp":16,"fw":3,"gir":5,"putts":32,"dist":251.6,"p3":2,"db":4,"bp5":2,"f150":4,"fx":9,"mtot":21,"ott":0.25,"app":-0.66,"atg":-2.13,"putt":0.73,"sgtot":-1.82},{"course":"CGC","date":"2026-07-18","score":86,"par":72,"stp":14,"fw":5,"gir":7,"putts":34,"dist":266.3,"p3":3,"db":5,"bp5":2,"f150":10,"fx":7,"mtot":27,"ott":3.15,"app":-1.98,"atg":-0.09,"putt":-1.13,"sgtot":-0.05},{"course":"CGC","date":"2026-08-01","score":88,"par":72,"stp":16,"fw":5,"gir":5,"putts":30,"dist":257.9,"p3":2,"db":4,"bp5":2,"f150":6,"fx":7,"mtot":21,"ott":2.07,"app":-1.66,"atg":-5.7,"putt":3.48,"sgtot":-1.82},{"course":"CGC","date":"2026-08-13","score":85,"par":72,"stp":13,"fw":5,"gir":5,"putts":30,"dist":270.9,"p3":0,"db":3,"bp5":3,"f150":11,"fx":9,"mtot":26,"ott":3.46,"app":-4.08,"atg":-2.45,"putt":3.9,"sgtot":0.83},{"course":"CGC","date":"2026-08-15","score":86,"par":72,"stp":14,"fw":6,"gir":7,"putts":31,"dist":271.1,"p3":2,"db":4,"bp5":1,"f150":9,"fx":9,"mtot":25,"ott":3.65,"app":-0.96,"atg":-3.32,"putt":0.58,"sgtot":-0.05},{"course":"CGC","date":"2026-08-17","score":85,"par":72,"stp":13,"fw":4,"gir":9,"putts":33,"dist":256.0,"p3":4,"db":4,"bp5":0,"f150":6,"fx":5,"mtot":19,"ott":2.01,"app":0.1,"atg":-1.6,"putt":0.33,"sgtot":0.83}];
+const PLAYERS={"Guido":GUIDO,"Manuel":MANU,"Nicolas":NICO};
+const PLAYERNAMES=["Guido","Manuel","Nicolas"];
+let PLAYER='Guido';
+let BASE=PLAYERS[PLAYER];
+const ckey=()=>'golf-ledger-custom-'+PLAYER, dkey=()=>'golf-ledger-draft2-'+PLAYER;
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}};
+const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+let CUSTOM=load(ckey(),[]), R=[];
+
+const F={pine:'#0f3a2c',fairway:'#1f7a4d',moss:'#3f9c6d',clay:'#c2502e',sand:'#b89a52',blue:'#2f6f9c',amber:'#c99a1e',inkSoft:'#5c6357',line:'#e2ddcc'};
+Chart.defaults.font.family="'Optima','Segoe UI',Candara,sans-serif"; Chart.defaults.color=F.inkSoft; Chart.defaults.font.size=12;
+const rnd=(x,d=2)=>{const p=Math.pow(10,d);return Math.round(x*p)/p;};
+const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
+const CH={}; let gridInst=null; let curMetric='SG: Approach';
+
+/* ---------- SHOT ENGINE ---------- */
+const ROLES=[['tee','Tee (par 4/5)','yd'],['app','Approach 1','yd'],['app','Approach 2','yd'],['arg','Short','yd'],['putt','Putt 1','ft'],['putt','Putt 2','ft']];
+const LIE_OPTS=[['tee','Tee'],['fw','Fairway'],['rough','Rough'],['sand','Sand'],['rec','Recovery'],['putt','Green (putt)']];
+function blankHole(par){return {par,slots:ROLES.map((r,i)=>({lie:i===0?'tee':(r[0]==='putt'?'putt':(r[0]==='arg'?'':'fw')),dist:'',pen:0}))};}
+const DEFPAR=[4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4];
+let draft=load(dkey(),null); if(!draft||!draft.holes){draft={date:'',course:'',cr:70,slope:113,holes:DEFPAR.map(p=>blankHole(p))};}
+let curHole=0;
+
+function holeShots(h){
+ const out=[];
+ h.slots.forEach((s,off)=>{const d=parseFloat(s.dist);if(s.lie&&!isNaN(d)&&d>0)out.push({off,lie:s.lie,dist:d,pen:(parseFloat(s.pen)||0)});});
+ return out;
+}
+function computeRound(dr){
+ let ott=0,app=0,arg=0,putt=0,score=0,putts=0,fwHit=0,girN=0,teeDists=[];
+ let p3=0,db=0,bp5=0,f150=0,fx=0, parTot=0, anyShot=false;
+ dr.holes.forEach(h=>{
+   const shots=holeShots(h); parTot+=h.par;
+   if(!shots.length)return; anyShot=true;
+   const E=shots.map(s=>Estart(s.lie,s.dist));
+   let hs=0;
+   shots.forEach((s,i)=>{
+     const En=i+1<E.length?E[i+1]:0;
+     const sg=E[i]-En-1-s.pen;
+     if(s.off===0)ott+=sg; else if(s.off===1||s.off===2)app+=sg; else if(s.off===3)arg+=sg; else putt+=sg;
+     hs+=1+s.pen;
+     if(s.lie==='putt')putts++;
+     if(s.off===0&&s.lie==='tee')teeDists.push(s.dist);
+   });
+   score+=hs;
+   const nputt=shots.filter(s=>s.lie==='putt').length;
+   const nonPutt=shots.filter(s=>s.lie!=='putt').length;
+   const pens=shots.reduce((a,s)=>a+s.pen,0);
+   if(nputt>=3)p3++;
+   if(h.par===5 && hs-h.par>=1)bp5++;
+   else if(hs-h.par>=2)db++;
+   if(nonPutt+pens<=h.par-2)girN++;
+   // fairway hit: 2nd shot from fairway on par4/5
+   if((h.par===4||h.par===5)&&shots.length>1&&shots[1].lie==='fw')fwHit++;
+   // near-green struggles
+   const near150=shots.filter(s=>s.lie==='putt'||s.dist<=150).length+pens;
+   if(near150>3)f150++;
+   const near40=shots.filter(s=>s.lie==='putt'||(s.lie!=='tee'&&s.dist<=40)).length;
+   if(near40>=3)fx++;
+ });
+ return {anyShot,parTot,ott:rnd(ott),app:rnd(app),atg:rnd(arg),putt:rnd(putt),sgtot:rnd(ott+app+arg+putt),
+   score,stp:score-parTot,putts,gir:girN,fw:fwHit,dist:teeDists.length?rnd(mean(teeDists),1):0,
+   p3,db,bp5,f150,fx,mtot:p3+db+bp5+f150+fx};
+}
+
+function renderNav(){
+ const nav=document.getElementById('holenav');
+ nav.innerHTML=draft.holes.map((h,i)=>{
+   const shots=holeShots(h); const sc=shots.reduce((a,s)=>a+1+s.pen,0);
+   return `<button class="${i===curHole?'on':''} ${sc?'done':''}" data-h="${i}"><span class="hn">${i+1}</span><span class="hs">${sc?('· '+sc):('p'+h.par)}</span></button>`;
+ }).join('');
+}
+function renderHole(){
+ const h=draft.holes[curHole];
+ const ed=document.getElementById('holeditor');
+ ed.innerHTML=`<div class="top"><h3>Hole ${curHole+1}</h3>
+   <div class="fld"><label>Par</label><select id="h_par">${[3,4,5].map(p=>`<option value="${p}" ${h.par===p?'selected':''}>${p}</option>`).join('')}</select></div>
+   <span class="note" style="margin:0">Par-3 tee shot → put it in “Approach 1”, leave Tee blank.</span></div>
+   <div id="slots">`+
+   ROLES.map((r,off)=>{const s=h.slots[off];const unit=r[0]==='putt'?'ft':'yd';
+     return `<div class="slot"><span class="role">${r[1]}</span>
+       <select data-off="${off}" data-k="lie">${LIE_OPTS.map(o=>`<option value="${o[0]}" ${s.lie===o[0]?'selected':''}>${o[1]}</option>`).join('')}<option value="" ${!s.lie?'selected':''}>—</option></select>
+       <input type="number" data-off="${off}" data-k="dist" placeholder="dist" value="${s.dist}"><span class="unit">${unit} · pen</span>
+       <input type="number" data-off="${off}" data-k="pen" min="0" value="${s.pen||''}" placeholder="0"></div>`;
+   }).join('')+`</div>
+   <div class="holenavbtns"><button class="btn mini" id="prevH">‹ Prev</button><button class="btn mini" id="nextH">Next ›</button><button class="btn mini" id="clrH">Clear hole</button></div>`;
+ ed.querySelector('#h_par').addEventListener('change',e=>{h.par=+e.target.value;persistDraft();renderNav();renderHole();updateLive();});
+ ed.querySelectorAll('#slots select,#slots input').forEach(el=>{
+   el.addEventListener('input',()=>{const off=+el.dataset.off,k=el.dataset.k;h.slots[off][k]=el.value;persistDraft();renderNav();updateLive();});
+ });
+ ed.querySelector('#prevH').onclick=()=>{curHole=(curHole+17)%18;renderNav();renderHole();};
+ ed.querySelector('#nextH').onclick=()=>{curHole=(curHole+1)%18;renderNav();renderHole();};
+ ed.querySelector('#clrH').onclick=()=>{draft.holes[curHole]=blankHole(h.par);persistDraft();renderNav();renderHole();updateLive();};
+}
+function updateLive(){
+ const t=computeRound(draft);
+ const cards=[['Score',t.anyShot?t.score:'—'],['To par',t.anyShot?((t.stp>=0?'+':'')+t.stp):'—'],
+   ['SG OTT',t.ott],['SG APP',t.app],['SG ATG',t.atg],['SG PUTT',t.putt],['SG TOT',t.sgtot],['Mistakes',t.mtot]];
+ document.getElementById('live').innerHTML=cards.map(c=>{
+   const neg=(typeof c[1]==='number'&&c[1]<0)||(''+c[1]).startsWith('+')&&c[0]==='To par';
+   const col=typeof c[1]==='number'?(c[1]<0?'var(--clay)':c[1]>0?'var(--fairway)':'var(--ink)'):'var(--ink)';
+   return `<div class="livecard"><div class="l">${c[0]}</div><div class="v" style="color:${col}">${c[1]}</div></div>`;}).join('');
+}
+function persistDraft(){draft.date=document.getElementById('r_date').value;draft.course=document.getElementById('r_course').value;
+ draft.cr=document.getElementById('r_cr').value;draft.slope=document.getElementById('r_slope').value;save(dkey(),draft);}
+
+document.getElementById('holenav').addEventListener('click',e=>{const b=e.target.closest('button');if(b){curHole=+b.dataset.h;renderNav();renderHole();}});
+['r_date','r_course','r_cr','r_slope'].forEach(id=>document.getElementById(id).addEventListener('input',persistDraft));
+
+document.getElementById('saveBtn').addEventListener('click',()=>{
+ const t=computeRound(draft); const msg=document.getElementById('formMsg');
+ const course=(document.getElementById('r_course').value||'').trim().toUpperCase();
+ const date=document.getElementById('r_date').value;
+ if(!t.anyShot){msg.style.color='var(--clay)';msg.textContent='Enter some shots first.';return;}
+ if(!date||!course){msg.style.color='var(--clay)';msg.textContent='Add a date and course before saving.';return;}
+ const row={course,date,score:t.score,par:t.parTot,stp:t.stp,fw:t.fw,gir:t.gir,putts:t.putts,dist:t.dist,
+   p3:t.p3,db:t.db,bp5:t.bp5,f150:t.f150,fx:t.fx,mtot:t.mtot,ott:t.ott,app:t.app,atg:t.atg,putt:t.putt,sgtot:t.sgtot};
+ CUSTOM.push(row); save(ckey(),CUSTOM);
+ draft={date:'',course:'',cr:+draft.cr,slope:+draft.slope,holes:DEFPAR.map(p=>blankHole(p))}; save(dkey(),draft); curHole=0;
+ document.getElementById('r_date').value='';document.getElementById('r_course').value='';
+ renderNav();renderHole();updateLive();renderAll();renderTabs();
+ msg.style.color='var(--fairway)';msg.textContent='Saved '+course+' '+date+' ('+t.score+', SG '+t.sgtot+') — dashboard updated.';
+});
+document.getElementById('draftBtn').addEventListener('click',()=>{
+ draft={date:'',course:document.getElementById('r_course').value,cr:+draft.cr,slope:+draft.slope,holes:DEFPAR.map(p=>blankHole(p))};
+ save(dkey(),draft);curHole=0;renderNav();renderHole();updateLive();
+ document.getElementById('formMsg').style.color='var(--ink-soft)';document.getElementById('formMsg').textContent='Draft cleared.';
+});
+document.getElementById('clearBtn').addEventListener('click',()=>{
+ if(!CUSTOM.length){document.getElementById('formMsg').textContent='No saved rounds to clear.';return;}
+ if(confirm('Remove all '+CUSTOM.length+' rounds you saved here? The imported '+BASE.length+' stay.')){
+  CUSTOM=[];save(ckey(),CUSTOM);renderAll();renderTabs();document.getElementById('formMsg').style.color='var(--clay)';document.getElementById('formMsg').textContent='Cleared your saved rounds.';}
+});
+document.getElementById('addToggle').addEventListener('click',()=>{const b=document.getElementById('addBody'),open=b.style.display!=='none';b.style.display=open?'none':'block';document.getElementById('addCaret').textContent=open?'show ▸':'hide ▾';});
+document.getElementById('engnote').textContent='Strokes gained, score and the OTT/APP/ATG/PUTT split reproduce your spreadsheet exactly (validated to the cent across sample rounds). Tiger-5 mistakes use standard definitions and may differ slightly from the sheet’s flags.';
+
+/* ---------- DASHBOARD ---------- */
+function limitsOf(vals,count){
+ let incl=vals.map((_,i)=>i),m=0,mrb=0,u=0,l=0,mrucl=0;
+ for(let it=0;it<60;it++){
+   const vv=incl.map(i=>vals[i]); m=mean(vv);
+   let mrs=[]; for(let k=1;k<vv.length;k++)mrs.push(Math.abs(vv[k]-vv[k-1]));
+   const mrRaw=mrs.length?mean(mrs):0;
+   if(mrs.length){let keep=mrs.slice();for(let j=0;j<20;j++){const b=mean(keep),uc=3.267*b;const f=keep.filter(x=>x<=uc);if(f.length===keep.length||f.length<1)break;keep=f;}mrb=keep.length?mean(keep):0;}else mrb=0;
+   if(mrb===0 && mrRaw>0) mrb=mrRaw;   // don't collapse the limits to a line when there is real variation
+   mrucl=3.267*mrb; u=m+2.66*mrb; l=m-2.66*mrb; if(count&&l<0)l=0;
+   const kp=incl.filter(i=>!(vals[i]>u||vals[i]<l));
+   if(kp.length===incl.length||kp.length<4)break;
+   const kv=kp.map(i=>vals[i]); if(Math.max(...kv)===Math.min(...kv))break;   // don't purify down to a flat, zero-variation set
+   incl=kp;
+ }
+ return {m,l,u,mrb,mrucl};}
+function rng(a,b){const o=[];for(let i=a;i<=b;i++)o.push(i);return o;}
+function shiftIndex(v,foundFrom,searchStart,N,cnt){
+ // earliest signal at index >= searchStart, judged against the current regime's limits (from first 8 rounds)
+ const FOUND=Math.min(8,N-foundFrom),f=limitsOf(v.slice(foundFrom,foundFrom+FOUND),cnt),m=f.m,u=f.u,l=f.l,sg=(f.mrb/1.128)||1e9;
+ const cands=[], s0=Math.max(searchStart,1);
+ for(let i=s0;i<=N-8;i++){const w=v.slice(i,i+8);if(w.every(x=>x>m)||w.every(x=>x<m)){cands.push({at:i,type:'run',pts:rng(i,i+7)});break;}}
+ for(let i=s0;i<=N-2;i++){if((v[i]>u&&v[i+1]>u)||(v[i]<l&&v[i+1]<l)){cands.push({at:i,type:'pair',pts:[i,i+1]});break;}}
+ for(let i=s0;i<=N-4;i++){const w=v.slice(i,i+4);const up=[],dn=[];for(let j=0;j<4;j++){if(w[j]-m>2*sg)up.push(i+j);if(m-w[j]>2*sg)dn.push(i+j);}if(up.length>=3||dn.length>=3){cands.push({at:i,type:'zone',pts:up.length>=3?up:dn});break;}}
+ for(let i=s0;i<=N-6;i++){const w=v.slice(i,i+6);let inc=true,dec=true;for(let j=1;j<6;j++){if(!(w[j]>w[j-1]))inc=false;if(!(w[j]<w[j-1]))dec=false;}if(inc||dec){cands.push({at:i,type:'trend',pts:rng(i,i+5)});break;}}
+ if(!cands.length)return null;
+ cands.sort((a,b)=>a.at-b.at);
+ return cands[0];
+}
+function mk(v,start,end,cf,ct,count){return Object.assign({start,end,cf,ct,prov:(ct-cf+1)<12},limitsOf(v.slice(cf,ct+1),count));}
+function segLimits(v,count){
+ const N=v.length; const segs=[]; const signals=[]; let foundFrom=0,dispStart=0,guard=0;
+ const stageOK = N>=12;   // fewer than a dozen rounds — don't stage/hunt signals; one honest band over all of them
+ // Old limits use only the rounds BEFORE the signal (so the signal shows under them). The NEW limits are
+ // founded on the signal points themselves and the rounds after (never the old regime, never future beyond
+ // the stage), giving a provisional band immediately that firms up toward ~20 rounds.
+ while(stageOK && guard++<60){
+   const s=shiftIndex(v,foundFrom,dispStart,N,count);
+   if(!s){ segs.push(mk(v,dispStart,N-1,foundFrom,Math.min(foundFrom+19,N-1),count)); break; }
+   const o=s.at, win=(s.type==='run'?8:s.type==='trend'?6:s.type==='pair'?2:4), w=Math.min(o+win-1,N-1);
+   if(N-o < 8){   // fewer than 8 new-regime rounds — hold the old limits, flag the signal as a watch, don't draw shaky new limits
+     segs.push(mk(v,dispStart,N-1,foundFrom,Math.min(foundFrom+19,o-1),count));
+     signals.push(Object.assign({},s,{pending:true}));
+     break;
+   }
+   segs.push(mk(v,dispStart,w,foundFrom,Math.min(foundFrom+19,o-1),count));   // old stage: pre-signal rounds
+   signals.push(s);
+   foundFrom=o; dispStart=w+1;                                                // new stage founded on the signal points onward
+   if(dispStart>N-1) break;
+ }
+ if(!segs.length) segs.push(mk(v,0,N-1,0,Math.min(19,N-1),count));
+ const sigSet=new Set(); signals.forEach(s=>s.pts.forEach(p=>sigSet.add(p)));
+ const breaks=segs.map(g=>g.start);
+ const segOf=i=>segs.find(g=>i>=g.start&&i<=g.end)||segs[segs.length-1];
+ const mr=[]; for(let i=1;i<N;i++)mr.push(Math.abs(v[i]-v[i-1]));
+ const r1=[]; v.forEach((x,i)=>{const g=segOf(i);if(x>g.u||x<g.l)r1.push(i+1);});
+ const r4=[]; mr.forEach((x,i)=>{const g=segOf(i+1);if(x>g.mrucl)r4.push(i+2);});
+ const notes=[];
+ let run=2;for(let i=2;i<N;i++){const a=v[i]-v[i-1],b=v[i-1]-v[i-2];if((a>0&&b<0)||(a<0&&b>0))run++;else run=2;if(run>=14){notes.push('14+ rounds zig-zagging up-and-down — looks like over-adjusting, or two conditions mixed together');break;}}
+ let w=0;for(let i=0;i<N;i++){const g=segOf(i),sg=(g.mrb/1.128)||0;if(sg>0&&Math.abs(v[i]-g.m)<=sg)w++;else w=0;if(w>=15){notes.push('15+ rounds hugging the centre line — the limits may be wider than how you actually score now');break;}}
+ let bb=0;for(let i=0;i<N;i++){const g=segOf(i),sg=(g.mrb/1.128)||0;if(sg>0&&Math.abs(v[i]-g.m)>sg)bb++;else bb=0;if(bb>=8){notes.push('8+ rounds in a row away from the centre — may be two different games blended in (e.g. different courses or tees)');break;}}
+ return {segs,segOf,mr,r1,r4,breaks,notes,signals,sigSet};}
+const metrics={'SG: Off tee':r=>r.ott,'SG: Approach':r=>r.app,'SG: Around green':r=>r.atg,'SG: Putting':r=>r.putt,'SG: Total':r=>r.sgtot,'Mistakes: total':r=>r.mtot,'Mistakes: 3-putts':r=>r.p3,'Mistakes: double bogeys':r=>r.db,'Mistakes: bogey par-5':r=>r.bp5,'Mistakes: 3+ from 150':r=>r.f150,'Mistakes: 3+ from X':r=>r.fx};
+const isCount=k=>k.startsWith('Mistakes');
+const PHASE={
+ 'SG: Off tee':'your driving',
+ 'SG: Approach':'your approach play',
+ 'SG: Around green':'your short game around the green',
+ 'SG: Putting':'your putting',
+ 'SG: Total':'your overall game',
+ 'Mistakes: total':'your mistakes',
+ 'Mistakes: 3-putts':'your 3-putts',
+ 'Mistakes: double bogeys':'your double bogeys',
+ 'Mistakes: bogey par-5':'dropped shots on par-5s',
+ 'Mistakes: 3+ from 150':'loose shots from around 150',
+ 'Mistakes: 3+ from X':'failing to get up-and-down'
+};
+const SGF={'SG: Off tee':'ott','SG: Approach':'app','SG: Around green':'atg','SG: Putting':'putt'};
+function verdict(key,S,cnt,v){
+ const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+ const noun=PHASE[key]||'this part of your game';
+ const segs=S.segs, first=segs[0].m, last=segs[segs.length-1].m;
+ const good=x=>cnt?-x:x;
+ const mn=mean(v), sd=Math.sqrt(mean(v.map(x=>(x-mn)*(x-mn))))||0;
+ const a=Math.abs(last).toFixed(1);
+ // how much it costs / earns, in plain terms
+ let level;
+ if(cnt) level=`about ${last.toFixed(1)} per round`;
+ else level = last<-0.15?`costing you about ${a} shots a round`:(last>0.15?`earning you about ${a} shots a round`:`right around break-even`);
+ // where it ranks vs the player's other departments (SG only)
+ let rank='';
+ if(SGF[key] && R.length){
+   const avgs=['ott','app','atg','putt'].map(f=>({f,m:mean(R.map(r=>r[f]))})).sort((x,y)=>x.m-y.m);
+   const pos=avgs.findIndex(o=>o.f===SGF[key]);
+   rank = pos===0?' It’s the biggest hole in your game right now — the place a practice hour pays off most.'
+        : pos===3?' It’s the strongest part of your game — keep leaning on it.'
+        : pos===1?' It’s your second-weakest department.'
+        : ' It’s one of your steadier, better areas.';
+ }
+ // how streaky, round to round
+ const streaky = sd > (cnt?2.3:2.5);
+ const cons = last===0?'' : (streaky?' It also swings hard round to round, so one blow-up round can sink a card.':' And it’s fairly repeatable day to day.');
+ let head,body;
+ if(segs.length===1 || Math.abs(last-first)<(cnt?0.6:0.4)){
+   head='Holding steady.';
+   body=`${cap(noun)} — ${level}, and it hasn’t moved the whole time.`+rank+cons;
+ } else {
+   const prev=segs[segs.length-2].m, recovering=good(last)>good(prev), overall=good(last)-good(first);
+   if(overall>0){ head='Getting better.'; body=`${cap(noun)} — genuinely turned a corner: now ${level}, better than where you started and holding.`+rank; }
+   else if(recovering){ head='Recovering.'; body=`${cap(noun)} — hit a rough patch but climbing back, now ${level}.`+rank; }
+   else { head='Slipping.'; body=`${cap(noun)} — drifting the wrong way, now ${level}, worse than where you started.`+rank+' Worth a look before it settles in.'; }
+ }
+ const outs=[]; v.forEach((x,i)=>{const g=S.segOf(i);if(x>g.u||x<g.l)outs.push(i+1);});
+ const rc=outs.filter(r=>r>=v.length-3);
+ if(rc.length===1) body+=` (Round ${rc[0]} was an outlier — don’t over-read one day.)`;
+ else if(rc.length===2) body+=` (Rounds ${rc[0]} and ${rc[1]} were unusual — don’t over-read a couple of rounds.)`;
+ return `<strong style="font-size:16px">${head}</strong> ${body}`;
+}
+const ctrl=document.getElementById('xmrCtrl');
+ctrl.innerHTML=Object.keys(metrics).map(k=>`<button data-k="${k}" class="${k===curMetric?'on':''}">${k}</button>`).join('');
+ctrl.addEventListener('click',e=>{if(e.target.dataset.k){curMetric=e.target.dataset.k;drawXmr();}});
+
+function renderPriority(){
+ const defs=[['ott','Off the tee','driving accuracy & dispersion'],['app','Approach','iron proximity, esp. from 150'],['atg','Around green','chipping & scrambling'],['putt','Putting','pace & holing out']];
+ let arr=defs.map(d=>{const avg=mean(R.map(r=>r[d[0]]));return {name:d[1],sub:d[2],avg:rnd(avg,2),loss:Math.max(0,-avg)};});
+ arr.sort((a,b)=>b.loss-a.loss);
+ const maxLoss=Math.max(...arr.map(a=>a.loss),0.01);
+ const totalGain=rnd(arr.reduce((s,a)=>s+a.loss,0),1);
+ const shade=t=>{const c1=[224,138,102],c2=[146,50,24];const m=c1.map((a,i)=>Math.round(a+(c2[i]-a)*t));return `rgb(${m[0]},${m[1]},${m[2]})`;};
+ const html=arr.map((a,i)=>{
+   const isStrength=a.loss===0;
+   const w=isStrength?100:Math.max(8,Math.round(a.loss/maxLoss*100));
+   const fill=isStrength?F.fairway:shade(a.loss/maxLoss);
+   const val=isStrength?`<b style="color:var(--fairway)">+${a.avg.toFixed(2)}</b><small>strength — hold it</small>`:`<b style="color:#8f3418">${a.loss.toFixed(2)}</b><small>shots / round to gain</small>`;
+   return `<div class="prow ${i===0&&!isStrength?'top1':''}"><div class="prank">${i+1}</div><div class="pname">${a.name}<small>${a.sub}</small></div><div class="ptrack"><div class="pfill" style="width:${w}%;background:${fill}"></div></div><div class="pval">${val}</div></div>`;
+ }).join('');
+ document.getElementById('priority').innerHTML=html+`<div class="prow" style="border-top:2px solid var(--line)"><div class="prank" style="color:var(--pine)">Σ</div><div class="pname">Total on the table<small>if every phase reached neutral</small></div><div></div><div class="pval"><b style="color:var(--pine)">${totalGain}</b><small>shots / round</small></div></div>`;
+}
+function renderAll(){
+ R=BASE.concat(CUSTOM); const N=R.length, idx=R.map((_,i)=>i+1);
+ Object.values(CH).forEach(c=>{try{c.destroy();}catch(e){}}); if(gridInst){try{gridInst.destroy();}catch(e){}gridInst=null;}
+ document.getElementById('customBadge').innerHTML=CUSTOM.length?`<span class="badge">${CUSTOM.length} logged here</span>`:'';
+ document.getElementById('foot').textContent=PLAYER+' · '+N+' rounds ('+BASE.length+' imported + '+CUSTOM.length+' logged here) · SG via Broadie benchmark tables · limits recompute from the data';
+ if(N===0){
+   document.getElementById('kpis').innerHTML=`<div class="kpi"><div class="lbl">Rounds logged</div><div class="val">0</div><div class="cap">no data yet</div></div>`;
+   document.getElementById('flagBox').innerHTML='';
+   document.getElementById('xmrExpl').innerHTML='<strong>No rounds yet.</strong> Open “Log a round, shot by shot” at the bottom to add '+PLAYER+'’s first round.';document.getElementById('xmrSig').innerHTML='';document.getElementById('distNote').innerHTML='';
+   const dc=document.getElementById('distChart');if(dc&&dc.getContext){const c=dc.getContext('2d');c.clearRect(0,0,dc.width,dc.height);}
+   const gd=document.getElementById('grid');if(gd)gd.innerHTML='';
+   document.getElementById('lastRound').innerHTML='';document.getElementById('focusRec').innerHTML='';
+   return;
+ }
+ const scores=R.map(r=>r.stp), sgt=R.map(r=>r.sgtot);
+ const avgStp=mean(scores), best=Math.min(...scores), bestR=R[scores.indexOf(best)];
+ const last8=sgt.slice(-8), prior=sgt.slice(0,-8);
+ const kpis=[{lbl:'Rounds logged',val:N,cap:'all entries',cls:''},
+  {lbl:'Avg score to par',val:(avgStp>=0?'+':'')+rnd(avgStp,1),cap:'per 18 holes',cls:avgStp>3?'warn':''},
+  {lbl:'Best round',val:(best>=0?'+':'')+best,cap:bestR.course+' · '+bestR.date,cls:'good'},
+  {lbl:'Avg SG total',val:rnd(mean(sgt),1),cap:'vs reference hcp',cls:mean(sgt)<0?'warn':'good'},
+  {lbl:'Recent form',val:rnd(mean(last8),1),cap:'last 8 vs '+(prior.length?rnd(mean(prior),1):'—')+' prior',cls:prior.length&&mean(last8)>mean(prior)?'good':'warn'}];
+ document.getElementById('kpis').innerHTML=kpis.map(k=>`<div class="kpi ${k.cls}"><div class="lbl">${k.lbl}</div><div class="val">${k.val}</div><div class="cap">${k.cap}</div></div>`).join('');
+ document.getElementById('flagBox').innerHTML=`Scoring average<b>${rnd(mean(R.map(r=>r.score)),1)}</b>${N} rounds tracked`;
+ { // last-round comment + recommendation, recomputed every render
+   const lr=R[N-1], sgn=x=>(x>=0?'+':'')+rnd(x,2);
+   const cats=[['ott','off the tee'],['app','approach'],['atg','the short game'],['putt','putting']];
+   const cv=cats.map(c=>({n:c[1],k:c[0],v:lr[c[0]]}));
+   const best=cv.slice().sort((a,b)=>b.v-a.v)[0], worst=cv.slice().sort((a,b)=>a.v-b.v)[0];
+   const vs=lr.stp<avgStp-1?'one of your better rounds':(lr.stp>avgStp+1?'a tougher day than usual':'right around your average');
+   let t=`<strong>Last round — ${lr.course}, ${lr.date}.</strong> Shot ${lr.score} (${lr.stp>=0?'+':''}${lr.stp} to par), ${vs}. `;
+   if(worst.v<-0.3)t+=`Held back by ${worst.n} (${sgn(worst.v)})`;
+   if(best.v>0.3)t+=`${worst.v<-0.3?', rescued by ':'Carried by '}${best.n} (${sgn(best.v)})`;
+   t+=`${(worst.v<-0.3||best.v>0.3)?'. ':''}${lr.mtot} mistake${lr.mtot===1?'':'s'} on the card.`;
+   document.getElementById('lastRound').innerHTML=t;
+   const sgAvg=cats.map(c=>({n:c[1],v:mean(R.map(r=>r[c[0]]))})).sort((a,b)=>a.v-b.v);
+   const leak=sgAvg[0], strength=sgAvg[sgAvg.length-1];
+   const mc=[['p3','3-putts'],['db','double bogeys'],['bp5','par-5 bogeys'],['f150','loose shots from ~150'],['fx','failing to get up-and-down']];
+   const mAvg=mc.map(c=>({n:c[1],v:mean(R.map(r=>r[c[0]]))})).sort((a,b)=>b.v-a.v)[0];
+   document.getElementById('focusRec').innerHTML=`<strong style="color:var(--pine)">Where to work:</strong> your biggest leak is <b>${leak.n}</b> (avg ${sgn(leak.v)} a round), and your most common mistake is <b>${mAvg.n}</b> (${rnd(mAvg.v,1)} per round). Keep leaning on your ${strength.n} — that's your strength.`;
+ }
+ CH.score=new Chart(scoreChart,{type:'line',data:{labels:idx,datasets:[{data:scores,borderColor:F.pine,borderWidth:2,pointBackgroundColor:scores.map(s=>s<0?F.fairway:s>8?F.clay:F.pine),pointRadius:scores.map(s=>s<0||s>8?4.5:2.5),tension:.25,fill:{target:{value:0},above:'rgba(194,80,46,.06)',below:'rgba(31,122,77,.12)'}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i&&i[0]?'Round '+i[0].label:'',label:c=>{const r=R[c.dataIndex];return [(c.parsed.y>=0?'+':'')+c.parsed.y+' to par · '+r.score,r.course+' · '+r.date];}}}},scales:{x:{grid:{display:false},title:{display:true,text:'round',color:F.sand}},y:{grid:{color:F.line},title:{display:true,text:'strokes to par'}}}}});
+ const cats=[['ott','Off the tee'],['app','Approach'],['atg','Around green'],['putt','Putting']];
+ let sgArr=cats.map(c=>({label:c[1],v:rnd(mean(R.map(r=>r[c[0]])),2)}));
+ sgArr.sort((a,b)=>a.v-b.v);
+ const worst=Math.min(...sgArr.map(s=>s.v)), bestv=Math.max(...sgArr.map(s=>s.v));
+ const shade=v=>{if(v>=0)return F.fairway;const t=worst<0?v/worst:0;const c1=[224,138,102],c2=[146,50,24];const m=c1.map((a,i)=>Math.round(a+(c2[i]-a)*t));return `rgb(${m[0]},${m[1]},${m[2]})`;};
+ const sgLabels={id:'sgLabels',afterDatasetsDraw(ch){const {ctx}=ch,meta=ch.getDatasetMeta(0);ctx.save();ctx.font="600 13px 'Optima','Segoe UI',Candara,sans-serif";ctx.textBaseline='middle';meta.data.forEach((bar,i)=>{const v=sgArr[i].v;ctx.fillStyle=v<0?'#8f3418':'#1c5e3b';ctx.textAlign=v<0?'right':'left';ctx.fillText((v>=0?'+':'')+v.toFixed(2),bar.x+(v<0?-9:9),bar.y);});ctx.restore();}};
+ CH.sg=new Chart(sgBar,{type:'bar',data:{labels:sgArr.map(s=>s.label),datasets:[{data:sgArr.map(s=>s.v),backgroundColor:sgArr.map(s=>shade(s.v)),borderRadius:5,barThickness:24}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,layout:{padding:{right:14}},plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{grid:{color:F.line,drawTicks:false},suggestedMin:worst-0.5,suggestedMax:Math.max(0.15,bestv+0.2),title:{display:true,text:'avg strokes gained per round',color:F.sand},ticks:{callback:v=>(v>0?'+':'')+v,color:F.inkSoft}},y:{grid:{display:false},ticks:{font:{size:13}}}}},plugins:[sgLabels]});
+ const mcats=[['p3','3-putts',F.blue],['db','Double bogeys',F.clay],['bp5','Bogey par-5',F.sand],['f150','3+ from 150',F.moss],['fx','3+ from X',F.pine]];
+ const scoreLabels={id:'scoreLabels',afterDatasetsDraw(ch){const {ctx}=ch,meta=ch.getDatasetMeta(mcats.length-1);if(!meta)return;ctx.save();ctx.font="600 10px 'Optima','Segoe UI',Candara,sans-serif";ctx.textAlign='center';ctx.textBaseline='bottom';meta.data.forEach((bar,i)=>{const stp=R[i].stp;ctx.fillStyle=stp<0?'#1c5e3b':stp>=6?'#8f3418':F.inkSoft;ctx.fillText((stp>=0?'+':'')+stp,bar.x,bar.y-4);});ctx.restore();}};
+ CH.mist=new Chart(mistChart,{type:'bar',data:{labels:idx,datasets:mcats.map(c=>({label:c[1],data:R.map(r=>r[c[0]]),backgroundColor:c[2],stack:'m',borderRadius:2}))},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:16}},plugins:{legend:{position:'bottom',labels:{boxWidth:11,boxHeight:11,usePointStyle:true,pointStyle:'rectRounded'}},tooltip:{callbacks:{afterTitle:i=>{const r=R[i[0].dataIndex];return 'Score '+r.score+' ('+(r.stp>=0?'+':'')+r.stp+') · '+r.mtot+' mistakes';}}}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:F.line},title:{display:true,text:'mistakes'},suggestedMax:Math.max(...R.map(r=>r.mtot))+2}}},plugins:[scoreLabels]});
+ const cell=(v,neg)=>gridjs.html(`<span class="${(neg?v>0:v<0)?'neg':(neg?v<=0:v>0)?'pos':''}">${v>0&&!neg?'+':''}${v}</span>`);
+ const gcols=[{name:'#',width:'46px'},{name:'Date'},{name:'Course'},{name:'Score'},{name:'To par',formatter:c=>cell(c,true)},{name:'FW',width:'52px'},{name:'GIR',width:'56px'},{name:'Putts',width:'62px'},{name:'SG OTT',formatter:c=>cell(c)},{name:'SG APP',formatter:c=>cell(c)},{name:'SG ATG',formatter:c=>cell(c)},{name:'SG PUTT',formatter:c=>cell(c)},{name:'SG TOT',formatter:c=>cell(c)},{name:'Mist.',width:'58px'}];
+ const gdata=R.map((r,i)=>[i+1,r.date,r.course,r.score,r.stp,r.fw,r.gir,r.putts,r.ott,r.app,r.atg,r.putt,r.sgtot,r.mtot]);
+ const gEl=document.getElementById('grid'); gEl.innerHTML='';
+ gridInst=new gridjs.Grid({columns:gcols,data:gdata,sort:true,search:true,pagination:{limit:12},style:{table:{'font-size':'13px'},th:{padding:'8px 10px'},td:{padding:'7px 10px'}}}); gridInst.render(gEl);
+ drawXmr();
+}
+function std(a){const mn=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-mn)*(x-mn),0)/((a.length-1)||1));}
+function drawDist(v,s,lo,hi){
+ const cv=document.getElementById('distChart'); if(!cv||!cv.parentElement)return;
+ const box=cv.parentElement.getBoundingClientRect(),W=box.width,H=box.height;
+ if(W<5||H<5){requestAnimationFrame(()=>drawDist(v,s,lo,hi));return;}
+ const dpr=window.devicePixelRatio||1;
+ cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';
+ const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+ const sigma=(s.mrb/1.128)||1,m=s.m,yOf=val=>H-(val-lo)/(hi-lo)*H,cx=W*0.5,half=W*0.42;
+ [[0,1,'rgba(237,209,127,0.5)'],[1,2,'rgba(224,158,60,0.4)'],[2,3,'rgba(150,80,30,0.26)']].forEach(z=>{
+   [[m+z[0]*sigma,m+z[1]*sigma],[m-z[1]*sigma,m-z[0]*sigma]].forEach(pr=>{const y1=yOf(Math.min(hi,pr[1])),y2=yOf(Math.max(lo,pr[0]));ctx.fillStyle=z[2];ctx.fillRect(0,y1,W,Math.max(0,y2-y1));});});
+ const h=(1.06*(std(v)||sigma)*Math.pow(v.length,-0.2))||sigma,peak=1/(sigma*Math.sqrt(2*Math.PI)),scale=half/peak,npts=80;
+ const kde=[],nrm=[];
+ for(let i=0;i<=npts;i++){const val=lo+(hi-lo)*i/npts;let d=0;v.forEach(x=>{const z=(val-x)/h;d+=Math.exp(-0.5*z*z);});d/=(v.length*h*Math.sqrt(2*Math.PI));kde.push([val,d]);nrm.push([val,Math.exp(-0.5*((val-m)/sigma)*((val-m)/sigma))*peak]);}
+ ctx.beginPath();kde.forEach((p,i)=>{const x=cx-p[1]*scale,y=yOf(p[0]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});for(let i=kde.length-1;i>=0;i--){ctx.lineTo(cx+kde[i][1]*scale,yOf(kde[i][0]));}ctx.closePath();
+ ctx.fillStyle='rgba(31,122,77,0.16)';ctx.strokeStyle='rgba(15,58,44,0.85)';ctx.lineWidth=1.6;ctx.fill();ctx.stroke();
+ ctx.setLineDash([4,3]);ctx.strokeStyle='rgba(92,99,87,0.9)';ctx.lineWidth=1;
+ [-1,1].forEach(sgn=>{ctx.beginPath();nrm.forEach((p,i)=>{const x=cx+sgn*p[1]*scale,y=yOf(p[0]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();});
+ ctx.setLineDash([]);ctx.strokeStyle='rgba(194,80,46,0.55)';ctx.beginPath();ctx.moveTo(0,yOf(m));ctx.lineTo(W,yOf(m));ctx.stroke();
+}
+function drawXmr(){
+ if(!R.length)return;
+ const v=R.map(metrics[curMetric]),cnt=isCount(curMetric),S=segLimits(v,cnt),idx=R.map((_,i)=>i+1),N=v.length;
+ {const ex=document.getElementById('xmrExpl');if(ex)ex.innerHTML=verdict(curMetric,S,cnt,v);}
+ const last=S.segs[S.segs.length-1],sgLast=(last.mrb/1.128)||1;
+ let lo=Math.min(Math.min(...v),...S.segs.map(g=>g.l),last.m-3.3*sgLast);
+ let hi=Math.max(Math.max(...v),...S.segs.map(g=>g.u),last.m+3.3*sgLast);
+ const pad=(hi-lo)*0.05;lo-=pad;hi+=pad;if(cnt&&lo<0)lo=0;
+ if(!isFinite(lo)||!isFinite(hi)||hi<=lo){lo=Math.min(...v)-1;hi=Math.max(...v)+1;}
+ const SIG='#8a63d2', SIGB='#4a3aa7';
+ const cols=v.map((x,i)=>{const g=S.segOf(i);if(S.sigSet.has(i))return SIG;if(x>g.u||x<g.l)return F.clay;return F.blue;});
+ const pbc=v.map((x,i)=>{const g=S.segOf(i);if(S.sigSet.has(i))return SIGB;if(x>g.u||x<g.l)return F.clay;return F.blue;});
+ const pbw=v.map((x,i)=>S.sigSet.has(i)?2:0);
+ const rad=v.map((x,i)=>{const g=S.segOf(i);return (S.sigSet.has(i)||x>g.u||x<g.l)?6:3;});
+ const cenA=idx.map((_,i)=>rnd(S.segOf(i).m,2)), upA=idx.map((_,i)=>rnd(S.segOf(i).u,2)), loA=idx.map((_,i)=>rnd(S.segOf(i).l,2));
+ const xds=[{data:v,borderColor:F.blue,borderWidth:2,pointBackgroundColor:cols,pointBorderColor:pbc,pointBorderWidth:pbw,pointRadius:rad,tension:0,order:3},
+   {data:cenA,borderColor:F.inkSoft,borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0,order:2},
+   {data:upA,borderColor:F.clay,borderWidth:1.3,borderDash:[4,3],pointRadius:0,tension:0,order:1}];
+ if(!cnt)xds.push({data:loA,borderColor:F.clay,borderWidth:1.3,borderDash:[4,3],pointRadius:0,tension:0,order:1});
+ const brk=S.breaks.slice(1);
+ const divp={id:'divp',afterDraw(c){const{ctx,chartArea:{top,bottom},scales:{x}}=c;ctx.save();brk.forEach(bi=>{const xb=(x.getPixelForValue(bi)+x.getPixelForValue(bi+1))/2;ctx.strokeStyle='rgba(92,99,87,0.55)';ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(xb,top);ctx.lineTo(xb,bottom);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=F.inkSoft;ctx.font="9px 'Trebuchet MS',sans-serif";ctx.fillText('new limits',xb+3,top+9);});ctx.restore();}};
+ if(CH.xmr)CH.xmr.destroy();
+ CH.xmr=new Chart(xmrChart,{type:'line',data:{labels:idx,datasets:xds},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{filter:i=>i.datasetIndex===0,callbacks:{title:i=>i&&i[0]?'Round '+i[0].label:'',label:c=>{const r=R[c.dataIndex];return curMetric+': '+c.parsed.y+'  ('+r.course+' '+r.date+')';}}}},scales:{x:{grid:{display:false}},y:{grid:{color:F.line},min:lo,max:hi}}},plugins:[divp]});
+ const mrL=idx.slice(1);
+ const mrCen=mrL.map((_,k)=>rnd(S.segOf(k+1).mrb,2)),mrUcl=mrL.map((_,k)=>rnd(S.segOf(k+1).mrucl,2));
+ const mrC=S.mr.map((x,k)=>x>S.segOf(k+1).mrucl?F.amber:F.blue),mrR=S.mr.map((x,k)=>x>S.segOf(k+1).mrucl?5.5:3);
+ if(CH.mr)CH.mr.destroy();
+ CH.mr=new Chart(mrChart,{type:'line',data:{labels:mrL,datasets:[{data:S.mr,borderColor:F.blue,borderWidth:2,pointBackgroundColor:mrC,pointBorderColor:mrC,pointRadius:mrR,tension:0,order:3},{data:mrCen,borderColor:F.inkSoft,borderWidth:1.5,borderDash:[6,4],pointRadius:0,spanGaps:false,order:2},{data:mrUcl,borderColor:F.clay,borderWidth:1,borderDash:[3,3],pointRadius:0,spanGaps:false,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{filter:i=>i.datasetIndex===0,callbacks:{title:i=>i&&i[0]?('Rounds '+(+i[0].label-1)+'→'+i[0].label):'',label:c=>'range: '+rnd(c.parsed.y,2)}}},scales:{x:{grid:{display:false}},y:{grid:{color:F.line},beginAtZero:true}}}});
+ const sig=document.getElementById('xmrSig');
+ let msg;
+ if(S.segs.length===1){const g=S.segs[0];msg=`<b>One stable stage.</b> No shift detected across all ${N} rounds — mean ${rnd(g.m,2)}, limits ${rnd(g.l,2)} to ${rnd(g.u,2)}.`;}
+ else{msg=`<b>${S.segs.length} stages — limits recalculated at each shift.</b> `+S.segs.map(g=>`<span class="pill" style="background:var(--line-soft);color:var(--ink)">R${g.start+1}–${g.end+1}: mean ${rnd(g.m,2)} [${rnd(g.l,2)}, ${rnd(g.u,2)}]</span>`).join(' → ');}
+ const SLBL={run:'8 rounds one side',pair:'2 in a row outside',zone:'3 of 4 near the limit',trend:'6-round trend'};
+ const conf=(S.signals||[]).filter(s=>!s.pending), pend=(S.signals||[]).filter(s=>s.pending);
+ if(conf.length)msg+=`<div style="margin-top:6px">Recalculated after: `+conf.map(s=>`<span class="pill" style="background:#ece7fb;color:#3c3489">${SLBL[s.type]}, rounds ${s.pts[0]+1}–${s.pts[s.pts.length-1]+1}</span>`).join(' ')+`</div>`;
+ if(pend.length)msg+=`<div style="margin-top:6px;color:#3c3489">Watch — a possible ${SLBL[pend[0].type]} over rounds ${pend[0].pts[0]+1}–${pend[0].pts[pend[0].pts.length-1]+1}, but too few rounds since to reset the limits yet.</div>`;
+ const outp=v.map((x,i)=>({x,i})).filter(o=>{const g=S.segOf(o.i);return o.x>g.u||o.x<g.l;});
+ if(outp.length)msg+=`<div style="margin-top:6px">Outside stage limits: `+outp.map(o=>`<span class="pill r1">round ${o.i+1}</span>`).join('')+`</div>`;
+ if(S.notes&&S.notes.length)msg+=`<div style="margin-top:6px;color:#7a5a10">Heads-up — `+S.notes.join('; ')+`.</div>`;
+ if(last.prov)msg+=`<div style="margin-top:6px;color:#3c3489">The latest limits are provisional — founded on only ${last.ct-last.cf+1} rounds so far; they'll firm up as you log more (settling by ~20).</div>`;
+ sig.innerHTML=msg;
+ const lv=v.slice(last.start,last.end+1),sg1=(last.mrb/1.128)||1;
+ const w1=lv.filter(x=>Math.abs(x-last.m)<=sg1).length/lv.length*100,w2=lv.filter(x=>Math.abs(x-last.m)<=2*sg1).length/lv.length*100;
+ const near=Math.abs(w1-68)<10&&Math.abs(w2-95)<8;
+ const dn=document.getElementById('distNote');
+ if(dn)dn.innerHTML=`current stage R${last.start+1}–${last.end+1} vs normal · ±1σ ${Math.round(w1)}% <span style="opacity:.6">(68)</span> · ±2σ ${Math.round(w2)}% <span style="opacity:.6">(95)</span> · ${near?'roughly normal':(lv.length<12?'small sample':'note the skew')}`;
+ try{drawDist(lv,{m:last.m,mrb:last.mrb},lo,hi);}catch(e){}
+ ctrl.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===curMetric));
+}
+
+/* players */
+function renderTabs(){document.getElementById('playertabs').innerHTML=PLAYERNAMES.map(p=>{const n=(PLAYERS[p]||[]).length+(load('golf-ledger-custom-'+p,[])||[]).length;return `<button data-p="${p}" class="${p===PLAYER?'on':''}">${p}${n?' · '+n:''}</button>`;}).join('');}
+function fillForm(){document.getElementById('r_date').value=draft.date||'';document.getElementById('r_course').value=draft.course||'';document.getElementById('r_cr').value=draft.cr||70;document.getElementById('r_slope').value=draft.slope||113;}
+function setPlayer(p){
+ PLAYER=p; BASE=PLAYERS[p]; CUSTOM=load(ckey(),[]);
+ draft=load(dkey(),null); if(!draft||!draft.holes){draft={date:'',course:'',cr:70,slope:113,holes:DEFPAR.map(q=>blankHole(q))};}
+ curHole=0;
+ document.getElementById('subName').textContent=p+' · shot-by-shot strokes gained';
+ document.getElementById('formMsg').textContent='';
+ renderTabs(); fillForm(); renderNav(); renderHole(); updateLive(); renderAll();
+}
+document.getElementById('playertabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.p)setPlayer(b.dataset.p);});
+
+/* init */
+renderTabs(); fillForm();
+renderNav();renderHole();updateLive();renderAll();
+</script>
+</body>
+</html>
