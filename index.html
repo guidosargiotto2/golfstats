@@ -1,11 +1,4 @@
 <!DOCTYPE html>
-<script type="application/json" id="cowork-artifact-meta">
-{
-  "name": "Golf Round Ledger",
-  "schemaVersion": 1,
-  "description": "Interactive golf performance dashboard built from the 40 rounds in \"Golf Stats - Guido Sargiotto.xlsx\". Shows KPIs, scoring trend, strokes-gained breakdown, live XmR control charts with signal detection (switchable across SG and mistake metrics), a stacked mistake ledger, and a sortable rounds table."
-}
-</script>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -564,8 +557,8 @@ function renderAll(){
  const scoreLabels={id:'scoreLabels',afterDatasetsDraw(ch){const {ctx}=ch,meta=ch.getDatasetMeta(mcats.length-1);if(!meta)return;ctx.save();ctx.font="600 10px 'Optima','Segoe UI',Candara,sans-serif";ctx.textAlign='center';ctx.textBaseline='bottom';meta.data.forEach((bar,i)=>{const stp=R[i].stp;ctx.fillStyle=stp<0?'#1c5e3b':stp>=6?'#8f3418':F.inkSoft;ctx.fillText((stp>=0?'+':'')+stp,bar.x,bar.y-4);});ctx.restore();}};
  CH.mist=new Chart(mistChart,{type:'bar',data:{labels:idx,datasets:mcats.map(c=>({label:c[1],data:R.map(r=>r[c[0]]),backgroundColor:c[2],stack:'m',borderRadius:2}))},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:16}},plugins:{legend:{position:'bottom',labels:{boxWidth:11,boxHeight:11,usePointStyle:true,pointStyle:'rectRounded'}},tooltip:{callbacks:{afterTitle:i=>{const r=R[i[0].dataIndex];return 'Score '+r.score+' ('+(r.stp>=0?'+':'')+r.stp+') · '+r.mtot+' mistakes';}}}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:F.line},title:{display:true,text:'mistakes'},suggestedMax:Math.max(...R.map(r=>r.mtot))+2}}},plugins:[scoreLabels]});
  const cell=(v,neg)=>gridjs.html(`<span class="${(neg?v>0:v<0)?'neg':(neg?v<=0:v>0)?'pos':''}">${v>0&&!neg?'+':''}${v}</span>`);
- const gcols=[{name:'#',width:'46px'},{name:'Date'},{name:'Course'},{name:'Score'},{name:'To par',formatter:c=>cell(c,true)},{name:'FW',width:'52px'},{name:'GIR',width:'56px'},{name:'Putts',width:'62px'},{name:'SG OTT',formatter:c=>cell(c)},{name:'SG APP',formatter:c=>cell(c)},{name:'SG ATG',formatter:c=>cell(c)},{name:'SG PUTT',formatter:c=>cell(c)},{name:'SG TOT',formatter:c=>cell(c)},{name:'Mist.',width:'58px'}];
- const gdata=R.map((r,i)=>[i+1,r.date,r.course,r.score,r.stp,r.fw,r.gir,r.putts,r.ott,r.app,r.atg,r.putt,r.sgtot,r.mtot]);
+ const gcols=[{name:'#',width:'46px'},{name:'Course'},{name:'Score'},{name:'To par',formatter:c=>cell(c,true)},{name:'FW',width:'52px'},{name:'GIR',width:'56px'},{name:'Putts',width:'62px'},{name:'SG OTT',formatter:c=>cell(c)},{name:'SG APP',formatter:c=>cell(c)},{name:'SG ATG',formatter:c=>cell(c)},{name:'SG PUTT',formatter:c=>cell(c)},{name:'SG TOT',formatter:c=>cell(c)},{name:'Mist.',width:'58px'}];
+ const gdata=R.map((r,i)=>[i+1,r.course,r.score,r.stp,r.fw,r.gir,r.putts,r.ott,r.app,r.atg,r.putt,r.sgtot,r.mtot]);
  const gEl=document.getElementById('grid'); gEl.innerHTML='';
  gridInst=new gridjs.Grid({columns:gcols,data:gdata,sort:true,search:true,pagination:{limit:12},style:{table:{'font-size':'13px'},th:{padding:'8px 10px'},td:{padding:'7px 10px'}}}); gridInst.render(gEl);
  drawXmr();
