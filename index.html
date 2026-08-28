@@ -125,6 +125,12 @@ h2 .n{font-family:var(--cond);font-size:12px;letter-spacing:.2em;color:var(--san
   </section>
 
   <section>
+    <h2><span class="n">◍</span> Traditional stats</h2>
+    <p class="lead">The classic counting stats, averaged per round — fairways hit, greens in regulation, putts, and penalty strokes.</p>
+    <div class="kpis" id="tradstats"></div>
+  </section>
+
+  <section>
     <h2><span class="n">01</span> Scoring trend</h2>
     <p class="lead">Score relative to par across all logged rounds. Below zero is the goal.</p>
     <div class="card"><div class="chartbox" style="height:280px"><canvas id="scoreChart" role="img" aria-label="Score to par per round"></canvas></div></div>
@@ -137,42 +143,34 @@ h2 .n{font-family:var(--cond);font-size:12px;letter-spacing:.2em;color:var(--san
   </section>
 
   <section>
-    <h2><span class="n">03</span> Process control · XmR</h2>
-    <p class="lead" style="font-size:16.5px;max-width:none;line-height:1.6">Individuals chart (X) left, moving-range (mR) below, distribution vs a normal curve (dashed) on the right. Whenever a signal is detected the limits are recalculated and drawn as a fresh set of dashed lines, with a dotted divider marking each recalculation — so every stable stretch is measured against its own limits.</p>
-    <div class="controls" id="xmrCtrl"></div>
-    <div class="card">
-      <div id="xmrExpl" style="margin:0 0 16px;padding:14px 16px;background:rgba(216,196,140,.16);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;font-size:15px;line-height:1.55;color:var(--ink)"></div>
-      <div style="display:flex;gap:10px;align-items:stretch">
-        <div class="chartbox" style="height:250px;flex:1;min-width:0"><canvas id="xmrChart" role="img" aria-label="XmR individuals chart"></canvas></div>
-        <div class="chartbox" style="height:250px;width:132px;flex:none"><canvas id="distChart" role="img" aria-label="Distribution of values vs a normal curve"></canvas></div>
-      </div>
-      <div id="distNote" style="font-size:12px;color:var(--ink-soft);font-family:var(--cond);letter-spacing:.03em;margin-top:6px;text-align:right"></div>
-      <div class="mrhead">Moving range (mR)</div>
-      <div style="display:flex;gap:10px;align-items:stretch">
-        <div class="chartbox" style="height:150px;flex:1;min-width:0"><canvas id="mrChart" role="img" aria-label="Moving range chart"></canvas></div>
-        <div style="width:132px;flex:none" aria-hidden="true"></div>
-      </div>
-      <div class="legend">
-        <span><span class="dot" style="background:var(--blue)"></span>in control</span>
-        <span><span class="dot" style="background:#8a63d2;border:2px solid #4a3aa7"></span>signal (triggered a recalculation)</span>
-        <span><span class="dot" style="background:var(--clay)"></span>outside stage limit</span>
-        <span><span class="dot" style="background:#c99a1e"></span>mR range spike</span>
-        <span><span class="dash" style="border-color:var(--ink-soft)"></span>stage centre</span>
-        <span><span class="dash" style="border-color:var(--clay)"></span>stage limits</span>
-        <span><span class="dash" style="border-color:var(--ink-soft);border-top-style:dotted"></span>new-limits divider</span>
-      </div>
-      <div class="sig" id="xmrSig"></div>
-    </div>
+    <h2><span class="n">03</span> Strokes gained · XmR</h2>
+    <p class="lead" style="font-size:16.5px;max-width:none;line-height:1.6">Every strokes-gained category on an individuals (X) chart, its moving range (mR) below, and the distribution vs a normal curve on the right. When a signal fires the limits recalculate and redraw, with a dotted divider marking the reset — so each stable stretch is judged against its own limits.</p>
+    <div class="controls" id="ctrl_sg"></div>
+    <div class="card" id="panel_sg"></div>
   </section>
 
   <section>
-    <h2><span class="n">04</span> Tiger's 5</h2>
+    <h2><span class="n">04</span> Tiger's 5 · XmR</h2>
+    <p class="lead" style="font-size:16.5px;max-width:none;line-height:1.6">The five mistakes that cost Tiger — 3-putts, doubles, bogey par-5s, loose shots from ~150, and failing to get up-and-down — each as its own control chart. Lower is better, so a point below the reach is a genuinely clean round.</p>
+    <div class="controls" id="ctrl_t5"></div>
+    <div class="card" id="panel_t5"></div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span> Traditional stats · XmR</h2>
+    <p class="lead" style="font-size:16.5px;max-width:none;line-height:1.6">The classic counting stats over time — fairways, greens, putts and penalties per round — on the same control-chart footing. Fairways and greens read higher-is-better; putts and penalties, lower-is-better.</p>
+    <div class="controls" id="ctrl_tr"></div>
+    <div class="card" id="panel_tr"></div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span> Tiger's 5 · per round</h2>
     <p class="lead">Tiger's five mistakes per round, stacked. Lower and flatter is better.</p>
     <div class="card"><div class="chartbox" style="height:260px"><canvas id="mistChart" role="img" aria-label="Mistakes per round"></canvas></div></div>
   </section>
 
   <section>
-    <h2><span class="n">05</span> Every round</h2>
+    <h2><span class="n">07</span> Every round</h2>
     <p class="lead">Sortable — click any header. Green is under par or shots gained; clay is over par or shots lost.</p>
     <div><div id="grid"></div></div>
   </section>
@@ -212,16 +210,10 @@ const LIECOL={tee:1,fw:2,rough:3,sand:4,rec:5};
 function flook(tbl,x,col){let best=null;for(const row of tbl){if(row[0]<=x)best=row;else break;}if(!best)best=tbl[0];return best[col];}
 function Estart(lie,dist){if(lie==='putt')return flook(PT,dist,1);const v=flook(LG,dist,LIECOL[lie]);if(v==null)return flook(LG,dist,2);return v;}
 
-const GUIDO=[{"course":"CGC","date":"2025-09-07","score":81,"par":72,"stp":9,"fw":4,"gir":8,"putts":33,"dist":297.1,"p3":0,"db":1,"bp5":1,"f150":5,"fx":9,"mtot":16,"ott":-2.42,"app":-4.06,"atg":-0.46,"putt":-4.25,"sgtot":-11.19},{"course":"CGC","date":"2025-09-11","score":71,"par":72,"stp":-1,"fw":6,"gir":13,"putts":30,"dist":305.3,"p3":0,"db":1,"bp5":0,"f150":1,"fx":4,"mtot":6,"ott":1.26,"app":-2.32,"atg":-2.23,"putt":2.08,"sgtot":-1.21},{"course":"CGC","date":"2025-09-13","score":71,"par":72,"stp":-1,"fw":6,"gir":10,"putts":26,"dist":311.9,"p3":0,"db":1,"bp5":0,"f150":3,"fx":5,"mtot":9,"ott":1.27,"app":-5.02,"atg":-0.53,"putt":3.07,"sgtot":-1.21},{"course":"VDG","date":"2025-09-19","score":40,"par":36,"stp":4,"fw":3,"gir":4,"putts":17,"dist":285.1,"p3":1,"db":1,"bp5":1,"f150":1,"fx":4,"mtot":8,"ott":-0.8,"app":-0.18,"atg":-1.87,"putt":-1.84,"sgtot":-4.69},{"course":"VDG","date":"2025-09-20","score":83,"par":72,"stp":11,"fw":6,"gir":5,"putts":28,"dist":305.5,"p3":0,"db":2,"bp5":1,"f150":5,"fx":10,"mtot":18,"ott":0.04,"app":-8.21,"atg":-4.07,"putt":0.57,"sgtot":-11.67},{"course":"CGC","date":"2025-09-25","score":75,"par":72,"stp":3,"fw":2,"gir":9,"putts":30,"dist":289.1,"p3":1,"db":0,"bp5":1,"f150":3,"fx":4,"mtot":9,"ott":-1.32,"app":-3.0,"atg":0.53,"putt":-1.4,"sgtot":-5.19},{"course":"CGC","date":"2025-10-03","score":75,"par":72,"stp":3,"fw":2,"gir":12,"putts":35,"dist":288.5,"p3":4,"db":0,"bp5":0,"f150":2,"fx":3,"mtot":9,"ott":-0.64,"app":-0.89,"atg":-0.14,"putt":-3.6,"sgtot":-5.27},{"course":"CGC","date":"2025-10-09","score":81,"par":72,"stp":9,"fw":3,"gir":10,"putts":34,"dist":279.6,"p3":2,"db":2,"bp5":1,"f150":4,"fx":6,"mtot":15,"ott":-3.66,"app":-2.17,"atg":-1.35,"putt":-3.03,"sgtot":-10.21},{"course":"CGC","date":"2025-10-10","score":78,"par":72,"stp":6,"fw":5,"gir":11,"putts":34,"dist":299.7,"p3":1,"db":2,"bp5":0,"f150":4,"fx":9,"mtot":16,"ott":0.22,"app":-2.9,"atg":-3.28,"putt":-2.23,"sgtot":-8.19},{"course":"CGC","date":"2025-10-11","score":77,"par":72,"stp":5,"fw":1,"gir":9,"putts":32,"dist":307.9,"p3":1,"db":0,"bp5":0,"f150":5,"fx":7,"mtot":13,"ott":-0.65,"app":-3.33,"atg":-0.18,"putt":-3.03,"sgtot":-7.19},{"course":"CGC","date":"2025-10-12","score":75,"par":72,"stp":3,"fw":3,"gir":10,"putts":30,"dist":280.9,"p3":1,"db":1,"bp5":0,"f150":2,"fx":8,"mtot":12,"ott":-2.02,"app":-2.16,"atg":-1.34,"putt":0.33,"sgtot":-5.19},{"course":"NGC","date":"2025-10-21","score":79,"par":72,"stp":7,"fw":5,"gir":11,"putts":34,"dist":265.7,"p3":3,"db":3,"bp5":1,"f150":4,"fx":3,"mtot":14,"ott":-4.27,"app":-0.14,"atg":-0.76,"putt":-2.81,"sgtot":-7.98},{"course":"NGC","date":"2025-10-23","score":81,"par":72,"stp":9,"fw":6,"gir":8,"putts":33,"dist":267.0,"p3":2,"db":3,"bp5":1,"f150":4,"fx":6,"mtot":16,"ott":-3.2,"app":-1.96,"atg":-3.35,"putt":-1.47,"sgtot":-9.98},{"course":"EL TERRON","date":"2025-10-31","score":81,"par":72,"stp":9,"fw":6,"gir":8,"putts":33,"dist":267.0,"p3":2,"db":4,"bp5":0,"f150":4,"fx":6,"mtot":16,"ott":-3.2,"app":-1.96,"atg":-3.35,"putt":-1.47,"sgtot":-9.98},{"course":"CGC","date":"2025-11-01","score":72,"par":72,"stp":0,"fw":2,"gir":11,"putts":27,"dist":304.2,"p3":0,"db":1,"bp5":0,"f150":1,"fx":6,"mtot":8,"ott":-1.01,"app":-0.53,"atg":-3.13,"putt":2.48,"sgtot":-2.19},{"course":"CGC","date":"2025-11-20","score":79,"par":72,"stp":7,"fw":5,"gir":9,"putts":30,"dist":281.9,"p3":0,"db":2,"bp5":1,"f150":4,"fx":8,"mtot":15,"ott":-1.48,"app":-3.79,"atg":-1.89,"putt":-2.03,"sgtot":-9.19},{"course":"CGC","date":"2025-11-27","score":76,"par":72,"stp":4,"fw":1,"gir":8,"putts":30,"dist":291.5,"p3":0,"db":0,"bp5":1,"f150":2,"fx":5,"mtot":8,"ott":-2.15,"app":-3.52,"atg":0.49,"putt":-1.01,"sgtot":-6.19},{"course":"CGC","date":"2025-11-29","score":74,"par":72,"stp":2,"fw":2,"gir":11,"putts":31,"dist":298.5,"p3":2,"db":1,"bp5":0,"f150":2,"fx":2,"mtot":7,"ott":-1.04,"app":-1.18,"atg":-0.51,"putt":-0.46,"sgtot":-3.19},{"course":"CGC","date":"2025-11-30","score":76,"par":72,"stp":4,"fw":2,"gir":9,"putts":28,"dist":283.4,"p3":1,"db":1,"bp5":0,"f150":1,"fx":4,"mtot":7,"ott":-1.97,"app":-1.91,"atg":0.85,"putt":-2.16,"sgtot":-5.19},{"course":"CGC","date":"2025-12-04","score":72,"par":72,"stp":0,"fw":8,"gir":13,"putts":31,"dist":322.0,"p3":0,"db":1,"bp5":1,"f150":1,"fx":4,"mtot":7,"ott":-2.02,"app":0.24,"atg":-0.18,"putt":-0.23,"sgtot":-2.19},{"course":"CGC","date":"2025-12-05","score":78,"par":72,"stp":6,"fw":2,"gir":9,"putts":31,"dist":293.4,"p3":1,"db":1,"bp5":0,"f150":4,"fx":6,"mtot":12,"ott":-2.58,"app":-3.44,"atg":2.1,"putt":-4.27,"sgtot":-8.19},{"course":"PDL","date":"2025-12-10","score":68,"par":72,"stp":-4,"fw":6,"gir":11,"putts":26,"dist":329.5,"p3":0,"db":0,"bp5":0,"f150":0,"fx":2,"mtot":2,"ott":0.97,"app":-1.48,"atg":2.59,"putt":0.62,"sgtot":2.7},{"course":"CGC","date":"2026-02-21","score":84,"par":72,"stp":12,"fw":1,"gir":9,"putts":35,"dist":267.6,"p3":2,"db":2,"bp5":0,"f150":5,"fx":6,"mtot":15,"ott":-7.65,"app":-0.31,"atg":0.72,"putt":-6.95,"sgtot":-14.19},{"course":"CGC","date":"2026-02-28","score":77,"par":72,"stp":5,"fw":3,"gir":7,"putts":30,"dist":276.8,"p3":1,"db":0,"bp5":2,"f150":4,"fx":3,"mtot":10,"ott":-4.84,"app":-2.36,"atg":2.34,"putt":-1.33,"sgtot":-6.19},{"course":"CGC","date":"2026-03-07","score":70,"par":72,"stp":-2,"fw":5,"gir":10,"putts":26,"dist":275.6,"p3":1,"db":0,"bp5":0,"f150":0,"fx":1,"mtot":2,"ott":-1.08,"app":0.93,"atg":0.43,"putt":0.53,"sgtot":0.81},{"course":"CGC","date":"2026-03-12","score":67,"par":72,"stp":-5,"fw":9,"gir":14,"putts":29,"dist":311.1,"p3":1,"db":0,"bp5":0,"f150":2,"fx":2,"mtot":5,"ott":1.33,"app":1.81,"atg":0.32,"putt":-0.65,"sgtot":2.81},{"course":"CGC","date":"2026-03-19","score":75,"par":72,"stp":3,"fw":5,"gir":7,"putts":28,"dist":289.8,"p3":1,"db":0,"bp5":1,"f150":2,"fx":4,"mtot":8,"ott":-2.59,"app":-3.49,"atg":0.65,"putt":0.24,"sgtot":-5.19},{"course":"CGC","date":"2026-03-21","score":74,"par":72,"stp":2,"fw":5,"gir":11,"putts":33,"dist":289.0,"p3":2,"db":0,"bp5":0,"f150":4,"fx":2,"mtot":8,"ott":-0.4,"app":-0.76,"atg":0.35,"putt":-3.38,"sgtot":-4.19},{"course":"CGC","date":"2026-03-24","score":75,"par":72,"stp":3,"fw":3,"gir":11,"putts":31,"dist":308.4,"p3":2,"db":2,"bp5":1,"f150":3,"fx":1,"mtot":9,"ott":-1.98,"app":-2.29,"atg":0.96,"putt":-1.88,"sgtot":-5.19},{"course":"CGC","date":"2026-04-01","score":73,"par":72,"stp":1,"fw":5,"gir":10,"putts":29,"dist":292.1,"p3":1,"db":0,"bp5":1,"f150":1,"fx":3,"mtot":6,"ott":-0.4,"app":-2.83,"atg":-0.38,"putt":0.42,"sgtot":-3.19},{"course":"CGC","date":"2026-04-02","score":73,"par":72,"stp":1,"fw":4,"gir":13,"putts":34,"dist":300.4,"p3":2,"db":0,"bp5":1,"f150":3,"fx":1,"mtot":7,"ott":0.26,"app":-1.13,"atg":0.18,"putt":-2.5,"sgtot":-3.19},{"course":"CGC","date":"2026-04-03","score":76,"par":72,"stp":4,"fw":3,"gir":11,"putts":32,"dist":281.8,"p3":1,"db":2,"bp5":0,"f150":2,"fx":3,"mtot":8,"ott":-1.85,"app":-3.32,"atg":0.06,"putt":-1.08,"sgtot":-6.19},{"course":"CGC","date":"2026-04-11","score":71,"par":72,"stp":-1,"fw":2,"gir":11,"putts":28,"dist":294.4,"p3":1,"db":2,"bp5":0,"f150":3,"fx":4,"mtot":10,"ott":-0.52,"app":-1.75,"atg":-0.39,"putt":1.47,"sgtot":-1.19},{"course":"CGC","date":"2026-06-06","score":74,"par":72,"stp":2,"fw":6,"gir":11,"putts":30,"dist":291.6,"p3":2,"db":1,"bp5":1,"f150":3,"fx":2,"mtot":9,"ott":-0.55,"app":-0.36,"atg":0.71,"putt":-3.99,"sgtot":-4.19},{"course":"CGC","date":"2026-06-11","score":78,"par":72,"stp":6,"fw":5,"gir":9,"putts":32,"dist":285.4,"p3":1,"db":2,"bp5":1,"f150":5,"fx":5,"mtot":14,"ott":-1.28,"app":-2.89,"atg":-2.13,"putt":-1.89,"sgtot":-8.19},{"course":"CGC","date":"2026-06-13","score":75,"par":72,"stp":3,"fw":1,"gir":9,"putts":26,"dist":283.6,"p3":1,"db":1,"bp5":1,"f150":3,"fx":4,"mtot":10,"ott":-4.06,"app":-1.37,"atg":0.84,"putt":-0.6,"sgtot":-5.19},{"course":"CGC","date":"2026-06-19","score":75,"par":72,"stp":3,"fw":5,"gir":8,"putts":29,"dist":279.0,"p3":0,"db":0,"bp5":2,"f150":3,"fx":4,"mtot":9,"ott":-1.0,"app":-2.96,"atg":0.26,"putt":-0.49,"sgtot":-4.19},{"course":"CGC","date":"2026-06-27","score":69,"par":72,"stp":-3,"fw":4,"gir":12,"putts":27,"dist":287.4,"p3":1,"db":0,"bp5":0,"f150":1,"fx":2,"mtot":4,"ott":-0.57,"app":0.43,"atg":-0.07,"putt":1.02,"sgtot":0.81},{"course":"CGC","date":"2026-07-04","score":76,"par":72,"stp":4,"fw":4,"gir":13,"putts":34,"dist":284.8,"p3":3,"db":1,"bp5":0,"f150":4,"fx":5,"mtot":13,"ott":-1.01,"app":-1.24,"atg":0.86,"putt":-4.8,"sgtot":-6.19},{"course":"CGC","date":"2026-07-11","score":79,"par":72,"stp":7,"fw":1,"gir":12,"putts":37,"dist":293.7,"p3":4,"db":3,"bp5":1,"f150":6,"fx":5,"mtot":19,"ott":-1.24,"app":-1.6,"atg":-0.82,"putt":-5.53,"sgtot":-9.19},{"course":"CGC-Azules","date":"2026-07-25","score":73,"par":72,"stp":1,"fw":1,"gir":13,"putts":30,"dist":279.9,"p3":2,"db":3,"bp5":1,"f150":3,"fx":2,"mtot":11,"ott":-3.37,"app":1.09,"atg":-1.5,"putt":-0.48,"sgtot":-4.26},{"course":"CGC","date":"2026-07-30","score":81,"par":72,"stp":9,"fw":4,"gir":7,"putts":30,"dist":297.8,"p3":1,"db":3,"bp5":1,"f150":5,"fx":7,"mtot":17,"ott":-0.46,"app":-4.7,"atg":-5.18,"putt":-0.94,"sgtot":-11.28},{"course":"CGC","date":"2026-08-01","score":71,"par":72,"stp":-1,"fw":2,"gir":13,"putts":30,"dist":294.1,"p3":1,"db":0,"bp5":0,"f150":0,"fx":1,"mtot":2,"ott":-1.15,"app":-1.62,"atg":0.55,"putt":1.01,"sgtot":-1.21},{"course":"CGC","date":"2026-08-06","score":77,"par":72,"stp":5,"fw":2,"gir":7,"putts":29,"dist":290.0,"p3":0,"db":1,"bp5":1,"f150":3,"fx":6,"mtot":11,"ott":-3.37,"app":-2.95,"atg":1.11,"putt":-2.0,"sgtot":-7.21},{"course":"CGC","date":"2026-08-08","score":77,"par":72,"stp":5,"fw":3,"gir":6,"putts":29,"dist":285.8,"p3":0,"db":1,"bp5":1,"f150":4,"fx":7,"mtot":13,"ott":-1.28,"app":-6.09,"atg":3.35,"putt":-3.19,"sgtot":-7.21},{"course":"CGC","date":"2026-08-13","score":80,"par":72,"stp":8,"fw":2,"gir":9,"putts":32,"dist":284.4,"p3":2,"db":3,"bp5":1,"f150":5,"fx":5,"mtot":16,"ott":-4.5,"app":-1.74,"atg":-1.76,"putt":-2.21,"sgtot":-10.21},{"course":"CGC","date":"2026-08-15","score":74,"par":72,"stp":2,"fw":5,"gir":8,"putts":24,"dist":293.1,"p3":0,"db":1,"bp5":0,"f150":4,"fx":3,"mtot":8,"ott":-0.91,"app":-6.42,"atg":2.04,"putt":1.08,"sgtot":-4.21},{"course":"CGC","date":"2026-08-17","score":73,"par":72,"stp":1,"fw":6,"gir":8,"putts":26,"dist":291.9,"p3":0,"db":1,"bp5":0,"f150":2,"fx":3,"mtot":6,"ott":-1.75,"app":-2.5,"atg":-0.36,"putt":1.4,"sgtot":-3.21},{"course":"CGC","date":"2026-08-22","score":74,"par":72,"stp":2,"fw":1,"gir":13,"putts":33,"dist":303.6,"p3":4,"db":0,"bp5":1,"f150":4,"fx":3,"mtot":12,"ott":-0.99,"app":-0.28,"atg":0.18,"putt":-3.12,"sgtot":-4.21}];
+const GUIDO=[{"course":"CGC","date":"2025-09-07","score":81,"par":72,"stp":9,"fw":4,"gir":8,"putts":33,"dist":297.1,"p3":0,"db":1,"bp5":1,"f150":5,"fx":9,"mtot":16,"ott":-2.42,"app":-4.06,"atg":-0.46,"putt":-4.25,"sgtot":-11.19,"pen":2},{"course":"CGC","date":"2025-09-11","score":71,"par":72,"stp":-1,"fw":6,"gir":13,"putts":30,"dist":305.3,"p3":0,"db":1,"bp5":0,"f150":1,"fx":4,"mtot":6,"ott":1.26,"app":-2.32,"atg":-2.23,"putt":2.08,"sgtot":-1.21,"pen":0},{"course":"CGC","date":"2025-09-13","score":71,"par":72,"stp":-1,"fw":6,"gir":10,"putts":26,"dist":311.9,"p3":0,"db":1,"bp5":0,"f150":3,"fx":5,"mtot":9,"ott":1.27,"app":-5.02,"atg":-0.53,"putt":3.07,"sgtot":-1.21,"pen":0},{"course":"VDG","date":"2025-09-19","score":40,"par":36,"stp":4,"fw":3,"gir":4,"putts":17,"dist":285.1,"p3":1,"db":1,"bp5":1,"f150":1,"fx":4,"mtot":8,"ott":-0.8,"app":-0.18,"atg":-1.87,"putt":-1.84,"sgtot":-4.69,"pen":1},{"course":"VDG","date":"2025-09-20","score":83,"par":72,"stp":11,"fw":6,"gir":5,"putts":28,"dist":305.5,"p3":0,"db":2,"bp5":1,"f150":5,"fx":10,"mtot":18,"ott":0.04,"app":-8.21,"atg":-4.07,"putt":0.57,"sgtot":-11.67,"pen":4},{"course":"CGC","date":"2025-09-25","score":75,"par":72,"stp":3,"fw":2,"gir":9,"putts":30,"dist":289.1,"p3":1,"db":0,"bp5":1,"f150":3,"fx":4,"mtot":9,"ott":-1.32,"app":-3.0,"atg":0.53,"putt":-1.4,"sgtot":-5.19,"pen":1},{"course":"CGC","date":"2025-10-03","score":75,"par":72,"stp":3,"fw":2,"gir":12,"putts":35,"dist":288.5,"p3":4,"db":0,"bp5":0,"f150":2,"fx":3,"mtot":9,"ott":-0.64,"app":-0.89,"atg":-0.14,"putt":-3.6,"sgtot":-5.27,"pen":0},{"course":"CGC","date":"2025-10-09","score":81,"par":72,"stp":9,"fw":3,"gir":10,"putts":34,"dist":279.6,"p3":2,"db":2,"bp5":1,"f150":4,"fx":6,"mtot":15,"ott":-3.66,"app":-2.17,"atg":-1.35,"putt":-3.03,"sgtot":-10.21,"pen":3},{"course":"CGC","date":"2025-10-10","score":78,"par":72,"stp":6,"fw":5,"gir":11,"putts":34,"dist":299.7,"p3":1,"db":2,"bp5":0,"f150":4,"fx":9,"mtot":16,"ott":0.22,"app":-2.9,"atg":-3.28,"putt":-2.23,"sgtot":-8.19,"pen":0},{"course":"CGC","date":"2025-10-11","score":77,"par":72,"stp":5,"fw":1,"gir":9,"putts":32,"dist":307.9,"p3":1,"db":0,"bp5":0,"f150":5,"fx":7,"mtot":13,"ott":-0.65,"app":-3.33,"atg":-0.18,"putt":-3.03,"sgtot":-7.19,"pen":0},{"course":"CGC","date":"2025-10-12","score":75,"par":72,"stp":3,"fw":3,"gir":10,"putts":30,"dist":280.9,"p3":1,"db":1,"bp5":0,"f150":2,"fx":8,"mtot":12,"ott":-2.02,"app":-2.16,"atg":-1.34,"putt":0.33,"sgtot":-5.19,"pen":1},{"course":"NGC","date":"2025-10-21","score":79,"par":72,"stp":7,"fw":5,"gir":11,"putts":34,"dist":265.7,"p3":3,"db":3,"bp5":1,"f150":4,"fx":3,"mtot":14,"ott":-4.27,"app":-0.14,"atg":-0.76,"putt":-2.81,"sgtot":-7.98,"pen":4},{"course":"NGC","date":"2025-10-23","score":81,"par":72,"stp":9,"fw":6,"gir":8,"putts":33,"dist":267.0,"p3":2,"db":3,"bp5":1,"f150":4,"fx":6,"mtot":16,"ott":-3.2,"app":-1.96,"atg":-3.35,"putt":-1.47,"sgtot":-9.98,"pen":1},{"course":"EL TERRON","date":"2025-10-31","score":81,"par":72,"stp":9,"fw":6,"gir":8,"putts":33,"dist":267.0,"p3":2,"db":4,"bp5":0,"f150":4,"fx":6,"mtot":16,"ott":-3.2,"app":-1.96,"atg":-3.35,"putt":-1.47,"sgtot":-9.98,"pen":1},{"course":"CGC","date":"2025-11-01","score":72,"par":72,"stp":0,"fw":2,"gir":11,"putts":27,"dist":304.2,"p3":0,"db":1,"bp5":0,"f150":1,"fx":6,"mtot":8,"ott":-1.01,"app":-0.53,"atg":-3.13,"putt":2.48,"sgtot":-2.19,"pen":0},{"course":"CGC","date":"2025-11-20","score":79,"par":72,"stp":7,"fw":5,"gir":9,"putts":30,"dist":281.9,"p3":0,"db":2,"bp5":1,"f150":4,"fx":8,"mtot":15,"ott":-1.48,"app":-3.79,"atg":-1.89,"putt":-2.03,"sgtot":-9.19,"pen":1},{"course":"CGC","date":"2025-11-27","score":76,"par":72,"stp":4,"fw":1,"gir":8,"putts":30,"dist":291.5,"p3":0,"db":0,"bp5":1,"f150":2,"fx":5,"mtot":8,"ott":-2.15,"app":-3.52,"atg":0.49,"putt":-1.01,"sgtot":-6.19,"pen":1},{"course":"CGC","date":"2025-11-29","score":74,"par":72,"stp":2,"fw":2,"gir":11,"putts":31,"dist":298.5,"p3":2,"db":1,"bp5":0,"f150":2,"fx":2,"mtot":7,"ott":-1.04,"app":-1.18,"atg":-0.51,"putt":-0.46,"sgtot":-3.19,"pen":0},{"course":"CGC","date":"2025-11-30","score":76,"par":72,"stp":4,"fw":2,"gir":9,"putts":28,"dist":283.4,"p3":1,"db":1,"bp5":0,"f150":1,"fx":4,"mtot":7,"ott":-1.97,"app":-1.91,"atg":0.85,"putt":-2.16,"sgtot":-5.19,"pen":1},{"course":"CGC","date":"2025-12-04","score":72,"par":72,"stp":0,"fw":8,"gir":13,"putts":31,"dist":322.0,"p3":0,"db":1,"bp5":1,"f150":1,"fx":4,"mtot":7,"ott":-2.02,"app":0.24,"atg":-0.18,"putt":-0.23,"sgtot":-2.19,"pen":4},{"course":"CGC","date":"2025-12-05","score":78,"par":72,"stp":6,"fw":2,"gir":9,"putts":31,"dist":293.4,"p3":1,"db":1,"bp5":0,"f150":4,"fx":6,"mtot":12,"ott":-2.58,"app":-3.44,"atg":2.1,"putt":-4.27,"sgtot":-8.19,"pen":2},{"course":"PDL","date":"2025-12-10","score":68,"par":72,"stp":-4,"fw":6,"gir":11,"putts":26,"dist":329.5,"p3":0,"db":0,"bp5":0,"f150":0,"fx":2,"mtot":2,"ott":0.97,"app":-1.48,"atg":2.59,"putt":0.62,"sgtot":2.7,"pen":1},{"course":"CGC","date":"2026-02-21","score":84,"par":72,"stp":12,"fw":1,"gir":9,"putts":35,"dist":267.6,"p3":2,"db":2,"bp5":0,"f150":5,"fx":6,"mtot":15,"ott":-7.65,"app":-0.31,"atg":0.72,"putt":-6.95,"sgtot":-14.19,"pen":4},{"course":"CGC","date":"2026-02-28","score":77,"par":72,"stp":5,"fw":3,"gir":7,"putts":30,"dist":276.8,"p3":1,"db":0,"bp5":2,"f150":4,"fx":3,"mtot":10,"ott":-4.84,"app":-2.36,"atg":2.34,"putt":-1.33,"sgtot":-6.19,"pen":2},{"course":"CGC","date":"2026-03-07","score":70,"par":72,"stp":-2,"fw":5,"gir":10,"putts":26,"dist":275.6,"p3":1,"db":0,"bp5":0,"f150":0,"fx":1,"mtot":2,"ott":-1.08,"app":0.93,"atg":0.43,"putt":0.53,"sgtot":0.81,"pen":1},{"course":"CGC","date":"2026-03-12","score":67,"par":72,"stp":-5,"fw":9,"gir":14,"putts":29,"dist":311.1,"p3":1,"db":0,"bp5":0,"f150":2,"fx":2,"mtot":5,"ott":1.33,"app":1.81,"atg":0.32,"putt":-0.65,"sgtot":2.81,"pen":0},{"course":"CGC","date":"2026-03-19","score":75,"par":72,"stp":3,"fw":5,"gir":7,"putts":28,"dist":289.8,"p3":1,"db":0,"bp5":1,"f150":2,"fx":4,"mtot":8,"ott":-2.59,"app":-3.49,"atg":0.65,"putt":0.24,"sgtot":-5.19,"pen":2},{"course":"CGC","date":"2026-03-21","score":74,"par":72,"stp":2,"fw":5,"gir":11,"putts":33,"dist":289.0,"p3":2,"db":0,"bp5":0,"f150":4,"fx":2,"mtot":8,"ott":-0.4,"app":-0.76,"atg":0.35,"putt":-3.38,"sgtot":-4.19,"pen":0},{"course":"CGC","date":"2026-03-24","score":75,"par":72,"stp":3,"fw":3,"gir":11,"putts":31,"dist":308.4,"p3":2,"db":2,"bp5":1,"f150":3,"fx":1,"mtot":9,"ott":-1.98,"app":-2.29,"atg":0.96,"putt":-1.88,"sgtot":-5.19,"pen":4},{"course":"CGC","date":"2026-04-01","score":73,"par":72,"stp":1,"fw":5,"gir":10,"putts":29,"dist":292.1,"p3":1,"db":0,"bp5":1,"f150":1,"fx":3,"mtot":6,"ott":-0.4,"app":-2.83,"atg":-0.38,"putt":0.42,"sgtot":-3.19,"pen":0},{"course":"CGC","date":"2026-04-02","score":73,"par":72,"stp":1,"fw":4,"gir":13,"putts":34,"dist":300.4,"p3":2,"db":0,"bp5":1,"f150":3,"fx":1,"mtot":7,"ott":0.26,"app":-1.13,"atg":0.18,"putt":-2.5,"sgtot":-3.19,"pen":0},{"course":"CGC","date":"2026-04-03","score":76,"par":72,"stp":4,"fw":3,"gir":11,"putts":32,"dist":281.8,"p3":1,"db":2,"bp5":0,"f150":2,"fx":3,"mtot":8,"ott":-1.85,"app":-3.32,"atg":0.06,"putt":-1.08,"sgtot":-6.19,"pen":0},{"course":"CGC","date":"2026-04-11","score":71,"par":72,"stp":-1,"fw":2,"gir":11,"putts":28,"dist":294.4,"p3":1,"db":2,"bp5":0,"f150":3,"fx":4,"mtot":10,"ott":-0.52,"app":-1.75,"atg":-0.39,"putt":1.47,"sgtot":-1.19,"pen":0},{"course":"CGC","date":"2026-06-06","score":74,"par":72,"stp":2,"fw":6,"gir":11,"putts":30,"dist":291.6,"p3":2,"db":1,"bp5":1,"f150":3,"fx":2,"mtot":9,"ott":-0.55,"app":-0.36,"atg":0.71,"putt":-3.99,"sgtot":-4.19,"pen":0},{"course":"CGC","date":"2026-06-11","score":78,"par":72,"stp":6,"fw":5,"gir":9,"putts":32,"dist":285.4,"p3":1,"db":2,"bp5":1,"f150":5,"fx":5,"mtot":14,"ott":-1.28,"app":-2.89,"atg":-2.13,"putt":-1.89,"sgtot":-8.19,"pen":1},{"course":"CGC","date":"2026-06-13","score":75,"par":72,"stp":3,"fw":1,"gir":9,"putts":26,"dist":283.6,"p3":1,"db":1,"bp5":1,"f150":3,"fx":4,"mtot":10,"ott":-4.06,"app":-1.37,"atg":0.84,"putt":-0.6,"sgtot":-5.19,"pen":2},{"course":"CGC","date":"2026-06-19","score":75,"par":72,"stp":3,"fw":5,"gir":8,"putts":29,"dist":279.0,"p3":0,"db":0,"bp5":2,"f150":3,"fx":4,"mtot":9,"ott":-1.0,"app":-2.96,"atg":0.26,"putt":-0.49,"sgtot":-4.19,"pen":1},{"course":"CGC","date":"2026-06-27","score":69,"par":72,"stp":-3,"fw":4,"gir":12,"putts":27,"dist":287.4,"p3":1,"db":0,"bp5":0,"f150":1,"fx":2,"mtot":4,"ott":-0.57,"app":0.43,"atg":-0.07,"putt":1.02,"sgtot":0.81,"pen":0},{"course":"CGC","date":"2026-07-04","score":76,"par":72,"stp":4,"fw":4,"gir":13,"putts":34,"dist":284.8,"p3":3,"db":1,"bp5":0,"f150":4,"fx":5,"mtot":13,"ott":-1.01,"app":-1.24,"atg":0.86,"putt":-4.8,"sgtot":-6.19,"pen":0},{"course":"CGC","date":"2026-07-11","score":79,"par":72,"stp":7,"fw":1,"gir":12,"putts":37,"dist":293.7,"p3":4,"db":3,"bp5":1,"f150":6,"fx":5,"mtot":19,"ott":-1.24,"app":-1.6,"atg":-0.82,"putt":-5.53,"sgtot":-9.19,"pen":2},{"course":"CGC-Azules","date":"2026-07-25","score":73,"par":72,"stp":1,"fw":1,"gir":13,"putts":30,"dist":279.9,"p3":2,"db":3,"bp5":1,"f150":3,"fx":2,"mtot":11,"ott":-3.37,"app":1.09,"atg":-1.5,"putt":-0.48,"sgtot":-4.26,"pen":3},{"course":"CGC","date":"2026-07-30","score":81,"par":72,"stp":9,"fw":4,"gir":7,"putts":30,"dist":297.8,"p3":1,"db":3,"bp5":1,"f150":5,"fx":7,"mtot":17,"ott":-0.46,"app":-4.7,"atg":-5.18,"putt":-0.94,"sgtot":-11.28,"pen":0},{"course":"CGC","date":"2026-08-01","score":71,"par":72,"stp":-1,"fw":2,"gir":13,"putts":30,"dist":294.1,"p3":1,"db":0,"bp5":0,"f150":0,"fx":1,"mtot":2,"ott":-1.15,"app":-1.62,"atg":0.55,"putt":1.01,"sgtot":-1.21,"pen":0},{"course":"CGC","date":"2026-08-06","score":77,"par":72,"stp":5,"fw":2,"gir":7,"putts":29,"dist":290.0,"p3":0,"db":1,"bp5":1,"f150":3,"fx":6,"mtot":11,"ott":-3.37,"app":-2.95,"atg":1.11,"putt":-2.0,"sgtot":-7.21,"pen":2},{"course":"CGC","date":"2026-08-08","score":77,"par":72,"stp":5,"fw":3,"gir":6,"putts":29,"dist":285.8,"p3":0,"db":1,"bp5":1,"f150":4,"fx":7,"mtot":13,"ott":-1.28,"app":-6.09,"atg":3.35,"putt":-3.19,"sgtot":-7.21,"pen":2},{"course":"CGC","date":"2026-08-13","score":80,"par":72,"stp":8,"fw":2,"gir":9,"putts":32,"dist":284.4,"p3":2,"db":3,"bp5":1,"f150":5,"fx":5,"mtot":16,"ott":-4.5,"app":-1.74,"atg":-1.76,"putt":-2.21,"sgtot":-10.21,"pen":3},{"course":"CGC","date":"2026-08-15","score":74,"par":72,"stp":2,"fw":5,"gir":8,"putts":24,"dist":293.1,"p3":0,"db":1,"bp5":0,"f150":4,"fx":3,"mtot":8,"ott":-0.91,"app":-6.42,"atg":2.04,"putt":1.08,"sgtot":-4.21,"pen":4},{"course":"CGC","date":"2026-08-17","score":73,"par":72,"stp":1,"fw":6,"gir":8,"putts":26,"dist":291.9,"p3":0,"db":1,"bp5":0,"f150":2,"fx":3,"mtot":6,"ott":-1.75,"app":-2.5,"atg":-0.36,"putt":1.4,"sgtot":-3.21,"pen":0},{"course":"CGC","date":"2026-08-22","score":74,"par":72,"stp":2,"fw":1,"gir":13,"putts":33,"dist":303.6,"p3":4,"db":0,"bp5":1,"f150":4,"fx":3,"mtot":12,"ott":-0.99,"app":-0.28,"atg":0.18,"putt":-3.12,"sgtot":-4.21,"pen":0}];
 
-const NICO=[
-{"course":"CGC","date":"2026-03-24","score":82,"par":72,"stp":10,"fw":3,"gir":7,"putts":34,"dist":264.2,"p3":3,"db":2,"bp5":3,"f150":7,"fx":5,"mtot":20,"ott":1.12,"app":-2.20,"atg":1.21,"putt":-0.98,"sgtot":-0.85},
-{"course":"CGC","date":"2026-06-06","score":85,"par":72,"stp":13,"fw":2,"gir":6,"putts":36,"dist":269.9,"p3":1,"db":3,"bp5":1,"f150":7,"fx":8,"mtot":20,"ott":-0.11,"app":0.69,"atg":0.82,"putt":-5.33,"sgtot":-3.93},
-{"course":"CGC","date":"2026-06-13","score":89,"par":72,"stp":17,"fw":2,"gir":5,"putts":33,"dist":272.7,"p3":2,"db":5,"bp5":1,"f150":7,"fx":7,"mtot":22,"ott":-4.09,"app":0.85,"atg":-2.93,"putt":-1.86,"sgtot":-8.04},
-{"course":"CGC","date":"2026-06-20","score":82,"par":72,"stp":10,"fw":3,"gir":9,"putts":31,"dist":259.2,"p3":1,"db":2,"bp5":1,"f150":3,"fx":4,"mtot":11,"ott":-1.71,"app":3.49,"atg":-2.53,"putt":-0.10,"sgtot":-0.85},
-{"course":"CGC","date":"2026-06-27","score":86,"par":72,"stp":14,"fw":3,"gir":5,"putts":32,"dist":275.0,"p3":1,"db":2,"bp5":3,"f150":8,"fx":10,"mtot":24,"ott":-1.64,"app":0.16,"atg":-2.45,"putt":-1.02,"sgtot":-4.96}
-];
-const MANU=[{"course":"CGC","date":"2026-06-06","score":83,"par":72,"stp":11,"fw":7,"gir":6,"putts":27,"dist":258.1,"p3":0,"db":5,"bp5":1,"f150":6,"fx":6,"mtot":18,"ott":1.54,"app":-2.25,"atg":-0.07,"putt":2.63,"sgtot":1.86},{"course":"CGC","date":"2026-06-13","score":88,"par":72,"stp":16,"fw":4,"gir":2,"putts":32,"dist":249.5,"p3":3,"db":3,"bp5":1,"f150":7,"fx":7,"mtot":21,"ott":-0.55,"app":0.55,"atg":-2.02,"putt":-0.54,"sgtot":-2.56},{"course":"CGC","date":"2026-06-20","score":89,"par":72,"stp":17,"fw":3,"gir":3,"putts":33,"dist":255.2,"p3":4,"db":3,"bp5":2,"f150":9,"fx":7,"mtot":25,"ott":0.37,"app":-2.86,"atg":1.57,"putt":-2.74,"sgtot":-3.65},{"course":"CGC","date":"2026-06-26","score":86,"par":72,"stp":14,"fw":7,"gir":7,"putts":35,"dist":269.1,"p3":3,"db":4,"bp5":2,"f150":7,"fx":7,"mtot":23,"ott":1.94,"app":2.75,"atg":-3.43,"putt":-1.63,"sgtot":-0.37},{"course":"CGC","date":"2026-07-04","score":82,"par":72,"stp":10,"fw":7,"gir":6,"putts":31,"dist":262.0,"p3":1,"db":1,"bp5":2,"f150":7,"fx":8,"mtot":19,"ott":2.65,"app":-0.29,"atg":1.62,"putt":-0.5,"sgtot":3.48},{"course":"CGC","date":"2026-07-11","score":88,"par":72,"stp":16,"fw":3,"gir":5,"putts":32,"dist":251.6,"p3":2,"db":4,"bp5":2,"f150":4,"fx":9,"mtot":21,"ott":0.25,"app":-0.66,"atg":-2.13,"putt":0.73,"sgtot":-1.82},{"course":"CGC","date":"2026-07-18","score":86,"par":72,"stp":14,"fw":5,"gir":7,"putts":34,"dist":266.3,"p3":3,"db":5,"bp5":2,"f150":10,"fx":7,"mtot":27,"ott":3.15,"app":-1.98,"atg":-0.09,"putt":-1.13,"sgtot":-0.05},{"course":"CGC","date":"2026-08-01","score":88,"par":72,"stp":16,"fw":5,"gir":5,"putts":30,"dist":257.9,"p3":2,"db":4,"bp5":2,"f150":6,"fx":7,"mtot":21,"ott":2.07,"app":-1.66,"atg":-5.7,"putt":3.48,"sgtot":-1.82},{"course":"CGC","date":"2026-08-13","score":85,"par":72,"stp":13,"fw":5,"gir":5,"putts":30,"dist":270.9,"p3":0,"db":3,"bp5":3,"f150":11,"fx":9,"mtot":26,"ott":3.46,"app":-4.08,"atg":-2.45,"putt":3.9,"sgtot":0.83},{"course":"CGC","date":"2026-08-15","score":86,"par":72,"stp":14,"fw":6,"gir":7,"putts":31,"dist":271.1,"p3":2,"db":4,"bp5":1,"f150":9,"fx":9,"mtot":25,"ott":3.65,"app":-0.96,"atg":-3.32,"putt":0.58,"sgtot":-0.05},{"course":"CGC","date":"2026-08-17","score":85,"par":72,"stp":13,"fw":4,"gir":9,"putts":33,"dist":256.0,"p3":4,"db":4,"bp5":0,"f150":6,"fx":5,"mtot":19,"ott":2.01,"app":0.1,"atg":-1.6,"putt":0.33,"sgtot":0.83},{"course":"CGC","date":"2026-08-22","score":81,"par":72,"stp":9,"fw":6,"gir":10,"putts":37,"dist":279.6,"p3":5,"db":3,"bp5":0,"f150":5,"fx":7,"mtot":20,"ott":4.02,"app":2.45,"atg":0.44,"putt":-1.92,"sgtot":5.0}];
+const NICO=[{"course":"CGC","date":"2026-03-24","score":82,"par":72,"stp":10,"fw":3,"gir":7,"putts":34,"dist":264.2,"p3":3,"db":2,"bp5":3,"f150":7,"fx":5,"mtot":20,"ott":1.12,"app":-2.2,"atg":1.21,"putt":-0.98,"sgtot":-0.85,"pen":1},{"course":"CGC","date":"2026-06-06","score":85,"par":72,"stp":13,"fw":2,"gir":6,"putts":36,"dist":269.9,"p3":1,"db":3,"bp5":1,"f150":7,"fx":8,"mtot":20,"ott":-0.11,"app":0.69,"atg":0.82,"putt":-5.33,"sgtot":-3.93,"pen":2},{"course":"CGC","date":"2026-06-13","score":89,"par":72,"stp":17,"fw":2,"gir":5,"putts":33,"dist":272.7,"p3":2,"db":5,"bp5":1,"f150":7,"fx":7,"mtot":22,"ott":-4.09,"app":0.85,"atg":-2.93,"putt":-1.86,"sgtot":-8.04,"pen":4},{"course":"CGC","date":"2026-06-20","score":82,"par":72,"stp":10,"fw":3,"gir":9,"putts":31,"dist":259.2,"p3":1,"db":2,"bp5":1,"f150":3,"fx":4,"mtot":11,"ott":-1.71,"app":3.49,"atg":-2.53,"putt":-0.1,"sgtot":-0.85,"pen":3},{"course":"CGC","date":"2026-06-27","score":86,"par":72,"stp":14,"fw":3,"gir":5,"putts":32,"dist":275.0,"p3":1,"db":2,"bp5":3,"f150":8,"fx":10,"mtot":24,"ott":-1.64,"app":0.16,"atg":-2.45,"putt":-1.02,"sgtot":-4.96,"pen":3}];
+const MANU=[{"course":"CGC","date":"2026-06-06","score":83,"par":72,"stp":11,"fw":7,"gir":6,"putts":27,"dist":258.1,"p3":0,"db":5,"bp5":1,"f150":6,"fx":6,"mtot":18,"ott":1.54,"app":-2.25,"atg":-0.07,"putt":2.63,"sgtot":1.86,"pen":1},{"course":"CGC","date":"2026-06-13","score":88,"par":72,"stp":16,"fw":4,"gir":2,"putts":32,"dist":249.5,"p3":3,"db":3,"bp5":1,"f150":7,"fx":7,"mtot":21,"ott":-0.55,"app":0.55,"atg":-2.02,"putt":-0.54,"sgtot":-2.56,"pen":0},{"course":"CGC","date":"2026-06-20","score":89,"par":72,"stp":17,"fw":3,"gir":3,"putts":33,"dist":255.2,"p3":4,"db":3,"bp5":2,"f150":9,"fx":7,"mtot":25,"ott":0.37,"app":-2.86,"atg":1.57,"putt":-2.74,"sgtot":-3.65,"pen":3},{"course":"CGC","date":"2026-06-26","score":86,"par":72,"stp":14,"fw":7,"gir":7,"putts":35,"dist":269.1,"p3":3,"db":4,"bp5":2,"f150":7,"fx":7,"mtot":23,"ott":1.94,"app":2.75,"atg":-3.43,"putt":-1.63,"sgtot":-0.37,"pen":0},{"course":"CGC","date":"2026-07-04","score":82,"par":72,"stp":10,"fw":7,"gir":6,"putts":31,"dist":262.0,"p3":1,"db":1,"bp5":2,"f150":7,"fx":8,"mtot":19,"ott":2.65,"app":-0.29,"atg":1.62,"putt":-0.5,"sgtot":3.48,"pen":2},{"course":"CGC","date":"2026-07-11","score":88,"par":72,"stp":16,"fw":3,"gir":5,"putts":32,"dist":251.6,"p3":2,"db":4,"bp5":2,"f150":4,"fx":9,"mtot":21,"ott":0.25,"app":-0.66,"atg":-2.13,"putt":0.73,"sgtot":-1.82,"pen":3},{"course":"CGC","date":"2026-07-18","score":86,"par":72,"stp":14,"fw":5,"gir":7,"putts":34,"dist":266.3,"p3":3,"db":5,"bp5":2,"f150":10,"fx":7,"mtot":27,"ott":3.15,"app":-1.98,"atg":-0.09,"putt":-1.13,"sgtot":-0.05,"pen":3},{"course":"CGC","date":"2026-08-01","score":88,"par":72,"stp":16,"fw":5,"gir":5,"putts":30,"dist":257.9,"p3":2,"db":4,"bp5":2,"f150":6,"fx":7,"mtot":21,"ott":2.07,"app":-1.66,"atg":-5.7,"putt":3.48,"sgtot":-1.82,"pen":1},{"course":"CGC","date":"2026-08-13","score":85,"par":72,"stp":13,"fw":5,"gir":5,"putts":30,"dist":270.9,"p3":0,"db":3,"bp5":3,"f150":11,"fx":9,"mtot":26,"ott":3.46,"app":-4.08,"atg":-2.45,"putt":3.9,"sgtot":0.83,"pen":2},{"course":"CGC","date":"2026-08-15","score":86,"par":72,"stp":14,"fw":6,"gir":7,"putts":31,"dist":271.1,"p3":2,"db":4,"bp5":1,"f150":9,"fx":9,"mtot":25,"ott":3.65,"app":-0.96,"atg":-3.32,"putt":0.58,"sgtot":-0.05,"pen":0},{"course":"CGC","date":"2026-08-17","score":85,"par":72,"stp":13,"fw":4,"gir":9,"putts":33,"dist":256.0,"p3":4,"db":4,"bp5":0,"f150":6,"fx":5,"mtot":19,"ott":2.01,"app":0.1,"atg":-1.6,"putt":0.33,"sgtot":0.83,"pen":0},{"course":"CGC","date":"2026-08-22","score":81,"par":72,"stp":9,"fw":6,"gir":10,"putts":37,"dist":279.6,"p3":5,"db":3,"bp5":0,"f150":5,"fx":7,"mtot":20,"ott":4.02,"app":2.45,"atg":0.44,"putt":-1.92,"sgtot":5.0,"pen":0}];
 const PLAYERS={"Guido":GUIDO,"Manuel":MANU,"Nicolas":NICO};
 const PLAYERNAMES=["Guido","Manuel","Nicolas"];
 let PLAYER='Guido';
@@ -235,7 +227,7 @@ const F={pine:'#0f3a2c',fairway:'#1f7a4d',moss:'#3f9c6d',clay:'#c2502e',sand:'#b
 Chart.defaults.font.family="'Optima','Segoe UI',Candara,sans-serif"; Chart.defaults.color=F.inkSoft; Chart.defaults.font.size=12;
 const rnd=(x,d=2)=>{const p=Math.pow(10,d);return Math.round(x*p)/p;};
 const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
-const CH={}; let gridInst=null; let curMetric='SG: Total';
+const CH={}; let gridInst=null;
 
 /* ---------- SHOT ENGINE ---------- */
 const ROLES=[['tee','Tee (par 4/5)','yd'],['app','Approach 1','yd'],['app','Approach 2','yd'],['arg','Short','yd'],['putt','Putt 1','ft'],['putt','Putt 2','ft']];
@@ -427,8 +419,16 @@ function segLimits(v,count){
  let w=0;for(let i=0;i<N;i++){const g=segOf(i),sg=(g.mrb/1.128)||0;if(sg>0&&Math.abs(v[i]-g.m)<=sg)w++;else w=0;if(w>=15){notes.push('15+ rounds hugging the centre line — the limits may be wider than how you actually score now');break;}}
  let bb=0;for(let i=0;i<N;i++){const g=segOf(i),sg=(g.mrb/1.128)||0;if(sg>0&&Math.abs(v[i]-g.m)>sg)bb++;else bb=0;if(bb>=8){notes.push('8+ rounds in a row away from the centre — may be two different games blended in (e.g. different courses or tees)');break;}}
  return {segs,segOf,mr,r1,r4,breaks,notes,signals,sigSet};}
-const metrics={'SG: Total':r=>r.sgtot,'SG: Off tee':r=>r.ott,'SG: Approach':r=>r.app,'SG: Around green':r=>r.atg,'SG: Putting':r=>r.putt,'Mistakes: total':r=>r.mtot,'Mistakes: 3-putts':r=>r.p3,'Mistakes: double bogeys':r=>r.db,'Mistakes: bogey par-5':r=>r.bp5,'Mistakes: 3+ from 150':r=>r.f150,'Mistakes: 3+ from 40':r=>r.fx};
-const isCount=k=>k.startsWith('Mistakes');
+const metrics={'SG: Total':r=>r.sgtot,'SG: Off tee':r=>r.ott,'SG: Approach':r=>r.app,'SG: Around green':r=>r.atg,'SG: Putting':r=>r.putt,'Mistakes: total':r=>r.mtot,'Mistakes: 3-putts':r=>r.p3,'Mistakes: double bogeys':r=>r.db,'Mistakes: bogey par-5':r=>r.bp5,'Mistakes: 3+ from 150':r=>r.f150,'Mistakes: 3+ from 40':r=>r.fx,'Fairways / round':r=>r.fw,'Greens / round':r=>r.gir,'Putts / round':r=>r.putts,'Penalties / round':r=>r.pen};
+const TRAD=['Fairways / round','Greens / round','Putts / round','Penalties / round'];
+const isCount=k=>k.startsWith('Mistakes')||TRAD.includes(k);
+const lowerBetter=k=>k.startsWith('Mistakes')||k==='Putts / round'||k==='Penalties / round';
+const GROUPS={
+ sg:{metrics:['SG: Total','SG: Off tee','SG: Approach','SG: Around green','SG: Putting'],cur:'SG: Total'},
+ t5:{metrics:['Mistakes: total','Mistakes: 3-putts','Mistakes: double bogeys','Mistakes: bogey par-5','Mistakes: 3+ from 150','Mistakes: 3+ from 40'],cur:'Mistakes: total'},
+ tr:{metrics:['Fairways / round','Greens / round','Putts / round','Penalties / round'],cur:'Putts / round'}
+};
+const shortLbl=k=>k.replace(/^SG: /,'').replace(/^Mistakes: /,'').replace(/ \/ round$/,'');
 const PHASE={
  'SG: Off tee':'your driving',
  'SG: Approach':'your approach play',
@@ -440,14 +440,18 @@ const PHASE={
  'Mistakes: double bogeys':'your double bogeys',
  'Mistakes: bogey par-5':'dropped shots on par-5s',
  'Mistakes: 3+ from 150':'loose shots from around 150',
- 'Mistakes: 3+ from 40':'failing to get up-and-down'
+ 'Mistakes: 3+ from 40':'failing to get up-and-down',
+ 'Fairways / round':'fairways hit',
+ 'Greens / round':'greens in regulation',
+ 'Putts / round':'your putts per round',
+ 'Penalties / round':'penalty strokes'
 };
 const SGF={'SG: Off tee':'ott','SG: Approach':'app','SG: Around green':'atg','SG: Putting':'putt'};
 function verdict(key,S,cnt,v){
  const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
  const noun=PHASE[key]||'this part of your game';
  const segs=S.segs, first=segs[0].m, last=segs[segs.length-1].m;
- const good=x=>cnt?-x:x;
+ const good=x=>lowerBetter(key)?-x:x;
  const mn=mean(v), sd=Math.sqrt(mean(v.map(x=>(x-mn)*(x-mn))))||0;
  const level = cnt ? `${last.toFixed(1)} a round`
    : `${(last>=0?'+':'')+last.toFixed(1)} a round`;
@@ -484,9 +488,37 @@ function verdict(key,S,cnt,v){
  else if(rc.length===2) body+=` (Rounds ${rc[0]} and ${rc[1]} ran against the grain — don’t over-weight a couple.)`;
  return `<strong style="font-size:16px">${head}</strong> ${body}`;
 }
-const ctrl=document.getElementById('xmrCtrl');
-ctrl.innerHTML=Object.keys(metrics).map(k=>`<button data-k="${k}" class="${k===curMetric?'on':''}">${k}</button>`).join('');
-ctrl.addEventListener('click',e=>{if(e.target.dataset.k){curMetric=e.target.dataset.k;drawXmr();}});
+function panelHTML(sfx){return `
+      <div id="expl_${sfx}" style="margin:0 0 16px;padding:14px 16px;background:rgba(216,196,140,.16);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;font-size:15px;line-height:1.55;color:var(--ink)"></div>
+      <div style="display:flex;gap:10px;align-items:stretch">
+        <div class="chartbox" style="height:250px;flex:1;min-width:0"><canvas id="xmr_${sfx}" role="img" aria-label="XmR individuals chart"></canvas></div>
+        <div class="chartbox" style="height:250px;width:132px;flex:none"><canvas id="dist_${sfx}" role="img" aria-label="Distribution of values vs a normal curve"></canvas></div>
+      </div>
+      <div id="dnote_${sfx}" style="font-size:12px;color:var(--ink-soft);font-family:var(--cond);letter-spacing:.03em;margin-top:6px;text-align:right"></div>
+      <div class="mrhead">Moving range (mR)</div>
+      <div style="display:flex;gap:10px;align-items:stretch">
+        <div class="chartbox" style="height:150px;flex:1;min-width:0"><canvas id="mr_${sfx}" role="img" aria-label="Moving range chart"></canvas></div>
+        <div style="width:132px;flex:none" aria-hidden="true"></div>
+      </div>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--blue)"></span>in control</span>
+        <span><span class="dot" style="background:#8a63d2;border:2px solid #4a3aa7"></span>signal (triggered a recalculation)</span>
+        <span><span class="dot" style="background:var(--clay)"></span>outside stage limit</span>
+        <span><span class="dot" style="background:#c99a1e"></span>mR range spike</span>
+        <span><span class="dash" style="border-color:var(--ink-soft)"></span>stage centre</span>
+        <span><span class="dash" style="border-color:var(--clay)"></span>stage limits</span>
+        <span><span class="dash" style="border-color:var(--ink-soft);border-top-style:dotted"></span>new-limits divider</span>
+      </div>
+      <div class="sig" id="sig_${sfx}"></div>`;}
+function buildPanels(){
+ ['sg','t5','tr'].forEach(sfx=>{
+   const g=GROUPS[sfx], ce=document.getElementById('ctrl_'+sfx);
+   ce.innerHTML=g.metrics.map(k=>`<button data-k="${k}" class="${k===g.cur?'on':''}">${shortLbl(k)}</button>`).join('');
+   ce.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.k){g.cur=b.dataset.k;drawXmr(sfx);}});
+   document.getElementById('panel_'+sfx).innerHTML=panelHTML(sfx);
+ });
+}
+buildPanels();
 
 function renderPriority(){
  const defs=[['ott','Off the tee','driving accuracy & dispersion'],['app','Approach','iron proximity, esp. from 150'],['atg','Around green','chipping & scrambling'],['putt','Putting','pace & holing out']];
@@ -512,10 +544,9 @@ function renderAll(){
  if(N===0){
    document.getElementById('kpis').innerHTML=`<div class="kpi"><div class="lbl">Rounds logged</div><div class="val">0</div><div class="cap">no data yet</div></div>`;
    document.getElementById('flagBox').innerHTML='';
-   document.getElementById('xmrExpl').innerHTML='<strong>No rounds yet.</strong> Open “Log a round, shot by shot” at the bottom to add '+PLAYER+'’s first round.';document.getElementById('xmrSig').innerHTML='';document.getElementById('distNote').innerHTML='';
-   const dc=document.getElementById('distChart');if(dc&&dc.getContext){const c=dc.getContext('2d');c.clearRect(0,0,dc.width,dc.height);}
+   ['sg','t5','tr'].forEach((sfx,i)=>{const ex=document.getElementById('expl_'+sfx);if(ex)ex.innerHTML=i===0?'<strong>No rounds yet.</strong> Open “Log a round, shot by shot” at the bottom to add '+PLAYER+'’s first round.':'<strong>No rounds yet.</strong>';const sg=document.getElementById('sig_'+sfx);if(sg)sg.innerHTML='';const dn=document.getElementById('dnote_'+sfx);if(dn)dn.innerHTML='';const dc=document.getElementById('dist_'+sfx);if(dc&&dc.getContext){const c=dc.getContext('2d');c.clearRect(0,0,dc.width,dc.height);}});
    const gd=document.getElementById('grid');if(gd)gd.innerHTML='';
-   document.getElementById('lastRound').innerHTML='';document.getElementById('focusRec').innerHTML='';
+   document.getElementById('lastRound').innerHTML='';document.getElementById('focusRec').innerHTML='';document.getElementById('tradstats').innerHTML='';
    return;
  }
  const scores=R.map(r=>r.stp), sgt=R.map(r=>r.sgtot);
@@ -545,6 +576,17 @@ function renderAll(){
    const mAvg=mc.map(c=>({n:c[1],v:mean(R.map(r=>r[c[0]]))})).sort((a,b)=>b.v-a.v)[0];
    document.getElementById('focusRec').innerHTML=`<strong style="color:var(--pine)">Where to work:</strong> your biggest leak is <b>${leak.n}</b> (avg ${sgn(leak.v)} a round), and your most common mistake is <b>${mAvg.n}</b> (${rnd(mAvg.v,1)} per round). Keep leaning on your ${strength.n} — that's your strength.`;
  }
+ { // traditional counting stats, averaged per round
+   const t18=R.filter(r=>r.par>=72); // full-18 rounds for FW/GIR context
+   const av=(f,rows)=>rnd(mean((rows||R).map(r=>r[f]||0)),1);
+   const tds=[
+     {lbl:'Fairways / round',val:av('fw'),cap:'hit off the tee'},
+     {lbl:'Greens / round',val:av('gir'),cap:'in regulation'},
+     {lbl:'Putts / round',val:av('putts'),cap:'total putts'},
+     {lbl:'Penalties / round',val:av('pen'),cap:'penalty strokes',cls:av('pen')>=1?'warn':''}
+   ];
+   document.getElementById('tradstats').innerHTML=tds.map(k=>`<div class="kpi ${k.cls||''}"><div class="lbl">${k.lbl}</div><div class="val">${k.val}</div><div class="cap">${k.cap}</div></div>`).join('');
+ }
  CH.score=new Chart(scoreChart,{type:'line',data:{labels:idx,datasets:[{data:scores,borderColor:F.pine,borderWidth:2,pointBackgroundColor:scores.map(s=>s<0?F.fairway:s>8?F.clay:F.pine),pointRadius:scores.map(s=>s<0||s>8?4.5:2.5),tension:.25,fill:{target:{value:0},above:'rgba(194,80,46,.06)',below:'rgba(31,122,77,.12)'}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{title:i=>i&&i[0]?'Round '+i[0].label:'',label:c=>{const r=R[c.dataIndex];return [(c.parsed.y>=0?'+':'')+c.parsed.y+' to par · '+r.score,r.course+' · '+r.date];}}}},scales:{x:{grid:{display:false},title:{display:true,text:'round',color:F.sand}},y:{grid:{color:F.line},title:{display:true,text:'strokes to par'}}}}});
  const cats=[['ott','Off the tee'],['app','Approach'],['atg','Around green'],['putt','Putting']];
  let sgArr=cats.map(c=>({label:c[1],v:rnd(mean(R.map(r=>r[c[0]])),2)}));
@@ -561,13 +603,13 @@ function renderAll(){
  const gdata=R.map((r,i)=>[i+1,r.course,r.score,r.stp,r.fw,r.gir,r.putts,r.ott,r.app,r.atg,r.putt,r.sgtot,r.mtot]);
  const gEl=document.getElementById('grid'); gEl.innerHTML='';
  gridInst=new gridjs.Grid({columns:gcols,data:gdata,sort:true,search:true,pagination:{limit:12},style:{table:{'font-size':'13px'},th:{padding:'8px 10px'},td:{padding:'7px 10px'}}}); gridInst.render(gEl);
- drawXmr();
+ drawAllXmr();
 }
 function std(a){const mn=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-mn)*(x-mn),0)/((a.length-1)||1));}
-function drawDist(v,s,lo,hi){
- const cv=document.getElementById('distChart'); if(!cv||!cv.parentElement)return;
+function drawDist(v,s,lo,hi,distId){
+ const cv=document.getElementById(distId||'distChart'); if(!cv||!cv.parentElement)return;
  const box=cv.parentElement.getBoundingClientRect(),W=box.width,H=box.height;
- if(W<5||H<5){requestAnimationFrame(()=>drawDist(v,s,lo,hi));return;}
+ if(W<5||H<5){requestAnimationFrame(()=>drawDist(v,s,lo,hi,distId));return;}
  const dpr=window.devicePixelRatio||1;
  cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';
  const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
@@ -583,10 +625,11 @@ function drawDist(v,s,lo,hi){
  [-1,1].forEach(sgn=>{ctx.beginPath();nrm.forEach((p,i)=>{const x=cx+sgn*p[1]*scale,y=yOf(p[0]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();});
  ctx.setLineDash([]);ctx.strokeStyle='rgba(194,80,46,0.55)';ctx.beginPath();ctx.moveTo(0,yOf(m));ctx.lineTo(W,yOf(m));ctx.stroke();
 }
-function drawXmr(){
+function drawXmr(sfx){
  if(!R.length)return;
- const v=R.map(metrics[curMetric]),cnt=isCount(curMetric),S=segLimits(v,cnt),idx=R.map((_,i)=>i+1),N=v.length;
- {const ex=document.getElementById('xmrExpl');if(ex)ex.innerHTML=verdict(curMetric,S,cnt,v);}
+ const key=GROUPS[sfx].cur;
+ const v=R.map(metrics[key]),cnt=isCount(key),S=segLimits(v,cnt),idx=R.map((_,i)=>i+1),N=v.length;
+ {const ex=document.getElementById('expl_'+sfx);if(ex)ex.innerHTML=verdict(key,S,cnt,v);}
  const last=S.segs[S.segs.length-1],sgLast=(last.mrb/1.128)||1;
  let lo=Math.min(Math.min(...v),...S.segs.map(g=>g.l),last.m-3.3*sgLast);
  let hi=Math.max(Math.max(...v),...S.segs.map(g=>g.u),last.m+3.3*sgLast);
@@ -604,14 +647,14 @@ function drawXmr(){
  if(!cnt)xds.push({data:loA,borderColor:F.clay,borderWidth:1.3,borderDash:[4,3],pointRadius:0,tension:0,order:1});
  const brk=S.breaks.slice(1);
  const divp={id:'divp',afterDraw(c){const{ctx,chartArea:{top,bottom},scales:{x}}=c;ctx.save();brk.forEach(bi=>{const xb=(x.getPixelForValue(bi)+x.getPixelForValue(bi+1))/2;ctx.strokeStyle='rgba(92,99,87,0.55)';ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(xb,top);ctx.lineTo(xb,bottom);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=F.inkSoft;ctx.font="9px 'Trebuchet MS',sans-serif";ctx.fillText('new limits',xb+3,top+9);});ctx.restore();}};
- if(CH.xmr)CH.xmr.destroy();
- CH.xmr=new Chart(xmrChart,{type:'line',data:{labels:idx,datasets:xds},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{filter:i=>i.datasetIndex===0,callbacks:{title:i=>i&&i[0]?'Round '+i[0].label:'',label:c=>{const r=R[c.dataIndex];return curMetric+': '+c.parsed.y+'  ('+r.course+' '+r.date+')';}}}},scales:{x:{grid:{display:false}},y:{grid:{color:F.line},min:lo,max:hi}}},plugins:[divp]});
+ if(CH['xmr_'+sfx])CH['xmr_'+sfx].destroy();
+ CH['xmr_'+sfx]=new Chart(document.getElementById('xmr_'+sfx),{type:'line',data:{labels:idx,datasets:xds},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{filter:i=>i.datasetIndex===0,callbacks:{title:i=>i&&i[0]?'Round '+i[0].label:'',label:c=>{const r=R[c.dataIndex];return key+': '+c.parsed.y+'  ('+r.course+' '+r.date+')';}}}},scales:{x:{grid:{display:false}},y:{grid:{color:F.line},min:lo,max:hi}}},plugins:[divp]});
  const mrL=idx.slice(1);
  const mrCen=mrL.map((_,k)=>rnd(S.segOf(k+1).mrb,2)),mrUcl=mrL.map((_,k)=>rnd(S.segOf(k+1).mrucl,2));
  const mrC=S.mr.map((x,k)=>x>S.segOf(k+1).mrucl?F.amber:F.blue),mrR=S.mr.map((x,k)=>x>S.segOf(k+1).mrucl?5.5:3);
- if(CH.mr)CH.mr.destroy();
- CH.mr=new Chart(mrChart,{type:'line',data:{labels:mrL,datasets:[{data:S.mr,borderColor:F.blue,borderWidth:2,pointBackgroundColor:mrC,pointBorderColor:mrC,pointRadius:mrR,tension:0,order:3},{data:mrCen,borderColor:F.inkSoft,borderWidth:1.5,borderDash:[6,4],pointRadius:0,spanGaps:false,order:2},{data:mrUcl,borderColor:F.clay,borderWidth:1,borderDash:[3,3],pointRadius:0,spanGaps:false,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{filter:i=>i.datasetIndex===0,callbacks:{title:i=>i&&i[0]?('Rounds '+(+i[0].label-1)+'→'+i[0].label):'',label:c=>'range: '+rnd(c.parsed.y,2)}}},scales:{x:{grid:{display:false}},y:{grid:{color:F.line},beginAtZero:true}}}});
- const sig=document.getElementById('xmrSig');
+ if(CH['mr_'+sfx])CH['mr_'+sfx].destroy();
+ CH['mr_'+sfx]=new Chart(document.getElementById('mr_'+sfx),{type:'line',data:{labels:mrL,datasets:[{data:S.mr,borderColor:F.blue,borderWidth:2,pointBackgroundColor:mrC,pointBorderColor:mrC,pointRadius:mrR,tension:0,order:3},{data:mrCen,borderColor:F.inkSoft,borderWidth:1.5,borderDash:[6,4],pointRadius:0,spanGaps:false,order:2},{data:mrUcl,borderColor:F.clay,borderWidth:1,borderDash:[3,3],pointRadius:0,spanGaps:false,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{filter:i=>i.datasetIndex===0,callbacks:{title:i=>i&&i[0]?('Rounds '+(+i[0].label-1)+'→'+i[0].label):'',label:c=>'range: '+rnd(c.parsed.y,2)}}},scales:{x:{grid:{display:false}},y:{grid:{color:F.line},beginAtZero:true}}}});
+ const sig=document.getElementById('sig_'+sfx);
  let msg;
  if(S.segs.length===1){const g=S.segs[0];msg=`<b>One stable stage.</b> No shift detected across all ${N} rounds — mean ${rnd(g.m,2)}, limits ${rnd(g.l,2)} to ${rnd(g.u,2)}.`;}
  else{msg=`<b>${S.segs.length} stages — limits recalculated at each shift.</b> `+S.segs.map(g=>`<span class="pill" style="background:var(--line-soft);color:var(--ink)">R${g.start+1}–${g.end+1}: mean ${rnd(g.m,2)} [${rnd(g.l,2)}, ${rnd(g.u,2)}]</span>`).join(' → ');}
@@ -627,11 +670,12 @@ function drawXmr(){
  const lv=v.slice(last.start,last.end+1),sg1=(last.mrb/1.128)||1;
  const w1=lv.filter(x=>Math.abs(x-last.m)<=sg1).length/lv.length*100,w2=lv.filter(x=>Math.abs(x-last.m)<=2*sg1).length/lv.length*100;
  const near=Math.abs(w1-68)<10&&Math.abs(w2-95)<8;
- const dn=document.getElementById('distNote');
+ const dn=document.getElementById('dnote_'+sfx);
  if(dn)dn.innerHTML=`current stage R${last.start+1}–${last.end+1} vs normal · ±1σ ${Math.round(w1)}% <span style="opacity:.6">(68)</span> · ±2σ ${Math.round(w2)}% <span style="opacity:.6">(95)</span> · ${near?'roughly normal':(lv.length<12?'small sample':'note the skew')}`;
- try{drawDist(lv,{m:last.m,mrb:last.mrb},lo,hi);}catch(e){}
- ctrl.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===curMetric));
+ try{drawDist(lv,{m:last.m,mrb:last.mrb},lo,hi,'dist_'+sfx);}catch(e){}
+ document.getElementById('ctrl_'+sfx).querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===key));
 }
+function drawAllXmr(){['sg','t5','tr'].forEach(drawXmr);}
 
 /* players */
 function renderTabs(){document.getElementById('playertabs').innerHTML=PLAYERNAMES.map(p=>{const n=(PLAYERS[p]||[]).length+(load('golf-ledger-custom-'+p,[])||[]).length;return `<button data-p="${p}" class="${p===PLAYER?'on':''}">${p}${n?' · '+n:''}</button>`;}).join('');}
