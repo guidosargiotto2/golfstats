@@ -129,7 +129,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 
   <section>
     <h2><span class="n">01</span> Tiger's 5 · per round</h2>
-    <p class="lead">Tiger's five mistakes per round, stacked. Lower and flatter is better.</p>
+    <p class="lead">Tiger's five mistakes per round, stacked. The bold number on top is the round's total Tiger's 5; the small coloured number below it is your score to par (green = at or under par, clay = well over) — so you can see how the mistakes tracked the score. Lower and flatter is better.</p>
     <div class="card"><div class="chartbox" style="height:260px"><canvas id="mistChart" role="img" aria-label="Mistakes per round"></canvas></div></div>
   </section>
 
@@ -159,6 +159,13 @@ table.rt tbody tr:hover{background:var(--line-soft);}
     <div class="kpis" id="tradstats" style="margin-bottom:16px"></div>
     <div class="controls" id="ctrl_tr"></div>
     <div class="card" id="panel_tr"></div>
+  </section>
+
+  <section>
+    <h2><span class="n">◎</span> What drives your score</h2>
+    <p class="lead">How strongly each stat has moved your score to par across your logged rounds. Green bars (left) go with lower scores — do more of these; clay bars (right) go with higher scores — these are the leaks. Longer bar = stronger link.</p>
+    <div id="driversHead" style="margin:0 0 16px;padding:14px 16px;background:rgba(216,196,140,.16);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;font-size:15px;line-height:1.55;color:var(--ink)"></div>
+    <div class="card"><div class="chartbox" style="height:420px"><canvas id="driversChart" role="img" aria-label="Correlation of each stat with score to par"></canvas></div></div>
   </section>
 
   <section>
@@ -545,6 +552,7 @@ function renderAll(){
    ['sg','t5','tr'].forEach((sfx,i)=>{const ex=document.getElementById('expl_'+sfx);if(ex)ex.innerHTML=i===0?'<strong>No rounds yet.</strong> Open “Log a round, shot by shot” at the bottom to add '+PLAYER+'’s first round.':'<strong>No rounds yet.</strong>';const sg=document.getElementById('sig_'+sfx);if(sg)sg.innerHTML='';const dn=document.getElementById('dnote_'+sfx);if(dn)dn.innerHTML='';const dc=document.getElementById('dist_'+sfx);if(dc&&dc.getContext){const c=dc.getContext('2d');c.clearRect(0,0,dc.width,dc.height);}});
    const gd=document.getElementById('grid');if(gd)gd.innerHTML='';
    document.getElementById('lastRound').innerHTML='';document.getElementById('focusRec').innerHTML='';document.getElementById('tradstats').innerHTML='';
+   {const dh=document.getElementById('driversHead');if(dh)dh.innerHTML='';const dc=document.getElementById('driversChart');if(dc&&dc.getContext){const c=dc.getContext('2d');c.clearRect(0,0,dc.width,dc.height);}}
    return;
  }
  const scores=R.map(r=>r.stp), sgt=R.map(r=>r.sgtot);
@@ -593,6 +601,7 @@ function renderAll(){
  const mcats=[['p3','3-putts',F.blue],['db','Double bogeys',F.clay],['bp5','Bogey par-5',F.sand],['f150','3+ from 150',F.moss],['fx','3+ from 40',F.pine]];
  stackBar('mistChart',mcats);
  buildTable();
+ renderDrivers();
  drawAllXmr();
 }
 function std(a){const mn=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-mn)*(x-mn),0)/((a.length-1)||1));}
@@ -695,14 +704,49 @@ function hBar(cvId,arr){ // arr:[{label,v}] ascending
 }
 function stackBar(cvId,mcats){
   const cv=document.getElementById(cvId); const g=cvInit(cv,()=>stackBar(cvId,mcats)); if(!g)return; const {ctx,W,H}=g;
-  const mL=30,mR=10,mT=16,mB=40, pw=W-mL-mR, ph=H-mT-mB, n=R.length;
+  const mL=30,mR=10,mT=28,mB=40, pw=W-mL-mR, ph=H-mT-mB, n=R.length;
   const maxT=Math.max(1,...R.map(r=>r.mtot))+2, yOf=v=>mT+(maxT-v)/maxT*ph, bw=Math.min(18,pw/n*0.72), xOf=i=>mL+(i+0.5)/n*pw;
   ctx.textAlign='right';ctx.textBaseline='middle';
   niceTicks(0,maxT,4).forEach(t=>{const y=yOf(t);ctx.strokeStyle=F.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(mL,y);ctx.lineTo(W-mR,y);ctx.stroke();ctx.fillStyle=F.inkSoft;ctx.fillText(fmtN(t),mL-5,y);});
   R.forEach((r,i)=>{let acc=0;mcats.forEach(c=>{const val=r[c[0]];if(val>0){const y1=yOf(acc+val),y2=yOf(acc);ctx.fillStyle=c[2];ctx.fillRect(xOf(i)-bw/2,y1,bw,y2-y1);acc+=val;}});
-    const stp=r.stp;ctx.fillStyle=stp<0?'#1c5e3b':stp>=6?'#8f3418':F.inkSoft;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.font="600 10px 'Optima','Segoe UI',Candara,sans-serif";ctx.fillText((stp>=0?'+':'')+stp,xOf(i),yOf(acc)-3);ctx.font="11px 'Optima','Segoe UI',Candara,sans-serif";});
+    const top=yOf(acc), stp=r.stp;
+    ctx.textAlign='center';
+    // primary: total Tiger's 5 (= bar height)
+    ctx.fillStyle='#2a2a20';ctx.textBaseline='bottom';ctx.font="700 11px 'Optima','Segoe UI',Candara,sans-serif";ctx.fillText(String(r.mtot),xOf(i),top-13);
+    // secondary: score to par, colour-coded (keeps the mistakes↔score link)
+    ctx.fillStyle=stp<0?'#1c5e3b':stp>=6?'#8f3418':F.inkSoft;ctx.font="600 9px 'Optima','Segoe UI',Candara,sans-serif";ctx.fillText((stp>=0?'+':'')+stp,xOf(i),top-3);
+    ctx.font="11px 'Optima','Segoe UI',Candara,sans-serif";});
   let lx=mL;const ly=H-14;ctx.textBaseline='middle';
   mcats.forEach(c=>{ctx.fillStyle=c[2];rRect(ctx,lx,ly-5,10,10,2);ctx.fill();ctx.fillStyle=F.inkSoft;ctx.textAlign='left';ctx.fillText(c[1],lx+14,ly);lx+=ctx.measureText(c[1]).width+30;});
+}
+function corr(a,b){const n=a.length;if(n<3)return NaN;const ma=mean(a),mb=mean(b);let sab=0,sa=0,sb=0;for(let i=0;i<n;i++){const da=a[i]-ma,db=b[i]-mb;sab+=da*db;sa+=da*da;sb+=db*db;}if(sa===0||sb===0)return NaN;return sab/Math.sqrt(sa*sb);}
+const DRIVERS=[['gir','Greens hit'],['fw','Fairways hit'],['putts','Putts'],['pen','Penalties'],['p3','3-putts'],['db','Double bogeys'],['bp5','Bogey par-5'],['f150','3+ from 150'],['fx','3+ from 40']];
+function driverStats(){const y=R.map(r=>r.stp);return DRIVERS.map(([k,l])=>({l,r:corr(R.map(x=>x[k]),y)})).filter(o=>o.r===o.r).sort((a,b)=>Math.abs(b.r)-Math.abs(a.r));}
+function driversBar(cvId,arr){
+  const cv=document.getElementById(cvId); const g=cvInit(cv,()=>driversBar(cvId,arr)); if(!g)return; const {ctx,W,H}=g;
+  const mL=118,mR=44,mT=8,mB=26, pw=W-mL-mR, ph=H-mT-mB, n=arr.length;
+  const xOf=v=>mL+(v+1)/2*pw, x0=xOf(0), rowh=ph/Math.max(1,n), bh=Math.min(20,rowh*0.62);
+  ctx.textAlign='center';ctx.textBaseline='top';
+  [-1,-0.5,0,0.5,1].forEach(t=>{const x=xOf(t);ctx.strokeStyle=t===0?'rgba(92,99,87,0.5)':F.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,mT);ctx.lineTo(x,H-mB);ctx.stroke();ctx.fillStyle=F.inkSoft;ctx.fillText((t>0?'+':'')+t,x,H-mB+4);});
+  arr.forEach((a,i)=>{const cy=mT+rowh*i+rowh/2,x=xOf(a.r),left=Math.min(x0,x),w=Math.abs(x-x0);
+    ctx.fillStyle=a.r<0?F.fairway:F.clay;rRect(ctx,left,cy-bh/2,w,bh,4);ctx.fill();
+    ctx.fillStyle='#2a2a20';ctx.textAlign='right';ctx.textBaseline='middle';ctx.font="12.5px 'Optima','Segoe UI',Candara,sans-serif";ctx.fillText(a.l,mL-8,cy);
+    ctx.fillStyle=a.r<0?'#1c5e3b':'#8f3418';ctx.textAlign=a.r<0?'right':'left';ctx.font="600 12px 'Optima','Segoe UI',Candara,sans-serif";ctx.fillText((a.r>=0?'+':'')+a.r.toFixed(2), a.r<0? x-7 : x+7, cy);
+    ctx.font="11px 'Optima','Segoe UI',Candara,sans-serif";});
+}
+function renderDrivers(){
+  const head=document.getElementById('driversHead'); const N=R.length;
+  if(N<5){ if(head)head.innerHTML=`<strong>Not enough rounds yet.</strong> Once there are at least 5 logged rounds the relationships between your stats and your score become meaningful. Currently ${N}.`; const cv=document.getElementById('driversChart'); if(cv&&cv.getContext){const c=cv.getContext('2d');c.clearRect(0,0,cv.width,cv.height);} return; }
+  const arr=driverStats();
+  driversBar('driversChart',arr);
+  const lowers=arr.filter(o=>o.r<0).sort((a,b)=>a.r-b.r)[0];
+  const raises=arr.filter(o=>o.r>0).sort((a,b)=>b.r-a.r)[0];
+  const strength=Math.abs(raises?raises.r:0)>=Math.abs(lowers?lowers.r:0)?raises:lowers;
+  let t=`<strong style="color:var(--pine)">What moves your score.</strong> `;
+  if(lowers) t+=`Across ${N} rounds, your score drops most when you improve <b>${lowers.l.toLowerCase()}</b> (r ${lowers.r.toFixed(2)}). `;
+  if(raises) t+=`It climbs most on <b>${raises.l.toLowerCase()}</b> (r +${raises.r.toFixed(2)}) — that's the leak that costs you when it shows up. `;
+  if(N<12) t+=`<span style="color:#7a5a10">With only ${N} rounds, read this as a direction, not a verdict.</span>`;
+  if(head)head.innerHTML=t;
 }
 let tblSort={c:0,d:1};
 function buildTable(){
