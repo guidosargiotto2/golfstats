@@ -392,7 +392,10 @@ function shiftIndex(v,foundFrom,searchStart,N,cnt){
 function mk(v,start,end,cf,ct,count){return Object.assign({start,end,cf,ct,prov:(ct-cf+1)<12},limitsOf(v.slice(cf,ct+1),count));}
 function segLimits(v,count){
  const N=v.length; const segs=[]; const signals=[]; let foundFrom=0,dispStart=0,guard=0;
- const stageOK = N>=12;   // fewer than a dozen rounds — don't stage/hunt signals; one honest band over all of them
+ // Stage/hunt signals only for continuous (strokes-gained, score) metrics. Small-integer COUNT data
+ // (mistakes, fairways, greens, putts, penalties) is left as one whole-sample band: a flat opening run
+ // otherwise founds an artificially tight band that then flags ordinary counts as signals.
+ const stageOK = N>=12 && !count;
  // Old limits use only the rounds BEFORE the signal (so the signal shows under them). The NEW limits are
  // founded on the signal points themselves and the rounds after (never the old regime, never future beyond
  // the stage), giving a provisional band immediately that firms up toward ~20 rounds.
@@ -410,7 +413,7 @@ function segLimits(v,count){
    foundFrom=o; dispStart=w+1;                                                // new stage founded on the signal points onward
    if(dispStart>N-1) break;
  }
- if(!segs.length) segs.push(mk(v,0,N-1,0,Math.min(19,N-1),count));
+ if(!segs.length) segs.push(mk(v,0,N-1,0,count?N-1:Math.min(19,N-1),count));
  const sigSet=new Set(); signals.forEach(s=>s.pts.forEach(p=>sigSet.add(p)));
  const breaks=segs.map(g=>g.start);
  const segOf=i=>segs.find(g=>i>=g.start&&i<=g.end)||segs[segs.length-1];
@@ -600,7 +603,7 @@ function renderAll(){
  let sgArr=cats.map(c=>({label:c[1],v:rnd(mean(R.map(r=>r[c[0]])),2)}));
  sgArr.sort((a,b)=>a.v-b.v);
  sgArr.push({label:'Total',v:rnd(sgArr.reduce((s,a)=>s+a.v,0),2),total:true});
- {const tot=sgArr[sgArr.length-1].v; sgArr.forEach(a=>{if(!a.total)a.pct=tot?Math.round(a.v/tot*100):0;});}
+ {const denom=sgArr.filter(a=>!a.total).reduce((s,a)=>s+Math.abs(a.v),0)||1; sgArr.forEach(a=>{if(!a.total)a.pct=Math.round(Math.abs(a.v)/denom*100);});}
  hBar('sgBar',sgArr);
  const mcats=[['p3','3-putts',F.blue],['db','Double bogeys',F.clay],['bp5','Bogey par-5',F.sand],['f150','3+ from 150',F.moss],['fx','3+ from 40',F.pine]];
  stackBar('mistChart',mcats);
