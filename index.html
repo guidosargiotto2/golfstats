@@ -612,7 +612,7 @@ function statsToRounds(text){
     if(btn.disabled)return;
     btn.disabled=true;btn.classList.add('loading');setMsg('Fetching latest rounds…');
     try{
-      const res=await fetch(STATS_CSV_URL,{cache:'no-store'});
+      const res=await fetch(STATS_CSV_URL+'&_cb='+Date.now(),{cache:'no-store'});
       if(!res.ok)throw new Error('HTTP '+res.status);
       const text=await res.text();
       const rounds=statsToRounds(text);
