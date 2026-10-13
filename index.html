@@ -30,6 +30,16 @@ body{margin:0;background:radial-gradient(1200px 600px at 85% -10%, #eef4ea 0%, t
 .masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;border-bottom:2px solid var(--pine);padding-bottom:18px;margin-bottom:8px;flex-wrap:wrap;}
 .masthead h1{font-family:var(--serif);font-weight:600;font-size:34px;line-height:1.05;margin:0;letter-spacing:-0.01em;color:var(--pine);}
 .masthead .sub{font-family:var(--cond);text-transform:uppercase;letter-spacing:.18em;font-size:12px;color:var(--ink-soft);margin-top:6px;}
+.refresh{appearance:none;cursor:pointer;font-family:var(--cond);text-transform:uppercase;letter-spacing:.09em;font-size:12px;font-weight:700;color:#fffdf7;border:none;border-radius:999px;padding:9px 18px;display:inline-flex;align-items:center;gap:9px;background:linear-gradient(160deg,var(--fairway,#1f7a4d),var(--pine,#0f3a2c));box-shadow:0 8px 18px -9px rgba(15,58,44,.7);transition:transform .12s ease,box-shadow .12s ease,filter .12s ease;}
+.refresh:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 12px 22px -10px rgba(15,58,44,.8)}
+.refresh:active:not(:disabled){transform:translateY(0) scale(.98)}
+.refresh:disabled{filter:grayscale(.25) brightness(.96);cursor:progress}
+.refresh .rspin{width:13px;height:13px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:none;animation:rspin .7s linear infinite}
+.refresh.loading .rspin{display:inline-block}
+@keyframes rspin{to{transform:rotate(360deg)}}
+.refreshmsg{font-family:var(--cond);letter-spacing:.03em;font-size:11.5px;color:var(--ink-soft);min-height:14px;text-align:right}
+.refreshmsg.ok{color:var(--fairway,#1f7a4d);font-weight:700}
+.refreshmsg.err{color:var(--clay,#c2502e);font-weight:700}
 .flag{font-family:var(--cond);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--fairway);text-align:right;}
 .flag b{display:block;font-family:var(--serif);font-size:28px;font-weight:600;color:var(--pine);letter-spacing:0;}
 section{margin-top:42px;}
@@ -121,6 +131,10 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   <div class="playertabs" id="playertabs"></div>
   <header class="masthead">
     <div><h1>Round Ledger</h1><div class="sub" id="subName">Guido · shot-by-shot strokes gained</div></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+      <button id="refreshBtn" class="refresh" type="button"><span class="rspin"></span><span class="rtxt">⟳ Refresh from sheet</span></button>
+      <span id="refreshMsg" class="refreshmsg"></span>
+    </div>
   </header>
 
   <div class="controls" id="kpiRange" style="margin:6px 0 4px">
@@ -562,6 +576,61 @@ function toggleMR(){MRSHOW=!MRSHOW;try{localStorage.setItem('golf-mr-show',MRSHO
 buildPanels();
 applyMR();
 document.getElementById('kpiRange').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.r){kpiRange=b.dataset.r;renderAll();}});
+
+/* ---- Live refresh: pull Guido's STATS tab (published CSV) and rebuild in the browser ---- */
+const STATS_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vTJtwfT8_srDLhn5h65BI-sWUzHMJ3LxBA7YmSvI1_98543A5coKfOp9govqRVM21BS3YVf1DoQ3H9x/pub?gid=463758093&single=true&output=csv';
+function parseCSV(text){
+  const rows=[];let row=[],f='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){f+='"';i++;} else q=false; } else f+=c; }
+    else { if(c==='"')q=true; else if(c===','){row.push(f);f='';} else if(c==='\n'){row.push(f);rows.push(row);row=[];f='';} else if(c==='\r'){} else f+=c; }
+  }
+  if(f.length||row.length){row.push(f);rows.push(row);}
+  return rows;
+}
+function statsToRounds(text){
+  const rows=parseCSV(text);
+  const num=x=>{x=(x||'').trim();if(x===''||x==='#REF!'||x==='#NUM!'||x==='#DIV/0!')return null;const v=parseFloat(x);return isNaN(v)?null:v;};
+  const iv=x=>{const v=num(x);return v==null?null:Math.round(v);};
+  const dt=s=>{const m=/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec((s||'').trim());if(!m)return null;const d=+m[1],mo=+m[2],y=+m[3];if(mo<1||mo>12||d<1||d>31)return null;return `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;};
+  const out=[];
+  for(let i=1;i<rows.length;i++){const r=rows[i];if(r.length<39)continue;
+    const course=(r[0]||'').trim(), date=dt(r[1]), score=iv(r[5]);
+    if(!course||!date||score==null)continue;
+    out.push({course,date,score,par:iv(r[6]),stp:iv(r[8]),fw:iv(r[12]),gir:iv(r[13]),putts:iv(r[14]),dist:num(r[21]),
+      p3:iv(r[28]),db:iv(r[29]),bp5:iv(r[30]),f150:iv(r[31]),fx:iv(r[32]),mtot:iv(r[33]),
+      ott:num(r[34]),app:num(r[35]),atg:num(r[36]),putt:num(r[37]),sgtot:num(r[38]),
+      pen:iv(r[20]),bir:iv(r[23]),bog:iv(r[25]),dbl:iv(r[26])});
+  }
+  return out;
+}
+(function(){
+  const btn=document.getElementById('refreshBtn'), msg=document.getElementById('refreshMsg');
+  if(!btn)return;
+  const setMsg=(t,c)=>{msg.textContent=t;msg.className='refreshmsg'+(c?' '+c:'');};
+  btn.addEventListener('click',async()=>{
+    if(btn.disabled)return;
+    btn.disabled=true;btn.classList.add('loading');setMsg('Fetching latest rounds…');
+    try{
+      const res=await fetch(STATS_CSV_URL,{cache:'no-store'});
+      if(!res.ok)throw new Error('HTTP '+res.status);
+      const text=await res.text();
+      const rounds=statsToRounds(text);
+      if(rounds.length<5)throw new Error('only '+rounds.length+' rounds parsed');
+      const prev=(PLAYERS.Guido||[]).length;
+      PLAYERS.Guido=rounds;
+      if(PLAYER==='Guido'){BASE=rounds;}
+      renderAll();
+      const last=rounds[rounds.length-1];
+      const delta=rounds.length-prev;
+      setMsg(`Updated · ${rounds.length} rounds${delta>0?' (+'+delta+')':''} · latest ${last.date} ${last.score}`, 'ok');
+    }catch(e){
+      setMsg('Couldn’t refresh: '+(e&&e.message?e.message:e)+' — open the published site (fetch is blocked in preview).', 'err');
+    }finally{
+      btn.classList.remove('loading');setTimeout(()=>{btn.disabled=false;},800);
+    }
+  });
+})();
 
 function renderPriority(){
  const defs=[['ott','Off the tee','driving accuracy & dispersion'],['app','Approach','iron proximity, esp. from 150'],['atg','Around green','chipping & scrambling'],['putt','Putting','pace & holing out']];
