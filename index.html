@@ -604,32 +604,36 @@ function statsToRounds(text){
   }
   return out;
 }
-(function(){
+async function doRefresh(silent){
   const btn=document.getElementById('refreshBtn'), msg=document.getElementById('refreshMsg');
-  if(!btn)return;
-  const setMsg=(t,c)=>{msg.textContent=t;msg.className='refreshmsg'+(c?' '+c:'');};
-  btn.addEventListener('click',async()=>{
-    if(btn.disabled)return;
-    btn.disabled=true;btn.classList.add('loading');setMsg('Fetching latest rounds…');
-    try{
-      const res=await fetch(STATS_CSV_URL+'&_cb='+Date.now(),{cache:'no-store'});
-      if(!res.ok)throw new Error('HTTP '+res.status);
-      const text=await res.text();
-      const rounds=statsToRounds(text);
-      if(rounds.length<5)throw new Error('only '+rounds.length+' rounds parsed');
-      const prev=(PLAYERS.Guido||[]).length;
-      PLAYERS.Guido=rounds;
-      if(PLAYER==='Guido'){BASE=rounds;}
-      renderAll();
-      const last=rounds[rounds.length-1];
-      const delta=rounds.length-prev;
-      setMsg(`Updated · ${rounds.length} rounds${delta>0?' (+'+delta+')':''} · latest ${last.date} ${last.score}`, 'ok');
-    }catch(e){
-      setMsg('Couldn’t refresh: '+(e&&e.message?e.message:e)+' — open the published site (fetch is blocked in preview).', 'err');
-    }finally{
-      btn.classList.remove('loading');setTimeout(()=>{btn.disabled=false;},800);
-    }
-  });
+  const setMsg=(t,c)=>{if(msg){msg.textContent=t;msg.className='refreshmsg'+(c?' '+c:'');}};
+  if(btn){if(btn.disabled)return;btn.disabled=true;btn.classList.add('loading');}
+  setMsg(silent?'Checking for new rounds…':'Fetching latest rounds…');
+  try{
+    const res=await fetch(STATS_CSV_URL+'&_cb='+Date.now(),{cache:'no-store'});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const text=await res.text();
+    const rounds=statsToRounds(text);
+    if(rounds.length<5)throw new Error('only '+rounds.length+' rounds parsed');
+    const prev=(PLAYERS.Guido||[]).length;
+    PLAYERS.Guido=rounds;
+    if(PLAYER==='Guido'){BASE=rounds;}
+    renderAll();
+    const last=rounds[rounds.length-1];
+    const delta=rounds.length-prev;
+    setMsg(`Up to date · ${rounds.length} rounds${delta?(delta>0?' (+'+delta+')':' ('+delta+')'):''} · latest ${last.date} ${last.score}`, 'ok');
+  }catch(e){
+    if(!silent) setMsg('Couldn’t refresh: '+(e&&e.message?e.message:e)+' — open the published site (fetch is blocked in preview).', 'err');
+    else setMsg('Showing last saved data (live refresh unavailable here).');
+  }finally{
+    if(btn){btn.classList.remove('loading');setTimeout(()=>{btn.disabled=false;},800);}
+  }
+}
+(function(){
+  const btn=document.getElementById('refreshBtn');
+  if(btn)btn.addEventListener('click',()=>doRefresh(false));
+  // auto-pull the latest rounds on every load, after the initial render
+  setTimeout(()=>doRefresh(true),0);
 })();
 
 function renderPriority(){
