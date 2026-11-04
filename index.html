@@ -156,7 +156,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   </section>
 
   <section>
-    <h2><span class="n">02</span> Tiger's 5 · XmR</h2>
+    <h2><span class="n">02</span> Tiger's 5 · <span id="mlbl_t5">XmR</span></h2>
     <div class="controls" id="ctrl_t5"></div>
     <div class="card" id="panel_t5"></div>
   </section>
@@ -175,7 +175,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   </section>
 
   <section>
-    <h2><span class="n">05</span> Traditional stats · XmR</h2>
+    <h2><span class="n">05</span> Traditional stats · <span id="mlbl_tr">XmR</span></h2>
     <div class="controls" id="ctrl_tr"></div>
     <div class="card" id="panel_tr"></div>
   </section>
@@ -454,6 +454,8 @@ const metrics={'SG: Total':r=>r.sgtot,'SG: Off tee':r=>r.ott,'SG: Approach':r=>r
 const TOURAVG={'Bogey avoidance %':15.77,'Birdies / round':3.79};
 const TRAD=['Fairways / round','Greens / round','Putts / round','Penalties / round','Birdies / round'];
 const isCount=k=>k.startsWith('Mistakes')||TRAD.includes(k);
+// Low, zero-bounded mistake counts: monitored with a one-sided upward CUSUM, not XmR.
+const CUSUM_METRICS=new Set(['Mistakes: 3-putts','Mistakes: double bogeys','Mistakes: bogey par-5','Penalties / round']);
 const lowerBetter=k=>k.startsWith('Mistakes')||k==='Putts / round'||k==='Penalties / round'||k==='Score to par'||k==='Bogey avoidance %';
 const GROUPS={
  sg:{metrics:['SG: Total','SG: Off tee','SG: Approach','SG: Around green','SG: Putting'],cur:'SG: Total'},
@@ -775,6 +777,8 @@ function drawXmr(sfx){
  if(!R.length)return;
  {const d=document.getElementById('det_'+sfx);if(d)d.style.display='none';}
  const key=GROUPS[sfx].cur;
+ {const ml=document.getElementById('mlbl_'+sfx);if(ml)ml.textContent=CUSUM_METRICS.has(key)?'CUSUM':'XmR';}
+ if(CUSUM_METRICS.has(key)){ drawCusum(sfx,key); return; }
  const v0=R.map(metrics[key]);
  if(v0.some(x=>x==null)){
    const cv=document.getElementById('xmr_'+sfx),g=cvInit(cv);
@@ -817,6 +821,45 @@ function drawXmr(sfx){
  if(dn)dn.innerHTML=`current stage R${last.start+1}–${last.end+1} vs normal · ±1σ ${Math.round(w1)}% <span style="opacity:.6">(68)</span> · ±2σ ${Math.round(w2)}% <span style="opacity:.6">(95)</span> · ${near?'roughly normal':(lv.length<12?'small sample':'note the skew')}`;
  try{drawDist(lv,{m:last.m,mrb:last.mrb},lo,hi,'dist_'+sfx);}catch(e){}
  document.getElementById('ctrl_'+sfx).querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===key));
+}
+function drawCusum(sfx,key){
+ const v=R.map(metrics[key]), N=v.length, short=shortLbl(key);
+ const setTxt=(id,html)=>{const e=document.getElementById(id);if(e)e.innerHTML=html;};
+ const onbtns=()=>document.getElementById('ctrl_'+sfx).querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===key));
+ {const dc=document.getElementById('dist_'+sfx);if(dc)cvInit(dc);}            // CUSUM has no distribution panel
+ if(N<10){
+   const cv=document.getElementById('xmr_'+sfx),g=cvInit(cv);
+   if(g){g.ctx.fillStyle=F.inkSoft;g.ctx.textAlign='center';g.ctx.textBaseline='middle';g.ctx.font="13px 'Optima','Segoe UI',sans-serif";g.ctx.fillText('CUSUM needs ~12+ rounds for a baseline — '+PLAYER+' has '+N+'.',g.W/2,g.H/2);}
+   {const mr=document.getElementById('mr_'+sfx);if(mr)cvInit(mr);}
+   setTxt('expl_'+sfx,'<strong>Not enough rounds yet.</strong> A CUSUM baseline needs ~12+ rounds to set a reliable target; '+PLAYER+' has only '+N+'. Add more rounds and this chart will populate.');
+   setTxt('sig_'+sfx,''); setTxt('dnote_'+sfx,''); onbtns(); return;
+ }
+ const bN=Math.min(20,N), base=v.slice(0,bN), mu0=mean(base);
+ const bmr=[]; for(let i=1;i<base.length;i++)bmr.push(Math.abs(base[i]-base[i-1]));
+ let sd=mean(bmr)/1.128; if(!(sd>0))sd=Math.sqrt(Math.max(mu0,0.25));
+ const k=0.5*sd, h=4*sd;
+ let cp=0; const CP=[], sigIdx=[], sigSet=new Set();
+ for(let i=0;i<N;i++){ cp=Math.max(0,cp+(v[i]-(mu0+k))); CP.push(cp); if(cp>h){sigIdx.push(i);sigSet.add(i);cp=0;} }
+ const hi=Math.max(h*1.25, Math.max(...CP)*1.08, h+0.5);
+ const SIG='#8a63d2';
+ const cenA=CP.map(()=>0), upA=CP.map(()=>rnd(h,2)), loA=CP.map(()=>0);
+ const cols=CP.map((c,i)=>sigSet.has(i)?SIG:(c>=h?F.clay:F.blue));
+ const pbw=CP.map((c,i)=>sigSet.has(i)?2:0), rad=CP.map((c,i)=>sigSet.has(i)?6:3);
+ xmrLine('xmr_'+sfx,{v:CP.map(c=>rnd(c,2)),cenA,upA,loA,cols,pbc:cols,pbw,rad,lo:0,hi,cnt:true,breaks:[],brkLabels:[],key});
+ if(MRSHOW){
+   const rhi=Math.max(...v)+1;
+   xmrLine('mr_'+sfx,{v,cenA:v.map(()=>rnd(mu0,2)),upA:v.map(()=>rnd(mu0,2)),loA:v.map(()=>0),cols:v.map(x=>x>mu0?F.sand:F.blue),pbc:v.map(()=>F.blue),pbw:v.map(()=>0),rad:v.map(()=>3),lo:0,hi:rhi,cnt:true,breaks:[]});
+ }
+ const prov = N<20? ' · <span style="color:var(--clay)">baseline provisional ('+N+' rds)</span>':'';
+ setTxt('dnote_'+sfx,'CUSUM ↑ one-sided · target μ₀='+rnd(mu0,2)+' · k='+rnd(k,2)+' · h='+rnd(h,2)+' · baseline R1–'+bN+' (frozen)'+prov);
+ if(sigIdx.length){
+   setTxt('expl_'+sfx,'<strong style="font-size:16px">A real rise.</strong> Your '+short.toLowerCase()+' piled up past the CUSUM limit at round'+(sigIdx.length>1?'s':'')+' '+sigIdx.map(i=>i+1).join(', ')+' — more than chance against your baseline of '+rnd(mu0,2)+' a round.');
+   setTxt('sig_'+sfx,'<b>Signals (tab crossed h='+rnd(h,2)+'):</b> round '+sigIdx.map(i=>i+1).join(', ')+' &nbsp;·&nbsp; the tab restarts from zero after each.');
+ } else {
+   setTxt('expl_'+sfx,'<strong style="font-size:16px">Holding steady.</strong> Your '+short.toLowerCase()+' shows no sustained rise — the CUSUM tab never reaches its limit (h='+rnd(h,2)+'), so your rate of ~'+rnd(mu0,1)+' a round hasn’t changed.');
+   setTxt('sig_'+sfx,'<span style="color:var(--ink-soft)">No CUSUM signal — rate stable at the baseline.</span>');
+ }
+ onbtns();
 }
 function drawAllXmr(){['sg','t5','tr','sc'].forEach(drawXmr);}
 function scoreLine(cvId,scores){
