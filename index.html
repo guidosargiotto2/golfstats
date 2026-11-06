@@ -834,30 +834,42 @@ function drawCusum(sfx,key){
    setTxt('expl_'+sfx,'<strong>Not enough rounds yet.</strong> A CUSUM baseline needs ~12+ rounds to set a reliable target; '+PLAYER+' has only '+N+'. Add more rounds and this chart will populate.');
    setTxt('sig_'+sfx,''); setTxt('dnote_'+sfx,''); onbtns(); return;
  }
- const bN=Math.min(20,N), base=v.slice(0,bN), mu0=mean(base);
- const bmr=[]; for(let i=1;i<base.length;i++)bmr.push(Math.abs(base[i]-base[i-1]));
- let sd=mean(bmr)/1.128; if(!(sd>0))sd=Math.sqrt(Math.max(mu0,0.25));
- const k=0.5*sd, h=4*sd;
- let cp=0; const CP=[], sigIdx=[], sigSet=new Set();
- for(let i=0;i<N;i++){ cp=Math.max(0,cp+(v[i]-(mu0+k))); CP.push(cp); if(cp>h){sigIdx.push(i);sigSet.add(i);cp=0;} }
- const hi=Math.max(h*1.25, Math.max(...CP)*1.08, h+0.5);
+ // staged CUSUM: re-found the baseline (new target) after each confirmed upward signal
+ const segs=[]; let start=0, guard=0;
+ while(guard++<80){
+   const rem=N-start; if(rem<=0) break;
+   const win=Math.min(20,rem), base=v.slice(start,start+win), mu=mean(base);
+   const bmr=[]; for(let i=1;i<base.length;i++)bmr.push(Math.abs(base[i]-base[i-1]));
+   let sd=mean(bmr)/1.128; if(!(sd>0))sd=Math.sqrt(Math.max(mu,0.25));
+   const kk=0.5*sd, hh=4*sd; let cp=0, sigAt=-1; const cparr=[];
+   for(let i=start;i<N;i++){ cp=Math.max(0,cp+(v[i]-(mu+kk))); cparr.push(cp); if(cp>hh){sigAt=i;break;} }
+   segs.push({start,end:(sigAt>=0?sigAt:N-1),mu,kk,hh,cp:cparr,sig:sigAt>=0,win});
+   if(sigAt<0) break; start=sigAt+1;
+ }
+ const CP=new Array(N), upA=new Array(N), loA=new Array(N).fill(0), cenA=new Array(N).fill(0);
+ segs.forEach(s=>{ for(let i=s.start;i<=s.end;i++){ CP[i]=rnd(s.cp[i-s.start],2); upA[i]=rnd(s.hh,2); } });
+ const sigIdx=segs.filter(s=>s.sig).map(s=>s.end), sigSet=new Set(sigIdx);
+ const breaks=segs.slice(1).map(s=>s.start), brkLabels=breaks.map(()=>'new baseline');
+ const hi=Math.max(Math.max(...CP), Math.max(...upA), 0.5)*1.08;
  const SIG='#8a63d2';
- const cenA=CP.map(()=>0), upA=CP.map(()=>rnd(h,2)), loA=CP.map(()=>0);
- const cols=CP.map((c,i)=>sigSet.has(i)?SIG:(c>=h?F.clay:F.blue));
+ const cols=CP.map((c,i)=>sigSet.has(i)?SIG:(c>=upA[i]?F.clay:F.blue));
  const pbw=CP.map((c,i)=>sigSet.has(i)?2:0), rad=CP.map((c,i)=>sigSet.has(i)?6:3);
- xmrLine('xmr_'+sfx,{v:CP.map(c=>rnd(c,2)),cenA,upA,loA,cols,pbc:cols,pbw,rad,lo:0,hi,cnt:true,breaks:[],brkLabels:[],key});
+ xmrLine('xmr_'+sfx,{v:CP,cenA,upA,loA,cols,pbc:cols,pbw,rad,lo:0,hi,cnt:true,breaks,brkLabels,key});
+ const gmu=mean(v);
  if(MRSHOW){
    const rhi=Math.max(...v)+1;
-   xmrLine('mr_'+sfx,{v,cenA:v.map(()=>rnd(mu0,2)),upA:v.map(()=>rnd(mu0,2)),loA:v.map(()=>0),cols:v.map(x=>x>mu0?F.sand:F.blue),pbc:v.map(()=>F.blue),pbw:v.map(()=>0),rad:v.map(()=>3),lo:0,hi:rhi,cnt:true,breaks:[]});
+   xmrLine('mr_'+sfx,{v,cenA:v.map(()=>rnd(gmu,2)),upA:v.map(()=>rnd(gmu,2)),loA:v.map(()=>0),cols:v.map(x=>x>gmu?F.sand:F.blue),pbc:v.map(()=>F.blue),pbw:v.map(()=>0),rad:v.map(()=>3),lo:0,hi:rhi,cnt:true,breaks:[]});
  }
- const prov = N<20? ' · <span style="color:var(--clay)">baseline provisional ('+N+' rds)</span>':'';
- setTxt('dnote_'+sfx,'CUSUM ↑ one-sided · target μ₀='+rnd(mu0,2)+' · k='+rnd(k,2)+' · h='+rnd(h,2)+' · baseline R1–'+bN+' (frozen)'+prov);
+ const last=segs[segs.length-1];
+ const prov = N<20? ' <span style="color:var(--clay)">(provisional, '+N+' rds)</span>':'';
+ setTxt('dnote_'+sfx,'CUSUM up / one-sided · re-baselines on signal · stages '+segs.length+' · now target '+rnd(last.mu,2)+', k '+rnd(last.kk,2)+', h '+rnd(last.hh,2)+' · baseline R'+(last.start+1)+'–'+Math.min(last.start+last.win,N)+prov);
+ const howto=' <span style="color:var(--ink-soft)">Read it as a running tab: flat at 0 = normal; climbing = a worse-than-usual run; a purple dot past the red line = a confirmed rise, and the baseline re-sets there.</span>';
  if(sigIdx.length){
-   setTxt('expl_'+sfx,'<strong style="font-size:16px">A real rise.</strong> Your '+short.toLowerCase()+' piled up past the CUSUM limit at round'+(sigIdx.length>1?'s':'')+' '+sigIdx.map(i=>i+1).join(', ')+' — more than chance against your baseline of '+rnd(mu0,2)+' a round.');
-   setTxt('sig_'+sfx,'<b>Signals (tab crossed h='+rnd(h,2)+'):</b> round '+sigIdx.map(i=>i+1).join(', ')+' &nbsp;·&nbsp; the tab restarts from zero after each.');
+   setTxt('expl_'+sfx,'<strong style="font-size:16px">Re-set '+sigIdx.length+' time'+(sigIdx.length>1?'s':'')+'.</strong> Your '+short.toLowerCase()+' climbed past its limit at round'+(sigIdx.length>1?'s':'')+' '+sigIdx.map(i=>i+1).join(', ')+' — each time a worse stretch became the new normal, so the baseline re-founded.'+howto);
+   setTxt('sig_'+sfx,'<b>Baseline re-sets:</b> round '+sigIdx.map(i=>i+1).join(', ')+' &nbsp;·&nbsp; the new target is estimated from the rounds after each.');
  } else {
-   setTxt('expl_'+sfx,'<strong style="font-size:16px">Holding steady.</strong> Your '+short.toLowerCase()+' shows no sustained rise — the CUSUM tab never reaches its limit (h='+rnd(h,2)+'), so your rate of ~'+rnd(mu0,1)+' a round hasn’t changed.');
-   setTxt('sig_'+sfx,'<span style="color:var(--ink-soft)">No CUSUM signal — rate stable at the baseline.</span>');
+   setTxt('expl_'+sfx,'<strong style="font-size:16px">Holding steady.</strong> Your '+short.toLowerCase()+' never piled up past its limit — no re-baseline needed; your rate of ~'+rnd(last.mu,1)+' a round is stable.'+howto);
+   setTxt('sig_'+sfx,'<span style="color:var(--ink-soft)">No CUSUM signal — one stable baseline.</span>');
  }
  onbtns();
 }
