@@ -49,6 +49,8 @@ section{margin-top:42px;}
 h2{font-family:var(--serif);font-weight:500;font-size:21px;margin:0 0 4px;color:var(--pine);display:flex;align-items:baseline;gap:10px;}
 h2 .n{font-family:var(--cond);font-size:12px;letter-spacing:.2em;color:var(--sand-deep);border:1px solid var(--sand-deep);border-radius:999px;padding:2px 9px;}
 .lead{color:var(--ink-soft);font-size:14.5px;margin:2px 0 20px;max-width:74ch;}
+.chtype{font-family:var(--cond);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--pine);background:rgba(216,196,140,.22);border:1px solid rgba(123,146,106,.4);border-radius:999px;padding:4px 12px;display:inline-flex;align-items:center;gap:7px;margin:4px 0 14px;}
+.chtype::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--sand-deep);}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:22px;}
 .kpi{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s;}
 .kpi:hover{transform:translateY(-3px);box-shadow:0 10px 26px -14px rgba(15,58,44,.4);}
@@ -156,14 +158,16 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   </section>
 
   <section>
-    <h2><span class="n">02</span> Tiger's 5 · <span id="mlbl_t5">XmR</span></h2>
+    <h2><span class="n">02</span> Tiger's 5</h2>
     <div class="controls" id="ctrl_t5"></div>
+    <div class="chtype"><span id="mlbl_t5">XmR</span> chart</div>
     <div class="card" id="panel_t5"></div>
   </section>
 
   <section>
-    <h2><span class="n">03</span> Strokes gained · XmR</h2>
+    <h2><span class="n">03</span> Strokes gained</h2>
     <div class="controls" id="ctrl_sg"></div>
+    <div class="chtype">XmR chart</div>
     <div class="card" id="panel_sg"></div>
   </section>
 
@@ -175,8 +179,9 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   </section>
 
   <section>
-    <h2><span class="n">05</span> Traditional stats · <span id="mlbl_tr">XmR</span></h2>
+    <h2><span class="n">05</span> Traditional stats</h2>
     <div class="controls" id="ctrl_tr"></div>
+    <div class="chtype"><span id="mlbl_tr">XmR</span> chart</div>
     <div class="card" id="panel_tr"></div>
   </section>
 
