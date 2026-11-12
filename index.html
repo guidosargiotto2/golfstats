@@ -51,6 +51,53 @@ h2 .n{font-family:var(--cond);font-size:12px;letter-spacing:.2em;color:var(--san
 .lead{color:var(--ink-soft);font-size:14.5px;margin:2px 0 20px;max-width:74ch;}
 .chtype{font-family:var(--cond);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--pine);background:rgba(216,196,140,.22);border:1px solid rgba(123,146,106,.4);border-radius:999px;padding:4px 12px;display:inline-flex;align-items:center;gap:7px;margin:4px 0 14px;}
 .chtype::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--sand-deep);}
+/* ---- SG Explorer ---- */
+.sgcats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:6px 0 10px;}
+.sgcat{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:13px 15px 15px;position:relative;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s;}
+.sgcat:hover{transform:translateY(-2px);box-shadow:0 10px 24px -15px rgba(15,58,44,.45);}
+.sgcat.on{border-color:var(--fairway);box-shadow:0 0 0 1px var(--fairway) inset;}
+.sgcat.tot{background:linear-gradient(160deg,#102e24,#0f3a2c);border-color:var(--pine);}
+.sgcat .cl{font-family:var(--cond);text-transform:uppercase;letter-spacing:.12em;font-size:10.5px;color:var(--ink-soft);}
+.sgcat.tot .cl{color:rgba(255,255,255,.72);}
+.sgcat .cv{font-family:var(--serif);font-size:27px;font-weight:600;letter-spacing:-.01em;line-height:1.1;margin-top:3px;}
+.sgcat .cs{font-family:var(--cond);font-size:10.5px;color:var(--ink-soft);margin-top:1px;}
+.sgcat.tot .cs{color:rgba(255,255,255,.6);}
+.sgcat .cbar{height:4px;border-radius:2px;margin-top:9px;background:var(--line-soft);overflow:hidden;position:relative;}
+.sgcat .cbar i{position:absolute;top:0;bottom:0;display:block;}
+.sg-neg{color:var(--clay);} .sg-pos{color:var(--fairway);}
+.prio{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:14px 0 4px;}
+.pcard{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--clay);border-radius:0 12px 12px 0;padding:13px 16px;}
+.pcard.p2{border-left-color:var(--sand-deep);} .pcard.p3{border-left-color:var(--amber);}
+.pcard .pr{display:flex;align-items:baseline;gap:8px;}
+.pcard .pn{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--pine);}
+.pcard .pt{font-family:var(--cond);text-transform:uppercase;letter-spacing:.1em;font-size:11px;color:var(--ink-soft);}
+.pcard .pv{margin-left:auto;font-family:var(--serif);font-weight:600;font-size:15px;}
+.pcard .pd{font-size:13px;line-height:1.5;color:var(--ink);margin-top:6px;}
+.pcard .pf{font-size:12.5px;line-height:1.45;color:var(--ink-soft);margin-top:6px;}
+.pcard .pf b{color:var(--pine);font-weight:600;}
+.distctrls{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:14px;}
+.seg{display:inline-flex;background:var(--cream);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;}
+.seg button{appearance:none;border:none;background:none;cursor:pointer;font-family:var(--cond);text-transform:uppercase;letter-spacing:.07em;font-size:11px;font-weight:700;color:var(--ink-soft);padding:6px 13px;border-radius:999px;transition:all .15s;}
+.seg button:hover{color:var(--pine);}
+.seg button.on{background:var(--pine);color:#fffdf7;}
+.seglbl{font-family:var(--cond);text-transform:uppercase;letter-spacing:.12em;font-size:10px;color:var(--ink-soft);margin-right:-8px;}
+.heat{width:100%;border-collapse:separate;border-spacing:2px;font-family:var(--sans);}
+.heat th{font-family:var(--cond);text-transform:uppercase;letter-spacing:.07em;font-size:10.5px;color:var(--ink-soft);font-weight:700;padding:4px 6px;text-align:center;}
+.heat th.bandh{text-align:right;}
+.heat td{text-align:center;font-size:12.5px;font-weight:600;color:var(--ink);padding:7px 4px;border-radius:6px;font-variant-numeric:tabular-nums;transition:opacity .15s;}
+.heat td.band{font-family:var(--cond);font-weight:700;color:var(--ink-soft);text-align:right;background:none!important;font-size:11.5px;letter-spacing:.02em;}
+.heat tr.totrow td{border-top:2px solid var(--line);font-weight:700;}
+.heat td.dim{opacity:.18;}
+.dbars{margin-top:20px;}
+.dbar{display:grid;grid-template-columns:62px 1fr 54px;align-items:center;gap:8px;margin:3px 0;font-family:var(--cond);}
+.dbar .dl{font-size:11.5px;color:var(--ink-soft);text-align:right;font-weight:700;letter-spacing:.02em;}
+.dbar .dt{position:relative;height:17px;background:linear-gradient(90deg,transparent calc(50% - .5px),var(--line) calc(50% - .5px),var(--line) calc(50% + .5px),transparent calc(50% + .5px));}
+.dbar .dt i{position:absolute;top:2px;bottom:2px;border-radius:3px;}
+.dbar .dv{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;}
+.puttgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(74px,1fr));gap:6px;margin-top:12px;}
+.putcell{border:1px solid var(--line);border-radius:9px;padding:9px 6px;text-align:center;background:var(--paper);}
+.putcell .pf2{font-family:var(--cond);font-size:10px;letter-spacing:.04em;color:var(--ink-soft);text-transform:uppercase;}
+.putcell .pv2{font-family:var(--serif);font-size:16px;font-weight:600;margin-top:2px;}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:22px;}
 .kpi{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s;}
 .kpi:hover{transform:translateY(-3px);box-shadow:0 10px 26px -14px rgba(15,58,44,.4);}
@@ -176,6 +223,26 @@ table.rt tbody tr:hover{background:var(--line-soft);}
     <p class="lead">Average strokes gained per round by phase. Bars left of zero cost you shots.</p>
     <div class="card"><div class="chartbox" style="height:275px"><canvas id="sgBar" role="img" aria-label="Average strokes gained by category, with total and each category's share"></canvas></div></div>
     <div id="focusRec" style="margin-top:16px;padding:14px 16px;background:rgba(216,196,140,.16);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;font-size:15px;line-height:1.55;color:var(--ink)"></div>
+  </section>
+
+  <section id="sgdist">
+    <h2><span class="n">◆</span> Strokes gained explorer</h2>
+    <p class="lead">Where your strokes go — every category, then drilled down by distance and lie. The grid reads like a leak map: clay cells cost you shots, green cells gain them. Live from your sheet.</p>
+    <div class="sgcats" id="sgCats"></div>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:22px 0 2px;">Practice priorities</h3>
+    <div class="prio" id="sgPrio"></div>
+    <div class="card" style="margin-top:18px">
+      <div class="distctrls">
+        <div><span class="seglbl">Lie&nbsp;</span><span class="seg" id="distLieSeg"></span></div>
+        <div><span class="seglbl">Show&nbsp;</span><span class="seg" id="distMetricSeg"></span></div>
+      </div>
+      <div style="overflow-x:auto"><table class="heat" id="distHeat"></table></div>
+      <div class="dbars" id="distBars"></div>
+      <div class="note" id="distNote" style="font-size:11.5px;color:var(--ink-soft);font-family:var(--cond);letter-spacing:.03em;margin-top:14px"></div>
+    </div>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:26px 0 2px;">Putting by distance</h3>
+    <p class="lead" style="margin:2px 0 10px">Strokes gained on the greens, split by first-putt distance (feet). This is where the 3-putts hide.</p>
+    <div class="card"><div class="puttgrid" id="puttGrid"></div><div class="note" id="puttNote" style="font-size:11.5px;color:var(--ink-soft);font-family:var(--cond);letter-spacing:.03em;margin-top:12px"></div></div>
   </section>
 
   <section>
@@ -455,7 +522,7 @@ function segLimits(v,count){
  let w=0;for(let i=0;i<N;i++){const g=segOf(i),sg=(g.mrb/1.128)||0;if(sg>0&&Math.abs(v[i]-g.m)<=sg)w++;else w=0;if(w>=15){notes.push('15+ rounds hugging the centre line — the limits may be wider than how you actually score now');break;}}
  let bb=0;for(let i=0;i<N;i++){const g=segOf(i),sg=(g.mrb/1.128)||0;if(sg>0&&Math.abs(v[i]-g.m)>sg)bb++;else bb=0;if(bb>=8){notes.push('8+ rounds in a row away from the centre — may be two different games blended in (e.g. different courses or tees)');break;}}
  return {segs,segOf,mr,r1,r4,breaks,notes,signals,sigSet};}
-const metrics={'SG: Total':r=>r.sgtot,'SG: Off tee':r=>r.ott,'SG: Approach':r=>r.app,'SG: Around green':r=>r.atg,'SG: Putting':r=>r.putt,'Mistakes: total':r=>r.mtot,'Mistakes: 3-putts':r=>r.p3,'Mistakes: double bogeys':r=>r.db,'Mistakes: bogey par-5':r=>r.bp5,'Mistakes: 3+ from 150':r=>r.f150,'Mistakes: 3+ from 40':r=>r.fx,'Fairways / round':r=>r.fw,'Greens / round':r=>r.gir,'Putts / round':r=>r.putts,'Penalties / round':r=>r.pen,'Tee shot distance':r=>r.dist,'Bogey avoidance %':r=>r.bog==null?null:Math.round(1000*(r.bog+r.dbl)/18)/10,'Birdies / round':r=>r.bir==null?null:r.bir,'Score to par':r=>r.stp};
+const metrics={'SG: Total':r=>r.sgtot,'SG: Tee-to-green':r=>(r.ott==null||r.app==null||r.atg==null)?null:Math.round((r.ott+r.app+r.atg)*100)/100,'SG: Off tee':r=>r.ott,'SG: Approach':r=>r.app,'SG: Around green':r=>r.atg,'SG: Putting':r=>r.putt,'Mistakes: total':r=>r.mtot,'Mistakes: 3-putts':r=>r.p3,'Mistakes: double bogeys':r=>r.db,'Mistakes: bogey par-5':r=>r.bp5,'Mistakes: 3+ from 150':r=>r.f150,'Mistakes: 3+ from 40':r=>r.fx,'Fairways / round':r=>r.fw,'Greens / round':r=>r.gir,'Putts / round':r=>r.putts,'Penalties / round':r=>r.pen,'Tee shot distance':r=>r.dist,'Bogey avoidance %':r=>r.bog==null?null:Math.round(1000*(r.bog+r.dbl)/18)/10,'Birdies / round':r=>r.bir==null?null:r.bir,'Score to par':r=>r.stp};
 const TOURAVG={'Bogey avoidance %':15.77,'Birdies / round':3.79};
 const TRAD=['Fairways / round','Greens / round','Putts / round','Penalties / round','Birdies / round'];
 const isCount=k=>k.startsWith('Mistakes')||TRAD.includes(k);
@@ -463,7 +530,7 @@ const isCount=k=>k.startsWith('Mistakes')||TRAD.includes(k);
 const CUSUM_METRICS=new Set(['Mistakes: 3-putts','Mistakes: double bogeys','Mistakes: bogey par-5','Penalties / round']);
 const lowerBetter=k=>k.startsWith('Mistakes')||k==='Putts / round'||k==='Penalties / round'||k==='Score to par'||k==='Bogey avoidance %';
 const GROUPS={
- sg:{metrics:['SG: Total','SG: Off tee','SG: Approach','SG: Around green','SG: Putting'],cur:'SG: Total'},
+ sg:{metrics:['SG: Total','SG: Tee-to-green','SG: Off tee','SG: Approach','SG: Around green','SG: Putting'],cur:'SG: Total'},
  t5:{metrics:['Mistakes: total','Mistakes: 3-putts','Mistakes: double bogeys','Mistakes: bogey par-5','Mistakes: 3+ from 150','Mistakes: 3+ from 40'],cur:'Mistakes: total'},
  tr:{metrics:['Fairways / round','Greens / round','Putts / round','Penalties / round','Tee shot distance','Bogey avoidance %','Birdies / round'],cur:'Putts / round'},
  sc:{metrics:['Score to par'],cur:'Score to par'}
@@ -475,6 +542,7 @@ const PHASE={
  'SG: Around green':'your short game around the green',
  'SG: Putting':'your putting',
  'SG: Total':'your overall game',
+ 'SG: Tee-to-green':'your ball-striking (everything but putting)',
  'Mistakes: total':'your mistakes',
  'Mistakes: 3-putts':'your 3-putts',
  'Mistakes: double bogeys':'your double bogeys',
@@ -614,6 +682,113 @@ function statsToRounds(text){
   }
   return out;
 }
+/* ---- SG-by-distance explorer: data (baked fallback) + live CSV parser ---- */
+const DIST_FALLBACK={"bands":[{"from":10,"to":24,"sgr":{"tee":0,"fw":0.022,"rough":0.091,"bunker":-0.286,"total":-0.173},"sh":{"tee":0,"fw":2.03,"rough":1.701,"bunker":1.194,"total":4.925},"sgs":{"tee":0,"fw":0.011,"rough":0.053,"bunker":-0.24,"total":-0.035}},{"from":25,"to":49,"sgr":{"tee":0,"fw":-0.167,"rough":-0.033,"bunker":-0.046,"total":-0.246},"sh":{"tee":0,"fw":1.224,"rough":2.701,"bunker":0.552,"total":4.478},"sgs":{"tee":0,"fw":-0.137,"rough":-0.012,"bunker":-0.083,"total":-0.055}},{"from":50,"to":74,"sgr":{"tee":0,"fw":-0.062,"rough":-0.065,"bunker":-0.018,"total":-0.145},"sh":{"tee":0,"fw":0.791,"rough":1.209,"bunker":0.045,"total":2.045},"sgs":{"tee":0,"fw":-0.078,"rough":-0.054,"bunker":-0.403,"total":-0.071}},{"from":75,"to":99,"sgr":{"tee":0,"fw":0.008,"rough":0.047,"bunker":0.014,"total":0.068},"sh":{"tee":0,"fw":0.687,"rough":1.552,"bunker":0.179,"total":2.418},"sgs":{"tee":0,"fw":0.011,"rough":0.03,"bunker":0.077,"total":0.028}},{"from":100,"to":124,"sgr":{"tee":0,"fw":-0.161,"rough":-0.157,"bunker":-0.012,"total":-0.33},"sh":{"tee":0,"fw":0.94,"rough":1.567,"bunker":0.06,"total":2.567},"sgs":{"tee":0,"fw":-0.171,"rough":-0.1,"bunker":-0.203,"total":-0.128}},{"from":125,"to":149,"sgr":{"tee":-0.084,"fw":-0.049,"rough":-0.103,"bunker":0.017,"total":-0.219},"sh":{"tee":0.493,"fw":0.358,"rough":1.194,"bunker":0.06,"total":2.104},"sgs":{"tee":-0.171,"fw":-0.136,"rough":-0.086,"bunker":0.278,"total":-0.104}},{"from":150,"to":174,"sgr":{"tee":-0.093,"fw":-0.077,"rough":-0.283,"bunker":-0.029,"total":-0.481},"sh":{"tee":0.627,"fw":0.358,"rough":0.94,"bunker":0.075,"total":2},"sgs":{"tee":-0.149,"fw":-0.214,"rough":-0.301,"bunker":-0.382,"total":-0.241}},{"from":175,"to":199,"sgr":{"tee":-0.285,"fw":-0.115,"rough":-0.164,"bunker":-0.01,"total":-0.573},"sh":{"tee":1.06,"fw":0.328,"rough":0.851,"bunker":0.075,"total":2.313},"sgs":{"tee":-0.269,"fw":-0.35,"rough":-0.192,"bunker":-0.13,"total":-0.248}},{"from":200,"to":249,"sgr":{"tee":-0.481,"fw":-0.076,"rough":-0.08,"bunker":0,"total":-0.637},"sh":{"tee":1.836,"fw":0.313,"rough":1.388,"bunker":0.015,"total":3.552},"sgs":{"tee":-0.262,"fw":-0.242,"rough":-0.058,"bunker":-0.01,"total":-0.179}},{"from":250,"to":299,"sgr":{"tee":0,"fw":-0.032,"rough":0.039,"bunker":0.011,"total":0.017},"sh":{"tee":0,"fw":0.209,"rough":0.687,"bunker":0.03,"total":0.925},"sgs":{"tee":0,"fw":-0.155,"rough":0.057,"bunker":0.36,"total":0.019}},{"from":300,"to":399,"sgr":{"tee":-0.195,"fw":-0.011,"rough":-0.022,"bunker":-0.006,"total":-0.234},"sh":{"tee":5.657,"fw":0.075,"rough":0.254,"bunker":0.045,"total":6.03},"sgs":{"tee":-0.034,"fw":-0.15,"rough":-0.088,"bunker":-0.133,"total":-0.039}},{"from":400,"to":499,"sgr":{"tee":-1.055,"fw":0,"rough":-0.009,"bunker":0,"total":-1.064},"sh":{"tee":6.134,"fw":0,"rough":0.06,"bunker":0,"total":6.194},"sgs":{"tee":-0.172,"fw":0,"rough":-0.145,"bunker":0,"total":-0.172}},{"from":500,"to":999,"sgr":{"tee":-0.349,"fw":0,"rough":0,"bunker":0,"total":-0.349},"sh":{"tee":2.194,"fw":0,"rough":0,"bunker":0,"total":2.194},"sgs":{"tee":-0.159,"fw":0,"rough":0,"bunker":0,"total":-0.159}}],"total":{"sgr":{"tee":-2.542,"fw":-0.72,"rough":-0.739,"bunker":-0.365,"total":-4.366},"sh":{"tee":18,"fw":7.313,"rough":14.104,"bunker":2.328,"total":41.746}},"putt":[{"from":3,"to":5,"sgr":-0.303,"pr":4.269,"sgp":-0.071},{"from":6,"to":9,"sgr":-0.186,"pr":4.269,"sgp":-0.043},{"from":10,"to":14,"sgr":-0.202,"pr":3.597,"sgp":-0.056},{"from":15,"to":19,"sgr":-0.266,"pr":2.687,"sgp":-0.099},{"from":20,"to":29,"sgr":-0.206,"pr":2.09,"sgp":-0.099},{"from":30,"to":49,"sgr":-0.177,"pr":2.642,"sgp":-0.067},{"from":50,"to":120,"sgr":0.003,"pr":0.194,"sgp":0.013}],"puttTotal":{"sgr":-1.336,"pr":19.746,"sgp":-0.068}};
+let DIST=DIST_FALLBACK;
+let distMetric='sgr', distLie='all';
+function statsToDist(text){
+  const rows=parseCSV(text);
+  const num=x=>{x=(x||'').trim();if(x===''||x[0]==='#')return null;const v=parseFloat(x);return isNaN(v)?null:v;};
+  let hr=-1,fc=-1;
+  for(let i=0;i<rows.length&&hr<0;i++){const row=rows[i];
+    for(let c=0;c<row.length;c++){if((row[c]||'').trim()==='From'&&(row[c+2]||'').trim()==='Tee'&&(row[c+3]||'').trim()==='Fairway'){hr=i;fc=c;break;}}
+  }
+  if(hr<0)return null;
+  const lie=(row,o)=>({tee:num(row[o]),fw:num(row[o+1]),rough:num(row[o+2]),bunker:num(row[o+3]),total:num(row[o+4])});
+  const bands=[];let tot=null;const putt=[];let puttTotal=null;
+  for(let i=hr+1;i<rows.length;i++){const row=rows[i];const a=(row[fc]||'').trim();
+    if(a==='Total'){tot={sgr:lie(row,fc+2),sh:lie(row,fc+7),sgs:lie(row,fc+12)};}
+    else{const frm=num(row[fc]);if(frm!=null)bands.push({from:frm,to:num(row[fc+1]),sgr:lie(row,fc+2),sh:lie(row,fc+7),sgs:lie(row,fc+12)});}
+    const psgr=num(row[fc+19]);
+    if(psgr!=null){const pf=num(row[fc+17]);if(pf!=null)putt.push({from:pf,to:num(row[fc+18]),sgr:psgr,pr:num(row[fc+20]),sgp:num(row[fc+21])});else puttTotal={sgr:psgr,pr:num(row[fc+20]),sgp:num(row[fc+21])};}
+    if(a==='Total'&&bands.length>=10)break;
+  }
+  if(bands.length<5)return null;
+  return {bands,total:tot,putt,puttTotal};
+}
+const LIES=[['tee','Tee'],['fw','Fairway'],['rough','Rough'],['bunker','Bunker']];
+function bandLbl(b){return b.to>=999?(b.from+'+'):(b.from+'–'+b.to);}
+function heatColor(v,metric){
+  if(v==null||v===0)return 'transparent';
+  if(metric==='sh'){const t=Math.min(1,v/6);return 'rgba(184,154,82,'+(0.06+0.5*t).toFixed(3)+')';}
+  const cap=metric==='sgs'?0.3:0.6;let t=Math.max(-1,Math.min(1,v/cap));
+  return t<0?'rgba(194,80,46,'+(0.1+0.62*Math.abs(t)).toFixed(3)+')':'rgba(31,122,77,'+(0.1+0.62*t).toFixed(3)+')';
+}
+function fmtSG(v){return v==null?'·':(v>0?'+':'')+ (Math.abs(v)<0.005?'0.00':v.toFixed(2));}
+function renderSGExplorer(){
+  if(typeof R==='undefined'||!R||!R.length){return;}
+  const avg=f=>{const a=R.map(r=>r[f]).filter(v=>v!=null);return a.length?a.reduce((s,x)=>s+x,0)/a.length:0;};
+  const cats=[['ott','Off the tee','tee'],['app','Approach','approach'],['atg','Around green','short'],['putt','Putting','putt']];
+  const cvals=cats.map(([k,lbl,grp])=>({k,lbl,grp,v:avg(k)}));
+  const totV=avg('sgtot');
+  const sgn=x=>(x>=0?'+':'')+x.toFixed(2);
+  // ---- category tiles ----
+  const cmax=Math.max(0.5,...cvals.map(c=>Math.abs(c.v)));
+  const tile=c=>{const neg=c.v<0;const w=Math.min(100,Math.abs(c.v)/cmax*100);
+    return `<div class="sgcat" data-grp="${c.grp}">
+      <div class="cl">${c.lbl}</div>
+      <div class="cv ${neg?'sg-neg':'sg-pos'}">${sgn(c.v)}</div>
+      <div class="cs">per round</div>
+      <div class="cbar"><i style="${neg?'right:50%':'left:50%'};width:${w/2}%;background:${neg?'var(--clay)':'var(--fairway)'}"></i></div>
+    </div>`;};
+  document.getElementById('sgCats').innerHTML=cvals.map(tile).join('')+
+    `<div class="sgcat tot"><div class="cl">Total SG / round</div><div class="cv" style="color:${totV<0?'#e8a08a':'#9fd8b4'}">${sgn(totV)}</div><div class="cs">vs scratch benchmark</div></div>`;
+  // ---- practice priorities ----
+  const ranked=cvals.slice().sort((a,b)=>a.v-b.v);
+  const detail={
+    'Off the tee':()=>{const b=DIST.bands.filter(x=>x.from>=300).sort((a,b)=>a.sgr.tee-b.sgr.tee)[0];return b?{where:`long tee shots (${bandLbl(b)} yd: ${fmtSG(b.sgr.tee)}/rnd)`,focus:'Driver dispersion and strike — start line and a repeatable shot shape off the tee. This is your single biggest lever.'}:{where:'tee shots',focus:'Driver consistency.'};},
+    'Approach':()=>{const b=DIST.bands.filter(x=>x.from>=150&&x.from<=249).map(x=>({b:x,v:(x.sgr.fw||0)+(x.sgr.rough||0)+(x.sgr.bunker||0)})).sort((a,b)=>a.v-b.v)[0];return{where:b?`long approaches (${bandLbl(b.b)} yd, esp. rough)`:'long approaches',focus:'150–200 yd approaches and recovery from rough — proximity, not just greens hit.'};},
+    'Around green':()=>({where:'greenside (inside 50 yd)',focus:'Sharpen bunker technique and tight-lie chips; get the first one closer so putting is a tap-in.'}),
+    'Putting':()=>{const w=(DIST.putt||[]).slice().sort((a,b)=>(a.sgp||0)-(b.sgp||0))[0];return{where:w?`${w.from}–${w.to} ft (${fmtSG(w.sgp)}/putt)`:'lag putting',focus:'Speed control from 15–30 ft so long first putts finish inside a 3-ft circle — directly cuts 3-putts.'};},
+  };
+  const pc=ranked.slice(0,3).map((c,i)=>{const d=detail[c.lbl]?detail[c.lbl]():{where:'',focus:''};
+    return `<div class="pcard p${i+1}"><div class="pr"><span class="pn">${i+1}</span><span class="pt">${c.lbl}</span><span class="pv ${c.v<0?'sg-neg':'sg-pos'}">${sgn(c.v)}/rnd</span></div>
+      <div class="pd">Biggest drain: <b>${d.where}</b>.</div><div class="pf"><b>Work on:</b> ${d.focus}</div></div>`;}).join('');
+  document.getElementById('sgPrio').innerHTML=pc;
+  // ---- controls ----
+  const lieSeg=document.getElementById('distLieSeg');
+  if(lieSeg&&!lieSeg.dataset.init){lieSeg.dataset.init='1';
+    lieSeg.innerHTML=[['all','All'],...LIES].map(([k,l])=>`<button data-lie="${k}">${l}</button>`).join('');
+    lieSeg.addEventListener('click',e=>{const b=e.target.closest('button');if(b){distLie=b.dataset.lie;renderDistTable();}});}
+  const mSeg=document.getElementById('distMetricSeg');
+  if(mSeg&&!mSeg.dataset.init){mSeg.dataset.init='1';
+    mSeg.innerHTML=[['sgr','SG / round'],['sh','Shots / round'],['sgs','SG / shot']].map(([k,l])=>`<button data-m="${k}">${l}</button>`).join('');
+    mSeg.addEventListener('click',e=>{const b=e.target.closest('button');if(b){distMetric=b.dataset.m;renderDistTable();}});}
+  renderDistTable();
+  renderPutt();
+}
+function renderDistTable(){
+  const D=DIST;if(!D||!D.bands)return;
+  document.querySelectorAll('#distLieSeg button').forEach(b=>b.classList.toggle('on',b.dataset.lie===distLie));
+  document.querySelectorAll('#distMetricSeg button').forEach(b=>b.classList.toggle('on',b.dataset.m===distMetric));
+  const mk=distMetric;
+  const head='<tr><th class="bandh">Yds</th>'+LIES.map(([k,l])=>`<th>${l}</th>`).join('')+'<th>Total</th></tr>';
+  const rowHtml=(b,isTot)=>{const cells=LIES.map(([k])=>{const v=b[mk]?b[mk][k]:null;const dim=(distLie!=='all'&&distLie!==k)?' dim':'';
+      return `<td class="${dim}" style="background:${heatColor(v,mk)}">${mk==='sh'?(v==null?'·':v.toFixed(1)):fmtSG(v)}</td>`;}).join('');
+    const tv=b[mk]?b[mk].total:null;
+    return `<tr class="${isTot?'totrow':''}"><td class="band">${isTot?'Total':bandLbl(b)}</td>${cells}<td style="background:${isTot?'transparent':heatColor(tv,mk)}">${mk==='sh'?(tv==null?'·':tv.toFixed(1)):fmtSG(tv)}</td></tr>`;};
+  let html=head+D.bands.map(b=>rowHtml(b,false)).join('');
+  if(D.total)html+=rowHtml(D.total,true);
+  document.getElementById('distHeat').innerHTML=html;
+  // diverging bars: SG/round total per band (or selected lie)
+  const barKey=distLie==='all'?'total':distLie;
+  const bars=D.bands.map(b=>({l:bandLbl(b),v:(b.sgr&&b.sgr[barKey]!=null)?b.sgr[barKey]:0})).filter(x=>x.v!==0);
+  const mx=Math.max(0.3,...bars.map(x=>Math.abs(x.v)));
+  document.getElementById('distBars').innerHTML='<div style="font-family:var(--cond);text-transform:uppercase;letter-spacing:.1em;font-size:10.5px;color:var(--ink-soft);margin-bottom:6px">SG / round by distance'+(distLie!=='all'?' · '+LIES.find(l=>l[0]===distLie)[1]:'')+'</div>'+
+    bars.map(b=>{const w=Math.abs(b.v)/mx*50;const neg=b.v<0;
+      return `<div class="dbar"><span class="dl">${b.l}</span><span class="dt"><i style="${neg?'right:50%':'left:50%'};width:${w}%;background:${neg?'var(--clay)':'var(--fairway)'}"></i></span><span class="dv ${neg?'sg-neg':'sg-pos'}">${fmtSG(b.v)}</span></div>`;}).join('');
+  const t=D.total&&D.total.sgr?D.total.sgr:null;
+  document.getElementById('distNote').innerHTML=t?('Total tee-to-green: '+fmtSG(t.total)+' / round · tee '+fmtSG(t.tee)+' · fairway '+fmtSG(t.fw)+' · rough '+fmtSG(t.rough)+' · bunker '+fmtSG(t.bunker)+' · read red = strokes lost, green = gained'):'';
+}
+function renderPutt(){
+  const P=DIST&&DIST.putt;const g=document.getElementById('puttGrid');if(!g)return;
+  if(!P||!P.length){g.innerHTML='<div class="note">No putting-by-distance data.</div>';return;}
+  const worst=Math.max(...P.map(p=>Math.abs(p.sgr||0)),0.3);
+  g.innerHTML=P.map(p=>{const v=p.sgr||0;const t=Math.min(1,Math.abs(v)/worst);const bg=v<0?'rgba(194,80,46,'+(0.08+0.45*t).toFixed(2)+')':'rgba(31,122,77,'+(0.08+0.45*t).toFixed(2)+')';
+    return `<div class="putcell" style="background:${bg}"><div class="pf2">${p.from}–${p.to} ft</div><div class="pv2 ${v<0?'sg-neg':'sg-pos'}">${fmtSG(v)}</div><div class="pf2">${p.pr!=null?p.pr.toFixed(1)+' putts':''}</div></div>`;}).join('');
+  const pt=DIST.puttTotal;
+  document.getElementById('puttNote').innerHTML=pt?('Putting total '+fmtSG(pt.sgr)+' / round across '+(pt.pr!=null?pt.pr.toFixed(1):'—')+' measured putts · worst per-putt bands are your lag range — that’s the 3-putt source'):'';
+}
 async function doRefresh(silent){
   const btn=document.getElementById('refreshBtn'), msg=document.getElementById('refreshMsg');
   const setMsg=(t,c)=>{if(msg){msg.textContent=t;msg.className='refreshmsg'+(c?' '+c:'');}};
@@ -625,6 +800,7 @@ async function doRefresh(silent){
     const text=await res.text();
     const rounds=statsToRounds(text);
     if(rounds.length<5)throw new Error('only '+rounds.length+' rounds parsed');
+    {const d=statsToDist(text);if(d)DIST=d;}
     const prev=(PLAYERS.Guido||[]).length;
     PLAYERS.Guido=rounds;
     if(PLAYER==='Guido'){BASE=rounds;}
@@ -731,6 +907,7 @@ function renderAll(){
  buildTable();
  renderDrivers();
  drawAllXmr();
+ {const sd=document.getElementById('sgdist');if(sd){if(PLAYER==='Guido'){sd.style.display='';try{renderSGExplorer();}catch(e){}}else{sd.style.display='none';}}}
 }
 function std(a){const mn=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-mn)*(x-mn),0)/((a.length-1)||1));}
 function drawDist(v,s,lo,hi,distId){
