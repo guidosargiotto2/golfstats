@@ -736,7 +736,7 @@ function renderSGExplorer(){
   // ---- practice priorities ----
   const ranked=cvals.slice().sort((a,b)=>a.v-b.v);
   const detail={
-    'Off the tee':()=>{const b=DIST.bands.filter(x=>x.from>=300).sort((a,b)=>a.sgr.tee-b.sgr.tee)[0];return b?{where:`long tee shots (${bandLbl(b)} yd: ${fmtSG(b.sgr.tee)}/rnd)`,focus:'Driver dispersion and strike — start line and a repeatable shot shape off the tee. This is your single biggest lever.'}:{where:'tee shots',focus:'Driver consistency.'};},
+    'Off the tee':()=>{const fwa=R.map(r=>r.fw).filter(v=>v!=null),pena=R.map(r=>r.pen).filter(v=>v!=null);const fw=fwa.length?mean(fwa):null,pen=pena.length?mean(pena):0;return {where:`accuracy${fw!=null?` — about ${fw.toFixed(1)} fairways a round`:''}${pen>=0.5?`, plus ~${pen.toFixed(1)} penalty strokes`:''}`,focus:'Driver dispersion and strike — tighter start line and a repeatable shape, not more distance. This is your single biggest lever.'};},
     'Approach':()=>{const b=DIST.bands.filter(x=>x.from>=150&&x.from<=249).map(x=>({b:x,v:(x.sgr.fw||0)+(x.sgr.rough||0)+(x.sgr.bunker||0)})).sort((a,b)=>a.v-b.v)[0];return{where:b?`long approaches (${bandLbl(b.b)} yd, esp. rough)`:'long approaches',focus:'150–200 yd approaches and recovery from rough — proximity, not just greens hit.'};},
     'Around green':()=>({where:'greenside (inside 50 yd)',focus:'Sharpen bunker technique and tight-lie chips; get the first one closer so putting is a tap-in.'}),
     'Putting':()=>{const w=(DIST.putt||[]).slice().sort((a,b)=>(a.sgp||0)-(b.sgp||0))[0];return{where:w?`${w.from}–${w.to} ft (${fmtSG(w.sgp)}/putt)`:'lag putting',focus:'Speed control from 15–30 ft so long first putts finish inside a 3-ft circle — directly cuts 3-putts.'};},
