@@ -241,6 +241,8 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .pform{padding:16px 18px 22px;display:flex;flex-direction:column;gap:13px;}
 .lgscope .pform label{display:flex;flex-direction:column;gap:5px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:10.5px;color:var(--ink-soft);font-weight:700;}
 .lgscope .pform input, .lgscope .pform select{font-family:var(--sans);font-size:15px;border:1px solid var(--line);border-radius:9px;padding:10px;background:var(--cream);color:var(--ink);}
+.lgscope .pf_ta{width:100%;font-family:var(--cond);font-size:13px;border:1px solid var(--line);border-radius:9px;padding:9px;background:var(--cream);color:var(--ink);resize:vertical;}
+.lgscope .pf_btn{align-self:flex-start;border:none;border-radius:9px;padding:9px 16px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:#fff;background:linear-gradient(160deg,var(--fairway),var(--pine));cursor:pointer;}
 .lgscope .hiblock{background:rgba(216,196,140,.14);border:1px solid var(--line);border-radius:12px;padding:13px;display:flex;flex-direction:column;gap:11px;margin-top:4px;}
 .lgscope .hiblock .hirow{display:flex;align-items:baseline;}
 .lgscope .hiblock .hirow span{font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft);font-weight:700;}
@@ -1305,6 +1307,37 @@ const HISTK='scard-hist-v1';
 function loadHist(){try{return JSON.parse(localStorage.getItem(HISTK))||[]}catch(e){return[]}}
 let HIST=loadHist();
 function saveHist(){localStorage.setItem(HISTK,JSON.stringify(HIST));}
+/* published Handicap-Index history (official index over time) */
+const HIHK='scard-hihist-v1';
+function loadHIH(){try{return JSON.parse(localStorage.getItem(HIHK))||[]}catch(e){return[]}}
+let HIHIST=loadHIH();
+function saveHIH(){localStorage.setItem(HIHK,JSON.stringify(HIHIST));}
+/* parse an AAG-style differentials paste: lines with date dd/mm/yy, club, signed decimal diff */
+function parseDiffPaste(text){
+ const out=[];(text||'').split(/\n+/).forEach(line=>{
+   const dm=line.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);if(!dm)return;
+   const nums=line.match(/-?\d+[.,]\d+/g);if(!nums||!nums.length)return;
+   const diff=parseFloat(nums[nums.length-1].replace(',','.'));
+   let y=+dm[3];if(y<100)y+=2000;
+   const date=y+'-'+String(+dm[2]).padStart(2,'0')+'-'+String(+dm[1]).padStart(2,'0');
+   let club=line.replace(dm[0],'').replace(/-?\d+[.,]\d+.*$/,'').replace(/[★🏆]/g,'').replace(/^\s*\d+\s*-\s*/,'').trim();
+   out.push({date,course:club,diff});
+ });return out;}
+/* parse published-HI history: lines with a date and an index value */
+function parseHIPaste(text){
+ const out=[];(text||'').split(/\n+/).forEach(line=>{
+   const dm=line.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);if(!dm)return;
+   const nums=line.match(/-?\d+[.,]\d+/g);if(!nums||!nums.length)return;
+   const hi=parseFloat(nums[nums.length-1].replace(',','.'));
+   let y=+dm[3];if(y<100)y+=2000;
+   out.push({date:y+'-'+String(+dm[2]).padStart(2,'0')+'-'+String(+dm[1]).padStart(2,'0'),hi});
+ });return out;}
+function mergeHist(rows){const seen=new Set(HIST.map(r=>r.date+'|'+r.diff));let add=0;
+ rows.forEach(r=>{const k=r.date+'|'+r.diff;if(!seen.has(k)){HIST.push(r);seen.add(k);add++;}});
+ HIST.sort((a,b)=>(a.date<b.date?-1:a.date>b.date?1:0));saveHist();return add;}
+function mergeHIH(rows){const seen=new Set(HIHIST.map(r=>r.date+'|'+r.hi));let add=0;
+ rows.forEach(r=>{const k=r.date+'|'+r.hi;if(!seen.has(k)){HIHIST.push(r);seen.add(k);add++;}});
+ HIHIST.sort((a,b)=>(a.date<b.date?-1:a.date>b.date?1:0));saveHIH();return add;}
 function kForN(n){if(n<3)return 0;if(n<=5)return 1;if(n<=8)return 2;if(n<=11)return 3;if(n<=14)return 4;if(n<=16)return 5;if(n<=18)return 6;if(n===19)return 7;return 8;}
 function adjForN(n){return n===3?-2:((n===4||n===6)?-1:0);}
 function computeHI(){const d=HIST.slice(-20).map(r=>r.diff).filter(x=>typeof x==='number');const n=d.length;if(n<3)return null;
@@ -1436,6 +1469,20 @@ function renderProf(){
       <option value="auto" ${PROF.hiMode==='auto'?'selected':''}>Computed only</option>
       <option value="manual" ${PROF.hiMode==='manual'?'selected':''}>Manual only</option></select></label>
     ${PROF.hiMode!=='auto'?`<label>Manual index<input id="pf_himan" type="number" step="0.1" value="${PROF.hiManual}" placeholder="e.g. 1.2"></label>`:''}
+  </div>
+  <div class="hiblock">
+    <div class="hirow"><span>Import rounds (differentials)</span></div>
+    <div class="hisub">Paste your AAG record rows — date · club · differential (e.g. <i>07/11/26&nbsp;&nbsp;403 - CORDOBA GOLF CLUB&nbsp;&nbsp;5,0</i>). These seed your Handicap Index.</div>
+    <textarea id="pf_imp" class="pf_ta" rows="4" placeholder="07/11/26  403 - CORDOBA GOLF CLUB  5,0&#10;31/10/26  403 - CORDOBA GOLF CLUB  -2,0"></textarea>
+    <button class="pf_btn" id="pf_impbtn">Import rounds</button>
+    <div class="hisub" id="pf_impmsg">${HIST.length?HIST.length+' rounds in history':''}</div>
+  </div>
+  <div class="hiblock">
+    <div class="hirow"><span>Published HI history</span>${HIHIST.length?`<b style="font-size:16px">${HIHIST[HIHIST.length-1].hi}</b>`:''}</div>
+    <div class="hisub">Optional — paste your official index over time (date · HI) to track and compare against the computed one.</div>
+    <textarea id="pf_imph" class="pf_ta" rows="3" placeholder="12/11/26  -2,6&#10;01/11/26  -3,0"></textarea>
+    <button class="pf_btn" id="pf_imphbtn">Import HI history</button>
+    <div class="hisub" id="pf_imphmsg">${HIHIST.length?HIHIST.length+' index points · latest '+HIHIST[HIHIST.length-1].hi:''}</div>
   </div>`;
  const txt=(id,key)=>{const el=document.getElementById(id);if(el)el.addEventListener('input',()=>{PROF[key]=el.value;saveProf();});};
  txt('pf_name','name');txt('pf_nick','nick');
@@ -1445,6 +1492,10 @@ function renderProf(){
  document.getElementById('pf_club').addEventListener('change',e=>{PROF.teeClub=e.target.value;saveProf();});
  document.getElementById('pf_himode').addEventListener('change',e=>{PROF.hiMode=e.target.value;saveProf();renderProf();});
  const man=document.getElementById('pf_himan');if(man)man.addEventListener('input',()=>{PROF.hiManual=man.value;saveProf();});
+ document.getElementById('pf_impbtn').addEventListener('click',()=>{const rows=parseDiffPaste(document.getElementById('pf_imp').value);const n=mergeHist(rows);
+   document.getElementById('pf_impmsg').textContent=n?('Imported '+n+' rounds · '+HIST.length+' total · Index now '+(effHI()!=null?effHI():'—')):'No rows recognised — check the format.';if(n)renderProf();});
+ document.getElementById('pf_imphbtn').addEventListener('click',()=>{const rows=parseHIPaste(document.getElementById('pf_imph').value);const n=mergeHIH(rows);
+   document.getElementById('pf_imphmsg').textContent=n?('Imported '+n+' index points · latest '+HIHIST[HIHIST.length-1].hi):'No rows recognised — check the format.';if(n)renderProf();});
 }
 render();renderSel();window.LGR={card:function(){render();renderSel();},profile:renderProf};
 
