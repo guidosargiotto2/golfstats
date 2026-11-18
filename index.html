@@ -182,6 +182,15 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .tabnav button{font-family:var(--cond);text-transform:uppercase;letter-spacing:.1em;font-size:13px;font-weight:700;padding:12px 20px;border:none;background:none;color:var(--ink-soft);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
 .tabnav button:hover{color:var(--pine)}
 .tabnav button.on{color:var(--pine);border-bottom-color:var(--fairway)}
+.whoami{margin-left:auto;align-self:center;font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft)}
+.logoutbtn{align-self:center;border:none;background:none;color:var(--clay);font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:11px;cursor:pointer;padding:0 6px 0 12px;border-bottom:3px solid transparent;margin-bottom:-2px}
+.login{position:fixed;inset:0;z-index:100;background:radial-gradient(900px 500px at 80% -10%,#1a5038,transparent 60%),linear-gradient(160deg,#0f3a2c,#11271c);display:flex;align-items:center;justify-content:center;padding:20px}
+.loginbox{background:var(--paper);border-radius:18px;padding:30px 26px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;box-shadow:0 30px 70px -20px rgba(0,0,0,.55)}
+.loginbox h1{font-family:var(--serif);color:var(--pine);margin:0;font-size:26px;font-weight:600;letter-spacing:-.01em}
+.loginbox .sub2{margin:0 0 8px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--ink-soft)}
+.loginbox input{font-family:var(--sans);font-size:15px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--cream);color:var(--ink)}
+.loginbox button{border:none;border-radius:10px;padding:13px;font-family:var(--cond);font-weight:700;letter-spacing:.09em;text-transform:uppercase;font-size:13px;color:#fff;background:linear-gradient(160deg,var(--fairway),var(--pine));cursor:pointer}
+.lgerr{color:var(--clay);font-family:var(--cond);font-size:12px;min-height:14px}
 
 /* ===== embedded logger (scoped) ===== */
 .lgscope .wrap{max-width:720px;margin:0 auto;padding:0 0 60px;}
@@ -254,8 +263,17 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 </style>
 </head>
 <body>
+<div id="loginOverlay" class="login" style="display:none">
+  <form id="loginForm" class="loginbox" autocomplete="on">
+    <h1>Round Ledger</h1><div class="sub2">Sign in</div>
+    <input id="lg_user" name="username" placeholder="Username" autocomplete="username" autocapitalize="none">
+    <input id="lg_pass" name="password" type="password" placeholder="Password" autocomplete="current-password">
+    <button type="submit">Enter</button>
+    <div class="lgerr" id="lg_err"></div>
+  </form>
+</div>
 <div class="wrap">
-  <div class="tabnav" id="tabnav"><button data-v="log">Log a round</button><button data-v="stats" class="on">Statistics</button><button data-v="profile">Profile</button></div>
+  <div class="tabnav" id="tabnav"><button data-v="log">Log a round</button><button data-v="stats" class="on">Statistics</button><button data-v="profile">Profile</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button">Log out</button></div>
   <div id="view-log" class="lgscope" style="display:none"><div class="wrap">
  <div class="bar"><div><h1>Shot Scorecard</h1><div class="meta" id="meta">CGC</div></div>
    <div class="tot"><div class="sc" id="totScore">—</div><div class="sg" id="totSG">predicted</div></div></div>
@@ -1288,27 +1306,28 @@ const COURSES={
      Rojas:{label:'Rojas / Red', cr:73.4, slope:127, est:false,   yds:[332,448,354,139,310,360,292,136,274, 124,322,427,347,152,386,467,336,322]}
    }}
 };
-const PKEY='scard-profile-v4',RKEY='scard-round-v4',DKEY='scard-default-v1';
+const LU=(localStorage.getItem('app-user')||'Guido')+'::';  // per-user namespace
+const PKEY=LU+'scard-profile-v4',RKEY=LU+'scard-round-v4',DKEY=LU+'scard-default-v1';
 function loadDefault(){return {course:PROF.homeCourse||'CGC',tee:PROF.defaultTee||'Negras'};}
 function setDefault(course,tee){PROF.homeCourse=course;PROF.defaultTee=tee;saveProf();}
-const YKEY='scard-yover-v1';   // user overrides of hole length, keyed course|tee#hole
+const YKEY=LU+'scard-yover-v1';   // user overrides of hole length, keyed course|tee#hole
 function loadYover(){try{return JSON.parse(localStorage.getItem(YKEY))||{}}catch(e){return{}}}
 let YOVER=loadYover();
 function saveYover(){localStorage.setItem(YKEY,JSON.stringify(YOVER));}
 function stdYd(course,tee,i){const k=course+'|'+tee+'#'+i;return YOVER[k]!=null?YOVER[k]:COURSES[course].tees[tee].yds[i];}
 /* ===== USER PROFILE ===== */
-const PROFK='scard-prof-v1';
+const PROFK=LU+'scard-prof-v1';
 const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver'};
 function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage.getItem(PROFK))||{})}catch(e){return Object.assign({},PROF_DEF)}}
 let PROF=loadProf();
 function saveProf(){localStorage.setItem(PROFK,JSON.stringify(PROF));}
 /* round history (for Handicap Index) */
-const HISTK='scard-hist-v1';
+const HISTK=LU+'scard-hist-v1';
 function loadHist(){try{return JSON.parse(localStorage.getItem(HISTK))||[]}catch(e){return[]}}
 let HIST=loadHist();
 function saveHist(){localStorage.setItem(HISTK,JSON.stringify(HIST));}
 /* published Handicap-Index history (official index over time) */
-const HIHK='scard-hihist-v1';
+const HIHK=LU+'scard-hihist-v1';
 function loadHIH(){try{return JSON.parse(localStorage.getItem(HIHK))||[]}catch(e){return[]}}
 let HIHIST=loadHIH();
 function saveHIH(){localStorage.setItem(HIHK,JSON.stringify(HIHIST));}
@@ -1509,8 +1528,29 @@ render();renderSel();window.LGR={card:function(){render();renderSel();},profile:
    if(v==='profile'&&window.LGR)window.LGR.profile();
    window.scrollTo(0,0);
  }
- document.getElementById('tabnav').addEventListener('click',function(e){var b=e.target.closest('button');if(b)show(b.dataset.v);});
+ document.getElementById('tabnav').addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.dataset.v)show(b.dataset.v);});
  show('stats');
+})();
+/* ---- soft login / per-user namespace (client-side only; see note) ---- */
+(function(){
+ var CREDS={guido:'Guido',manuel:'Manuel',nicolas:'Nicolas'};
+ var ov=document.getElementById('loginOverlay'), user=localStorage.getItem('app-user');
+ function enter(name){
+   if(ov)ov.style.display='none';
+   var w=document.getElementById('whoami');if(w)w.textContent=name;
+   try{if(typeof setPlayer==='function'&&typeof PLAYERNAMES!=='undefined'&&PLAYERNAMES.indexOf(name)>=0)setPlayer(name);}catch(e){}
+ }
+ if(user){enter(user);} else if(ov){ov.style.display='flex';}
+ var f=document.getElementById('loginForm');
+ if(f)f.addEventListener('submit',function(e){e.preventDefault();
+   var u=(document.getElementById('lg_user').value||'').trim().toLowerCase();
+   var p=(document.getElementById('lg_pass').value||'').trim().toLowerCase();
+   var name=CREDS[u];
+   if(name&&p===u){localStorage.setItem('app-user',name);location.reload();}
+   else{document.getElementById('lg_err').textContent='Wrong username or password.';}
+ });
+ var lo=document.getElementById('logoutBtn');
+ if(lo)lo.addEventListener('click',function(){localStorage.removeItem('app-user');location.reload();});
 })();
 
 </script>
