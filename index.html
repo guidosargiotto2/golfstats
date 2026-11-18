@@ -123,7 +123,8 @@ h2 .n{font-family:var(--cond);font-size:12px;letter-spacing:.2em;color:var(--san
 .sig b{color:var(--pine);font-weight:600;}
 .pill{display:inline-block;font-family:var(--cond);font-size:12px;letter-spacing:.06em;padding:2px 9px;border-radius:999px;margin:2px 4px 2px 0;}
 .pill.r1{background:#f7e0d7;color:#8f3418;} .pill.r2{background:#dcefe1;color:#1c5e3b;} .pill.r4{background:#f6ecd4;color:#7a5a10;}
-table.rt{border-collapse:collapse;width:100%;font-size:13px;}
+.rtfull{width:100vw;position:relative;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;padding:0 20px;}
+table.rt{border-collapse:collapse;width:100%;min-width:1500px;font-size:13px;}
 table.rt thead th{position:sticky;top:0;background:var(--pine);color:#fff;font-family:var(--cond);letter-spacing:.06em;text-transform:uppercase;font-size:11.5px;padding:9px 11px;text-align:right;}
 table.rt thead th:nth-child(2){text-align:left;}
 table.rt tbody td{padding:7px 11px;border-top:1px solid var(--line-soft);text-align:right;white-space:nowrap;}
@@ -268,9 +269,20 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .hiblock .hirow span{font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft);font-weight:700;}
 .lgscope .hiblock .hirow b{margin-left:auto;font-family:var(--serif);font-size:26px;font-weight:600;color:var(--pine);}
 .lgscope .hiblock .hisub{font-family:var(--cond);font-size:11px;color:var(--ink-soft);margin-top:-4px;}
-.lgscope .bar{position:static}
-.lgscope thead th{position:static}
 .lgscope{max-width:none}
+/* ===== full-screen round editor with a frozen header ===== */
+#view-log{width:100vw;position:relative;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;}
+#view-log .wrap{max-width:none;padding:0 20px 60px;}
+#view-log .bar{position:sticky;top:0;z-index:12;}
+.lgscope .lgtablewrap{max-height:calc(100vh - 230px);overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:2px;}
+.lgscope .lgtablewrap table{min-width:720px;}
+.lgscope .lgtablewrap thead th{position:sticky;top:0;z-index:6;background:var(--pine);color:#fff;box-shadow:0 2px 0 rgba(0,0,0,.08);}
+.lgscope td.liec{padding:3px 3px;}
+.lgscope input.lc{width:100%;min-width:52px;font-family:var(--cond);font-size:13px;border:1px solid transparent;border-radius:6px;padding:7px 4px;background:transparent;color:var(--ink-soft);text-align:center;}
+.lgscope input.lc.on{border-color:var(--line);background:var(--paper);color:var(--ink);font-family:var(--sans);font-weight:600;}
+.lgscope tr.shot.pred input.lc.on{background:rgba(201,154,30,.1);border-color:rgba(201,154,30,.4);color:var(--amber);}
+.lgscope tr.shot.conf input.lc.on{background:var(--paper);color:var(--ink);}
+.lgscope input.lc:focus{outline:2px solid var(--fairway);outline-offset:-2px;}
 </style>
 </head>
 <body>
@@ -296,8 +308,8 @@ table.rt tbody tr:hover{background:var(--line-soft);}
    <button class="star" id="starBtn">★ default</button>
  </div>
  <div class="warn" id="warn"></div>
- <table><thead><tr><th class="lh">#</th><th class="lh">Lie</th><th>To hole</th><th>Pen</th><th>SG</th><th></th></tr></thead>
- <tbody id="lgBody"></tbody></table>
+ <div class="lgtablewrap"><table><thead><tr><th class="lh">#</th><th>Tee</th><th>Fairway</th><th>Rough</th><th>Sand</th><th>Recovery</th><th>Green·ft</th><th>Pen</th><th>SG</th><th></th></tr></thead>
+ <tbody id="lgBody"></tbody></table></div>
  <div class="savebar"><span class="note" id="snote"></span><button id="lgSaveBtn" disabled>Save</button></div>
  <div class="hint">Rows are <b>predicted</b> (amber) until you touch them. Type a distance (yards; feet when lie = Green), set the lie, add a Pen on the shot where it happened. Add/remove rows per hole freely. Prototype — saves in this browser only.</div>
 </div></div>
@@ -1274,14 +1286,14 @@ function renderDrivers(){
 let tblSort={c:0,d:1};
 function buildTable(){
   const el=document.getElementById('grid'); if(!el)return;
-  const cols=['#','Date','Course','Score','To par','FW','GIR','Putts','SG OTT','SG APP','SG ATG','SG PUTT','SG TOT','Mist.'];
-  const rows=R.map((r,i)=>[i+1,(r.date||''),r.course,r.score,r.stp,r.fw,r.gir,r.putts,r.ott,r.app,r.atg,r.putt,r.sgtot,r.mtot]);
-  const sgCols=new Set([8,9,10,11,12]), parCol=4;
+  const cols=['#','Date','Course','Score','To par','FW','GIR','Putts','Pen','Drive','Birdies','Bogeys','Doubles','3-putts','Dbl bogey','Bogey P5','+4 from 150','3+ from 40','SG OTT','SG APP','SG ATG','SG PUTT','SG TOT','Mist.'];
+  const rows=R.map((r,i)=>[i+1,(r.date||''),r.course,r.score,r.stp,r.fw,r.gir,r.putts,r.pen,r.dist,r.bir,r.bog,r.dbl,r.p3,r.db,r.bp5,r.f150,r.fx,r.ott,r.app,r.atg,r.putt,r.sgtot,r.mtot]);
+  const sgCols=new Set([18,19,20,21,22]), parCol=4;
   rows.sort((a,b)=>{const x=a[tblSort.c],y=b[tblSort.c];const c=(typeof x==='number'&&typeof y==='number')?x-y:String(x).localeCompare(String(y));return c*tblSort.d;});
   const cell=(v,ci)=>{ if(sgCols.has(ci))return `<td class="${v<0?'neg':v>0?'pos':''}">${v>0?'+':''}${v}</td>`; if(ci===parCol)return `<td class="${v>0?'neg':v<0?'pos':''}">${v>0?'+':''}${v}</td>`; return `<td>${v}</td>`; };
   const th=cols.map((c,i)=>`<th data-c="${i}" style="cursor:pointer;user-select:none;white-space:nowrap">${c}${tblSort.c===i?(tblSort.d>0?' ▲':' ▼'):''}</th>`).join('');
   const body=rows.map(r=>'<tr>'+r.map((v,ci)=>cell(v,ci)).join('')+'</tr>').join('');
-  el.innerHTML=`<div style="overflow:auto;max-height:520px;border:1px solid var(--line);border-radius:10px"><table class="rt"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table></div>`;
+  el.innerHTML=`<div class="rtfull"><div style="overflow:auto;max-height:calc(100vh - 220px);border:1px solid var(--line);border-radius:10px"><table class="rt"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table></div></div>`;
   el.querySelectorAll('th').forEach(h=>h.addEventListener('click',()=>{const c=+h.dataset.c; if(tblSort.c===c)tblSort.d*=-1; else {tblSort.c=c;tblSort.d=1;} buildTable();}));
 }
 
@@ -1476,20 +1488,21 @@ function render(){
  const body=document.getElementById('lgBody');let html='';
  R.holes.forEach((h,hi)=>{
    const sg=holeSG(h);const ok=holeConfirmed(h);
-   html+=`<tr class="holesep${ok?' conf':''}"><td colspan="6"><span class="hn">Hole ${hi+1}</span>
+   const m=holeMistakes(h);const flags=[m.p3?'3-putt':'',m.db?'double':'',m.bp5?'bogey P5':'',m.f150?'bogey ≤'+bogeyXyd()+'y':'',m.short?shortLabel():''].filter(Boolean).join(' · ');
+   html+=`<tr class="holesep${ok?' conf':''}"><td colspan="10"><span class="hn">Hole ${hi+1}</span>
      <span class="pc">${[3,4,5].map(p=>`<button class="${h.par===p?'on':''}" data-par="${hi}:${p}">${p}</button>`).join('')}</span>
-     <span class="hsum">${ok?'✓ ':'<span style="color:var(--amber)">~ </span>'}<b class="${sg.tot<0?'sg-neg':'sg-pos'}">SG ${fmt(sg.tot)}</b> · ${sg.strokes} strk · par ${h.par} · <input class="ydedit" type="number" inputmode="numeric" data-yh="${hi}" value="${Y2U(h.yd)}" title="hole length — editable">${PROF.units}${h.hcp?' · SI '+h.hcp:''}</span></td></tr>`;
+     <span class="hsum">${ok?'✓ ':'<span style="color:var(--amber)">~ </span>'}<b class="${sg.tot<0?'sg-neg':'sg-pos'}">SG ${fmt(sg.tot)}</b> · ${sg.strokes} strk · par ${h.par} · <input class="ydedit" type="number" inputmode="numeric" data-yh="${hi}" value="${Y2U(h.yd)}" title="hole length — editable">${PROF.units}${h.hcp?' · SI '+h.hcp:''}${flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':''}</span></td></tr>`;
+   const LIECOLS=['tee','fw','rough','sand','rec','putt'];
    h.shots.forEach((s,si)=>{
      const En=(si+1<h.shots.length)?Estart(h.shots[si+1].lie,h.shots[si+1].dist):0;
-     const sgv=Estart(s.lie,s.dist)-En-1-(s.pen||0);const unit=distUnit(s.lie);const shownDist=s.lie==='putt'?s.dist:Y2U(s.dist);
-     html+=`<tr class="shot ${s.conf?'conf':'pred'}"><td class="sidx">${si+1}</td>
-       <td class="lh"><select class="lie" data-k="lie" data-h="${hi}" data-s="${si}">${LIE_OPTS.map(o=>`<option value="${o[0]}" ${s.lie===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></td>
-       <td class="distc"><input class="d" type="number" inputmode="numeric" data-k="dist" data-h="${hi}" data-s="${si}" value="${shownDist}"><span class="unit">${unit}</span></td>
+     const sgv=Estart(s.lie,s.dist)-En-1-(s.pen||0);const shownDist=s.lie==='putt'?s.dist:Y2U(s.dist);
+     const cells=LIECOLS.map(lc=>{const on=s.lie===lc;return `<td class="liec"><input class="lc${on?' on':''}" type="number" inputmode="numeric" data-h="${hi}" data-s="${si}" data-lie="${lc}" value="${on?shownDist:''}" placeholder="·"></td>`;}).join('');
+     html+=`<tr class="shot ${s.conf?'conf':'pred'}"><td class="sidx">${si+1}</td>${cells}
        <td><input class="p" type="number" inputmode="numeric" min="0" data-k="pen" data-h="${hi}" data-s="${si}" value="${s.pen||''}" placeholder="0"></td>
        <td class="sgc ${sgv<0?'sg-neg':'sg-pos'}">${fmt(sgv)}</td>
        <td class="rm"><button data-del="${hi}:${si}" title="delete">×</button></td></tr>`;
    });
-   html+=`<tr class="addrow"><td></td><td colspan="5" class="lh"><button data-add="${hi}">+ shot</button> <button data-confirm="${hi}"${ok?' class="isconf"':''}>${ok?'✓ confirmed':'confirm hole'}</button></td></tr>`;
+   html+=`<tr class="addrow"><td></td><td colspan="9" class="lh"><button data-add="${hi}">+ shot</button> <button data-confirm="${hi}"${ok?' class="isconf"':''}>${ok?'✓ confirmed':'confirm hole'}</button></td></tr>`;
  });
  body.innerHTML=html;wire();totals();renderSel();save();
 }
@@ -1507,10 +1520,14 @@ function totals(){
  document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+R.tee;
 }
 function wire(){
- document.querySelectorAll('select.lie,input.d,input.p').forEach(el=>{
-   el.addEventListener('change',()=>{const h=+el.dataset.h,si=+el.dataset.s,k=el.dataset.k;const sh=R.holes[h].shots[si];
-     if(k==='lie')sh.lie=el.value;else if(k==='dist'){const raw=Math.max(1,parseInt(el.value||'0',10)||1);sh.dist=(sh.lie==='putt')?raw:U2Y(raw);}else sh.pen=Math.max(0,parseInt(el.value||'0',10)||0);
-     sh.conf=true;render();});
+ document.querySelectorAll('input.lc').forEach(el=>{
+   el.addEventListener('change',()=>{const h=+el.dataset.h,si=+el.dataset.s,lie=el.dataset.lie;const sh=R.holes[h].shots[si];
+     const v=el.value.trim();if(v===''){ if(sh.lie===lie){render();} return; }
+     const raw=Math.max(1,parseInt(v,10)||1);sh.lie=lie;sh.dist=(lie==='putt')?raw:U2Y(raw);sh.conf=true;render();});
+ });
+ document.querySelectorAll('input.p').forEach(el=>{
+   el.addEventListener('change',()=>{const h=+el.dataset.h,si=+el.dataset.s;const sh=R.holes[h].shots[si];
+     sh.pen=Math.max(0,parseInt(el.value||'0',10)||0);sh.conf=true;render();});
  });
  document.querySelectorAll('[data-par]').forEach(b=>b.onclick=()=>{const[h,p]=b.dataset.par.split(':').map(Number);R.holes[h].par=p;render();});
  document.querySelectorAll('.ydedit').forEach(el=>el.addEventListener('change',()=>{const hi=+el.dataset.yh,raw=Math.max(20,parseInt(el.value||'0',10)||0),v=U2Y(raw);const hole=R.holes[hi];
