@@ -176,10 +176,101 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .msg{font-size:13px;color:var(--fairway);font-weight:600;}
 .badge{display:inline-block;background:var(--sand);color:#5a4712;font-family:var(--cond);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:2px 10px;border-radius:999px;margin-left:8px;}
 .note{font-size:12.5px;color:var(--ink-soft);margin-top:10px;font-style:italic;}
+
+/* ===== tabs ===== */
+.tabnav{display:flex;gap:4px;border-bottom:2px solid var(--pine);margin:0 0 18px;position:sticky;top:0;background:var(--cream);z-index:30;padding-top:6px}
+.tabnav button{font-family:var(--cond);text-transform:uppercase;letter-spacing:.1em;font-size:13px;font-weight:700;padding:12px 20px;border:none;background:none;color:var(--ink-soft);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+.tabnav button:hover{color:var(--pine)}
+.tabnav button.on{color:var(--pine);border-bottom-color:var(--fairway)}
+
+/* ===== embedded logger (scoped) ===== */
+.lgscope .wrap{max-width:720px;margin:0 auto;padding:0 0 60px;}
+.lgscope .bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:2px solid var(--pine);background:var(--paper);position:sticky;top:0;z-index:5;}
+.lgscope .bar h1{font-family:var(--serif);font-size:20px;color:var(--pine);margin:0;font-weight:600;}
+.lgscope .bar .meta{font-family:var(--cond);text-transform:uppercase;letter-spacing:.1em;font-size:11px;color:var(--ink-soft);}
+.lgscope .bar .tot{margin-left:auto;text-align:right;font-family:var(--cond);}
+.lgscope .bar .tot .sc{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--pine);line-height:1;}
+.lgscope .bar .tot .sg{font-size:11px;}
+.lgscope .sg-neg{color:var(--clay);}
+.lgscope .sg-pos{color:var(--fairway);}
+.lgscope .selbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 16px;background:var(--paper);border-bottom:1px solid var(--line);}
+.lgscope .selbar label{font-family:var(--cond);text-transform:uppercase;letter-spacing:.1em;font-size:10px;color:var(--ink-soft);}
+.lgscope .selbar select{font-family:var(--sans);font-size:13px;border:1px solid var(--line);border-radius:8px;padding:7px 8px;background:var(--cream);color:var(--pine);font-weight:600;}
+.lgscope .selbar .star{margin-left:auto;border:1px solid var(--sand-deep);background:var(--paper);border-radius:999px;padding:6px 12px;font-family:var(--cond);font-weight:700;font-size:11px;letter-spacing:.05em;color:var(--sand-deep);cursor:pointer;}
+.lgscope .selbar .star.isdef{background:var(--sand);color:var(--pine);}
+.lgscope .selbar .est{font-family:var(--cond);font-size:10px;color:var(--amber);letter-spacing:.03em;}
+.lgscope .warn{background:rgba(201,154,30,.14);color:#7a5e12;font-family:var(--cond);font-weight:700;font-size:12px;padding:7px 16px;border-bottom:1px solid rgba(201,154,30,.35);}
+.lgscope .warn.ok{background:rgba(31,122,77,.12);color:var(--fairway);border-color:rgba(31,122,77,.3);}
+.lgscope table{border-collapse:collapse;width:100%;font-family:var(--sans);}
+.lgscope thead th{position:sticky;top:49px;background:var(--cream);font-family:var(--cond);text-transform:uppercase;letter-spacing:.07em;font-size:10px;color:var(--ink-soft);font-weight:700;padding:6px 4px;border-bottom:1px solid var(--line);text-align:center;z-index:4;}
+.lgscope th.lh{text-align:left;padding-left:14px;}
+.lgscope .holesep td{background:rgba(15,58,44,.055);border-top:1px solid var(--line);padding:6px 14px;font-family:var(--cond);}
+.lgscope .holesep .hn{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--pine);}
+.lgscope .holesep .pc{display:inline-flex;gap:3px;margin-left:8px;vertical-align:middle;}
+.lgscope .holesep .pc button{border:1px solid var(--line);background:var(--paper);border-radius:999px;width:24px;height:21px;font-family:var(--cond);font-weight:700;font-size:11px;color:var(--ink-soft);cursor:pointer;}
+.lgscope .holesep .pc button.on{background:var(--sand);border-color:var(--sand-deep);color:var(--pine);}
+.lgscope .holesep .hsum{float:right;font-size:12px;color:var(--ink-soft);}
+.lgscope .holesep .hsum b{font-variant-numeric:tabular-nums;}
+.lgscope .ydedit{width:44px;border:1px solid var(--line);border-radius:5px;padding:1px 3px;font-family:var(--cond);font-size:12px;text-align:right;background:var(--paper);color:var(--ink);}
+.lgscope tbody td{padding:3px 4px;border-bottom:1px solid var(--line-soft,#eee9da);text-align:center;font-size:14px;}
+.lgscope tr.shot.pred{background:rgba(201,154,30,.06);}
+.lgscope tr.shot.pred td.sidx{color:var(--amber);}
+.lgscope td.sidx{font-family:var(--cond);font-weight:700;color:var(--ink-soft);width:28px;font-size:12px;}
+.lgscope select.lie, .lgscope input.d, .lgscope input.p{font-family:var(--sans);font-size:14px;border:1px solid var(--line);border-radius:7px;padding:7px 6px;background:var(--paper);color:var(--ink);text-align:center;width:100%;}
+.lgscope select.lie{text-align:left;min-width:92px;}
+.lgscope td.distc{white-space:nowrap;}
+.lgscope input.d{width:58px;text-align:right;}
+.lgscope .unit{font-family:var(--cond);font-size:10px;color:var(--ink-soft);margin-left:3px;}
+.lgscope input.p{width:38px;}
+.lgscope td.sgc{font-family:var(--cond);font-weight:700;font-size:12.5px;font-variant-numeric:tabular-nums;width:46px;}
+.lgscope td.rm button{border:none;background:none;color:var(--ink-soft);font-size:16px;cursor:pointer;opacity:.45;}
+.lgscope .addrow td{padding:2px 4px 7px;}
+.lgscope .addrow button{border:1px dashed var(--line);background:none;border-radius:8px;padding:5px 12px;font-family:var(--cond);font-weight:700;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);cursor:pointer;}
+.lgscope .savebar{position:sticky;bottom:0;background:var(--paper);border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:10px;align-items:center;}
+.lgscope .savebar .note{font-family:var(--cond);font-size:11px;color:var(--ink-soft);}
+.lgscope .savebar button{margin-left:auto;border:none;border-radius:11px;padding:12px 24px;font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:#fff;background:linear-gradient(160deg,var(--fairway),var(--pine));cursor:pointer;}
+.lgscope .savebar button:disabled{background:var(--line);color:var(--ink-soft);}
+.lgscope .hint{font-family:var(--cond);font-size:11px;color:var(--ink-soft);text-align:center;padding:12px 16px;opacity:.85;}
+.lgscope .hint b{color:var(--amber);}
+.lgscope .profbtn{margin-left:10px;border:1px solid var(--line);background:var(--cream);border-radius:10px;width:40px;height:40px;font-size:18px;cursor:pointer;color:var(--pine);}
+.lgscope .overlay{position:fixed;inset:0;background:rgba(15,38,36,.45);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px;}
+.lgscope .sheet{background:var(--paper);border-radius:18px;max-width:460px;width:100%;box-shadow:0 20px 60px -20px rgba(15,58,44,.6);overflow:hidden;}
+.lgscope .shhead{display:flex;align-items:center;padding:16px 18px;border-bottom:2px solid var(--pine);}
+.lgscope .shhead h2{font-family:var(--serif);font-size:20px;color:var(--pine);margin:0;font-weight:600;}
+.lgscope .shhead button{margin-left:auto;border:none;background:var(--pine);color:#fff;border-radius:10px;padding:9px 18px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;cursor:pointer;}
+.lgscope .pform{padding:16px 18px 22px;display:flex;flex-direction:column;gap:13px;}
+.lgscope .pform label{display:flex;flex-direction:column;gap:5px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:10.5px;color:var(--ink-soft);font-weight:700;}
+.lgscope .pform input, .lgscope .pform select{font-family:var(--sans);font-size:15px;border:1px solid var(--line);border-radius:9px;padding:10px;background:var(--cream);color:var(--ink);}
+.lgscope .hiblock{background:rgba(216,196,140,.14);border:1px solid var(--line);border-radius:12px;padding:13px;display:flex;flex-direction:column;gap:11px;margin-top:4px;}
+.lgscope .hiblock .hirow{display:flex;align-items:baseline;}
+.lgscope .hiblock .hirow span{font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft);font-weight:700;}
+.lgscope .hiblock .hirow b{margin-left:auto;font-family:var(--serif);font-size:26px;font-weight:600;color:var(--pine);}
+.lgscope .hiblock .hisub{font-family:var(--cond);font-size:11px;color:var(--ink-soft);margin-top:-4px;}
+.lgscope .bar{position:static}
+.lgscope thead th{position:static}
+.lgscope{max-width:none}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="tabnav" id="tabnav"><button data-v="log">Log a round</button><button data-v="stats" class="on">Statistics</button><button data-v="profile">Profile</button></div>
+  <div id="view-log" class="lgscope" style="display:none"><div class="wrap">
+ <div class="bar"><div><h1>Shot Scorecard</h1><div class="meta" id="meta">CGC</div></div>
+   <div class="tot"><div class="sc" id="totScore">—</div><div class="sg" id="totSG">predicted</div></div></div>
+ <div class="selbar">
+   <label>Course</label><select id="selCourse"></select>
+   <label>Tee</label><select id="selTee"></select>
+   <span class="est" id="teeEst"></span>
+   <button class="star" id="starBtn">★ default</button>
+ </div>
+ <div class="warn" id="warn"></div>
+ <table><thead><tr><th class="lh">#</th><th class="lh">Lie</th><th>To hole</th><th>Pen</th><th>SG</th><th></th></tr></thead>
+ <tbody id="lgBody"></tbody></table>
+ <div class="savebar"><span class="note" id="snote"></span><button id="lgSaveBtn" disabled>Save</button></div>
+ <div class="hint">Rows are <b>predicted</b> (amber) until you touch them. Type a distance (yards; feet when lie = Green), set the lie, add a Pen on the shot where it happened. Add/remove rows per hole freely. Prototype — saves in this browser only.</div>
+</div></div>
+  <div id="view-profile" class="lgscope" style="display:none"><div style="max-width:460px;margin:0 auto;padding-top:4px"><h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px">Player profile</h2><div class="pform" id="pform"></div></div></div>
+  <div id="view-stats">
   <div class="playertabs" id="playertabs"></div>
   <header class="masthead">
     <div><h1>Round Ledger</h1><div class="sub" id="subName">Guido · shot-by-shot strokes gained</div></div>
@@ -271,7 +362,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
     <div><div id="grid"></div></div>
   </section>
 
-  <section id="addsec">
+  <section id="addsec" style="display:none">
     <h2 id="addToggle" style="cursor:pointer;user-select:none"><span class="n">+</span> Log a round, shot by shot <span id="customBadge"></span> <span id="addCaret" style="margin-left:auto;font-family:var(--cond);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">show ▸</span></h2>
     <div id="addBody" style="display:none">
     <p class="lead">Enter every shot with its lie and distance-to-hole; strokes gained, score and mistakes compute live using the same Broadie benchmark tables as your spreadsheet. Fill only the shots you played — leave the rest blank.</p>
@@ -298,6 +389,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 
   <div class="foot" id="foot"></div>
   <div class="foot" style="margin-top:10px;border-top:none;padding-top:0">© 2025–2026 Guido Sargiotto · Golf Round Ledger — original work, created and maintained by the author. Licensed CC BY-NC 4.0: share with credit, no commercial use, no passing it off as your own. <span style="opacity:.5">[GRL·GS·wardellinternational]</span></div>
+  </div><!--/view-stats-->
 </div>
 
 <script>
@@ -1168,6 +1260,208 @@ document.getElementById('playertabs').addEventListener('click',e=>{const b=e.tar
 /* init — fully self-contained, native canvas charts (no external libraries) */
 renderTabs(); fillForm(); renderNav(); renderHole(); updateLive(); renderAll();
 window.addEventListener('resize',()=>{try{renderAll();}catch(e){}});
+</script>
+<script>
+(function(){
+
+const LG=[[10,null,2.2,2.4,2.41,3.35],[20,null,2.4,2.57,2.53,3.4],[30,null,2.5,2.69,2.67,3.45],[40,null,2.6,2.78,2.82,3.5],[50,null,2.65,2.85,2.98,3.55],[60,null,2.7,2.91,3.15,3.6],[70,null,2.73,2.93,3.19,3.65],[80,null,2.75,2.96,3.24,3.7],[90,null,2.78,2.99,3.23,3.75],[100,2.92,2.8,3.02,3.23,3.8],[110,2.95,2.83,3.04,3.22,3.8],[120,2.99,2.85,3.08,3.21,3.78],[130,2.97,2.88,3.11,3.21,3.78],[140,2.97,2.91,3.15,3.22,3.8],[150,2.99,2.95,3.19,3.25,3.8],[160,2.99,2.98,3.23,3.28,3.81],[170,3.02,3.03,3.27,3.33,3.81],[180,3.05,3.08,3.31,3.4,3.82],[190,3.09,3.13,3.37,3.47,3.84],[200,3.12,3.19,3.42,3.55,3.87],[220,3.17,3.32,3.53,3.7,3.92],[240,3.25,3.45,3.64,3.84,3.97],[260,3.45,3.58,3.74,3.93,4.03],[280,3.65,3.69,3.83,4,4.1],[300,3.71,3.78,3.9,4.04,4.2],[320,3.79,3.84,3.95,4.12,4.31],[340,3.86,3.88,4.02,4.26,4.44],[360,3.92,3.95,4.11,4.41,4.56],[380,3.96,4.03,4.21,4.55,4.66],[400,3.99,4.11,4.3,4.69,4.75],[420,4.02,4.15,4.34,4.73,4.79],[440,4.08,4.2,4.39,4.78,4.84],[460,4.17,4.29,4.48,4.87,4.93],[480,4.28,4.4,4.59,4.98,5.04],[500,4.41,4.53,4.72,5.11,5.17],[520,4.54,4.85,4.85,5.24,5.3],[540,4.65,4.97,4.97,5.36,5.42],[560,4.74,5.05,5.05,5.44,5.5],[580,4.79,5.1,5.1,5.49,5.55],[600,4.82,5.13,5.13,5.52,5.58]];
+const PT=[[1,1],[2,1],[3,1.04],[4,1.13],[5,1.23],[6,1.34],[7,1.42],[8,1.5],[9,1.56],[10,1.61],[12,1.69],[15,1.78],[18,1.85],[20,1.87],[25,1.93],[30,1.98],[35,2.02],[40,2.06],[45,2.1],[50,2.14],[60,2.21],[70,2.28],[80,2.34],[90,2.4],[100,2.44]];
+const LIECOL={tee:1,fw:2,rough:3,sand:4,rec:5};
+function flook(t,x,c){let b=null;for(const r of t){if(r[0]<=x)b=r;else break;}if(!b)b=t[0];return b[c];}
+function Estart(lie,dist){if(lie==='putt')return flook(PT,dist,1);const v=flook(LG,dist,LIECOL[lie]);return v==null?flook(LG,dist,2):v;}
+function roleOf(shots,i){const s=shots[i];if(s.lie==='putt')return'putt';if(i===0&&s.lie==='tee')return'ott';return s.dist<=50?'atg':'app';}
+function holeSG(h){const o={ott:0,app:0,atg:0,putt:0,tot:0,strokes:0};const s=h.shots;
+ for(let i=0;i<s.length;i++){const En=(i+1<s.length)?Estart(s[i+1].lie,s[i+1].dist):0;
+   const sg=Estart(s[i].lie,s[i].dist)-En-1-(s[i].pen||0);o[roleOf(s,i)]+=sg;o.tot+=sg;o.strokes+=1+(s[i].pen||0);}return o;}
+
+/* ===== COURSE DATABASE ===== par & stroke index are shared across tees; yards + rating/slope per tee ===== */
+const COURSES={
+ CGC:{name:'Córdoba Golf Club',abbr:'CGC',
+   par:[4,5,4,3,4,4,4,3,4, 3,4,5,4,3,5,5,4,4],
+   hcp:[17,7,1,9,3,5,15,13,11, 16,2,4,10,14,6,8,12,18],
+   tees:{
+     Negras:{label:'Negras / Black', cr:72.7, slope:128, est:false, yds:[372,551,439,200,383,422,337,195,380, 155,441,494,395,210,492,588,438,386]},
+     Azules:{label:'Azules / Blue', cr:71.8, slope:126, est:false,  yds:[358,513,408,179,373,404,322,170,361, 155,425,475,378,184,457,543,426,372]},
+     Blancas:{label:'Blancas / White', cr:70.2, slope:123, est:false, yds:[348,491,373,149,359,392,305,153,340, 141,353,450,362,166,417,527,381,346]},
+     Rojas:{label:'Rojas / Red', cr:73.4, slope:127, est:false,   yds:[332,448,354,139,310,360,292,136,274, 124,322,427,347,152,386,467,336,322]}
+   }}
+};
+const PKEY='scard-profile-v4',RKEY='scard-round-v4',DKEY='scard-default-v1';
+function loadDefault(){return {course:PROF.homeCourse||'CGC',tee:PROF.defaultTee||'Negras'};}
+function setDefault(course,tee){PROF.homeCourse=course;PROF.defaultTee=tee;saveProf();}
+const YKEY='scard-yover-v1';   // user overrides of hole length, keyed course|tee#hole
+function loadYover(){try{return JSON.parse(localStorage.getItem(YKEY))||{}}catch(e){return{}}}
+let YOVER=loadYover();
+function saveYover(){localStorage.setItem(YKEY,JSON.stringify(YOVER));}
+function stdYd(course,tee,i){const k=course+'|'+tee+'#'+i;return YOVER[k]!=null?YOVER[k]:COURSES[course].tees[tee].yds[i];}
+/* ===== USER PROFILE ===== */
+const PROFK='scard-prof-v1';
+const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver'};
+function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage.getItem(PROFK))||{})}catch(e){return Object.assign({},PROF_DEF)}}
+let PROF=loadProf();
+function saveProf(){localStorage.setItem(PROFK,JSON.stringify(PROF));}
+/* round history (for Handicap Index) */
+const HISTK='scard-hist-v1';
+function loadHist(){try{return JSON.parse(localStorage.getItem(HISTK))||[]}catch(e){return[]}}
+let HIST=loadHist();
+function saveHist(){localStorage.setItem(HISTK,JSON.stringify(HIST));}
+function kForN(n){if(n<3)return 0;if(n<=5)return 1;if(n<=8)return 2;if(n<=11)return 3;if(n<=14)return 4;if(n<=16)return 5;if(n<=18)return 6;if(n===19)return 7;return 8;}
+function adjForN(n){return n===3?-2:((n===4||n===6)?-1:0);}
+function computeHI(){const d=HIST.slice(-20).map(r=>r.diff).filter(x=>typeof x==='number');const n=d.length;if(n<3)return null;
+ const k=kForN(n);const low=d.slice().sort((a,b)=>a-b).slice(0,k);return Math.round((low.reduce((s,x)=>s+x,0)/k+adjForN(n))*10)/10;}
+function effHI(){const auto=computeHI();if(PROF.hiMode==='manual')return PROF.hiManual!==''?+PROF.hiManual:auto;if(PROF.hiMode==='auto')return auto;return PROF.hiManual!==''?+PROF.hiManual:auto;}
+/* units: engine is yards internally */
+const Y2U=y=>PROF.units==='m'?Math.round(y*0.9144):y;
+const U2Y=u=>PROF.units==='m'?Math.round(u/0.9144):u;
+const distUnit=lie=>lie==='putt'?'ft':(PROF.units==='m'?'m':'yd');
+function loadProfile(){try{return JSON.parse(localStorage.getItem(PKEY))||{}}catch(e){return{}}}
+let PROFILE=loadProfile();
+function seedHole(par,yd){const nFull=Math.max(1,par-2),s=[];
+ for(let k=0;k<nFull;k++){if(k===0)s.push({lie:'tee',dist:yd});else{const d=Math.max(45,Math.round(yd*(1-k/nFull)/5)*5);s.push({lie:'rough',dist:d});}}
+ s.push({lie:'putt',dist:20});s.push({lie:'putt',dist:2});
+ return s.map(x=>({...x,pen:0,conf:false}));}
+function pkey(course,tee,i){return course+'|'+tee+'#'+i;}
+function predictHole(course,tee,i,par,yd){const p=PROFILE[pkey(course,tee,i)];
+ if(p&&p.shots&&p.shots.length)return p.shots.map(x=>({lie:x.lie,dist:x.dist,pen:x.pen||0,conf:false}));
+ return seedHole(par,yd);}
+function newRound(course,tee){const c=COURSES[course],t=c.tees[tee];
+ return {course,tee,courseName:c.name,cr:t.cr,slope:t.slope,date:new Date().toISOString().slice(0,10),
+  holes:c.par.map((par,i)=>{const yd=stdYd(course,tee,i);return{par,yd,hcp:c.hcp[i],shots:predictHole(course,tee,i,par,yd)};})};}
+let DEFT=loadDefault();
+let R=(function(){try{const r=JSON.parse(localStorage.getItem(RKEY));if(r&&r.holes&&r.tee)return r;}catch(e){}return newRound(DEFT.course,DEFT.tee);})();
+function save(){localStorage.setItem(RKEY,JSON.stringify(R));}
+const LIE_OPTS=[['tee','Tee'],['fw','Fairway'],['rough','Rough'],['sand','Sand'],['rec','Recovery'],['putt','Green (putt)']];
+const fmt=v=>(v>0?'+':'')+v.toFixed(2);
+const holeConfirmed=h=>h.shots.length>0&&h.shots.every(s=>s.conf);
+
+function render(){
+ const body=document.getElementById('lgBody');let html='';
+ R.holes.forEach((h,hi)=>{
+   const sg=holeSG(h);const ok=holeConfirmed(h);
+   html+=`<tr class="holesep"><td colspan="6"><span class="hn">Hole ${hi+1}</span>
+     <span class="pc">${[3,4,5].map(p=>`<button class="${h.par===p?'on':''}" data-par="${hi}:${p}">${p}</button>`).join('')}</span>
+     <span class="hsum">${ok?'✓ ':'<span style="color:var(--amber)">~ </span>'}<b class="${sg.tot<0?'sg-neg':'sg-pos'}">SG ${fmt(sg.tot)}</b> · ${sg.strokes} strk · par ${h.par} · <input class="ydedit" type="number" inputmode="numeric" data-yh="${hi}" value="${Y2U(h.yd)}" title="hole length — editable">${PROF.units}${h.hcp?' · SI '+h.hcp:''}</span></td></tr>`;
+   h.shots.forEach((s,si)=>{
+     const En=(si+1<h.shots.length)?Estart(h.shots[si+1].lie,h.shots[si+1].dist):0;
+     const sgv=Estart(s.lie,s.dist)-En-1-(s.pen||0);const unit=distUnit(s.lie);const shownDist=s.lie==='putt'?s.dist:Y2U(s.dist);
+     html+=`<tr class="shot ${s.conf?'':'pred'}"><td class="sidx">${si+1}</td>
+       <td class="lh"><select class="lie" data-k="lie" data-h="${hi}" data-s="${si}">${LIE_OPTS.map(o=>`<option value="${o[0]}" ${s.lie===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></td>
+       <td class="distc"><input class="d" type="number" inputmode="numeric" data-k="dist" data-h="${hi}" data-s="${si}" value="${shownDist}"><span class="unit">${unit}</span></td>
+       <td><input class="p" type="number" inputmode="numeric" min="0" data-k="pen" data-h="${hi}" data-s="${si}" value="${s.pen||''}" placeholder="0"></td>
+       <td class="sgc ${sgv<0?'sg-neg':'sg-pos'}">${fmt(sgv)}</td>
+       <td class="rm"><button data-del="${hi}:${si}" title="delete">×</button></td></tr>`;
+   });
+   html+=`<tr class="addrow"><td></td><td colspan="5" class="lh"><button data-add="${hi}">+ shot</button> <button data-confirm="${hi}">${ok?'✓ confirmed':'confirm hole'}</button></td></tr>`;
+ });
+ body.innerHTML=html;wire();totals();renderSel();save();
+}
+function totals(){
+ let sc=0,sg=0,par=0,anyh=0,done=0;
+ R.holes.forEach(h=>{if(holeConfirmed(h)){const t=holeSG(h);sc+=t.strokes;sg+=t.tot;par+=h.par;anyh++;done++;}});
+ document.getElementById('totScore').textContent=anyh?sc:'—';
+ document.getElementById('totSG').innerHTML=anyh?`<span class="${sg<0?'sg-neg':'sg-pos'}">SG ${fmt(sg)}</span> · ${sc-par>=0?'+':''}${sc-par} thru ${anyh}`:'predicted';
+ const rem=18-done;const w=document.getElementById('warn');
+ if(rem>0){w.className='warn';w.textContent=`⚠ ${rem} hole${rem>1?'s':''} still predicted — confirm each (touch a cell or tap “confirm hole”) before saving.`;}
+ else{w.className='warn ok';w.textContent='✓ All 18 holes confirmed — ready to save.';}
+ document.getElementById('lgSaveBtn').disabled=rem>0;
+ document.getElementById('lgSaveBtn').textContent=rem>0?`${rem} to go`:'Save round';
+ document.getElementById('snote').textContent=`${R.courseName||R.course} · ${R.tee} · ${R.date}`;
+ document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+R.tee;
+}
+function wire(){
+ document.querySelectorAll('select.lie,input.d,input.p').forEach(el=>{
+   el.addEventListener('change',()=>{const h=+el.dataset.h,si=+el.dataset.s,k=el.dataset.k;const sh=R.holes[h].shots[si];
+     if(k==='lie')sh.lie=el.value;else if(k==='dist'){const raw=Math.max(1,parseInt(el.value||'0',10)||1);sh.dist=(sh.lie==='putt')?raw:U2Y(raw);}else sh.pen=Math.max(0,parseInt(el.value||'0',10)||0);
+     sh.conf=true;render();});
+ });
+ document.querySelectorAll('[data-par]').forEach(b=>b.onclick=()=>{const[h,p]=b.dataset.par.split(':').map(Number);R.holes[h].par=p;render();});
+ document.querySelectorAll('.ydedit').forEach(el=>el.addEventListener('change',()=>{const hi=+el.dataset.yh,raw=Math.max(20,parseInt(el.value||'0',10)||0),v=U2Y(raw);const hole=R.holes[hi];
+   hole.yd=v;YOVER[R.course+'|'+R.tee+'#'+hi]=v;saveYover();
+   if(hole.shots[0]&&hole.shots[0].lie==='tee')hole.shots[0].dist=v; // tee shot starts at hole length
+   render();}));
+ document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const[h,si]=b.dataset.del.split(':').map(Number);R.holes[h].shots.splice(si,1);render();});
+ document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const h=+b.dataset.add;const last=R.holes[h].shots.slice(-1)[0];R.holes[h].shots.push({lie:last&&last.lie==='putt'?'putt':'fw',dist:last&&last.lie==='putt'?2:20,pen:0,conf:true});render();});
+ document.querySelectorAll('[data-confirm]').forEach(b=>b.onclick=()=>{const h=+b.dataset.confirm;R.holes[h].shots.forEach(s=>s.conf=true);render();});
+}
+document.getElementById('lgSaveBtn').onclick=()=>{
+ R.holes.forEach((h,i)=>{const key=pkey(R.course,R.tee,i);const prev=PROFILE[key]||{n:0,shots:[]};const n=prev.n||0;
+   const merged=h.shots.map((s,j)=>{const p=prev.shots[j];const dist=(p&&p.lie===s.lie)?Math.round((p.dist*n+s.dist)/(n+1)):s.dist;return{lie:s.lie,dist,pen:s.pen||0};});
+   PROFILE[key]={n:n+1,shots:merged,par:h.par,yd:h.yd};});
+ localStorage.setItem(PKEY,JSON.stringify(PROFILE));
+ let t={ott:0,app:0,atg:0,putt:0,tot:0,strokes:0,par:0};R.holes.forEach(h=>{const s=holeSG(h);['ott','app','atg','putt','tot','strokes'].forEach(k=>t[k]+=s[k]);t.par+=h.par;});
+ const diff=Math.round(((t.strokes-R.cr)*113/R.slope)*10)/10; // WHS score differential
+ HIST.push({date:R.date,course:R.course,tee:R.tee,score:t.strokes,par:t.par,diff});saveHist();
+ const hi=effHI();
+ alert(`Saved & learned.\nScore ${t.strokes} (${t.strokes-t.par>=0?'+':''}${t.strokes-t.par}) · differential ${diff}\nSG ${fmt(t.tot)} — OTT ${fmt(t.ott)} · APP ${fmt(t.app)} · ATG ${fmt(t.atg)} · PUTT ${fmt(t.putt)}${hi!=null?'\nHandicap Index now ≈ '+hi+' ('+HIST.length+' rounds)':''}`);
+ localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);render();
+};
+/* ---- course / tee selector ---- */
+function anyConfirmed(){return R.holes.some(h=>h.shots.some(s=>s.conf));}
+function switchTo(course,tee){
+ if(anyConfirmed()&&!confirm('Switch to '+COURSES[course].name+' · '+tee+'?\nThis starts a fresh predicted round and clears the one in progress.')){renderSel();return;}
+ localStorage.removeItem(RKEY);R=newRound(course,tee);render();
+}
+function renderSel(){
+ const cs=document.getElementById('selCourse');
+ cs.innerHTML=Object.keys(COURSES).map(k=>`<option value="${k}" ${k===R.course?'selected':''}>${COURSES[k].name}</option>`).join('');
+ const tees=COURSES[R.course].tees,ts=document.getElementById('selTee');
+ ts.innerHTML=Object.keys(tees).map(k=>`<option value="${k}" ${k===R.tee?'selected':''}>${tees[k].label}</option>`).join('');
+ const t=tees[R.tee];const totY=R.holes.reduce((a,h)=>a+(h.yd||0),0);
+ document.getElementById('teeEst').textContent=Y2U(totY)+' '+PROF.units+' · CR '+t.cr+' · Slope '+t.slope+(t.est?' · est.':'');
+ const d=loadDefault(),isd=d.course===R.course&&d.tee===R.tee,sb=document.getElementById('starBtn');
+ sb.classList.toggle('isdef',isd);sb.textContent=isd?'★ default':'☆ set default';
+}
+document.getElementById('selCourse').onchange=e=>{const c=e.target.value,tee=COURSES[c].tees[R.tee]?R.tee:Object.keys(COURSES[c].tees)[0];switchTo(c,tee);};
+document.getElementById('selTee').onchange=e=>switchTo(R.course,e.target.value);
+document.getElementById('starBtn').onclick=()=>{setDefault(R.course,R.tee);renderSel();};
+/* ---- player profile ---- */
+function renderProf(){
+ const auto=computeHI(),eff=effHI();
+ const courseOpts=Object.keys(COURSES).map(k=>`<option value="${k}" ${k===PROF.homeCourse?'selected':''}>${COURSES[k].name}</option>`).join('');
+ const tkeys=Object.keys((COURSES[PROF.homeCourse]||COURSES.CGC).tees);
+ const teeOpts=tkeys.map(k=>`<option value="${k}" ${k===PROF.defaultTee?'selected':''}>${k}</option>`).join('');
+ const clubs=['Driver','3-wood','5-wood','Hybrid','2-iron','3-iron','4-iron','Other'];
+ document.getElementById('pform').innerHTML=`
+  <label>Name<input id="pf_name" value="${PROF.name||''}" placeholder="Guido Sargiotto"></label>
+  <label>Nickname<input id="pf_nick" value="${PROF.nick||''}" placeholder="Guido"></label>
+  <label>Units<select id="pf_units"><option value="yd" ${PROF.units==='yd'?'selected':''}>Yards</option><option value="m" ${PROF.units==='m'?'selected':''}>Meters</option></select></label>
+  <label>Home course<select id="pf_course">${courseOpts}</select></label>
+  <label>Default tee<select id="pf_tee">${teeOpts}</select></label>
+  <label>Default tee club<select id="pf_club">${clubs.map(c=>`<option ${PROF.teeClub===c?'selected':''}>${c}</option>`).join('')}</select></label>
+  <div class="hiblock">
+    <div class="hirow"><span>Handicap Index</span><b>${eff!=null?eff:'—'}</b></div>
+    <div class="hisub">${auto!=null?('computed '+auto+' · best '+kForN(Math.min(20,HIST.length))+' of last '+Math.min(20,HIST.length)+' · '+HIST.length+' round'+(HIST.length!==1?'s':'')+' logged'):'log 3+ rounds to compute automatically'}</div>
+    <label>Source<select id="pf_himode">
+      <option value="both" ${PROF.hiMode==='both'?'selected':''}>Computed, override allowed</option>
+      <option value="auto" ${PROF.hiMode==='auto'?'selected':''}>Computed only</option>
+      <option value="manual" ${PROF.hiMode==='manual'?'selected':''}>Manual only</option></select></label>
+    ${PROF.hiMode!=='auto'?`<label>Manual index<input id="pf_himan" type="number" step="0.1" value="${PROF.hiManual}" placeholder="e.g. 1.2"></label>`:''}
+  </div>`;
+ const txt=(id,key)=>{const el=document.getElementById(id);if(el)el.addEventListener('input',()=>{PROF[key]=el.value;saveProf();});};
+ txt('pf_name','name');txt('pf_nick','nick');
+ document.getElementById('pf_units').addEventListener('change',e=>{PROF.units=e.target.value;saveProf();render();renderProf();});
+ document.getElementById('pf_course').addEventListener('change',e=>{PROF.homeCourse=e.target.value;PROF.defaultTee=Object.keys(COURSES[PROF.homeCourse].tees)[0];saveProf();renderProf();});
+ document.getElementById('pf_tee').addEventListener('change',e=>{PROF.defaultTee=e.target.value;saveProf();});
+ document.getElementById('pf_club').addEventListener('change',e=>{PROF.teeClub=e.target.value;saveProf();});
+ document.getElementById('pf_himode').addEventListener('change',e=>{PROF.hiMode=e.target.value;saveProf();renderProf();});
+ const man=document.getElementById('pf_himan');if(man)man.addEventListener('input',()=>{PROF.hiManual=man.value;saveProf();});
+}
+render();renderSel();window.LGR={card:function(){render();renderSel();},profile:renderProf};
+
+})();
+
+(function(){
+ var views={log:'view-log',stats:'view-stats',profile:'view-profile'};
+ function show(v){for(var k in views){document.getElementById(views[k]).style.display=(k===v)?'':'none';}
+   var bs=document.querySelectorAll('#tabnav button');for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',bs[i].dataset.v===v);
+   if(v==='log'&&window.LGR)window.LGR.card();
+   if(v==='profile'&&window.LGR)window.LGR.profile();
+   window.scrollTo(0,0);
+ }
+ document.getElementById('tabnav').addEventListener('click',function(e){var b=e.target.closest('button');if(b)show(b.dataset.v);});
+ show('stats');
+})();
+
 </script>
 </body>
 </html>
