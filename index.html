@@ -1269,9 +1269,9 @@ function renderDrivers(){
 let tblSort={c:0,d:1};
 function buildTable(){
   const el=document.getElementById('grid'); if(!el)return;
-  const cols=['#','Course','Score','To par','FW','GIR','Putts','SG OTT','SG APP','SG ATG','SG PUTT','SG TOT','Mist.'];
-  const rows=R.map((r,i)=>[i+1,r.course,r.score,r.stp,r.fw,r.gir,r.putts,r.ott,r.app,r.atg,r.putt,r.sgtot,r.mtot]);
-  const sgCols=new Set([7,8,9,10,11]), parCol=3;
+  const cols=['#','Date','Course','Score','To par','FW','GIR','Putts','SG OTT','SG APP','SG ATG','SG PUTT','SG TOT','Mist.'];
+  const rows=R.map((r,i)=>[i+1,(r.date||''),r.course,r.score,r.stp,r.fw,r.gir,r.putts,r.ott,r.app,r.atg,r.putt,r.sgtot,r.mtot]);
+  const sgCols=new Set([8,9,10,11,12]), parCol=4;
   rows.sort((a,b)=>{const x=a[tblSort.c],y=b[tblSort.c];const c=(typeof x==='number'&&typeof y==='number')?x-y:String(x).localeCompare(String(y));return c*tblSort.d;});
   const cell=(v,ci)=>{ if(sgCols.has(ci))return `<td class="${v<0?'neg':v>0?'pos':''}">${v>0?'+':''}${v}</td>`; if(ci===parCol)return `<td class="${v>0?'neg':v<0?'pos':''}">${v>0?'+':''}${v}</td>`; return `<td>${v}</td>`; };
   const th=cols.map((c,i)=>`<th data-c="${i}" style="cursor:pointer;user-select:none;white-space:nowrap">${c}${tblSort.c===i?(tblSort.d>0?' ▲':' ▼'):''}</th>`).join('');
@@ -1591,7 +1591,25 @@ function renderProf(){
  document.getElementById('pf_imphbtn').addEventListener('click',()=>{const rows=parseHIPaste(document.getElementById('pf_imph').value);const n=mergeHIH(rows);
    document.getElementById('pf_imphmsg').textContent=n?('Imported '+n+' index points · latest '+HIHIST[HIHIST.length-1].hi):'No rows recognised — check the format.';if(n)renderProf();});
 }
-render();renderSel();window.LGR={card:function(){render();renderSel();},profile:renderProf};
+const SAMPLE14={"date":"2026-11-14","course":"CGC","tee":"Negras","holes":[{"par":4,"yd":372,"shots":[{"lie":"tee","dist":372,"pen":0},{"lie":"rough","dist":100,"pen":0},{"lie":"fw","dist":10,"pen":0},{"lie":"putt","dist":1,"pen":0}]},{"par":5,"yd":500,"shots":[{"lie":"tee","dist":500,"pen":0},{"lie":"rough","dist":270,"pen":0},{"lie":"rough","dist":170,"pen":1},{"lie":"fw","dist":19,"pen":0},{"lie":"putt","dist":6,"pen":0}]},{"par":4,"yd":439,"shots":[{"lie":"tee","dist":439,"pen":0},{"lie":"rough","dist":185,"pen":0},{"lie":"putt","dist":45,"pen":0},{"lie":"putt","dist":8,"pen":0}]},{"par":3,"yd":200,"shots":[{"lie":"tee","dist":200,"pen":0},{"lie":"putt","dist":15,"pen":0},{"lie":"putt","dist":1,"pen":0}]},{"par":4,"yd":383,"shots":[{"lie":"tee","dist":383,"pen":0},{"lie":"sand","dist":80,"pen":0},{"lie":"fw","dist":30,"pen":0},{"lie":"putt","dist":6,"pen":0},{"lie":"putt","dist":1,"pen":0}]},{"par":4,"yd":422,"shots":[{"lie":"tee","dist":422,"pen":0},{"lie":"rec","dist":160,"pen":0},{"lie":"fw","dist":83,"pen":0},{"lie":"putt","dist":24,"pen":0},{"lie":"putt","dist":1,"pen":0}]},{"par":4,"yd":337,"shots":[{"lie":"tee","dist":337,"pen":0},{"lie":"rough","dist":55,"pen":0},{"lie":"fw","dist":12,"pen":0},{"lie":"putt","dist":10,"pen":0},{"lie":"putt","dist":1,"pen":0}]},{"par":3,"yd":185,"shots":[{"lie":"tee","dist":185,"pen":0},{"lie":"rough","dist":40,"pen":1},{"lie":"putt","dist":7,"pen":0}]},{"par":4,"yd":370,"shots":[{"lie":"tee","dist":370,"pen":0},{"lie":"fw","dist":115,"pen":0},{"lie":"putt","dist":27,"pen":0},{"lie":"putt","dist":1,"pen":0}]},{"par":3,"yd":141,"shots":[{"lie":"tee","dist":141,"pen":0},{"lie":"fw","dist":20,"pen":0}]},{"par":4,"yd":441,"shots":[{"lie":"tee","dist":441,"pen":0},{"lie":"rough","dist":160,"pen":0},{"lie":"rough","dist":12,"pen":0},{"lie":"putt","dist":11,"pen":0},{"lie":"putt","dist":1,"pen":0}]},{"par":5,"yd":494,"shots":[{"lie":"tee","dist":494,"pen":0},{"lie":"rec","dist":180,"pen":0},{"lie":"sand","dist":60,"pen":0},{"lie":"fw","dist":15,"pen":0},{"lie":"putt","dist":5,"pen":0},{"lie":"putt","dist":1,"pen":0}]},{"par":4,"yd":395,"shots":[{"lie":"tee","dist":395,"pen":0},{"lie":"rec","dist":100,"pen":0},{"lie":"rec","dist":77,"pen":0},{"lie":"putt","dist":18,"pen":0},{"lie":"putt","dist":1,"pen":0}]},{"par":3,"yd":200,"shots":[{"lie":"tee","dist":200,"pen":0},{"lie":"rough","dist":40,"pen":0},{"lie":"putt","dist":10,"pen":0}]},{"par":5,"yd":492,"shots":[{"lie":"tee","dist":492,"pen":0},{"lie":"fw","dist":160,"pen":0},{"lie":"fw","dist":10,"pen":0},{"lie":"putt","dist":5,"pen":0}]},{"par":5,"yd":558,"shots":[{"lie":"tee","dist":558,"pen":0},{"lie":"rough","dist":250,"pen":0},{"lie":"fw","dist":12,"pen":0},{"lie":"putt","dist":3,"pen":0}]},{"par":4,"yd":438,"shots":[{"lie":"tee","dist":438,"pen":0},{"lie":"sand","dist":123,"pen":0},{"lie":"putt","dist":6,"pen":0},{"lie":"putt","dist":1,"pen":0}]},{"par":4,"yd":385,"shots":[{"lie":"tee","dist":385,"pen":0},{"lie":"rough","dist":90,"pen":0},{"lie":"putt","dist":18,"pen":0}]}]};
+function lgLoad(o){
+ if(!o||!o.holes)return;
+ var c=COURSES[o.course]||COURSES.CGC, t=(c.tees[o.tee]||c.tees[Object.keys(c.tees)[0]]);
+ R={course:(COURSES[o.course]?o.course:R.course),tee:(c.tees[o.tee]?o.tee:R.tee),courseName:c.name,cr:t.cr,slope:t.slope,date:o.date||new Date().toISOString().slice(0,10),
+   holes:o.holes.map(function(h){return {par:h.par,yd:h.yd||((h.shots&&h.shots[0])?h.shots[0].dist:0),shots:(h.shots||[]).map(function(s){return {lie:s.lie,dist:s.dist,pen:s.pen||0,conf:true};})};})};
+ save();render();renderSel();
+}
+render();renderSel();window.LGR={card:function(){render();renderSel();},profile:renderProf,load:lgLoad};
+/* inject a Load/import panel into the Log tab */
+(function(){var app=document.querySelector('#view-log .app')||document.getElementById('view-log');if(!app)return;
+ var box=document.createElement('div');box.style.cssText='padding:10px 16px';
+ box.innerHTML='<details style="font-family:var(--cond)"><summary style="cursor:pointer;font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:12px;color:var(--ink-soft)">Load / import a round</summary>'+
+   '<textarea id="lgImport" rows="3" style="width:100%;margin-top:8px;font-family:var(--cond);font-size:12px;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--cream)" placeholder="paste round JSON here"></textarea>'+
+   '<div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap"><button id="lgImportBtn" class="pf_btn">Load pasted</button><button id="lgSampleBtn" class="pf_btn" style="background:var(--sand-deep)">Load Nov-14 round</button></div></details>';
+ var hint=app.querySelector('.hint');app.insertBefore(box,hint||null);
+ document.getElementById('lgImportBtn').onclick=function(){try{lgLoad(JSON.parse(document.getElementById('lgImport').value));}catch(e){alert('Could not read that — paste valid round JSON.');}};
+ document.getElementById('lgSampleBtn').onclick=function(){lgLoad(SAMPLE14);};
+})();
 
 })();
 
