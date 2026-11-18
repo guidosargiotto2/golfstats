@@ -1523,7 +1523,10 @@ function newRound(course,tee){const c=COURSES[course],t=c.tees[tee];
   score:'',chcp:'',phase:'setup',cur:0,
   holes:c.par.map((par,i)=>{const yd=stdYd(course,tee,i);return{par,yd,hcp:c.hcp[i],shots:[],done:false};})};}
 let DEFT=loadDefault();
-let R=(function(){try{const r=JSON.parse(localStorage.getItem(RKEY));if(r&&r.holes&&r.tee){if(!r.phase)r.phase='setup';if(r.cur==null)r.cur=0;r.holes.forEach(function(h){if(h.done==null)h.done=(h.shots&&h.shots.length>0);});return r;}}catch(e){}return newRound(DEFT.course,DEFT.tee);})();
+let R=(function(){try{const r=JSON.parse(localStorage.getItem(RKEY));
+  /* only restore rounds created by the guided wizard (they carry a phase); discard older formats */
+  if(r&&r.holes&&r.tee&&r.phase&&Array.isArray(r.holes)&&r.holes.length===18){if(r.cur==null)r.cur=0;r.holes.forEach(function(h){if(h.done==null)h.done=false;if(!Array.isArray(h.shots))h.shots=[];});return r;}}catch(e){}
+  localStorage.removeItem(RKEY);return newRound(DEFT.course,DEFT.tee);})();
 function save(){localStorage.setItem(RKEY,JSON.stringify(R));}
 function reseedPredicted(){/* wizard predicts shot-by-shot; no bulk pre-seed */}
 var editRoundId=null;
