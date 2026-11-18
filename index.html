@@ -1317,7 +1317,29 @@ function saveYover(){localStorage.setItem(YKEY,JSON.stringify(YOVER));}
 function stdYd(course,tee,i){const k=course+'|'+tee+'#'+i;return YOVER[k]!=null?YOVER[k]:COURSES[course].tees[tee].yds[i];}
 /* ===== USER PROFILE ===== */
 const PROFK=LU+'scard-prof-v1';
-const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver'};
+const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',lang:'en',t5mode:'dist',t5x:30};
+function t5x(){var x=parseInt(PROF.t5x,10);if(isNaN(x))x=30;return Math.min(50,Math.max(10,x));}
+/* Tiger's 5 mistakes for one logged hole, honouring the short-game setting */
+function holeMistakes(h){
+ var s=h.shots||[],putts=0,pens=0,strokes=0,nonPuttNearX=0,nearX=0,near150=0;
+ var X=t5x();
+ for(var i=0;i<s.length;i++){var sh=s[i];var p=sh.pen||0;pens+=p;strokes+=1+p;
+   if(sh.lie==='putt'){putts++;}
+   if(sh.lie==='putt'||sh.dist<=X){nearX++;}
+   if(sh.lie!=='putt'&&sh.lie!=='tee'&&sh.dist<=X){nonPuttNearX++;}
+   if(sh.lie==='putt'||sh.dist<=150){near150++;}
+ }
+ var overPar=strokes-h.par;
+ return {
+   p3: putts>=3?1:0,
+   db: (h.par!==5&&overPar>=2)?1:0,
+   bp5:(h.par===5&&overPar>=1)?1:0,
+   f150:(near150+pens)>3?1:0,
+   short: PROF.t5mode==='dchip' ? (nonPuttNearX>=2?1:0) : (nearX>=3?1:0)
+ };
+}
+function roundMistakes(){var t={p3:0,db:0,bp5:0,f150:0,short:0,total:0};(R.holes||[]).forEach(function(h){var m=holeMistakes(h);t.p3+=m.p3;t.db+=m.db;t.bp5+=m.bp5;t.f150+=m.f150;t.short+=m.short;});t.total=t.p3+t.db+t.bp5+t.f150+t.short;return t;}
+function shortLabel(){return PROF.t5mode==='dchip'?('Double chip ≤'+t5x()+'y'):('3+ from '+t5x()+'y');}
 function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage.getItem(PROFK))||{})}catch(e){return Object.assign({},PROF_DEF)}}
 let PROF=loadProf();
 function saveProf(){localStorage.setItem(PROFK,JSON.stringify(PROF));}
@@ -1443,8 +1465,8 @@ document.getElementById('lgSaveBtn').onclick=()=>{
  let t={ott:0,app:0,atg:0,putt:0,tot:0,strokes:0,par:0};R.holes.forEach(h=>{const s=holeSG(h);['ott','app','atg','putt','tot','strokes'].forEach(k=>t[k]+=s[k]);t.par+=h.par;});
  const diff=Math.round(((t.strokes-R.cr)*113/R.slope)*10)/10; // WHS score differential
  HIST.push({date:R.date,course:R.course,tee:R.tee,score:t.strokes,par:t.par,diff});saveHist();
- const hi=effHI();
- alert(`Saved & learned.\nScore ${t.strokes} (${t.strokes-t.par>=0?'+':''}${t.strokes-t.par}) · differential ${diff}\nSG ${fmt(t.tot)} — OTT ${fmt(t.ott)} · APP ${fmt(t.app)} · ATG ${fmt(t.atg)} · PUTT ${fmt(t.putt)}${hi!=null?'\nHandicap Index now ≈ '+hi+' ('+HIST.length+' rounds)':''}`);
+ const hi=effHI();const m=roundMistakes();
+ alert(`Saved & learned.\nScore ${t.strokes} (${t.strokes-t.par>=0?'+':''}${t.strokes-t.par}) · differential ${diff}\nSG ${fmt(t.tot)} — OTT ${fmt(t.ott)} · APP ${fmt(t.app)} · ATG ${fmt(t.atg)} · PUTT ${fmt(t.putt)}\nTiger's 5: ${m.total} — 3-putts ${m.p3} · doubles ${m.db} · bogey par-5 ${m.bp5} · 3+ from 150 ${m.f150} · ${shortLabel()} ${m.short}${hi!=null?'\nHandicap Index now ≈ '+hi+' ('+HIST.length+' rounds)':''}`);
  localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);render();
 };
 /* ---- course / tee selector ---- */
@@ -1481,6 +1503,16 @@ function renderProf(){
   <label>Default tee<select id="pf_tee">${teeOpts}</select></label>
   <label>Default tee club<select id="pf_club">${clubs.map(c=>`<option ${PROF.teeClub===c?'selected':''}>${c}</option>`).join('')}</select></label>
   <div class="hiblock">
+    <div class="hirow"><span>Tiger's 5 — short-game mistake</span></div>
+    <div class="hisub">The 5th mistake slot. Choose what counts, and the distance that defines "short".</div>
+    <label>Counts as a mistake when<select id="pf_t5mode">
+      <option value="dist" ${PROF.t5mode!=='dchip'?'selected':''}>3+ shots from X yards (incl. putts)</option>
+      <option value="dchip" ${PROF.t5mode==='dchip'?'selected':''}>Double chip — chipped twice inside X yards</option></select></label>
+    <label>Distance X (yards, 10–50)<input id="pf_t5x" type="number" min="10" max="50" step="5" value="${t5x()}"></label>
+    <div class="hisub">Also used by the logger when it counts this mistake. Historical Statistics rounds keep your sheet's original definition.</div>
+    <label>Language<select id="pf_lang"><option value="en" selected>English</option><option value="es" disabled>Español (soon)</option><option value="fr" disabled>Français (soon)</option><option value="ja" disabled>日本語 (soon)</option></select></label>
+  </div>
+  <div class="hiblock">
     <div class="hirow"><span>Handicap Index</span><b>${eff!=null?eff:'—'}</b></div>
     <div class="hisub">${auto!=null?('computed '+auto+' · best '+kForN(Math.min(20,HIST.length))+' of last '+Math.min(20,HIST.length)+' · '+HIST.length+' round'+(HIST.length!==1?'s':'')+' logged'):'log 3+ rounds to compute automatically'}</div>
     <label>Source<select id="pf_himode">
@@ -1509,6 +1541,8 @@ function renderProf(){
  document.getElementById('pf_course').addEventListener('change',e=>{PROF.homeCourse=e.target.value;PROF.defaultTee=Object.keys(COURSES[PROF.homeCourse].tees)[0];saveProf();renderProf();});
  document.getElementById('pf_tee').addEventListener('change',e=>{PROF.defaultTee=e.target.value;saveProf();});
  document.getElementById('pf_club').addEventListener('change',e=>{PROF.teeClub=e.target.value;saveProf();});
+ document.getElementById('pf_t5mode').addEventListener('change',e=>{PROF.t5mode=e.target.value;saveProf();});
+ document.getElementById('pf_t5x').addEventListener('change',e=>{PROF.t5x=Math.min(50,Math.max(10,parseInt(e.target.value||'30',10)||30));saveProf();renderProf();});
  document.getElementById('pf_himode').addEventListener('change',e=>{PROF.hiMode=e.target.value;saveProf();renderProf();});
  const man=document.getElementById('pf_himan');if(man)man.addEventListener('input',()=>{PROF.hiManual=man.value;saveProf();});
  document.getElementById('pf_impbtn').addEventListener('click',()=>{const rows=parseDiffPaste(document.getElementById('pf_imp').value);const n=mergeHist(rows);
