@@ -1613,16 +1613,19 @@ function lgLoad(o){
  save();render();renderSel();
 }
 render();renderSel();window.LGR={card:function(){render();renderSel();},profile:renderProf,load:lgLoad};
-/* inject a Load/import panel into the Log tab */
-(function(){var app=document.querySelector('#view-log .app')||document.getElementById('view-log');if(!app)return;
+/* inject a Load/import panel into the Log tab (robust; never throws) */
+try{(function(){
+ var ref=document.querySelector('#view-log .hint');
+ var parent=ref?ref.parentNode:(document.querySelector('#view-log .app')||document.getElementById('view-log'));
+ if(!parent)return;
  var box=document.createElement('div');box.style.cssText='padding:10px 16px';
  box.innerHTML='<details style="font-family:var(--cond)"><summary style="cursor:pointer;font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:12px;color:var(--ink-soft)">Load / import a round</summary>'+
    '<textarea id="lgImport" rows="3" style="width:100%;margin-top:8px;font-family:var(--cond);font-size:12px;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--cream)" placeholder="paste round JSON here"></textarea>'+
    '<div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap"><button id="lgImportBtn" class="pf_btn">Load pasted</button><button id="lgSampleBtn" class="pf_btn" style="background:var(--sand-deep)">Load Nov-14 round</button></div></details>';
- var hint=app.querySelector('.hint');app.insertBefore(box,hint||null);
+ if(ref&&ref.parentNode===parent){parent.insertBefore(box,ref);}else{parent.appendChild(box);}
  document.getElementById('lgImportBtn').onclick=function(){try{lgLoad(JSON.parse(document.getElementById('lgImport').value));}catch(e){alert('Could not read that — paste valid round JSON.');}};
  document.getElementById('lgSampleBtn').onclick=function(){lgLoad(SAMPLE14);};
-})();
+})();}catch(e){}
 
 })();
 
