@@ -208,7 +208,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .sg-pos{color:var(--fairway);}
 .lgscope .selbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 16px;background:var(--paper);border-bottom:1px solid var(--line);}
 .lgscope .selbar label{font-family:var(--cond);text-transform:uppercase;letter-spacing:.1em;font-size:10px;color:var(--ink-soft);}
-.lgscope .selbar select{font-family:var(--sans);font-size:13px;border:1px solid var(--line);border-radius:8px;padding:7px 8px;background:var(--cream);color:var(--pine);font-weight:600;}
+.lgscope .selbar select,.selbar input[type=date]{font-family:var(--sans);font-size:13px;border:1px solid var(--line);border-radius:8px;padding:7px 8px;background:var(--cream);color:var(--pine);font-weight:600;}
 .lgscope .selbar .star{margin-left:auto;border:1px solid var(--sand-deep);background:var(--paper);border-radius:999px;padding:6px 12px;font-family:var(--cond);font-weight:700;font-size:11px;letter-spacing:.05em;color:var(--sand-deep);cursor:pointer;}
 .lgscope .selbar .star.isdef{background:var(--sand);color:var(--pine);}
 .lgscope .selbar .est{font-family:var(--cond);font-size:10px;color:var(--amber);letter-spacing:.03em;}
@@ -256,6 +256,8 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .pform input, .lgscope .pform select{font-family:var(--sans);font-size:15px;border:1px solid var(--line);border-radius:9px;padding:10px;background:var(--cream);color:var(--ink);}
 .lgscope .pf_ta{width:100%;font-family:var(--cond);font-size:13px;border:1px solid var(--line);border-radius:9px;padding:9px;background:var(--cream);color:var(--ink);resize:vertical;}
 .lgscope .pf_btn{align-self:flex-start;border:none;border-radius:9px;padding:9px 16px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:#fff;background:linear-gradient(160deg,var(--fairway),var(--pine));cursor:pointer;}
+.lgscope input[type=number]::-webkit-inner-spin-button,.lgscope input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;appearance:none;margin:0;}
+.lgscope input[type=number]{-moz-appearance:textfield;appearance:textfield;}
 .lgscope .hiblock{background:rgba(216,196,140,.14);border:1px solid var(--line);border-radius:12px;padding:13px;display:flex;flex-direction:column;gap:11px;margin-top:4px;}
 .lgscope .hiblock .hirow{display:flex;align-items:baseline;}
 .lgscope .hiblock .hirow span{font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft);font-weight:700;}
@@ -284,6 +286,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
  <div class="selbar">
    <label>Course</label><select id="selCourse"></select>
    <label>Tee</label><select id="selTee"></select>
+   <label>Date</label><input type="date" id="selDate">
    <span class="est" id="teeEst"></span>
    <button class="star" id="starBtn">★ default</button>
  </div>
@@ -1371,7 +1374,7 @@ function roundRecord(){
  });
  var mi=roundMistakes(),r2=function(x){return Math.round(x*100)/100;};
  var dist=drives.length?Math.round(drives.reduce(function(a,b){return a+b;},0)/drives.length*10)/10:0;
- return {course:(R.courseName||R.course),date:R.date,score:strokes,par:par,stp:strokes-par,
+ return {course:(R.courseName||R.course),date:(R.date||new Date().toISOString().slice(0,10)),score:strokes,par:par,stp:strokes-par,
    fw:fw,gir:gir,putts:putts,pen:pen,dist:dist,
    p3:mi.p3,db:mi.db,bp5:mi.bp5,f150:mi.f150,fx:mi.short,mtot:mi.total,
    ott:r2(sg.ott),app:r2(sg.app),atg:r2(sg.atg),putt:r2(sg.putt),sgtot:r2(sg.tot),bir:bir,bog:bog,dbl:dbl};
@@ -1519,6 +1522,7 @@ function renderSel(){
  ts.innerHTML=Object.keys(tees).map(k=>`<option value="${k}" ${k===R.tee?'selected':''}>${tees[k].label}</option>`).join('');
  const t=tees[R.tee];const totY=R.holes.reduce((a,h)=>a+(h.yd||0),0);
  document.getElementById('teeEst').textContent=Y2U(totY)+' '+PROF.units+' · CR '+t.cr+' · Slope '+t.slope+(t.est?' · est.':'');
+ const dEl=document.getElementById('selDate');if(dEl){dEl.value=R.date||new Date().toISOString().slice(0,10);if(!dEl.dataset.init){dEl.dataset.init='1';dEl.addEventListener('change',function(){R.date=dEl.value||R.date;save();});}}
  const d=loadDefault(),isd=d.course===R.course&&d.tee===R.tee,sb=document.getElementById('starBtn');
  sb.classList.toggle('isdef',isd);sb.textContent=isd?'★ default':'☆ set default';
 }
