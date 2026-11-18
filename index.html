@@ -182,6 +182,10 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .tabnav button{font-family:var(--cond);text-transform:uppercase;letter-spacing:.1em;font-size:13px;font-weight:700;padding:12px 20px;border:none;background:none;color:var(--ink-soft);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
 .tabnav button:hover{color:var(--pine)}
 .tabnav button.on{color:var(--pine);border-bottom-color:var(--fairway)}
+#view-stats section.sec{overflow:hidden;}
+#view-stats section.sec.col{max-height:56px;}
+#view-stats section.sec > h2{cursor:pointer;user-select:none;}
+#view-stats section.sec .caret{margin-left:auto;font-family:var(--cond);font-size:13px;color:var(--sand-deep);}
 .whoami{margin-left:auto;align-self:center;font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft)}
 .logoutbtn{align-self:center;border:none;background:none;color:var(--clay);font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:11px;cursor:pointer;padding:0 6px 0 12px;border-bottom:3px solid transparent;margin-bottom:-2px}
 .login{position:fixed;inset:0;z-index:100;background:radial-gradient(900px 500px at 80% -10%,#1a5038,transparent 60%),linear-gradient(160deg,#0f3a2c,#11271c);display:flex;align-items:center;justify-content:center;padding:20px}
@@ -312,7 +316,8 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 
   <section>
     <h2><span class="n">01</span> Tiger's 5 · per round</h2>
-    <div class="card"><div class="chartbox" style="height:260px"><canvas id="mistChart" role="img" aria-label="Mistakes per round"></canvas></div></div>
+    <div class="card"><div class="chartbox" style="height:260px"><canvas id="mistChart" role="img" aria-label="Mistakes per round"></canvas></div>
+      <div id="mistRec" style="margin-top:14px;padding:12px 15px;background:rgba(216,196,140,.16);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;font-size:14px;line-height:1.5;color:var(--ink)"></div></div>
   </section>
 
   <section>
@@ -1016,6 +1021,14 @@ function renderAll(){
  hBar('sgBar',sgArr);
  const mcats=[['p3','3-putts',F.blue],['db','Double bogeys',F.clay],['bp5','Bogey par-5',F.sand],['f150','3+ from 150',F.moss],['fx','3+ from 40',F.pine]];
  stackBar('mistChart',mcats);
+ {const mr=document.getElementById('mistRec');if(mr){
+   const ranked=mcats.map(c=>({name:c[1],avg:mean(R.map(r=>r[c[0]]).filter(v=>v!=null))})).filter(x=>x.avg>0).sort((a,b)=>b.avg-a.avg);
+   if(!ranked.length){mr.innerHTML='<strong>Clean card.</strong> No recurring mistakes in this range.';}
+   else{const top=ranked.slice(0,3);const tot=ranked.reduce((s,x)=>s+x.avg,0);
+     mr.innerHTML='<strong>Work on these first — your most common mistakes</strong> ('+tot.toFixed(1)+' per round total): '+
+       top.map((x,i)=>`<b style="color:var(--pine)">${x.name}</b> ${x.avg.toFixed(1)}/rd`).join(' &nbsp;·&nbsp; ')+
+       '. '+top[0].name+' is the biggest leak — start there.';}
+ }}
  buildTable();
  renderDrivers();
  drawAllXmr();
@@ -1276,6 +1289,8 @@ function setPlayer(p){
  renderTabs(); fillForm(); renderNav(); renderHole(); updateLive(); renderAll();
 }
 document.getElementById('playertabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.p)setPlayer(b.dataset.p);});
+// receive a round logged in the Log tab -> append to this user's rounds -> refresh Statistics
+window.addLoggedRound=function(rec){try{const a=load(ckey(),[]);a.push(rec);save(ckey(),a);CUSTOM=a;renderAll();renderTabs();}catch(e){}};
 
 /* init — fully self-contained, native canvas charts (no external libraries) */
 renderTabs(); fillForm(); renderNav(); renderHole(); updateLive(); renderAll();
@@ -1340,6 +1355,27 @@ function holeMistakes(h){
 }
 function roundMistakes(){var t={p3:0,db:0,bp5:0,f150:0,short:0,total:0};(R.holes||[]).forEach(function(h){var m=holeMistakes(h);t.p3+=m.p3;t.db+=m.db;t.bp5+=m.bp5;t.f150+=m.f150;t.short+=m.short;});t.total=t.p3+t.db+t.bp5+t.f150+t.short;return t;}
 function shortLabel(){return PROF.t5mode==='dchip'?('Double chip ≤'+t5x()+'y'):('3+ from '+t5x()+'y');}
+/* full per-round record in the dashboard's shape (only metrics shown in the dashboard) */
+function roundRecord(){
+ var fw=0,gir=0,putts=0,pen=0,bir=0,bog=0,dbl=0,par=0,strokes=0,drives=[];
+ var sg={ott:0,app:0,atg:0,putt:0,tot:0};
+ (R.holes||[]).forEach(function(h){var s=h.shots||[],m=holeSG(h);
+   sg.ott+=m.ott;sg.app+=m.app;sg.atg+=m.atg;sg.putt+=m.putt;sg.tot+=m.tot;
+   var hp=0,np=0,pens=0,hasPutt=false;
+   for(var i=0;i<s.length;i++){var sh=s[i];pens+=sh.pen||0;hp+=1+(sh.pen||0);if(sh.lie==='putt'){putts++;hasPutt=true;}else np++;}
+   pen+=pens;par+=h.par;strokes+=hp;var over=hp-h.par;
+   if(over<=-1)bir++;else if(over===1)bog++;else if(over>=2)dbl++;
+   if((h.par===4||h.par===5)&&s.length>1&&s[1].lie==='fw')fw++;
+   if((h.par===4||h.par===5)&&s.length>1&&s[1].lie!=='putt')drives.push(h.yd-s[1].dist);
+   if(hasPutt&&(np+pens)<=h.par-2)gir++;
+ });
+ var mi=roundMistakes(),r2=function(x){return Math.round(x*100)/100;};
+ var dist=drives.length?Math.round(drives.reduce(function(a,b){return a+b;},0)/drives.length*10)/10:0;
+ return {course:(R.courseName||R.course),date:R.date,score:strokes,par:par,stp:strokes-par,
+   fw:fw,gir:gir,putts:putts,pen:pen,dist:dist,
+   p3:mi.p3,db:mi.db,bp5:mi.bp5,f150:mi.f150,fx:mi.short,mtot:mi.total,
+   ott:r2(sg.ott),app:r2(sg.app),atg:r2(sg.atg),putt:r2(sg.putt),sgtot:r2(sg.tot),bir:bir,bog:bog,dbl:dbl};
+}
 function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage.getItem(PROFK))||{})}catch(e){return Object.assign({},PROF_DEF)}}
 let PROF=loadProf();
 function saveProf(){localStorage.setItem(PROFK,JSON.stringify(PROF));}
@@ -1467,6 +1503,7 @@ document.getElementById('lgSaveBtn').onclick=()=>{
  HIST.push({date:R.date,course:R.course,tee:R.tee,score:t.strokes,par:t.par,diff});saveHist();
  const hi=effHI();const m=roundMistakes();
  alert(`Saved & learned.\nScore ${t.strokes} (${t.strokes-t.par>=0?'+':''}${t.strokes-t.par}) · differential ${diff}\nSG ${fmt(t.tot)} — OTT ${fmt(t.ott)} · APP ${fmt(t.app)} · ATG ${fmt(t.atg)} · PUTT ${fmt(t.putt)}\nTiger's 5: ${m.total} — 3-putts ${m.p3} · doubles ${m.db} · bogey par-5 ${m.bp5} · 3+ from 150 ${m.f150} · ${shortLabel()} ${m.short}${hi!=null?'\nHandicap Index now ≈ '+hi+' ('+HIST.length+' rounds)':''}`);
+ try{if(window.addLoggedRound)window.addLoggedRound(roundRecord());}catch(e){}
  localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);render();
 };
 /* ---- course / tee selector ---- */
@@ -1586,6 +1623,16 @@ render();renderSel();window.LGR={card:function(){render();renderSel();},profile:
  });
  var lo=document.getElementById('logoutBtn');
  if(lo)lo.addEventListener('click',function(){localStorage.removeItem('app-user');location.reload();});
+})();
+/* ---- collapsible Statistics sections (all closed by default) ---- */
+(function(){
+ var secs=document.querySelectorAll('#view-stats > section');
+ for(var i=0;i<secs.length;i++){(function(sec){
+   sec.classList.add('sec','col');
+   var h=sec.querySelector('h2'); if(!h)return;
+   var c=document.createElement('span'); c.className='caret'; c.textContent='▸'; h.appendChild(c);
+   h.addEventListener('click',function(){var closed=sec.classList.toggle('col'); c.textContent=closed?'▸':'▾'; if(!closed){try{window.dispatchEvent(new Event('resize'));}catch(e){}}});
+ })(secs[i]);}
 })();
 
 </script>
