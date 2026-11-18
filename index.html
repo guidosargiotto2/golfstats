@@ -224,6 +224,11 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .holesep .pc button.on{background:var(--sand);border-color:var(--sand-deep);color:var(--pine);}
 .lgscope .holesep .hsum{float:right;font-size:12px;color:var(--ink-soft);}
 .lgscope .holesep .hsum b{font-variant-numeric:tabular-nums;}
+.lgscope .holesep.conf td{background:rgba(46,110,70,.16);border-left:4px solid var(--fairway);}
+.lgscope .holesep.conf .hn{color:var(--fairway);}
+.lgscope tr.shot.conf{background:rgba(46,110,70,.045);}
+.lgscope tr.shot.conf td.sidx{color:var(--fairway);}
+.lgscope .addrow button.isconf{background:var(--fairway);border:1px solid var(--fairway);color:#fff;}
 .lgscope .ydedit{width:44px;border:1px solid var(--line);border-radius:5px;padding:1px 3px;font-family:var(--cond);font-size:12px;text-align:right;background:var(--paper);color:var(--ink);}
 .lgscope tbody td{padding:3px 4px;border-bottom:1px solid var(--line-soft,#eee9da);text-align:center;font-size:14px;}
 .lgscope tr.shot.pred{background:rgba(201,154,30,.06);}
@@ -1335,7 +1340,9 @@ function saveYover(){localStorage.setItem(YKEY,JSON.stringify(YOVER));}
 function stdYd(course,tee,i){const k=course+'|'+tee+'#'+i;return YOVER[k]!=null?YOVER[k]:COURSES[course].tees[tee].yds[i];}
 /* ===== USER PROFILE ===== */
 const PROFK=LU+'scard-prof-v1';
-const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',lang:'en',t5mode:'dist',t5x:30};
+const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,lang:'en',t5mode:'dist',t5x:30};
+/* average drive in yards — where the predicted second shot is played from */
+function driveYd(){var x=parseInt(PROF.driveYd,10);if(isNaN(x))x=250;return Math.min(400,Math.max(100,x));}
 function t5x(){var x=parseInt(PROF.t5x,10);if(isNaN(x))x=30;return Math.min(50,Math.max(10,x));}
 /* Tiger's 5 mistakes for one logged hole, honouring the short-game setting */
 function holeMistakes(h){
@@ -1430,7 +1437,9 @@ const distUnit=lie=>lie==='putt'?'ft':(PROF.units==='m'?'m':'yd');
 function loadProfile(){try{return JSON.parse(localStorage.getItem(PKEY))||{}}catch(e){return{}}}
 let PROFILE=loadProfile();
 function seedHole(par,yd){const nFull=Math.max(1,par-2),s=[];
- for(let k=0;k<nFull;k++){if(k===0)s.push({lie:'tee',dist:yd});else{const d=Math.max(45,Math.round(yd*(1-k/nFull)/5)*5);s.push({lie:'rough',dist:d});}}
+ /* the drive covers the player's average drive; later full shots split what is left */
+ const left=Math.max(30,yd-driveYd());
+ for(let k=0;k<nFull;k++){if(k===0)s.push({lie:'tee',dist:yd});else{const d=Math.max(30,Math.round(left*(1-(k-1)/(nFull-1))/5)*5);s.push({lie:'fw',dist:d});}}
  s.push({lie:'putt',dist:20});s.push({lie:'putt',dist:2});
  return s.map(x=>({...x,pen:0,conf:false}));}
 function pkey(course,tee,i){return course+'|'+tee+'#'+i;}
@@ -1443,6 +1452,8 @@ function newRound(course,tee){const c=COURSES[course],t=c.tees[tee];
 let DEFT=loadDefault();
 let R=(function(){try{const r=JSON.parse(localStorage.getItem(RKEY));if(r&&r.holes&&r.tee)return r;}catch(e){}return newRound(DEFT.course,DEFT.tee);})();
 function save(){localStorage.setItem(RKEY,JSON.stringify(R));}
+function reseedPredicted(){R.holes.forEach((h,i)=>{if(h.shots.some(x=>x.conf))return;const p=PROFILE[pkey(R.course,R.tee,i)];if(p&&p.shots&&p.shots.length)return;h.shots=seedHole(h.par,h.yd);});}
+reseedPredicted();
 const LIE_OPTS=[['tee','Tee'],['fw','Fairway'],['rough','Rough'],['sand','Sand'],['rec','Recovery'],['putt','Green (putt)']];
 const fmt=v=>(v>0?'+':'')+v.toFixed(2);
 const holeConfirmed=h=>h.shots.length>0&&h.shots.every(s=>s.conf);
@@ -1451,20 +1462,20 @@ function render(){
  const body=document.getElementById('lgBody');let html='';
  R.holes.forEach((h,hi)=>{
    const sg=holeSG(h);const ok=holeConfirmed(h);
-   html+=`<tr class="holesep"><td colspan="6"><span class="hn">Hole ${hi+1}</span>
+   html+=`<tr class="holesep${ok?' conf':''}"><td colspan="6"><span class="hn">Hole ${hi+1}</span>
      <span class="pc">${[3,4,5].map(p=>`<button class="${h.par===p?'on':''}" data-par="${hi}:${p}">${p}</button>`).join('')}</span>
      <span class="hsum">${ok?'✓ ':'<span style="color:var(--amber)">~ </span>'}<b class="${sg.tot<0?'sg-neg':'sg-pos'}">SG ${fmt(sg.tot)}</b> · ${sg.strokes} strk · par ${h.par} · <input class="ydedit" type="number" inputmode="numeric" data-yh="${hi}" value="${Y2U(h.yd)}" title="hole length — editable">${PROF.units}${h.hcp?' · SI '+h.hcp:''}</span></td></tr>`;
    h.shots.forEach((s,si)=>{
      const En=(si+1<h.shots.length)?Estart(h.shots[si+1].lie,h.shots[si+1].dist):0;
      const sgv=Estart(s.lie,s.dist)-En-1-(s.pen||0);const unit=distUnit(s.lie);const shownDist=s.lie==='putt'?s.dist:Y2U(s.dist);
-     html+=`<tr class="shot ${s.conf?'':'pred'}"><td class="sidx">${si+1}</td>
+     html+=`<tr class="shot ${s.conf?'conf':'pred'}"><td class="sidx">${si+1}</td>
        <td class="lh"><select class="lie" data-k="lie" data-h="${hi}" data-s="${si}">${LIE_OPTS.map(o=>`<option value="${o[0]}" ${s.lie===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></td>
        <td class="distc"><input class="d" type="number" inputmode="numeric" data-k="dist" data-h="${hi}" data-s="${si}" value="${shownDist}"><span class="unit">${unit}</span></td>
        <td><input class="p" type="number" inputmode="numeric" min="0" data-k="pen" data-h="${hi}" data-s="${si}" value="${s.pen||''}" placeholder="0"></td>
        <td class="sgc ${sgv<0?'sg-neg':'sg-pos'}">${fmt(sgv)}</td>
        <td class="rm"><button data-del="${hi}:${si}" title="delete">×</button></td></tr>`;
    });
-   html+=`<tr class="addrow"><td></td><td colspan="5" class="lh"><button data-add="${hi}">+ shot</button> <button data-confirm="${hi}">${ok?'✓ confirmed':'confirm hole'}</button></td></tr>`;
+   html+=`<tr class="addrow"><td></td><td colspan="5" class="lh"><button data-add="${hi}">+ shot</button> <button data-confirm="${hi}"${ok?' class="isconf"':''}>${ok?'✓ confirmed':'confirm hole'}</button></td></tr>`;
  });
  body.innerHTML=html;wire();totals();renderSel();save();
 }
@@ -1543,6 +1554,7 @@ function renderProf(){
   <label>Home course<select id="pf_course">${courseOpts}</select></label>
   <label>Default tee<select id="pf_tee">${teeOpts}</select></label>
   <label>Default tee club<select id="pf_club">${clubs.map(c=>`<option ${PROF.teeClub===c?'selected':''}>${c}</option>`).join('')}</select></label>
+  <label>Average drive (yards)<input id="pf_drive" type="number" min="100" max="400" step="5" value="${driveYd()}"></label>
   <div class="hiblock">
     <div class="hirow"><span>Tiger's 5 — short-game mistake</span></div>
     <div class="hisub">The 5th mistake slot. Choose what counts, and the distance that defines "short".</div>
@@ -1582,6 +1594,7 @@ function renderProf(){
  document.getElementById('pf_course').addEventListener('change',e=>{PROF.homeCourse=e.target.value;PROF.defaultTee=Object.keys(COURSES[PROF.homeCourse].tees)[0];saveProf();renderProf();});
  document.getElementById('pf_tee').addEventListener('change',e=>{PROF.defaultTee=e.target.value;saveProf();});
  document.getElementById('pf_club').addEventListener('change',e=>{PROF.teeClub=e.target.value;saveProf();});
+ document.getElementById('pf_drive').addEventListener('change',e=>{PROF.driveYd=Math.min(400,Math.max(100,parseInt(e.target.value||'250',10)||250));saveProf();reseedPredicted();render();});
  document.getElementById('pf_t5mode').addEventListener('change',e=>{PROF.t5mode=e.target.value;saveProf();});
  document.getElementById('pf_t5x').addEventListener('change',e=>{PROF.t5x=Math.min(50,Math.max(10,parseInt(e.target.value||'30',10)||30));saveProf();renderProf();});
  document.getElementById('pf_himode').addEventListener('change',e=>{PROF.hiMode=e.target.value;saveProf();renderProf();});
