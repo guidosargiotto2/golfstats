@@ -1586,8 +1586,9 @@ function renderSetup(){
  document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+R.tee;
  renderSel();
 }
+function holeSGlive(h){var cs=confShots(h),tot=0,strokes=0;for(var i=0;i<cs.length;i++){strokes+=1+(cs[i].pen||0);var hasN=i+1<cs.length;if(hasN||h.done){var En=hasN?Estart(cs[i+1].lie,cs[i+1].dist):0;tot+=Estart(cs[i].lie,cs[i].dist)-En-1-(cs[i].pen||0);}}return {tot:tot,strokes:strokes};}
 function renderHoleBar(hi){
- var h=R.holes[hi],hv=holeView(h),sg=holeSG(hv),m=holeMistakes(hv);
+ var h=R.holes[hi],hv=holeView(h),sg=holeSGlive(h),m=holeMistakes(hv);
  var flags=[m.p3?'3-putt':'',m.db?'double':'',m.bp5?'bogey P5':'',m.f150?'bogey ≤'+bogeyXyd()+'y':'',m.short?shortLabel():''].filter(Boolean).join(' · ');
  /* running round score, including the hole in progress */
  var tsc=0,tpar=0,thru=0;R.holes.forEach(function(x,xi){if(x.done){var t=holeSG(holeView(x));tsc+=t.strokes;tpar+=x.par;thru++;}else if(xi===hi){var c=confShots(x);if(c.length){tsc+=c.reduce(function(a,s){return a+1+(s.pen||0);},0);tpar+=x.par;thru++;}}});
@@ -1601,8 +1602,9 @@ function renderHoleBar(hi){
 function renderShots(hi){
  var h=R.holes[hi],body=document.getElementById('lgBody'),html='';
  h.shots.forEach(function(s,si){
-   var En=(si+1<h.shots.length)?Estart(h.shots[si+1].lie,h.shots[si+1].dist):0;
-   var sgv=Estart(s.lie,s.dist)-En-1-(s.pen||0);var shownDist=s.lie==='putt'?s.dist:Y2U(s.dist);var locked=si===0;
+   var hasNext=(si+1<h.shots.length);var known=hasNext||h.done;
+   var En=hasNext?Estart(h.shots[si+1].lie,h.shots[si+1].dist):0;
+   var sgv=known?(Estart(s.lie,s.dist)-En-1-(s.pen||0)):null;var shownDist=s.lie==='putt'?s.dist:Y2U(s.dist);var locked=si===0;
    var cells=LIECOLS.map(function(lc){var on=s.lie===lc;
      if(locked)return '<td class="liec">'+(lc==='tee'?('<input class="lc on" type="number" inputmode="numeric" data-ydtee="'+hi+'" value="'+shownDist+'" title="Tee shot = hole length — editable for this round">'):'<span class="lcx">·</span>')+'</td>';
      return '<td class="liec"><input class="lc'+(on?' on':'')+'" type="number" inputmode="numeric" data-h="'+hi+'" data-s="'+si+'" data-lie="'+lc+'" value="'+(on?shownDist:'')+'" placeholder="·"></td>';
@@ -1666,6 +1668,11 @@ function wire(){
    el.addEventListener('change',function(){var h=+el.dataset.h,si=+el.dataset.s;R.holes[h].shots[si].pen=Math.max(0,parseInt(el.value||'0',10)||0);render();});
  });
  document.querySelectorAll('#lgBody input.lc[data-entry]').forEach(function(el){
+   // click a different category on the predicted row → move the predicted value into it
+   el.addEventListener('focus',function(){var h=+el.dataset.entry,lie=el.dataset.lie;if(el.value.trim()!=='')return;
+     var pr=predictNext(h);if(!pr||pr.lie===''||pr.dist===''||pr.lie===lie)return;
+     R.holes[h].shots.push({lie:lie,dist:pr.dist,pen:0,conf:true});render();
+     var si=confShots(R.holes[h]).length-1;var nx=document.querySelector('#lgBody input.lc[data-h="'+h+'"][data-s="'+si+'"][data-lie="'+lie+'"]');if(nx){nx.focus();if(nx.select)nx.select();}});
    el.addEventListener('change',function(){var h=+el.dataset.entry,lie=el.dataset.lie,v=el.value.trim();if(v==='')return;
      var raw=Math.max(1,parseInt(v,10)||1),dist=(lie==='putt')?raw:U2Y(raw);
      R.holes[h].shots.push({lie:lie,dist:dist,pen:0,conf:true});render();});
