@@ -322,6 +322,11 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .progbar{height:7px;background:var(--line-soft,#eee9da);border-radius:999px;overflow:hidden;}
 .lgscope .progbar span{display:block;height:100%;background:linear-gradient(90deg,var(--fairway),var(--pine));transition:width .3s;}
 .lgscope .progtxt{font-family:var(--cond);font-size:10px;color:var(--ink-soft);text-align:center;margin-top:3px;letter-spacing:.06em;text-transform:uppercase;}
+.lgscope .scorechip{font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.03em;background:var(--pine);color:#fff;padding:5px 12px;border-radius:999px;margin-right:4px;}
+.lgscope .ydchip{font-family:var(--cond);}
+.lgscope .cancelbtn{margin-left:auto;border:1px solid var(--clay);background:none;color:var(--clay);border-radius:11px;padding:11px 18px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;cursor:pointer;}
+.lgscope .savebar button#lgSaveBtn{margin-left:0;}
+.lgscope .savebar{gap:10px;}
 </style>
 </head>
 <body>
@@ -360,7 +365,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
    <tbody id="lgBody"></tbody></table></div>
    <div class="holeacts" id="holeacts"></div>
    <div class="holenav" id="holenav"></div>
-   <div class="savebar"><span class="note" id="snote"></span><button id="lgSaveBtn" disabled>Save round</button></div>
+   <div class="savebar"><span class="note" id="snote"></span><button class="cancelbtn" id="lgCancelBtn" type="button">Cancel round</button><button id="lgSaveBtn" disabled>Save round</button></div>
  </div>
 </div></div>
   <div id="view-profile" class="lgscope" style="display:none"><div style="max-width:460px;margin:0 auto;padding-top:4px"><h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px">Player profile</h2><div class="pform" id="pform"></div></div></div>
@@ -1576,11 +1581,14 @@ function renderSetup(){
 function renderHoleBar(hi){
  var h=R.holes[hi],hv=holeView(h),sg=holeSG(hv),m=holeMistakes(hv);
  var flags=[m.p3?'3-putt':'',m.db?'double':'',m.bp5?'bogey P5':'',m.f150?'bogey ≤'+bogeyXyd()+'y':'',m.short?shortLabel():''].filter(Boolean).join(' · ');
+ /* running round score, including the hole in progress */
+ var tsc=0,tpar=0,thru=0;R.holes.forEach(function(x,xi){if(x.done){var t=holeSG(holeView(x));tsc+=t.strokes;tpar+=x.par;thru++;}else if(xi===hi){var c=confShots(x);if(c.length){tsc+=c.reduce(function(a,s){return a+1+(s.pen||0);},0);tpar+=x.par;thru++;}}});
+ var tp=tsc-tpar,tpTxt=(tp>0?'+':'')+(tp===0?'E':tp);
  document.getElementById('holebar').innerHTML=
    '<div class="hbL"><span class="hn">Hole '+(hi+1)+'</span><span class="hofN">of 18</span>'+
    '<span class="parchip">Par '+h.par+'</span>'+
    '<span class="sichip" title="Stroke index / hole handicap">SI '+(h.hcp||'—')+'</span></div>'+
-   '<div class="hbR"><input class="ydedit" type="number" inputmode="numeric" data-yh="'+hi+'" value="'+Y2U(h.yd)+'" title="hole length">'+PROF.units+' · <b class="'+(sg.tot<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg.tot)+'</b> · '+sg.strokes+' strk'+(flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':'')+'</div>';
+   '<div class="hbR"><span class="scorechip" title="Round score so far">'+(thru?('Score '+tsc+' ('+tpTxt+') · thru '+thru):'Score —')+'</span><span class="ydchip" title="Playing length — edit in the Tee cell below">'+Y2U(h.yd)+' '+PROF.units+'</span> · <b class="'+(sg.tot<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg.tot)+'</b> · '+sg.strokes+' strk'+(flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':'')+'</div>';
 }
 function renderShots(hi){
  var h=R.holes[hi],body=document.getElementById('lgBody'),html='';
@@ -1588,7 +1596,7 @@ function renderShots(hi){
    var En=(si+1<h.shots.length)?Estart(h.shots[si+1].lie,h.shots[si+1].dist):0;
    var sgv=Estart(s.lie,s.dist)-En-1-(s.pen||0);var shownDist=s.lie==='putt'?s.dist:Y2U(s.dist);var locked=si===0;
    var cells=LIECOLS.map(function(lc){var on=s.lie===lc;
-     if(locked)return '<td class="liec">'+(lc==='tee'?('<input class="lc on" type="number" value="'+shownDist+'" disabled title="Tee shot — locked">'):'<span class="lcx">·</span>')+'</td>';
+     if(locked)return '<td class="liec">'+(lc==='tee'?('<input class="lc on" type="number" inputmode="numeric" data-ydtee="'+hi+'" value="'+shownDist+'" title="Tee shot = hole length — editable for this round">'):'<span class="lcx">·</span>')+'</td>';
      return '<td class="liec"><input class="lc'+(on?' on':'')+'" type="number" inputmode="numeric" data-h="'+hi+'" data-s="'+si+'" data-lie="'+lc+'" value="'+(on?shownDist:'')+'" placeholder="·"></td>';
    }).join('');
    html+='<tr class="shot conf"><td class="sidx">'+(si+1)+'</td>'+cells+
@@ -1610,7 +1618,8 @@ function renderHoleActs(hi){
  if(h.done){el.innerHTML='<span class="donechip">✓ Hole complete</span> <button class="ghost" id="btnReopen">Reopen hole</button>';return;}
  var predOn=PROF.predict;
  el.innerHTML=(predOn?'<span class="predhint">Amber row = predicted next shot. Tap ✓ Accept if it\'s right, or type the real lie &amp; distance.</span>':'<span class="predhint">Enter each shot: type the distance under the lie it was played from.</span>')+
-   '<div class="actbtns">'+(predOn?'<button class="accept" id="btnAccept">✓ Accept predicted</button>':'<button class="ghost" id="btnAdd">+ Add shot</button>')+
+   '<div class="actbtns">'+(predOn?'<button class="accept" id="btnAccept">✓ Accept predicted</button>':'')+
+   '<button class="ghost" id="btnAdd">+ Add shot</button>'+
    '<button class="finish" id="btnFinish">Holed it — finish hole ▶</button></div>';
 }
 function renderHoleNav(hi){
@@ -1635,6 +1644,12 @@ function totals(){
 }
 function wire(){
  document.querySelectorAll('#lgBody input.lc[data-s]').forEach(function(el){
+   // click a different category → move the existing value into it, clear the old
+   el.addEventListener('focus',function(){var h=+el.dataset.h,si=+el.dataset.s,lie=el.dataset.lie,sh=R.holes[h].shots[si];
+     if(sh.lie===lie)return;if(sh.dist==null||sh.dist==='')return;
+     var shown=sh.lie==='putt'?sh.dist:Y2U(sh.dist);
+     sh.lie=lie;sh.dist=(lie==='putt')?shown:U2Y(shown);sh.conf=true;render();
+     var nx=document.querySelector('#lgBody input.lc[data-h="'+h+'"][data-s="'+si+'"][data-lie="'+lie+'"]');if(nx){nx.focus();if(nx.select)nx.select();}});
    el.addEventListener('change',function(){var h=+el.dataset.h,si=+el.dataset.s,lie=el.dataset.lie,sh=R.holes[h].shots[si];
      var v=el.value.trim();if(v===''){render();return;}
      var raw=Math.max(1,parseInt(v,10)||1);sh.lie=lie;sh.dist=(lie==='putt')?raw:U2Y(raw);sh.conf=true;render();});
@@ -1649,7 +1664,7 @@ function wire(){
  });
  document.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){var a=b.dataset.del.split(':').map(Number);R.holes[a[0]].shots.splice(a[1],1);render();};});
  document.querySelectorAll('[data-par]').forEach(function(b){b.onclick=function(){var a=b.dataset.par.split(':').map(Number);R.holes[a[0]].par=a[1];render();};});
- document.querySelectorAll('.ydedit').forEach(function(el){el.addEventListener('change',function(){var hi=+el.dataset.yh,raw=Math.max(20,parseInt(el.value||'0',10)||0),v=U2Y(raw),hole=R.holes[hi];hole.yd=v;YOVER[R.course+'|'+R.tee+'#'+hi]=v;saveYover();if(hole.shots[0]&&hole.shots[0].lie==='tee')hole.shots[0].dist=v;render();});});
+ document.querySelectorAll('input[data-ydtee]').forEach(function(el){el.addEventListener('change',function(){var hi=+el.dataset.ydtee,raw=Math.max(20,parseInt(el.value||'0',10)||0),v=U2Y(raw),hole=R.holes[hi];hole.yd=v;if(hole.shots[0]&&hole.shots[0].lie==='tee')hole.shots[0].dist=v;render();});});
  var acc=document.getElementById('btnAccept');if(acc)acc.onclick=function(){var pr=predictNext(R.cur);if(pr.lie==='')return;R.holes[R.cur].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();};
  var add=document.getElementById('btnAdd');if(add)add.onclick=function(){var h=R.holes[R.cur],last=confShots(h).slice(-1)[0];h.shots.push({lie:last&&last.lie==='putt'?'putt':'fw',dist:last&&last.lie==='putt'?2:20,pen:0,conf:true});render();};
  var fin=document.getElementById('btnFinish');if(fin)fin.onclick=finishHole;
@@ -1696,6 +1711,7 @@ document.getElementById('selCourse').onchange=e=>{const c=e.target.value,tee=COU
 document.getElementById('selTee').onchange=e=>switchTo(R.course,e.target.value);
 document.getElementById('starBtn').onclick=()=>{setDefault(R.course,R.tee);renderSel();};
 document.getElementById('startBtn').onclick=()=>startRound();
+document.getElementById('lgCancelBtn').onclick=()=>{if(!confirm('Cancel this round? Everything entered will be discarded.'))return;editRoundId=null;localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);render();renderLogged();};
 document.getElementById('selScore').addEventListener('change',e=>{R.score=e.target.value;save();});
 document.getElementById('selChcp').addEventListener('change',e=>{R.chcp=e.target.value;save();});
 /* ---- player profile ---- */
