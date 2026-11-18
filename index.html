@@ -1546,10 +1546,14 @@ const LIECOLS=['tee','fw','rough','sand','rec','putt'];
 function confShots(h){return (h.shots||[]).filter(function(s){return s.conf;});}
 function holeView(h){return {par:h.par,yd:h.yd,hcp:h.hcp,shots:confShots(h)};}
 /* ---- shot-after-shot prediction (Profile toggle PROF.predict) ---- */
+/* historical average distance for a given shot position + lie on this hole */
+function histDist(hi,idx,lie){var p=PROFILE[pkey(R.course,R.tee,hi)];if(p&&p.pos&&p.pos[idx]&&p.pos[idx][lie]&&p.pos[idx][lie].n>0)return p.pos[idx][lie].dist;return null;}
 function predictNext(hi){
  var h=R.holes[hi],shots=confShots(h),idx=shots.length;
  if(!PROF.predict) return {lie:'',dist:'',pen:0,conf:false};
  var p=PROFILE[pkey(R.course,R.tee,hi)];
+ /* lie-aware: pick the lie you most often reach at this position, with its typical distance */
+ if(p&&p.pos&&p.pos[idx]){var best=null;Object.keys(p.pos[idx]).forEach(function(L){var c=p.pos[idx][L];if(c&&c.n>0&&(!best||c.n>best.n))best={lie:L,dist:c.dist,n:c.n};});if(best)return {lie:best.lie,dist:best.dist,pen:0,conf:false};}
  if(p&&p.shots&&p.shots[idx]){var s=p.shots[idx];return {lie:s.lie,dist:s.dist,pen:0,conf:false};}
  var prev=shots[idx-1];
  if(!prev) return {lie:'tee',dist:h.yd,pen:0,conf:false};
@@ -1657,8 +1661,10 @@ function wire(){
    // click a different category → move the existing value into it, clear the old
    el.addEventListener('focus',function(){var h=+el.dataset.h,si=+el.dataset.s,lie=el.dataset.lie,sh=R.holes[h].shots[si];
      if(sh.lie===lie)return;if(sh.dist==null||sh.dist==='')return;
-     var shown=sh.lie==='putt'?sh.dist:Y2U(sh.dist);
-     sh.lie=lie;sh.dist=(lie==='putt')?shown:U2Y(shown);sh.conf=true;render();
+     var hd=histDist(h,si,lie);
+     if(hd!=null){sh.lie=lie;sh.dist=hd;}
+     else{var shown=sh.lie==='putt'?sh.dist:Y2U(sh.dist);sh.lie=lie;sh.dist=(lie==='putt')?shown:U2Y(shown);}
+     sh.conf=true;render();
      var nx=document.querySelector('#lgBody input.lc[data-h="'+h+'"][data-s="'+si+'"][data-lie="'+lie+'"]');if(nx){nx.focus();if(nx.select)nx.select();}});
    el.addEventListener('change',function(){var h=+el.dataset.h,si=+el.dataset.s,lie=el.dataset.lie,sh=R.holes[h].shots[si];
      var v=el.value.trim();if(v===''){render();return;}
@@ -1671,7 +1677,8 @@ function wire(){
    // click a different category on the predicted row → move the predicted value into it
    el.addEventListener('focus',function(){var h=+el.dataset.entry,lie=el.dataset.lie;if(el.value.trim()!=='')return;
      var pr=predictNext(h);if(!pr||pr.lie===''||pr.dist===''||pr.lie===lie)return;
-     R.holes[h].shots.push({lie:lie,dist:pr.dist,pen:0,conf:true});render();
+     var idx=confShots(R.holes[h]).length,hd=histDist(h,idx,lie);
+     R.holes[h].shots.push({lie:lie,dist:(hd!=null?hd:pr.dist),pen:0,conf:true});render();
      var si=confShots(R.holes[h]).length-1;var nx=document.querySelector('#lgBody input.lc[data-h="'+h+'"][data-s="'+si+'"][data-lie="'+lie+'"]');if(nx){nx.focus();if(nx.select)nx.select();}});
    el.addEventListener('change',function(){var h=+el.dataset.entry,lie=el.dataset.lie,v=el.value.trim();if(v==='')return;
      var raw=Math.max(1,parseInt(v,10)||1),dist=(lie==='putt')?raw:U2Y(raw);
@@ -1688,9 +1695,11 @@ function wire(){
  var nx=document.getElementById('btnNext');if(nx)nx.onclick=function(){gotoHole(R.cur+1);};
 }
 document.getElementById('lgSaveBtn').onclick=()=>{
- R.holes.forEach((h,i)=>{const key=pkey(R.course,R.tee,i);const prev=PROFILE[key]||{n:0,shots:[]};const n=prev.n||0;
+ R.holes.forEach((h,i)=>{const key=pkey(R.course,R.tee,i);const prev=PROFILE[key]||{n:0,shots:[],pos:{}};const n=prev.n||0;
    const merged=h.shots.map((s,j)=>{const p=prev.shots[j];const dist=(p&&p.lie===s.lie)?Math.round((p.dist*n+s.dist)/(n+1)):s.dist;return{lie:s.lie,dist,pen:s.pen||0};});
-   PROFILE[key]={n:n+1,shots:merged,par:h.par,yd:h.yd};});
+   const pos=prev.pos||{};
+   h.shots.forEach(function(s,j){if(!pos[j])pos[j]={};var c=pos[j][s.lie]||{dist:0,n:0};c.dist=Math.round((c.dist*c.n+s.dist)/(c.n+1));c.n=c.n+1;pos[j][s.lie]=c;});
+   PROFILE[key]={n:n+1,shots:merged,par:h.par,yd:h.yd,pos:pos};});
  localStorage.setItem(PKEY,JSON.stringify(PROFILE));
  let t={ott:0,app:0,atg:0,putt:0,tot:0,strokes:0,par:0};R.holes.forEach(h=>{const s=holeSG(h);['ott','app','atg','putt','tot','strokes'].forEach(k=>t[k]+=s[k]);t.par+=h.par;});
  const diff=Math.round(((t.strokes-R.cr)*113/R.slope)*10)/10; // WHS score differential
