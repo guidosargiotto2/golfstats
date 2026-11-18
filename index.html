@@ -1539,6 +1539,7 @@ render();renderSel();window.LGR={card:function(){render();renderSel();},profile:
    if(ov)ov.style.display='none';
    var w=document.getElementById('whoami');if(w)w.textContent=name;
    try{if(typeof setPlayer==='function'&&typeof PLAYERNAMES!=='undefined'&&PLAYERNAMES.indexOf(name)>=0)setPlayer(name);}catch(e){}
+   var pt=document.getElementById('playertabs');if(pt)pt.style.display='none';  // lock to this user
  }
  if(user){enter(user);} else if(ov){ov.style.display='flex';}
  var f=document.getElementById('loginForm');
