@@ -1299,6 +1299,8 @@ function setPlayer(p){
 document.getElementById('playertabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.p)setPlayer(b.dataset.p);});
 // receive a round logged in the Log tab -> append to this user's rounds -> refresh Statistics
 window.addLoggedRound=function(rec){try{const a=load(ckey(),[]);a.push(rec);save(ckey(),a);CUSTOM=a;renderAll();renderTabs();return a.length;}catch(e){return 0;}};
+window.getLoggedRounds=function(){try{return load(ckey(),[]);}catch(e){return [];}};
+window.saveLoggedRounds=function(a){try{save(ckey(),a||[]);CUSTOM=a||[];renderAll();renderTabs();return (a||[]).length;}catch(e){return 0;}};
 
 /* init — fully self-contained, native canvas charts (no external libraries) */
 renderTabs(); fillForm(); renderNav(); renderHole(); updateLive(); renderAll();
@@ -1384,7 +1386,8 @@ function roundRecord(){
  return {course:(R.courseName||R.course),date:(R.date||new Date().toISOString().slice(0,10)),score:strokes,par:par,stp:strokes-par,
    fw:fw,gir:gir,putts:putts,pen:pen,dist:dist,
    p3:mi.p3,db:mi.db,bp5:mi.bp5,f150:mi.f150,fx:mi.short,mtot:mi.total,
-   ott:r2(sg.ott),app:r2(sg.app),atg:r2(sg.atg),putt:r2(sg.putt),sgtot:r2(sg.tot),bir:bir,bog:bog,dbl:dbl};
+   ott:r2(sg.ott),app:r2(sg.app),atg:r2(sg.atg),putt:r2(sg.putt),sgtot:r2(sg.tot),bir:bir,bog:bog,dbl:dbl,
+   courseCode:R.course,tee:R.tee,holes:JSON.parse(JSON.stringify(R.holes))};
 }
 function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage.getItem(PROFK))||{})}catch(e){return Object.assign({},PROF_DEF)}}
 let PROF=loadProf();
@@ -1454,6 +1457,15 @@ let R=(function(){try{const r=JSON.parse(localStorage.getItem(RKEY));if(r&&r.hol
 function save(){localStorage.setItem(RKEY,JSON.stringify(R));}
 function reseedPredicted(){R.holes.forEach((h,i)=>{if(h.shots.some(x=>x.conf))return;const p=PROFILE[pkey(R.course,R.tee,i)];if(p&&p.shots&&p.shots.length)return;h.shots=seedHole(h.par,h.yd);});}
 reseedPredicted();
+var editRoundId=null;
+function renderLogged(){
+ var el=document.getElementById('lgLoggedList'); if(!el)return;
+ var arr=(window.getLoggedRounds?window.getLoggedRounds():[]);
+ if(!arr.length){el.innerHTML='<div class="hisub" style="padding:6px 0">No rounds logged in this browser yet.</div>';return;}
+ el.innerHTML=arr.slice().reverse().map(function(r){var id=r.id||'';return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><span style="flex:1;font-family:var(--cond);font-size:12.5px">'+(r.date||'?')+' · '+(r.course||'')+' · '+r.score+' ('+(r.stp>=0?'+':'')+r.stp+')'+(editRoundId&&editRoundId===id?' · editing…':'')+'</span><button class="pf_btn" data-edr="'+id+'" style="padding:5px 10px">Edit</button><button class="pf_btn" data-dlr="'+id+'" style="padding:5px 10px;background:var(--clay)">Delete</button></div>';}).join('');
+ el.querySelectorAll('[data-edr]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-edr');var r=(window.getLoggedRounds()||[]).find(function(x){return (x.id||'')===id;});if(!r||!r.holes){alert('This round was logged before editing existed, so it has no shot detail to reopen. Re-log it (or Load it) to make it editable.');return;}editRoundId=id;lgLoad({course:r.courseCode||r.course,tee:r.tee,date:r.date,holes:r.holes});renderLogged();window.scrollTo(0,0);};});
+ el.querySelectorAll('[data-dlr]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-dlr');if(!confirm('Delete this logged round?'))return;var a2=(window.getLoggedRounds()||[]).filter(function(x){return (x.id||'')!==id;});if(window.saveLoggedRounds)window.saveLoggedRounds(a2);if(editRoundId===id)editRoundId=null;renderLogged();};});
+}
 const LIE_OPTS=[['tee','Tee'],['fw','Fairway'],['rough','Rough'],['sand','Sand'],['rec','Recovery'],['putt','Green (putt)']];
 const fmt=v=>(v>0?'+':'')+v.toFixed(2);
 const holeConfirmed=h=>h.shots.length>0&&h.shots.every(s=>s.conf);
@@ -1514,11 +1526,16 @@ document.getElementById('lgSaveBtn').onclick=()=>{
  localStorage.setItem(PKEY,JSON.stringify(PROFILE));
  let t={ott:0,app:0,atg:0,putt:0,tot:0,strokes:0,par:0};R.holes.forEach(h=>{const s=holeSG(h);['ott','app','atg','putt','tot','strokes'].forEach(k=>t[k]+=s[k]);t.par+=h.par;});
  const diff=Math.round(((t.strokes-R.cr)*113/R.slope)*10)/10; // WHS score differential
- HIST.push({date:R.date,course:R.course,tee:R.tee,score:t.strokes,par:t.par,diff});saveHist();
+ var rec=roundRecord();rec.id=editRoundId||('r'+Date.now());
+ var arr=(window.getLoggedRounds?window.getLoggedRounds():[]);var replaced=false;
+ if(editRoundId){for(var qi=0;qi<arr.length;qi++){if(arr[qi].id===editRoundId){arr[qi]=rec;replaced=true;break;}}}
+ if(!replaced)arr.push(rec);
+ var cnt=0;try{if(window.saveLoggedRounds)cnt=window.saveLoggedRounds(arr)||0;}catch(e){}
+ if(!editRoundId){HIST.push({date:R.date,course:R.course,tee:R.tee,score:t.strokes,par:t.par,diff});saveHist();}
  const hi=effHI();const m=roundMistakes();
- var added=0;try{if(window.addLoggedRound)added=window.addLoggedRound(roundRecord())||0;}catch(e){}
- alert(`Saved & learned.\nScore ${t.strokes} (${t.strokes-t.par>=0?'+':''}${t.strokes-t.par}) · differential ${diff}\nSG ${fmt(t.tot)} — OTT ${fmt(t.ott)} · APP ${fmt(t.app)} · ATG ${fmt(t.atg)} · PUTT ${fmt(t.putt)}\nTiger's 5: ${m.total} — 3-putts ${m.p3} · doubles ${m.db} · bogey par-5 ${m.bp5} · 3+ from 150 ${m.f150} · ${shortLabel()} ${m.short}${hi!=null?'\nHandicap Index now ≈ '+hi+' ('+HIST.length+' rounds)':''}\n\n✓ Added to your Statistics — ${added} logged round${added===1?'':'s'} in this browser (open the Statistics tab → “Every round”).`);
- localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);render();
+ alert(`${replaced?'Round updated':'Saved & learned'}.\nScore ${t.strokes} (${t.strokes-t.par>=0?'+':''}${t.strokes-t.par}) · differential ${diff}\nSG ${fmt(t.tot)} — OTT ${fmt(t.ott)} · APP ${fmt(t.app)} · ATG ${fmt(t.atg)} · PUTT ${fmt(t.putt)}\nTiger's 5: ${m.total} — 3-putts ${m.p3} · doubles ${m.db} · bogey par-5 ${m.bp5} · 3+ from 150 ${m.f150} · ${shortLabel()} ${m.short}${(hi!=null&&!editRoundId)?'\nHandicap Index now ≈ '+hi+' ('+HIST.length+' rounds)':''}\n\n✓ ${replaced?'Updated in':'Added to'} your Statistics — ${cnt} logged round${cnt===1?'':'s'} in this browser.`);
+ editRoundId=null;
+ localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);render();renderLogged();
 };
 /* ---- course / tee selector ---- */
 function anyConfirmed(){return R.holes.some(h=>h.shots.some(s=>s.conf));}
@@ -1621,10 +1638,12 @@ try{(function(){
  var box=document.createElement('div');box.style.cssText='padding:10px 16px';
  box.innerHTML='<details style="font-family:var(--cond)"><summary style="cursor:pointer;font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:12px;color:var(--ink-soft)">Load / import a round</summary>'+
    '<textarea id="lgImport" rows="3" style="width:100%;margin-top:8px;font-family:var(--cond);font-size:12px;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--cream)" placeholder="paste round JSON here"></textarea>'+
-   '<div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap"><button id="lgImportBtn" class="pf_btn">Load pasted</button><button id="lgSampleBtn" class="pf_btn" style="background:var(--sand-deep)">Load Nov-14 round</button></div></details>';
+   '<div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap"><button id="lgImportBtn" class="pf_btn">Load pasted</button><button id="lgSampleBtn" class="pf_btn" style="background:var(--sand-deep)">Load Nov-14 round</button></div></details>'+
+   '<div style="margin-top:12px"><div style="font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:12px;color:var(--ink-soft);margin-bottom:2px">Your logged rounds — edit / delete</div><div id="lgLoggedList"></div></div>';
  if(ref&&ref.parentNode===parent){parent.insertBefore(box,ref);}else{parent.appendChild(box);}
  document.getElementById('lgImportBtn').onclick=function(){try{lgLoad(JSON.parse(document.getElementById('lgImport').value));}catch(e){alert('Could not read that — paste valid round JSON.');}};
  document.getElementById('lgSampleBtn').onclick=function(){lgLoad(SAMPLE14);};
+ try{renderLogged();}catch(e){}
 })();}catch(e){}
 
 })();
