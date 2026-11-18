@@ -1628,7 +1628,9 @@ try{(function(){
 })();}catch(e){}
 
 })();
-
+</script>
+<script>
+/* tabs + login + collapse run in their own script so a logger error can never disable them */
 (function(){
  var views={log:'view-log',stats:'view-stats',profile:'view-profile'};
  function show(v){for(var k in views){document.getElementById(views[k]).style.display=(k===v)?'':'none';}
