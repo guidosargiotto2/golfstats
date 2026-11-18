@@ -1293,7 +1293,7 @@ function setPlayer(p){
 }
 document.getElementById('playertabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.p)setPlayer(b.dataset.p);});
 // receive a round logged in the Log tab -> append to this user's rounds -> refresh Statistics
-window.addLoggedRound=function(rec){try{const a=load(ckey(),[]);a.push(rec);save(ckey(),a);CUSTOM=a;renderAll();renderTabs();}catch(e){}};
+window.addLoggedRound=function(rec){try{const a=load(ckey(),[]);a.push(rec);save(ckey(),a);CUSTOM=a;renderAll();renderTabs();return a.length;}catch(e){return 0;}};
 
 /* init — fully self-contained, native canvas charts (no external libraries) */
 renderTabs(); fillForm(); renderNav(); renderHole(); updateLive(); renderAll();
@@ -1505,8 +1505,8 @@ document.getElementById('lgSaveBtn').onclick=()=>{
  const diff=Math.round(((t.strokes-R.cr)*113/R.slope)*10)/10; // WHS score differential
  HIST.push({date:R.date,course:R.course,tee:R.tee,score:t.strokes,par:t.par,diff});saveHist();
  const hi=effHI();const m=roundMistakes();
- alert(`Saved & learned.\nScore ${t.strokes} (${t.strokes-t.par>=0?'+':''}${t.strokes-t.par}) · differential ${diff}\nSG ${fmt(t.tot)} — OTT ${fmt(t.ott)} · APP ${fmt(t.app)} · ATG ${fmt(t.atg)} · PUTT ${fmt(t.putt)}\nTiger's 5: ${m.total} — 3-putts ${m.p3} · doubles ${m.db} · bogey par-5 ${m.bp5} · 3+ from 150 ${m.f150} · ${shortLabel()} ${m.short}${hi!=null?'\nHandicap Index now ≈ '+hi+' ('+HIST.length+' rounds)':''}`);
- try{if(window.addLoggedRound)window.addLoggedRound(roundRecord());}catch(e){}
+ var added=0;try{if(window.addLoggedRound)added=window.addLoggedRound(roundRecord())||0;}catch(e){}
+ alert(`Saved & learned.\nScore ${t.strokes} (${t.strokes-t.par>=0?'+':''}${t.strokes-t.par}) · differential ${diff}\nSG ${fmt(t.tot)} — OTT ${fmt(t.ott)} · APP ${fmt(t.app)} · ATG ${fmt(t.atg)} · PUTT ${fmt(t.putt)}\nTiger's 5: ${m.total} — 3-putts ${m.p3} · doubles ${m.db} · bogey par-5 ${m.bp5} · 3+ from 150 ${m.f150} · ${shortLabel()} ${m.short}${hi!=null?'\nHandicap Index now ≈ '+hi+' ('+HIST.length+' rounds)':''}\n\n✓ Added to your Statistics — ${added} logged round${added===1?'':'s'} in this browser (open the Statistics tab → “Every round”).`);
  localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);render();
 };
 /* ---- course / tee selector ---- */
