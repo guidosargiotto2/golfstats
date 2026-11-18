@@ -1342,26 +1342,28 @@ function saveYover(){localStorage.setItem(YKEY,JSON.stringify(YOVER));}
 function stdYd(course,tee,i){const k=course+'|'+tee+'#'+i;return YOVER[k]!=null?YOVER[k]:COURSES[course].tees[tee].yds[i];}
 /* ===== USER PROFILE ===== */
 const PROFK=LU+'scard-prof-v1';
-const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,lang:'en',t5mode:'dist',t5x:30};
+const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30};
+function nineIron(){var x=parseInt(PROF.nineIron,10);if(isNaN(x))x=140;return Math.min(200,Math.max(80,x));}
+function bogeyXyd(){var x=parseInt(PROF.bogeyX,10);if(isNaN(x))x=nineIron();return Math.min(150,Math.max(50,x));}
 /* average drive in yards — where the predicted second shot is played from */
 function driveYd(){var x=parseInt(PROF.driveYd,10);if(isNaN(x))x=250;return Math.min(400,Math.max(100,x));}
 function t5x(){var x=parseInt(PROF.t5x,10);if(isNaN(x))x=30;return Math.min(50,Math.max(10,x));}
 /* Tiger's 5 mistakes for one logged hole, honouring the short-game setting */
 function holeMistakes(h){
- var s=h.shots||[],putts=0,pens=0,strokes=0,nonPuttNearX=0,nearX=0,near150=0;
- var X=t5x();
+ var s=h.shots||[],putts=0,pens=0,strokes=0,nonPuttNearX=0,nearX=0,minApp=999;
+ var X=t5x(),BX=bogeyXyd();
  for(var i=0;i<s.length;i++){var sh=s[i];var p=sh.pen||0;pens+=p;strokes+=1+p;
    if(sh.lie==='putt'){putts++;}
    if(sh.lie==='putt'||sh.dist<=X){nearX++;}
    if(sh.lie!=='putt'&&sh.lie!=='tee'&&sh.dist<=X){nonPuttNearX++;}
-   if(sh.lie==='putt'||sh.dist<=150){near150++;}
+   if(sh.lie!=='putt'&&sh.lie!=='tee'&&sh.dist<minApp)minApp=sh.dist;
  }
  var overPar=strokes-h.par;
  return {
    p3: putts>=3?1:0,
    db: (h.par!==5&&overPar>=2)?1:0,
    bp5:(h.par===5&&overPar>=1)?1:0,
-   f150:(near150+pens)>3?1:0,
+   f150:(minApp<=BX&&overPar>=1)?1:0,   /* "Bogey from X": dropped a shot with a scoring-range (≤X) approach */
    short: PROF.t5mode==='dchip' ? (nonPuttNearX>=2?1:0) : (nearX>=3?1:0)
  };
 }
@@ -1573,14 +1575,23 @@ function renderProf(){
   <label>Default tee club<select id="pf_club">${clubs.map(c=>`<option ${PROF.teeClub===c?'selected':''}>${c}</option>`).join('')}</select></label>
   <label>Average drive (yards)<input id="pf_drive" type="number" min="100" max="400" step="5" value="${driveYd()}"></label>
   <div class="hiblock">
-    <div class="hirow"><span>Tiger's 5 — short-game mistake</span></div>
-    <div class="hisub">The 5th mistake slot. Choose what counts, and the distance that defines "short".</div>
-    <label>Counts as a mistake when<select id="pf_t5mode">
+    <div class="hirow"><span>Tiger's 5 · Blow-out easy saves</span></div>
+    <div class="hisub">A wasted save around the green. Pick what counts and the short distance.</div>
+    <label>Counts when<select id="pf_t5mode">
       <option value="dist" ${PROF.t5mode!=='dchip'?'selected':''}>3+ shots from X yards (incl. putts)</option>
       <option value="dchip" ${PROF.t5mode==='dchip'?'selected':''}>Double chip — chipped twice inside X yards</option></select></label>
-    <label>Distance X (yards, 10–50)<input id="pf_t5x" type="number" min="10" max="50" step="5" value="${t5x()}"></label>
-    <div class="hisub">Also used by the logger when it counts this mistake. Historical Statistics rounds keep your sheet's original definition.</div>
-    <label>Language<select id="pf_lang"><option value="en" selected>English</option><option value="es" disabled>Español (soon)</option><option value="fr" disabled>Français (soon)</option><option value="ja" disabled>日本語 (soon)</option></select></label>
+    <label>Short distance X (yd, 10–50)<input id="pf_t5x" type="number" min="10" max="50" step="5" value="${t5x()}"></label>
+  </div>
+  <div class="hiblock">
+    <div class="hirow"><span>Tiger's 5 · Bogey from X yards</span></div>
+    <div class="hisub">A dropped shot (bogey or worse) when you had a scoring-range approach ≤ X. Suggested X = your 9-iron carry (max 150).</div>
+    <label>Your 9-iron carry (yd)<input id="pf_nine" type="number" min="80" max="200" step="5" value="${nineIron()}"></label>
+    <label>X — bogey-from distance (yd, 50–150)<input id="pf_bogeyx" type="number" min="50" max="150" step="5" value="${bogeyXyd()}"></label>
+  </div>
+  <div class="hiblock">
+    <div class="hirow"><span>Language</span></div>
+    <label>App language<select id="pf_lang"><option value="en" selected>English</option><option value="es" disabled>Español (soon)</option><option value="fr" disabled>Français (soon)</option><option value="ja" disabled>日本語 (soon)</option></select></label>
+    <div class="hisub">These settings drive the logger. Historical Statistics rounds keep your sheet's original definitions.</div>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>Handicap Index</span><b>${eff!=null?eff:'—'}</b></div>
@@ -1614,6 +1625,8 @@ function renderProf(){
  document.getElementById('pf_drive').addEventListener('change',e=>{PROF.driveYd=Math.min(400,Math.max(100,parseInt(e.target.value||'250',10)||250));saveProf();reseedPredicted();render();});
  document.getElementById('pf_t5mode').addEventListener('change',e=>{PROF.t5mode=e.target.value;saveProf();});
  document.getElementById('pf_t5x').addEventListener('change',e=>{PROF.t5x=Math.min(50,Math.max(10,parseInt(e.target.value||'30',10)||30));saveProf();renderProf();});
+ document.getElementById('pf_nine').addEventListener('change',e=>{var n=Math.min(200,Math.max(80,parseInt(e.target.value||'140',10)||140));PROF.nineIron=n;if(!PROF.bogeyX||PROF.bogeyX==='')PROF.bogeyX=Math.min(150,n);saveProf();renderProf();});
+ document.getElementById('pf_bogeyx').addEventListener('change',e=>{PROF.bogeyX=Math.min(150,Math.max(50,parseInt(e.target.value||'140',10)||140));saveProf();renderProf();});
  document.getElementById('pf_himode').addEventListener('change',e=>{PROF.hiMode=e.target.value;saveProf();renderProf();});
  const man=document.getElementById('pf_himan');if(man)man.addEventListener('input',()=>{PROF.hiManual=man.value;saveProf();});
  document.getElementById('pf_impbtn').addEventListener('click',()=>{const rows=parseDiffPaste(document.getElementById('pf_imp').value);const n=mergeHist(rows);
