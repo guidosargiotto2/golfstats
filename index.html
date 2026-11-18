@@ -1314,10 +1314,10 @@ const PT=[[1,1],[2,1],[3,1.04],[4,1.13],[5,1.23],[6,1.34],[7,1.42],[8,1.5],[9,1.
 const LIECOL={tee:1,fw:2,rough:3,sand:4,rec:5};
 function flook(t,x,c){let b=null;for(const r of t){if(r[0]<=x)b=r;else break;}if(!b)b=t[0];return b[c];}
 function Estart(lie,dist){if(lie==='putt')return flook(PT,dist,1);const v=flook(LG,dist,LIECOL[lie]);return v==null?flook(LG,dist,2):v;}
-function roleOf(shots,i){const s=shots[i];if(s.lie==='putt')return'putt';if(i===0&&s.lie==='tee')return'ott';return s.dist<=50?'atg':'app';}
+function roleOf(shots,i,par){const s=shots[i];if(s.lie==='putt')return'putt';if(i===0&&s.lie==='tee'&&par!==3)return'ott';return s.dist<=50?'atg':'app';}
 function holeSG(h){const o={ott:0,app:0,atg:0,putt:0,tot:0,strokes:0};const s=h.shots;
  for(let i=0;i<s.length;i++){const En=(i+1<s.length)?Estart(s[i+1].lie,s[i+1].dist):0;
-   const sg=Estart(s[i].lie,s[i].dist)-En-1-(s[i].pen||0);o[roleOf(s,i)]+=sg;o.tot+=sg;o.strokes+=1+(s[i].pen||0);}return o;}
+   const sg=Estart(s[i].lie,s[i].dist)-En-1-(s[i].pen||0);o[roleOf(s,i,h.par)]+=sg;o.tot+=sg;o.strokes+=1+(s[i].pen||0);}return o;}
 
 /* ===== COURSE DATABASE ===== par & stroke index are shared across tees; yards + rating/slope per tee ===== */
 const COURSES={
