@@ -1664,7 +1664,7 @@ function totals(){
  var ti=document.getElementById('lgTitle');if(ti)ti.textContent=(editRoundId?'Editing round':'Round in progress');
 }
 /* focus the cell for the next shot to enter */
-function focusEntry(){try{var on=document.querySelector('#lgBody tr.entry input.lc.on');var el=on||document.querySelector('#lgBody tr.entry input.lc[data-lie="fw"]')||document.querySelector('#lgBody tr.entry input.lc');if(el){el.focus();if(el.select)el.select();}}catch(e){}}
+function focusEntry(){setTimeout(function(){try{var on=document.querySelector('#lgBody tr.entry input.lc.on');var el=on||document.querySelector('#lgBody tr.entry input.lc[data-lie="fw"]')||document.querySelector('#lgBody tr.entry input.lc');if(el){el.focus({preventScroll:false});if(el.select)el.select();}}catch(e){}},0);}
 /* ← → move between category cells in the same row (once the caret is at the edge) */
 function wireArrows(){document.querySelectorAll('#lgBody input.lc').forEach(function(el){el.addEventListener('keydown',function(e){
    if(e.key==='Enter'){e.preventDefault();
@@ -1682,7 +1682,7 @@ function wire(){
  wireArrows();
  document.querySelectorAll('#lgBody input.lc[data-s]').forEach(function(el){
    // click a different category → move the existing value into it, clear the old
-   el.addEventListener('focus',function(){var h=+el.dataset.h,si=+el.dataset.s,lie=el.dataset.lie,sh=R.holes[h].shots[si];
+   el.addEventListener('click',function(){var h=+el.dataset.h,si=+el.dataset.s,lie=el.dataset.lie,sh=R.holes[h].shots[si];
      if(sh.lie===lie)return;if(sh.dist==null||sh.dist==='')return;
      var hd=histDist(h,si,lie);
      if(hd!=null){sh.lie=lie;sh.dist=hd;}
@@ -1698,11 +1698,15 @@ function wire(){
  });
  document.querySelectorAll('#lgBody input.lc[data-entry]').forEach(function(el){
    // click a different category on the predicted row → move the predicted value into it
-   el.addEventListener('focus',function(){var h=+el.dataset.entry,lie=el.dataset.lie;if(el.value.trim()!=='')return;
-     var pr=predictNext(h);if(!pr||pr.lie===''||pr.dist===''||pr.lie===lie)return;
-     var idx=confShots(R.holes[h]).length,hd=histDist(h,idx,lie);
-     R.holes[h].shots.push({lie:lie,dist:(hd!=null?hd:pr.dist),pen:0,conf:true});render();
-     var si=confShots(R.holes[h]).length-1;var nx=document.querySelector('#lgBody input.lc[data-h="'+h+'"][data-s="'+si+'"][data-lie="'+lie+'"]');if(nx){nx.focus();if(nx.select)nx.select();}});
+   // navigating categories (Tab/arrows/click) just shows that lie's likely yards to edit — it does NOT confirm the shot
+   el.addEventListener('focus',function(){var h=+el.dataset.entry,lie=el.dataset.lie,idx=confShots(R.holes[h]).length;
+     var cells=el.closest('tr').querySelectorAll('input.lc[data-entry]');
+     var cur='';cells.forEach(function(c){if(c.value.trim()!=='')cur=c.value.trim();});
+     var hd=histDist(h,idx,lie),disp;
+     if(hd!=null){disp=(lie==='putt'?hd:Y2U(hd));}
+     else if(cur!==''){disp=cur;}
+     else{var pr=predictNext(h);disp=(pr&&pr.dist!=='')?(lie==='putt'?pr.dist:Y2U(pr.dist)):'';}
+     cells.forEach(function(c){if(c!==el)c.value='';});el.value=disp;if(el.select)el.select();});
    el.addEventListener('change',function(){var h=+el.dataset.entry,lie=el.dataset.lie,v=el.value.trim();if(v==='')return;
      var raw=Math.max(1,parseInt(v,10)||1),dist=(lie==='putt')?raw:U2Y(raw);
      R.holes[h].shots.push({lie:lie,dist:dist,pen:0,conf:true});render();focusEntry();});
