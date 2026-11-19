@@ -123,11 +123,13 @@ h2 .n{font-family:var(--cond);font-size:12px;letter-spacing:.2em;color:var(--san
 .sig b{color:var(--pine);font-weight:600;}
 .pill{display:inline-block;font-family:var(--cond);font-size:12px;letter-spacing:.06em;padding:2px 9px;border-radius:999px;margin:2px 4px 2px 0;}
 .pill.r1{background:#f7e0d7;color:#8f3418;} .pill.r2{background:#dcefe1;color:#1c5e3b;} .pill.r4{background:#f6ecd4;color:#7a5a10;}
-.rtfull{width:100vw;position:relative;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;padding:0 20px;}
-table.rt{border-collapse:collapse;width:100%;min-width:1500px;font-size:13px;}
-table.rt thead th{position:sticky;top:0;background:var(--pine);color:#fff;font-family:var(--cond);letter-spacing:.06em;text-transform:uppercase;font-size:11.5px;padding:9px 11px;text-align:right;}
+.rtfull{width:100vw;position:relative;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;padding:0 16px;}
+table.rt{border-collapse:collapse;width:100%;min-width:1040px;font-size:12px;table-layout:fixed;}
+table.rt thead th:first-child,table.rt tbody td:first-child{width:30px;}
+table.rt thead th:nth-child(2),table.rt tbody td:nth-child(2){width:84px;}
+table.rt thead th{position:sticky;top:0;background:var(--pine);color:#fff;font-family:var(--cond);letter-spacing:.02em;text-transform:uppercase;font-size:10.5px;padding:8px 5px;text-align:right;overflow:hidden;text-overflow:ellipsis;}
 table.rt thead th:nth-child(2){text-align:left;}
-table.rt tbody td{padding:7px 11px;border-top:1px solid var(--line-soft);text-align:right;white-space:nowrap;}
+table.rt tbody td{padding:6px 5px;border-top:1px solid var(--line-soft);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 table.rt tbody td:nth-child(2){text-align:left;}
 table.rt tbody tr:nth-child(even){background:rgba(0,0,0,.018);}
 table.rt tbody tr:hover{background:var(--line-soft);}
@@ -1342,7 +1344,7 @@ function renderDrivers(){
 let tblSort={c:0,d:1};
 function buildTable(){
   const el=document.getElementById('grid'); if(!el)return;
-  const cols=['#','Date','Course','Score','To par','FW','GIR','Putts','Pen','Drive','Birdies','Bogeys','Doubles','3-putts','Dbl bogey','Bogey P5','+4 from 150','3+ from 40','SG OTT','SG APP','SG ATG','SG PUTT','SG TOT','Mist.'];
+  const cols=['#','Date','Course','Scr','±Par','FW','GIR','Putt','Pen','Drv','Bir','Bog','Dbl','3Pt','DbB','BP5','≤150','≤40','OTT','APP','ATG','PUTT','TOT','Mist'];
   const rows=R.map((r,i)=>[i+1,(r.date||''),r.course,r.score,r.stp,r.fw,r.gir,r.putts,r.pen,r.dist,r.bir,r.bog,r.dbl,r.p3,r.db,r.bp5,r.f150,r.fx,r.ott,r.app,r.atg,r.putt,r.sgtot,r.mtot]);
   const sgCols=new Set([18,19,20,21,22]), parCol=4;
   rows.sort((a,b)=>{const x=a[tblSort.c],y=b[tblSort.c];const c=(typeof x==='number'&&typeof y==='number')?x-y:String(x).localeCompare(String(y));return c*tblSort.d;});
@@ -1617,7 +1619,7 @@ function renderShots(hi){
    }).join('');
    html+='<tr class="shot conf"><td class="sidx">'+(si+1)+'</td>'+cells+
      '<td><input class="p" type="number" inputmode="numeric" min="0" data-h="'+hi+'" data-s="'+si+'" value="'+(s.pen||'')+'" placeholder="0"></td>'+
-     '<td class="sgc '+(sgv<0?'sg-neg':'sg-pos')+'">'+fmt(sgv)+'</td>'+
+     '<td class="sgc '+(sgv==null?'':(sgv<0?'sg-neg':'sg-pos'))+'">'+(sgv==null?'·':fmt(sgv))+'</td>'+
      '<td class="rm">'+(locked?'':'<button data-del="'+hi+':'+si+'" title="delete">×</button>')+'</td></tr>';
  });
  if(!h.done){
