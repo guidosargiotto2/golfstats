@@ -725,7 +725,7 @@ function segLimits(v,count){
  let w=0;for(let i=0;i<N;i++){const g=segOf(i),sg=(g.mrb/1.128)||0;if(sg>0&&Math.abs(v[i]-g.m)<=sg)w++;else w=0;if(w>=15){notes.push('15+ rounds hugging the centre line — the limits may be wider than how you actually score now');break;}}
  let bb=0;for(let i=0;i<N;i++){const g=segOf(i),sg=(g.mrb/1.128)||0;if(sg>0&&Math.abs(v[i]-g.m)>sg)bb++;else bb=0;if(bb>=8){notes.push('8+ rounds in a row away from the centre — may be two different games blended in (e.g. different courses or tees)');break;}}
  return {segs,segOf,mr,r1,r4,breaks,notes,signals,sigSet};}
-const metrics={'SG: Total':r=>r.sgtot,'SG: Tee-to-green':r=>(r.ott==null||r.app==null||r.atg==null)?null:Math.round((r.ott+r.app+r.atg)*100)/100,'SG: Off tee':r=>r.ott,'SG: Approach':r=>r.app,'SG: Around green':r=>r.atg,'SG: Putting':r=>r.putt,'Mistakes: total':r=>r.mtot,'Mistakes: 3-putts':r=>r.p3,'Mistakes: double bogeys':r=>r.db,'Mistakes: bogey par-5':r=>r.bp5,'Mistakes: 3+ from 150':r=>r.f150,'Mistakes: 3+ from 40':r=>r.fx,'Fairways / round':r=>r.fw,'Greens / round':r=>r.gir,'Putts / round':r=>r.putts,'Penalties / round':r=>r.pen,'Tee shot distance':r=>r.dist,'Bogey avoidance %':r=>r.bog==null?null:Math.round(1000*(r.bog+r.dbl)/18)/10,'Birdies / round':r=>r.bir==null?null:r.bir,'Score to par':r=>r.stp};
+const metrics={'SG: Total':r=>r.sgtot,'SG: Tee-to-green':r=>(r.ott==null||r.app==null||r.atg==null)?null:Math.round((r.ott+r.app+r.atg)*100)/100,'SG: Off tee':r=>r.ott,'SG: Approach':r=>r.app,'SG: Around green':r=>r.atg,'SG: Putting':r=>r.putt,'Mistakes: total':r=>r.mtot,'Mistakes: 3-putts':r=>r.p3,'Mistakes: double bogeys':r=>r.db,'Mistakes: bogey par-5':r=>r.bp5,'Mistakes: 3+ from 150':r=>r.f150,'Mistakes: 3+ from 40':r=>r.fx,'Fairways / round':r=>r.fw,'Driving accuracy %':r=>r.fw==null?null:Math.round(1000*r.fw/(r.fwAtt||14))/10,'Greens / round':r=>r.gir,'GIR %':r=>r.gir==null?null:Math.round(1000*r.gir/(r.holesPlayed||18))/10,'Putts / round':r=>r.putts,'Penalties / round':r=>r.pen,'Tee shot distance':r=>r.dist,'Bogey avoidance %':r=>r.bog==null?null:Math.round(1000*(r.bog+r.dbl)/18)/10,'Birdies / round':r=>r.bir==null?null:r.bir,'Score to par':r=>r.stp};
 const TOURAVG={'Bogey avoidance %':15.77,'Birdies / round':3.79};
 const TRAD=['Fairways / round','Greens / round','Putts / round','Penalties / round','Birdies / round'];
 const isCount=k=>k.startsWith('Mistakes')||TRAD.includes(k);
@@ -735,7 +735,7 @@ const lowerBetter=k=>k.startsWith('Mistakes')||k==='Putts / round'||k==='Penalti
 const GROUPS={
  sg:{metrics:['SG: Total','SG: Tee-to-green','SG: Off tee','SG: Approach','SG: Around green','SG: Putting'],cur:'SG: Total'},
  t5:{metrics:['Mistakes: total','Mistakes: 3-putts','Mistakes: double bogeys','Mistakes: bogey par-5','Mistakes: 3+ from 150','Mistakes: 3+ from 40'],cur:'Mistakes: total'},
- tr:{metrics:['Fairways / round','Greens / round','Putts / round','Penalties / round','Tee shot distance','Bogey avoidance %','Birdies / round'],cur:'Putts / round'},
+ tr:{metrics:['Driving accuracy %','Fairways / round','GIR %','Greens / round','Putts / round','Penalties / round','Tee shot distance','Bogey avoidance %','Birdies / round'],cur:'Driving accuracy %'},
  sc:{metrics:['Score to par'],cur:'Score to par'}
 };
 const shortLbl=k=>k.replace(/^SG: /,'').replace(/^Mistakes: /,'').replace(/ \/ round$/,'');
@@ -753,6 +753,8 @@ const PHASE={
  'Mistakes: 3+ from 150':'loose shots from around 150',
  'Mistakes: 3+ from 40':'failing to get up-and-down',
  'Fairways / round':'fairways hit',
+ 'Driving accuracy %':'your driving accuracy',
+ 'GIR %':'greens in regulation',
  'Greens / round':'greens in regulation',
  'Putts / round':'your putts per round',
  'Penalties / round':'penalty strokes',
@@ -1449,7 +1451,7 @@ function roundMistakes(){var t={p3:0,db:0,bp5:0,f150:0,short:0,total:0};(R.holes
 function shortLabel(){return PROF.t5mode==='dchip'?('Double chip ≤'+t5x()+'y'):('3+ from '+t5x()+'y');}
 /* full per-round record in the dashboard's shape (only metrics shown in the dashboard) */
 function roundRecord(){
- var fw=0,gir=0,putts=0,pen=0,bir=0,bog=0,dbl=0,par=0,strokes=0,drives=[];
+ var fw=0,fwAtt=0,gir=0,putts=0,pen=0,bir=0,bog=0,dbl=0,par=0,strokes=0,drives=[];
  var sg={ott:0,app:0,atg:0,putt:0,tot:0};
  (R.holes||[]).slice(R.hStart!=null?R.hStart:0,R.hEnd!=null?R.hEnd:18).forEach(function(h){var s=h.shots||[],m=holeSG(h);
    sg.ott+=m.ott;sg.app+=m.app;sg.atg+=m.atg;sg.putt+=m.putt;sg.tot+=m.tot;
@@ -1457,14 +1459,14 @@ function roundRecord(){
    for(var i=0;i<s.length;i++){var sh=s[i];pens+=sh.pen||0;hp+=1+(sh.pen||0);if(sh.lie==='putt'){putts++;hasPutt=true;}else np++;}
    pen+=pens;par+=h.par;strokes+=hp;var over=hp-h.par;
    if(over<=-1)bir++;else if(over===1)bog++;else if(over>=2)dbl++;
-   if((h.par===4||h.par===5)&&s.length>1&&s[1].lie==='fw')fw++;
+   if(h.par===4||h.par===5){fwAtt++;if(s.length>1&&s[1].lie==='fw')fw++;}
    if((h.par===4||h.par===5)&&s.length>1&&s[1].lie!=='putt')drives.push(h.yd-s[1].dist);
    if(hasPutt&&(np+pens)<=h.par-2)gir++;
  });
  var mi=roundMistakes(),r2=function(x){return Math.round(x*100)/100;};
  var dist=drives.length?Math.round(drives.reduce(function(a,b){return a+b;},0)/drives.length*10)/10:0;
  return {course:(R.courseName||R.course),date:(R.date||new Date().toISOString().slice(0,10)),score:strokes,par:par,stp:strokes-par,
-   fw:fw,gir:gir,putts:putts,pen:pen,dist:dist,
+   fw:fw,fwAtt:fwAtt,holesPlayed:(R.hEnd!=null?R.hEnd:18)-(R.hStart!=null?R.hStart:0),gir:gir,putts:putts,pen:pen,dist:dist,
    p3:mi.p3,db:mi.db,bp5:mi.bp5,f150:mi.f150,fx:mi.short,mtot:mi.total,
    ott:r2(sg.ott),app:r2(sg.app),atg:r2(sg.atg),putt:r2(sg.putt),sgtot:r2(sg.tot),bir:bir,bog:bog,dbl:dbl,
    courseCode:R.course,tee:R.tee,holes:JSON.parse(JSON.stringify(R.holes))};
