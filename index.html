@@ -600,8 +600,10 @@ function renderNav(){
  }).join('');
 }
 function renderHole(){
+ if(!draft||!draft.holes||!draft.holes.length)return;
+ if(curHole<0||curHole>=draft.holes.length)curHole=0;
  const h=draft.holes[curHole];
- const ed=document.getElementById('holeditor');
+ const ed=document.getElementById('holeditor'); if(!h||!ed)return;
  ed.innerHTML=`<div class="top"><h3>Hole ${curHole+1}</h3>
    <div class="fld"><label>Par</label><select id="h_par">${[3,4,5].map(p=>`<option value="${p}" ${h.par===p?'selected':''}>${p}</option>`).join('')}</select></div>
    <span class="note" style="margin:0">Par-3 tee shot → put it in “Approach 1”, leave Tee blank.</span></div>
@@ -1583,22 +1585,30 @@ function predictNext(hi){
  var h=R.holes[hi],shots=confShots(h),idx=shots.length;
  if(!PROF.predict) return {lie:'',dist:'',pen:0,conf:false};
  var p=PROFILE[pkey(R.course,R.tee,hi)];
- /* lie-aware: pick the lie you most often reach at this position, with its typical distance */
- if(p&&p.pos&&p.pos[idx]){var best=null;Object.keys(p.pos[idx]).forEach(function(L){var c=p.pos[idx][L];if(c&&c.n>0&&(!best||c.n>best.n))best={lie:L,dist:c.dist,n:c.n};});if(best)return {lie:best.lie,dist:best.dist,pen:0,conf:false};}
- if(p&&p.shots&&p.shots[idx]){var s=p.shots[idx];return {lie:s.lie,dist:s.dist,pen:0,conf:false};}
  var prev=shots[idx-1];
  if(!prev) return {lie:'tee',dist:h.yd,pen:0,conf:false};
- if(prev.lie==='putt'){var d=prev.dist;/* from inside ~4 ft you hole it → no next shot predicted (blank, so you just tap Finish hole) */
-   if(d<=4) return {lie:'',dist:'',pen:0,conf:false};
-   /* longer putt → predict a realistic lag leave that then holes */
-   var leave=d<=20?2:(d<=40?3:4);return {lie:'putt',dist:leave,pen:0,conf:false};}
- var rem,lie;
- if(prev.lie==='tee'&&h.par===3){rem=Math.max(8,Math.round(h.yd*0.08));}
- else if(prev.lie==='tee'){rem=Math.max(15,h.yd-driveYd());}
- else if(prev.dist>200){rem=Math.max(15,prev.dist-170);}
- else if(prev.dist>50){rem=Math.max(8,Math.round(prev.dist*0.14));}
- else {rem=Math.max(3,Math.round(prev.dist*0.2));}
- lie=rem<=18?'putt':'fw';
+ /* most-common lie you reach at this shot position (tendency only) */
+ var histBest=null;
+ if(p&&p.pos&&p.pos[idx]){Object.keys(p.pos[idx]).forEach(function(L){var c=p.pos[idx][L];if(c&&c.n>0&&(!histBest||c.n>histBest.n))histBest={lie:L,dist:c.dist,n:c.n};});}
+ /* on the green → hole out inside ~4 ft, else a realistic lag leave */
+ if(prev.lie==='putt'){var d=prev.dist;if(d<=4) return {lie:'',dist:'',pen:0,conf:false};var leave=d<=20?2:(d<=40?3:4);return {lie:'putt',dist:leave,pen:0,conf:false};}
+ /* first shot after the tee: the tee start is fixed, so your learned landing spot is well-conditioned — trust it */
+ if(prev.lie==='tee'){
+   if(histBest) return {lie:histBest.lie,dist:histBest.dist,pen:0,conf:false};
+   var rem0=(h.par===3)?Math.max(6,Math.round(h.yd*0.07)):Math.max(15,h.yd-driveYd());
+   return rem0<=18?{lie:'putt',dist:Math.min(45,Math.round(rem0*1.5)),pen:0,conf:false}:{lie:'fw',dist:rem0,pen:0,conf:false};
+ }
+ /* later shots: distance follows the ACTUAL previous distance (a realistic advance); lie from your tendency */
+ var D=prev.dist;
+ if(D<=50){ /* greenside pitch/chip → on the green, a putt (feet) scaled by how far out */
+   return {lie:'putt',dist:Math.max(3,Math.min(30,Math.round(D*0.5))),pen:0,conf:false};
+ }
+ if(D<=190){ /* an approach that reaches the green → putt, proximity scales with distance */
+   return {lie:'putt',dist:Math.min(48,Math.max(8,Math.round(8+D*0.16))),pen:0,conf:false};
+ }
+ /* long shot → advance toward the green, leaving a shorter approach */
+ var rem=(D>260)?(D-230):Math.max(35,D-180);
+ var lie=histBest?histBest.lie:'fw'; if(lie==='putt'||lie==='tee')lie='fw';
  return {lie:lie,dist:rem,pen:0,conf:false};
 }
 function gotoHole(i){R.cur=Math.max(R.hStart,Math.min(R.hEnd-1,i));var h=R.holes[R.cur];if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];render();focusEntry();}
