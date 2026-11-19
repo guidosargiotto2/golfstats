@@ -1745,7 +1745,7 @@ function wire(){
  wireArrows();
  document.querySelectorAll('#lgBody input.lc[data-s]').forEach(function(el){
    // click a different category → move the existing value into it, clear the old
-   el.addEventListener('click',function(){var h=+el.dataset.h,si=+el.dataset.s,lie=el.dataset.lie,sh=R.holes[h].shots[si];
+   el.addEventListener('focus',function(){var h=+el.dataset.h,si=+el.dataset.s,lie=el.dataset.lie,sh=R.holes[h].shots[si];
      if(sh.lie===lie)return;if(sh.dist==null||sh.dist==='')return;
      var hd=histDist(h,si,lie);
      if(hd!=null){sh.lie=lie;sh.dist=hd;}
