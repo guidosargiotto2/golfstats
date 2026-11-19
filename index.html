@@ -1678,22 +1678,22 @@ function renderShots(hi){
      '<td class="sgc '+(sgv==null?'':(sgv<0?'sg-neg':'sg-pos'))+'">'+(sgv==null?'·':fmt(sgv))+'</td>'+
      '<td class="rm">'+(si>=1?'<button class="insbtn" data-ins="'+hi+':'+si+'" title="insert a shot above">+</button>':'')+(locked?'':'<button data-del="'+hi+':'+si+'" title="delete">×</button>')+'</td></tr>';
  });
- if(!h.done){
+ /* always show the add-a-shot row, even on a finished hole, so you can go back and edit it freely */
+ {
    var pr=predictNext(hi),isPred=PROF.predict&&pr.lie!=='';
    var cells=LIECOLS.map(function(lc){var on=pr.lie===lc;var val=on?(lc==='putt'?pr.dist:Y2U(pr.dist)):'';
      return '<td class="liec"><input class="lc'+(on?' on':'')+'" type="text" inputmode="numeric" data-entry="'+hi+'" data-lie="'+lc+'" value="'+val+'" placeholder="·"></td>';}).join('');
    html+='<tr class="shot entry'+(isPred?' pred':'')+'"><td class="sidx">'+(confShots(h).length+1)+'</td>'+cells+
-     '<td></td><td class="sgc"></td><td class="rm"><button data-entryfin="1" title="No more shots — finish the hole (or press Delete)">×</button></td></tr>';
+     '<td></td><td class="sgc"></td><td class="rm"><button data-entryfin="1" title="'+(h.done?'Done — go to next hole':'No more shots — finish the hole (or press Delete)')+'">×</button></td></tr>';
  }
  body.innerHTML=html;
 }
 function renderHoleActs(hi){
  var h=R.holes[hi],el=document.getElementById('holeacts');
- if(h.done){el.innerHTML='<span class="donechip">✓ Hole complete</span> <button class="ghost" id="btnReopen">Reopen hole</button>';return;}
  var predOn=PROF.predict;
- el.innerHTML=(predOn?'<span class="predhint">Amber row = predicted next shot. Tap ✓ Accept if it\'s right, or type the real lie &amp; distance.</span>':'<span class="predhint">Enter each shot: type the distance under the lie it was played from.</span>')+
+ el.innerHTML=(h.done?'<span class="donechip">✓ Hole complete — edit freely, changes save automatically</span>':(predOn?'<span class="predhint">Amber row = predicted next shot. Tap ✓ Accept if it\'s right, or type the real lie &amp; distance.</span>':'<span class="predhint">Enter each shot: type the distance under the lie it was played from.</span>'))+
    '<div class="actbtns">'+(predOn?'<button class="accept" id="btnAccept">✓ Accept predicted</button>':'')+
-   '<button class="finish" id="btnFinish">Holed it — finish hole ▶</button></div>'+
+   '<button class="finish" id="btnFinish">'+(h.done?'Next hole ▶':'Holed it — finish hole ▶')+'</button></div>'+
    '<div class="inshint">Need a shot between two others? Tap the <b>+</b> on a row to insert one above it.</div>';
 }
 function renderHoleNav(hi){
