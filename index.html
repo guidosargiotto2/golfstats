@@ -1697,7 +1697,7 @@ function totals(){
 /* focus the cell for the next shot to enter */
 function focusEntry(){setTimeout(function(){try{var on=document.querySelector('#lgBody tr.entry input.lc.on');var el=on||document.querySelector('#lgBody tr.entry input.lc[data-lie="fw"]')||document.querySelector('#lgBody tr.entry input.lc');if(el){el.focus({preventScroll:false});if(el.select)el.select();}}catch(e){}},0);}
 /* ← → move between category cells in the same row (once the caret is at the edge) */
-function wireArrows(){document.querySelectorAll('#lgBody input.lc').forEach(function(el){el.addEventListener('keydown',function(e){
+function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input.p').forEach(function(el){el.addEventListener('keydown',function(e){
    if(e.key==='Enter'){e.preventDefault();
      var isEntry=el.closest('tr').classList.contains('entry');
      if(isEntry){
@@ -1707,6 +1707,10 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc').forEach(func
        if(v!==''){var lie=el.dataset.lie,raw=Math.max(1,parseInt(v,10)||1),dist=(lie==='putt')?raw:U2Y(raw);R.holes[h].shots.push({lie:lie,dist:dist,pen:0,conf:true});render();focusEntry();return;}
        var pr=predictNext(h);if(pr&&pr.lie!==''&&pr.dist!==''){R.holes[h].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();focusEntry();}return;}
      el.blur();return;}
+   if(e.key==='Tab'){var row=el.closest('tr');var cells=Array.prototype.slice.call(row.querySelectorAll('input.lc, input.p')).filter(function(c){return c.dataset.lie!=='tee'&&!c.disabled;});
+     if(!cells.length)return;e.preventDefault();var ci=cells.indexOf(el),cj;
+     if(e.shiftKey)cj=(ci<=0)?cells.length-1:ci-1;else cj=(ci===-1)?0:(ci+1)%cells.length;
+     cells[cj].focus();if(cells[cj].select)cells[cj].select();return;}
    if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;
    var armed=el.dataset.stage!=='editing';
    var atStart=el.selectionStart===0&&el.selectionEnd===0,atEnd=el.selectionStart===(el.value||'').length&&el.selectionEnd===(el.value||'').length;
