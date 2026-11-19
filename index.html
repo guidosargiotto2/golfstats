@@ -293,6 +293,26 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope td .lcx{color:var(--line);font-family:var(--cond);}
 /* ===== setup panel ===== */
 .lgscope .setup{max-width:560px;margin:10px auto 0;padding:0 4px;}
+/* ===== end-of-round scorecard ===== */
+.lgscope .scWrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--paper);margin:8px 0 4px;}
+.lgscope .scTbl{border-collapse:collapse;width:100%;font-family:var(--cond);font-size:14px;}
+.lgscope .scTbl td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line-soft,#eee9da);white-space:nowrap;min-width:34px;}
+.lgscope .scTbl .scLbl{text-align:left;font-weight:700;letter-spacing:.06em;font-size:11px;color:var(--ink-soft);text-transform:uppercase;position:sticky;left:0;background:var(--paper);}
+.lgscope .scRh td{color:var(--ink-soft);font-weight:700;}
+.lgscope .scRp td{color:var(--ink-soft);}
+.lgscope .scRs td{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--pine);}
+.lgscope .scRst td{font-size:12px;font-weight:700;color:var(--ink);}
+.lgscope .scTotH{background:rgba(15,58,44,.06);font-weight:700;}
+.lgscope .scGrand{background:var(--pine);color:#fff!important;}
+.lgscope .scGrand *{color:#fff!important;}
+.lgscope .scHole{cursor:pointer;}
+.lgscope .scRs .scHole:hover{background:rgba(201,154,30,.14);}
+.lgscope .scBir{display:inline-block;min-width:24px;line-height:22px;border:1.5px solid var(--pine);border-radius:999px;}
+.lgscope .scEag{display:inline-block;min-width:24px;line-height:22px;border:1.5px solid var(--pine);border-radius:999px;box-shadow:0 0 0 2px var(--paper),0 0 0 3.5px var(--pine);}
+.lgscope .scBog{display:inline-block;min-width:22px;line-height:20px;border:1.5px solid var(--clay);}
+.lgscope .scDbl{display:inline-block;min-width:22px;line-height:20px;border:1.5px solid var(--clay);box-shadow:0 0 0 2px var(--paper),0 0 0 3.5px var(--clay);}
+.lgscope .scHint{font-family:var(--cond);font-size:12px;color:var(--ink-soft);margin:8px 2px;}
+.lgscope .scbtn{font-size:11px;padding:5px 10px;}
 .lgscope .resumecard{background:rgba(46,110,70,.1);border:1px solid var(--fairway);border-radius:14px;padding:16px 18px;margin:4px 0 8px;}
 .lgscope .resumecard .rcH{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--pine);}
 .lgscope .resumecard .rcM{font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:3px 0 12px;}
@@ -380,12 +400,15 @@ table.rt tbody tr:hover{background:var(--line-soft);}
  </div>
 
  <div id="playPanel" style="display:none">
+   <div id="holeView">
    <div class="holebar" id="holebar"></div>
    <div class="holenav" id="holenav"></div>
    <div class="warn" id="warn"></div>
    <div class="lgtablewrap"><table><thead><tr><th class="lh">#</th><th>Tee</th><th>Fairway</th><th>Rough</th><th>Sand</th><th>Recovery</th><th>Green·ft</th><th>Pen</th><th>SG</th><th></th></tr></thead>
    <tbody id="lgBody"></tbody></table></div>
    <div class="holeacts" id="holeacts"></div>
+   </div>
+   <div id="scorecardView" style="display:none"></div>
    <div class="savebar"><span class="note" id="snote"></span><button class="cancelbtn" id="lgCancelBtn" type="button">Cancel round</button><button id="lgSaveBtn" disabled>Save round</button></div>
  </div>
 </div></div>
@@ -1630,7 +1653,9 @@ function predictNext(hi){
  return {lie:lie,dist:rem,pen:0,conf:false};
 }
 function gotoHole(i){R.cur=Math.max(R.hStart,Math.min(R.hEnd-1,i));var h=R.holes[R.cur];if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];render();focusEntry();}
-function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert('Enter at least the tee shot before finishing the hole.');return;}h.shots=confShots(h);h.done=true;if(adv&&R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
+function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert('Enter at least the tee shot before finishing the hole.');return;}h.shots=confShots(h);h.done=true;
+ if(R.holes.slice(R.hStart,R.hEnd).every(function(x){return x.done;})){scMode=true;render();return;}
+ if(adv&&R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
 function startRound(){var sc=document.getElementById('selScore'),ch=document.getElementById('selChcp'),hm=document.getElementById('selHoles');
  R.holesMode=hm?hm.value:'18';if(R.holesMode==='front'){R.hStart=0;R.hEnd=9;}else if(R.holesMode==='back'){R.hStart=9;R.hEnd=18;}else{R.hStart=0;R.hEnd=18;}
  var nine=(R.hEnd-R.hStart)===9,minSc=nine?27:59,maxSc=nine?110:200;
@@ -1640,14 +1665,53 @@ function startRound(){var sc=document.getElementById('selScore'),ch=document.get
  if(sv!==''&&(+sv<minSc||+sv>maxSc)){if(es)es.textContent='Enter '+minSc+'–'+maxSc+', or leave blank.';if(sc){sc.classList.add('bad');sc.focus();}return;}
  if(cv!==''&&(+cv<-10||+cv>54)){if(ec)ec.textContent='Enter −10 to 54, or leave blank.';if(ch){ch.classList.add('bad');ch.focus();}return;}
  R.score=sv;R.chcp=cv;R.phase='play';lgEntered=true;gotoHole(R.hStart);}
+var scMode=false;
 function render(){
  var setup=document.getElementById('setupPanel'),play=document.getElementById('playPanel');
  if(R.phase!=='play'||!lgEntered){setup.style.display='';play.style.display='none';renderSetup();save();return;}
  setup.style.display='none';play.style.display='';
+ var act=R.holes.slice(R.hStart,R.hEnd),allDone=act.length>0&&act.every(function(x){return x.done;});
+ var hv=document.getElementById('holeView'),sv=document.getElementById('scorecardView');
+ if(allDone&&scMode){hv.style.display='none';sv.style.display='';renderScorecard();totals();renderSel();save();return;}
+ hv.style.display='';sv.style.display='none';
  var hi=R.cur,h=R.holes[hi];
  if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];
  renderHoleBar(hi);renderShots(hi);renderHoleActs(hi);renderHoleNav(hi);
  wire();totals();renderSel();save();
+}
+function renderScorecard(){
+ var hs=R.hStart,he=R.hEnd,c=COURSES[R.course],sv=document.getElementById('scorecardView');
+ function sym(st,sc){ // circle birdie, double eagle, square bogey, 2-square double+
+   if(sc==null)return '';
+   if(st<=-2)return '<span class="scEag">'+sc+'</span>';
+   if(st===-1)return '<span class="scBir">'+sc+'</span>';
+   if(st===1)return '<span class="scBog">'+sc+'</span>';
+   if(st>=2)return '<span class="scDbl">'+sc+'</span>';
+   return '<span>'+sc+'</span>';
+ }
+ function seg(a,b,label){ // holes [a,b)
+   var cells='',parCells='',scCells='',stCells='',run=0,runPar=0,tot=0,par=0,any=false;
+   for(var i=a;i<b;i++){var h=R.holes[i],t=holeSG(holeView(h)),st=t.strokes-h.par;
+     cells+='<td class="scHole" data-sc="'+i+'">'+(i+1)+'</td>';
+     parCells+='<td>'+h.par+'</td>';
+     scCells+='<td class="scHole" data-sc="'+i+'">'+sym(st,t.strokes)+'</td>';
+     run+=t.strokes;runPar+=h.par;tot+=t.strokes;par+=h.par;any=true;
+     var rt=run-runPar;stCells+='<td class="scSt">'+(rt>0?'+'+rt:(rt===0?'E':rt))+'</td>';
+   }
+   return {cells:cells,parCells:parCells,scCells:scCells,stCells:stCells,tot:tot,par:par};
+ }
+ var full=(hs===0&&he===18);
+ var rowsHole='<td class="scLbl">HOLE</td>',rowsPar='<td class="scLbl">PAR</td>',rowsSc='<td class="scLbl">SCORE</td>',rowsSt='<td class="scLbl">STATUS</td>';
+ function addSeg(s,label){rowsHole+=s.cells;rowsPar+=s.parCells;rowsSc+=s.scCells;rowsSt+=s.stCells;
+   if(label){var tp=s.tot-s.par;rowsHole+='<td class="scTotH">'+label+'</td>';rowsPar+='<td class="scTotH">'+s.par+'</td>';rowsSc+='<td class="scTotH">'+s.tot+'</td>';rowsSt+='<td class="scTotH">'+(tp>0?'+'+tp:(tp===0?'E':tp))+'</td>';}}
+ if(full){var f=seg(0,9),bk=seg(9,18);addSeg(f,'OUT');addSeg(bk,'IN');
+   var gtot=f.tot+bk.tot,gpar=f.par+bk.par,gtp=gtot-gpar;
+   rowsHole+='<td class="scTotH scGrand">TOT</td>';rowsPar+='<td class="scTotH scGrand">'+gpar+'</td>';rowsSc+='<td class="scTotH scGrand">'+gtot+'</td>';rowsSt+='<td class="scTotH scGrand">'+(gtp>0?'+'+gtp:(gtp===0?'E':gtp))+'</td>';
+ } else {var s=seg(hs,he);addSeg(s,(hs===0?'OUT':'IN'));}
+ sv.innerHTML='<div class="scWrap"><table class="scTbl"><tbody>'+
+   '<tr class="scRh">'+rowsHole+'</tr><tr class="scRp">'+rowsPar+'</tr><tr class="scRs">'+rowsSc+'</tr><tr class="scRst">'+rowsSt+'</tr></tbody></table></div>'+
+   '<div class="scHint">Tap any hole to open and edit it. When it looks right, hit <b>Save round</b> below.</div>';
+ sv.querySelectorAll('[data-sc]').forEach(function(td){td.onclick=function(){scMode=false;gotoHole(+td.getAttribute('data-sc'));};});
 }
 function renderSetup(){
  var inProg=(R.phase==='play');
@@ -1715,11 +1779,12 @@ function renderHoleActs(hi){
    '<div class="inshint">Tap <b>+</b> on any row to add a shot below it. Keyboard: <b>Enter</b> = next shot · <b>Esc</b> = holed it (finish hole) · <b>Del</b> = remove shot.</div>';
 }
 function renderHoleNav(hi){
- var act=R.holes.slice(R.hStart,R.hEnd),done=act.filter(function(h){return h.done;}).length,count=R.hEnd-R.hStart;
+ var act=R.holes.slice(R.hStart,R.hEnd),done=act.filter(function(h){return h.done;}).length,count=R.hEnd-R.hStart,allDone=done===count;
  document.getElementById('holenav').innerHTML=
    '<button class="navb" id="btnPrev"'+(hi<=R.hStart?' disabled':'')+'>◀ Prev</button>'+
-   '<div class="prog"><div class="progbar"><span style="width:'+Math.round(done/count*100)+'%"></span></div><div class="progtxt">'+done+' / '+count+' holes done</div></div>'+
+   '<div class="prog"><div class="progbar"><span style="width:'+Math.round(done/count*100)+'%"></span></div><div class="progtxt">'+(allDone?'<button class="navb scbtn" id="btnScorecard">▦ Scorecard</button>':done+' / '+count+' holes done')+'</div></div>'+
    '<button class="navb" id="btnNext"'+(hi>=R.hEnd-1?' disabled':'')+'>Next ▶</button>';
+ var bsc=document.getElementById('btnScorecard');if(bsc)bsc.onclick=function(){scMode=true;render();};
 }
 function totals(){
  var done=R.holes.slice(R.hStart,R.hEnd).filter(function(h){return h.done;});
