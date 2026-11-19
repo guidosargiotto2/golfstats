@@ -1657,7 +1657,7 @@ function renderHoleBar(hi){
  var tp=tsc-tpar,tpTxt=(tp>0?'+':'')+(tp===0?'E':tp);
  var hstr=sg.strokes,hdiff=hstr-h.par,hdt=hstr?(hdiff===0?'E':(hdiff>0?'+'+hdiff:hdiff)):'';
  document.getElementById('holebar').innerHTML=
-   '<div class="hbL"><span class="hn">Hole '+(hi+1)+'</span><span class="hofN">of '+(R.hEnd-R.hStart)+'</span>'+
+   '<div class="hbL"><span class="hn">Hole '+(hi+1)+'</span>'+
    '<span class="parchip">Par '+h.par+'</span>'+
    '<span class="sichip" title="Stroke index / hole handicap">SI '+(h.hcp||'—')+'</span>'+
    (hstr?'<span class="holescore" title="Hole score">'+hstr+' <small>('+hdt+')</small></span>':'')+'</div>'+
