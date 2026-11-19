@@ -1621,7 +1621,7 @@ function predictNext(hi){
  return {lie:lie,dist:rem,pen:0,conf:false};
 }
 function gotoHole(i){R.cur=Math.max(R.hStart,Math.min(R.hEnd-1,i));var h=R.holes[R.cur];if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];render();focusEntry();}
-function finishHole(){var h=R.holes[R.cur];if(confShots(h).length===0){alert('Enter at least the tee shot before finishing the hole.');return;}h.shots=confShots(h);h.done=true;if(R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
+function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert('Enter at least the tee shot before finishing the hole.');return;}h.shots=confShots(h);h.done=true;if(adv&&R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
 function startRound(){var sc=document.getElementById('selScore'),ch=document.getElementById('selChcp'),hm=document.getElementById('selHoles');
  R.holesMode=hm?hm.value:'18';if(R.holesMode==='front'){R.hStart=0;R.hEnd=9;}else if(R.holesMode==='back'){R.hStart=9;R.hEnd=18;}else{R.hStart=0;R.hEnd=18;}
  var nine=(R.hEnd-R.hStart)===9,minSc=nine?27:59,maxSc=nine?110:200;
@@ -1684,7 +1684,7 @@ function renderShots(hi){
    var cells=LIECOLS.map(function(lc){var on=pr.lie===lc;var val=on?(lc==='putt'?pr.dist:Y2U(pr.dist)):'';
      return '<td class="liec"><input class="lc'+(on?' on':'')+'" type="text" inputmode="numeric" data-entry="'+hi+'" data-lie="'+lc+'" value="'+val+'" placeholder="·"></td>';}).join('');
    html+='<tr class="shot entry'+(isPred?' pred':'')+'"><td class="sidx">'+(confShots(h).length+1)+'</td>'+cells+
-     '<td></td><td class="sgc"></td><td class="rm"><button data-entryfin="1" title="'+(h.done?'Done — go to next hole':'No more shots — finish the hole (or press Delete)')+'">×</button></td></tr>';
+     '<td></td><td class="sgc"></td><td class="rm"><button data-entryfin="1" title="Holed it — no more shots on this hole (or press Delete). Stays here so you can review.">×</button></td></tr>';
  }
  body.innerHTML=html;
 }
@@ -1693,7 +1693,7 @@ function renderHoleActs(hi){
  var predOn=PROF.predict;
  el.innerHTML=(h.done?'<span class="donechip">✓ Hole complete — edit freely, changes save automatically</span>':(predOn?'<span class="predhint">Amber row = predicted next shot. Tap ✓ Accept if it\'s right, or type the real lie &amp; distance.</span>':'<span class="predhint">Enter each shot: type the distance under the lie it was played from.</span>'))+
    '<div class="actbtns">'+(predOn?'<button class="accept" id="btnAccept">✓ Accept predicted</button>':'')+
-   '<button class="finish" id="btnFinish">'+(h.done?'Next hole ▶':'Holed it — finish hole ▶')+'</button></div>'+
+   '<button class="finish" id="btnFinish">'+((R.cur<R.hEnd-1)?'Next hole ▶':'Finish ✓')+'</button></div>'+
    '<div class="inshint">Need a shot between two others? Tap the <b>+</b> on a row to insert one above it.</div>';
 }
 function renderHoleNav(hi){
@@ -1731,7 +1731,7 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input
        var pr=predictNext(h);if(pr&&pr.lie!==''&&pr.dist!==''){R.holes[h].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();focusEntry();}return;}
      el.blur();return;}
    if(e.key==='Delete'){var trr=el.closest('tr');
-     if(trr.classList.contains('entry')){e.preventDefault();finishHole();return;}
+     if(trr.classList.contains('entry')){e.preventDefault();finishHole(false);return;}
      if(el.dataset.s!=null&&(el.dataset.stage!=='editing'||(el.value||'')==='')){var hh=+el.dataset.h,ss=+el.dataset.s;if(ss>0){e.preventDefault();R.holes[hh].shots.splice(ss,1);render();focusEntry();return;}}}
    if(e.key==='Tab'){var row=el.closest('tr');var cells=Array.prototype.slice.call(row.querySelectorAll('input.lc, input.p')).filter(function(c){return c.dataset.lie!=='tee'&&!c.disabled;});
      if(!cells.length)return;e.preventDefault();var ci=cells.indexOf(el),cj;
@@ -1779,7 +1779,7 @@ function wire(){
      R.holes[h].shots.push({lie:lie,dist:dist,pen:0,conf:true});render();focusEntry();});
  });
  document.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){var a=b.dataset.del.split(':').map(Number);R.holes[a[0]].shots.splice(a[1],1);render();};});
- document.querySelectorAll('[data-entryfin]').forEach(function(b){b.onclick=function(){finishHole();};});
+ document.querySelectorAll('[data-entryfin]').forEach(function(b){b.onclick=function(){finishHole(false);};});
  document.querySelectorAll('[data-ins]').forEach(function(b){b.onclick=function(){var a=b.dataset.ins.split(':').map(Number),h=a[0],si=a[1],sh=R.holes[h].shots,prev=sh[si-1],cur=sh[si];
    var lie=(prev&&prev.lie==='putt'&&cur&&cur.lie==='putt')?'putt':'fw';
    var d=(prev&&cur&&prev.dist!=null&&cur.dist!=null)?Math.round((prev.dist+cur.dist)/2):(cur&&cur.dist!=null?cur.dist:(prev&&prev.dist!=null?prev.dist:20));
@@ -1789,7 +1789,7 @@ function wire(){
  document.querySelectorAll('input[data-ydtee]').forEach(function(el){el.addEventListener('change',function(){var hi=+el.dataset.ydtee,raw=Math.max(20,parseInt(el.value||'0',10)||0),v=U2Y(raw),hole=R.holes[hi];hole.yd=v;if(hole.shots[0]&&hole.shots[0].lie==='tee')hole.shots[0].dist=v;render();});});
  var acc=document.getElementById('btnAccept');if(acc)acc.onclick=function(){var pr=predictNext(R.cur);if(pr.lie==='')return;R.holes[R.cur].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();focusEntry();};
  var add=document.getElementById('btnAdd');if(add)add.onclick=function(){var h=R.holes[R.cur],last=confShots(h).slice(-1)[0];h.shots.push({lie:last&&last.lie==='putt'?'putt':'fw',dist:last&&last.lie==='putt'?2:20,pen:0,conf:true});render();focusEntry();};
- var fin=document.getElementById('btnFinish');if(fin)fin.onclick=finishHole;
+ var fin=document.getElementById('btnFinish');if(fin)fin.onclick=function(){finishHole(R.cur<R.hEnd-1);};
  var rop=document.getElementById('btnReopen');if(rop)rop.onclick=function(){R.holes[R.cur].done=false;render();};
  var pv=document.getElementById('btnPrev');if(pv)pv.onclick=function(){gotoHole(R.cur-1);};
  var nx=document.getElementById('btnNext');if(nx)nx.onclick=function(){gotoHole(R.cur+1);};
