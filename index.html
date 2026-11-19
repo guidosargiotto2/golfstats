@@ -307,8 +307,10 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .parchip,.lgscope .sichip{font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.04em;padding:4px 10px;border-radius:999px;}
 .lgscope .parchip{background:var(--pine);color:#fff;}
 .lgscope .sichip{background:var(--sand);color:var(--pine);border:1px solid var(--sand-deep);}
-.lgscope .holescore{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--pine);margin-left:4px;}
-.lgscope .holescore small{font-family:var(--cond);font-size:12px;color:var(--ink-soft);}
+.lgscope .holescore{font-family:var(--serif);font-size:30px;font-weight:700;color:var(--pine);margin-left:6px;line-height:1;}
+.lgscope .holescore small{font-family:var(--cond);font-size:14px;font-weight:600;color:var(--ink-soft);}
+.lgscope .sgmini{font-family:var(--cond);font-size:11px;color:var(--ink-soft);opacity:.85;}
+.lgscope .toparbig{font-size:14px;font-weight:700;color:var(--pine);}
 .lgscope .holebar .hbR{font-family:var(--cond);font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:6px;}
 /* ===== hole actions ===== */
 .lgscope .holeacts{display:flex;flex-direction:column;gap:10px;padding:12px 2px 4px;}
@@ -1612,7 +1614,7 @@ function renderHoleBar(hi){
    '<span class="parchip">Par '+h.par+'</span>'+
    '<span class="sichip" title="Stroke index / hole handicap">SI '+(h.hcp||'—')+'</span>'+
    (hstr?'<span class="holescore" title="Hole score">'+hstr+' <small>('+hdt+')</small></span>':'')+'</div>'+
-   '<div class="hbR"><span class="scorechip" title="Round score so far">'+(thru?('Score '+tsc+' ('+tpTxt+') · thru '+thru):'Score —')+'</span><span class="ydchip" title="Playing length — edit in the Tee cell below">'+Y2U(h.yd)+' '+PROF.units+'</span> · <b class="'+(sg.tot<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg.tot)+'</b> · '+sg.strokes+' strk'+(flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':'')+'</div>';
+   '<div class="hbR"><span class="scorechip" title="Round score so far">'+(thru?('Score '+tsc+' ('+tpTxt+') · thru '+thru):'Score —')+'</span><span class="sgmini"><span class="ydchip">'+Y2U(h.yd)+' '+PROF.units+'</span> · <span class="'+(sg.tot<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg.tot)+'</span> · '+sg.strokes+' strk'+(flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':'')+'</span></div>';
 }
 function renderShots(hi){
  var h=R.holes[hi],body=document.getElementById('lgBody'),html='';
@@ -1658,7 +1660,7 @@ function totals(){
  var done=R.holes.filter(function(h){return h.done;});
  var sc=0,sg=0,par=0;done.forEach(function(h){var t=holeSG(holeView(h));sc+=t.strokes;sg+=t.tot;par+=h.par;});
  document.getElementById('totScore').textContent=done.length?sc:'—';
- document.getElementById('totSG').innerHTML=done.length?('<span class="'+(sg<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg)+'</span> · '+(sc-par>=0?'+':'')+(sc-par)+' thru '+done.length):'—';
+ document.getElementById('totSG').innerHTML=done.length?('<b class="toparbig">'+(sc-par>0?'+':'')+(sc-par===0?'E':(sc-par))+'</b> · thru '+done.length+' <span class="sgmini '+(sg<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg)+'</span>'):'—';
  var rem=18-done.length,w=document.getElementById('warn');
  if(rem>0){w.className='warn';w.textContent='⚠ '+rem+' hole'+(rem>1?'s':'')+' to finish before saving.';}
  else{var cross=(R.score!==''&&R.score!=null&&+R.score!==sc)?(' — ⚠ you entered score '+R.score+', but your shots add up to '+sc):'';w.className='warn ok';w.textContent='✓ All 18 holes done — ready to save.'+cross;}
