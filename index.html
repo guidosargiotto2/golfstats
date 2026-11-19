@@ -1681,8 +1681,10 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc').forEach(func
        var pr=predictNext(h);if(pr&&pr.lie!==''&&pr.dist!==''){R.holes[h].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();focusEntry();}return;}
      el.blur();return;}
    if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;
+   var armed=el.dataset.stage!=='editing';
    var atStart=el.selectionStart===0&&el.selectionEnd===0,atEnd=el.selectionStart===(el.value||'').length&&el.selectionEnd===(el.value||'').length;
-   if(e.key==='ArrowLeft'&&!atStart)return;if(e.key==='ArrowRight'&&!atEnd)return;
+   var move=armed||(e.key==='ArrowLeft'?atStart:atEnd);
+   if(!move)return;
    var arr=Array.prototype.slice.call(el.closest('tr').querySelectorAll('input.lc')),i=arr.indexOf(el),j=e.key==='ArrowRight'?i+1:i-1;
    if(j>=0&&j<arr.length){e.preventDefault();arr[j].focus();if(arr[j].select)arr[j].select();}});});}
 function wire(){
