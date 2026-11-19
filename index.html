@@ -1683,7 +1683,7 @@ function renderShots(hi){
    var cells=LIECOLS.map(function(lc){var on=pr.lie===lc;var val=on?(lc==='putt'?pr.dist:Y2U(pr.dist)):'';
      return '<td class="liec"><input class="lc'+(on?' on':'')+'" type="text" inputmode="numeric" data-entry="'+hi+'" data-lie="'+lc+'" value="'+val+'" placeholder="·"></td>';}).join('');
    html+='<tr class="shot entry'+(isPred?' pred':'')+'"><td class="sidx">'+(confShots(h).length+1)+'</td>'+cells+
-     '<td></td><td class="sgc"></td><td class="rm"></td></tr>';
+     '<td></td><td class="sgc"></td><td class="rm"><button data-entryfin="1" title="No more shots — finish the hole (or press Delete)">×</button></td></tr>';
  }
  body.innerHTML=html;
 }
@@ -1730,6 +1730,9 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input
        if(v!==''){var lie=el.dataset.lie,raw=Math.max(1,parseInt(v,10)||1),dist=(lie==='putt')?raw:U2Y(raw);R.holes[h].shots.push({lie:lie,dist:dist,pen:0,conf:true});render();focusEntry();return;}
        var pr=predictNext(h);if(pr&&pr.lie!==''&&pr.dist!==''){R.holes[h].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();focusEntry();}return;}
      el.blur();return;}
+   if(e.key==='Delete'){var trr=el.closest('tr');
+     if(trr.classList.contains('entry')){e.preventDefault();finishHole();return;}
+     if(el.dataset.s!=null&&(el.dataset.stage!=='editing'||(el.value||'')==='')){var hh=+el.dataset.h,ss=+el.dataset.s;if(ss>0){e.preventDefault();R.holes[hh].shots.splice(ss,1);render();focusEntry();return;}}}
    if(e.key==='Tab'){var row=el.closest('tr');var cells=Array.prototype.slice.call(row.querySelectorAll('input.lc, input.p')).filter(function(c){return c.dataset.lie!=='tee'&&!c.disabled;});
      if(!cells.length)return;e.preventDefault();var ci=cells.indexOf(el),cj;
      if(e.shiftKey)cj=(ci<=0)?cells.length-1:ci-1;else cj=(ci===-1)?0:(ci+1)%cells.length;
@@ -1776,6 +1779,7 @@ function wire(){
      R.holes[h].shots.push({lie:lie,dist:dist,pen:0,conf:true});render();focusEntry();});
  });
  document.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){var a=b.dataset.del.split(':').map(Number);R.holes[a[0]].shots.splice(a[1],1);render();};});
+ document.querySelectorAll('[data-entryfin]').forEach(function(b){b.onclick=function(){finishHole();};});
  document.querySelectorAll('[data-ins]').forEach(function(b){b.onclick=function(){var a=b.dataset.ins.split(':').map(Number),h=a[0],si=a[1],sh=R.holes[h].shots,prev=sh[si-1],cur=sh[si];
    var lie=(prev&&prev.lie==='putt'&&cur&&cur.lie==='putt')?'putt':'fw';
    var d=(prev&&cur&&prev.dist!=null&&cur.dist!=null)?Math.round((prev.dist+cur.dist)/2):(cur&&cur.dist!=null?cur.dist:(prev&&prev.dist!=null?prev.dist:20));
