@@ -1561,7 +1561,10 @@ function predictNext(hi){
  if(p&&p.shots&&p.shots[idx]){var s=p.shots[idx];return {lie:s.lie,dist:s.dist,pen:0,conf:false};}
  var prev=shots[idx-1];
  if(!prev) return {lie:'tee',dist:h.yd,pen:0,conf:false};
- if(prev.lie==='putt') return {lie:'putt',dist:2,pen:0,conf:false};
+ if(prev.lie==='putt'){var d=prev.dist;/* from inside ~4 ft you hole it → no next shot predicted (blank, so you just tap Finish hole) */
+   if(d<=4) return {lie:'',dist:'',pen:0,conf:false};
+   /* longer putt → predict a realistic lag leave that then holes */
+   var leave=d<=20?2:(d<=40?3:4);return {lie:'putt',dist:leave,pen:0,conf:false};}
  var rem,lie;
  if(prev.lie==='tee'&&h.par===3){rem=Math.max(8,Math.round(h.yd*0.08));}
  else if(prev.lie==='tee'){rem=Math.max(15,h.yd-driveYd());}
