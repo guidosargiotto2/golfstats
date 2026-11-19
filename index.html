@@ -1673,7 +1673,7 @@ function renderShots(hi){
    html+='<tr class="shot conf"><td class="sidx">'+(si+1)+'</td>'+cells+
      '<td><input class="p" type="number" inputmode="numeric" min="0" data-h="'+hi+'" data-s="'+si+'" value="'+(s.pen||'')+'" placeholder="0"></td>'+
      '<td class="sgc '+(sgv==null?'':(sgv<0?'sg-neg':'sg-pos'))+'">'+(sgv==null?'·':fmt(sgv))+'</td>'+
-     '<td class="rm">'+(si>=1?'<button class="insbtn" data-ins="'+hi+':'+si+'" title="insert a shot above">+</button>':'')+(locked?'':'<button data-del="'+hi+':'+si+'" title="delete">×</button>')+'</td></tr>';
+     '<td class="rm"><button class="insbtn" data-ins="'+hi+':'+si+'" title="insert a shot below this one">+</button>'+(locked?'':'<button data-del="'+hi+':'+si+'" title="delete">×</button>')+'</td></tr>';
  });
  /* add-a-shot row only while the hole is unfinished; a done hole uses the "+ Add a shot" button so there's no stray empty row */
  if(!h.done){
@@ -1691,7 +1691,7 @@ function renderHoleActs(hi){
  el.innerHTML=(h.done?'<span class="donechip">✓ Hole complete — edit freely, changes save automatically</span>':(predOn?'<span class="predhint">Amber row = predicted next shot. Tap ✓ Accept if it\'s right, or type the real lie &amp; distance.</span>':'<span class="predhint">Enter each shot: type the distance under the lie it was played from.</span>'))+
    '<div class="actbtns">'+(h.done?'<button class="ghost" id="btnAdd">+ Add a shot</button>':(predOn?'<button class="accept" id="btnAccept">✓ Accept predicted</button>':''))+
    '<button class="finish" id="btnFinish">'+((R.cur<R.hEnd-1)?'Next hole ▶':'Finish ✓')+'</button></div>'+
-   '<div class="inshint">Need a shot between two others? Tap the <b>+</b> on a row to insert one above it.</div>';
+   '<div class="inshint">Tap the <b>+</b> on any row to add a shot right below it (use it on the last row to add one at the end).</div>';
 }
 function renderHoleNav(hi){
  var act=R.holes.slice(R.hStart,R.hEnd),done=act.filter(function(h){return h.done;}).length,count=R.hEnd-R.hStart;
@@ -1778,11 +1778,11 @@ function wire(){
  });
  document.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){var a=b.dataset.del.split(':').map(Number);R.holes[a[0]].shots.splice(a[1],1);render();};});
  document.querySelectorAll('[data-entryfin]').forEach(function(b){b.onclick=function(){finishHole(false);};});
- document.querySelectorAll('[data-ins]').forEach(function(b){b.onclick=function(){var a=b.dataset.ins.split(':').map(Number),h=a[0],si=a[1],sh=R.holes[h].shots,prev=sh[si-1],cur=sh[si];
-   var lie=(prev&&prev.lie==='putt'&&cur&&cur.lie==='putt')?'putt':'fw';
-   var d=(prev&&cur&&prev.dist!=null&&cur.dist!=null)?Math.round((prev.dist+cur.dist)/2):(cur&&cur.dist!=null?cur.dist:(prev&&prev.dist!=null?prev.dist:20));
-   sh.splice(si,0,{lie:lie,dist:d,pen:0,conf:true});render();
-   var nx=document.querySelector('#lgBody input.lc[data-h="'+h+'"][data-s="'+si+'"][data-lie="'+lie+'"]');if(nx){nx.focus();if(nx.select)nx.select();}};});
+ document.querySelectorAll('[data-ins]').forEach(function(b){b.onclick=function(){var a=b.dataset.ins.split(':').map(Number),h=a[0],si=a[1],sh=R.holes[h].shots,ins=si+1,before=sh[si],after=sh[ins];
+   var lie=(before&&before.lie==='putt')?'putt':'fw';
+   var d=(before&&after&&before.dist!=null&&after.dist!=null)?Math.round((before.dist+after.dist)/2):(before&&before.dist!=null?Math.max(1,Math.round(before.dist/2)):20);
+   sh.splice(ins,0,{lie:lie,dist:d,pen:0,conf:true});render();
+   var nx=document.querySelector('#lgBody input.lc[data-h="'+h+'"][data-s="'+ins+'"][data-lie="'+lie+'"]');if(nx){nx.focus();if(nx.select)nx.select();}};});
  document.querySelectorAll('[data-par]').forEach(function(b){b.onclick=function(){var a=b.dataset.par.split(':').map(Number);R.holes[a[0]].par=a[1];render();};});
  document.querySelectorAll('input[data-ydtee]').forEach(function(el){el.addEventListener('change',function(){var hi=+el.dataset.ydtee,raw=Math.max(20,parseInt(el.value||'0',10)||0),v=U2Y(raw),hole=R.holes[hi];hole.yd=v;if(hole.shots[0]&&hole.shots[0].lie==='tee')hole.shots[0].dist=v;render();});});
  var acc=document.getElementById('btnAccept');if(acc)acc.onclick=function(){var pr=predictNext(R.cur);if(pr.lie==='')return;R.holes[R.cur].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();focusEntry();};
