@@ -1687,6 +1687,20 @@ function render(){
  renderHoleBar(hi);renderShots(hi);renderHoleActs(hi);renderHoleNav(hi);
  wire();totals();renderSel();save();
 }
+function lgExportTSV(){
+ var cols=[['tee','TEE'],['fw','FAIRWAY'],['rough','ROUGH'],['sand','SAND'],['rec','RECOVERY'],['putt','PUTTS(ft)']];
+ var out=['Hole\tPar\tShot\t'+cols.map(function(c){return c[1];}).join('\t')+'\tPEN'];
+ for(var i=R.hStart;i<R.hEnd;i++){var h=R.holes[i],s=confShots(h);
+   for(var j=0;j<s.length;j++){var sh=s[j],row=[j===0?(i+1):'',j===0?h.par:'',j+1];
+     cols.forEach(function(c){row.push(sh.lie===c[0]?Math.round(sh.dist):'');});
+     row.push(sh.pen?sh.pen:'');out.push(row.join('\t'));}}
+ return out.join('\n');
+}
+function copyForSheet(){var tsv=lgExportTSV();
+ var done=function(){lgToast('Copied — paste into your sheet to compare values.');};
+ var fb=function(){var ta=document.createElement('textarea');ta.value=tsv;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(_){}document.body.removeChild(ta);done();};
+ try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(tsv).then(done,fb);}else fb();}catch(e){fb();}
+}
 function renderScorecard(){
  var hs=R.hStart,he=R.hEnd,c=COURSES[R.course],sv=document.getElementById('scorecardView');
  function sym(st,sc){ // circle birdie, double eagle, square bogey, 2-square double+
@@ -1722,7 +1736,9 @@ function renderScorecard(){
  } else {var s=seg(hs,he);addSeg(s,(hs===0?'OUT':'IN'));}
  sv.innerHTML='<div class="scWrap"><table class="scTbl"><tbody>'+
    '<tr class="scRh">'+rowsHole+'</tr><tr class="scRp">'+rowsPar+'</tr><tr class="scRs">'+rowsSc+'</tr><tr class="scRst">'+rowsSt+'</tr><tr class="scRsg">'+rowsSg+'</tr><tr class="scRt5">'+rowsT5+'</tr></tbody></table></div>'+
-   '<div class="scHint">Tap any hole to edit it. <b>SG</b> = strokes gained per hole · <b>Tiger\'s 5</b>: 3P 3-putt · D double · P5 bogey par-5 · B bogey from short · S blow-out save. Process-compliance row can slot in here next.</div>';
+   '<div class="scHint">Tap any hole to edit it. <b>SG</b> = strokes gained per hole · <b>Tiger\'s 5</b>: 3P 3-putt · D double · P5 bogey par-5 · B bogey from short · S blow-out save.</div>'+
+   '<div class="scActs"><button class="ghost" id="btnCopySheet">⎘ Copy for sheet</button></div>';
+ var cbs=document.getElementById('btnCopySheet');if(cbs)cbs.onclick=copyForSheet;
  sv.querySelectorAll('[data-sc]').forEach(function(td){td.onclick=function(){scMode=false;gotoHole(+td.getAttribute('data-sc'));};});
 }
 function renderSetup(){
