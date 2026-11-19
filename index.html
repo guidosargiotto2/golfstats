@@ -1675,9 +1675,9 @@ function renderShots(hi){
      '<td class="sgc '+(sgv==null?'':(sgv<0?'sg-neg':'sg-pos'))+'">'+(sgv==null?'·':fmt(sgv))+'</td>'+
      '<td class="rm">'+(si>=1?'<button class="insbtn" data-ins="'+hi+':'+si+'" title="insert a shot above">+</button>':'')+(locked?'':'<button data-del="'+hi+':'+si+'" title="delete">×</button>')+'</td></tr>';
  });
- /* always show the add-a-shot row, even on a finished hole, so you can go back and edit it freely */
- {
-   var pr=h.done?{lie:'',dist:'',pen:0,conf:false}:predictNext(hi),isPred=PROF.predict&&pr.lie!=='';
+ /* add-a-shot row only while the hole is unfinished; a done hole uses the "+ Add a shot" button so there's no stray empty row */
+ if(!h.done){
+   var pr=predictNext(hi),isPred=PROF.predict&&pr.lie!=='';
    var cells=LIECOLS.map(function(lc){var on=pr.lie===lc;var val=on?(lc==='putt'?pr.dist:Y2U(pr.dist)):'';
      return '<td class="liec"><input class="lc'+(on?' on':'')+'" type="text" inputmode="numeric" data-entry="'+hi+'" data-lie="'+lc+'" value="'+val+'" placeholder="·"></td>';}).join('');
    html+='<tr class="shot entry'+(isPred?' pred':'')+'"><td class="sidx">'+(confShots(h).length+1)+'</td>'+cells+
@@ -1689,7 +1689,7 @@ function renderHoleActs(hi){
  var h=R.holes[hi],el=document.getElementById('holeacts');
  var predOn=PROF.predict;
  el.innerHTML=(h.done?'<span class="donechip">✓ Hole complete — edit freely, changes save automatically</span>':(predOn?'<span class="predhint">Amber row = predicted next shot. Tap ✓ Accept if it\'s right, or type the real lie &amp; distance.</span>':'<span class="predhint">Enter each shot: type the distance under the lie it was played from.</span>'))+
-   '<div class="actbtns">'+(predOn?'<button class="accept" id="btnAccept">✓ Accept predicted</button>':'')+
+   '<div class="actbtns">'+(h.done?'<button class="ghost" id="btnAdd">+ Add a shot</button>':(predOn?'<button class="accept" id="btnAccept">✓ Accept predicted</button>':''))+
    '<button class="finish" id="btnFinish">'+((R.cur<R.hEnd-1)?'Next hole ▶':'Finish ✓')+'</button></div>'+
    '<div class="inshint">Need a shot between two others? Tap the <b>+</b> on a row to insert one above it.</div>';
 }
