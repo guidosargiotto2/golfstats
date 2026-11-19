@@ -1793,7 +1793,7 @@ function wire(){
      if(hd!=null){disp=(lie==='putt'?hd:Y2U(hd));}
      else if(cur!==''){disp=cur;}
      else{var pr=predictNext(h);disp=(pr&&pr.dist!=='')?(lie==='putt'?pr.dist:Y2U(pr.dist)):'';}
-     cells.forEach(function(c){if(c!==el)c.value='';});el.value=disp;el.dataset.stage='armed';if(el.select)el.select();});
+     cells.forEach(function(c){if(c!==el){c.value='';c.classList.remove('on');}});el.value=disp;el.classList.add('on');el.dataset.stage='armed';if(el.select)el.select();});
    el.addEventListener('input',function(){el.dataset.stage='editing';});
    el.addEventListener('change',function(){if(entryBusy)return;var h=+el.dataset.entry,lie=el.dataset.lie,v=el.value.trim();if(v==='')return;
      var raw=Math.max(1,parseInt(v,10)||1),dist=(lie==='putt')?raw:U2Y(raw);
