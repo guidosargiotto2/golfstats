@@ -1677,7 +1677,7 @@ function renderShots(hi){
  });
  /* always show the add-a-shot row, even on a finished hole, so you can go back and edit it freely */
  {
-   var pr=predictNext(hi),isPred=PROF.predict&&pr.lie!=='';
+   var pr=h.done?{lie:'',dist:'',pen:0,conf:false}:predictNext(hi),isPred=PROF.predict&&pr.lie!=='';
    var cells=LIECOLS.map(function(lc){var on=pr.lie===lc;var val=on?(lc==='putt'?pr.dist:Y2U(pr.dist)):'';
      return '<td class="liec"><input class="lc'+(on?' on':'')+'" type="text" inputmode="numeric" data-entry="'+hi+'" data-lie="'+lc+'" value="'+val+'" placeholder="·"></td>';}).join('');
    html+='<tr class="shot entry'+(isPred?' pred':'')+'"><td class="sidx">'+(confShots(h).length+1)+'</td>'+cells+
