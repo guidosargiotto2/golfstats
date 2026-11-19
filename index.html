@@ -297,6 +297,8 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .setupgrid label{display:flex;flex-direction:column;gap:6px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft);font-weight:700;}
 .lgscope .setupgrid label:first-child{grid-column:1 / -1;}
 .lgscope .setupgrid .lbls{text-transform:none;letter-spacing:0;font-weight:600;color:var(--amber);font-size:10px;}
+.lgscope .fielderr{text-transform:none;letter-spacing:0;font-weight:700;color:var(--clay);font-size:11px;min-height:13px;margin-top:2px;}
+.lgscope input.bad{border-color:var(--clay)!important;box-shadow:0 0 0 2px rgba(194,80,46,.18);}
 .lgscope .setupgrid select,.lgscope .setupgrid input{font-family:var(--sans);font-size:15px;border:1px solid var(--line);border-radius:10px;padding:11px;background:var(--cream);color:var(--ink);font-weight:600;}
 .lgscope .teeline{display:flex;align-items:center;gap:10px;margin:14px 0 4px;}
 .lgscope .teeline .est{flex:1;font-family:var(--cond);font-size:11px;color:var(--amber);letter-spacing:.03em;}
@@ -361,8 +363,8 @@ table.rt tbody tr:hover{background:var(--line-soft);}
      <label>Tee<select id="selTee"></select></label>
      <label>Holes<select id="selHoles"><option value="18">18 holes</option><option value="front">Front 9 (1–9)</option><option value="back">Back 9 (10–18)</option></select></label>
      <label>Date<input type="date" id="selDate"></label>
-     <label>Score <span class="lbls">your total — cross-check</span><input type="number" inputmode="numeric" id="selScore" min="59" max="200" placeholder="e.g. 76"></label>
-     <label>Playing HCP <span class="lbls">for this round</span><input type="number" inputmode="numeric" id="selChcp" min="-10" max="54" placeholder="e.g. 2"></label>
+     <label>Score <span class="lbls">your total — cross-check</span><input type="number" inputmode="numeric" id="selScore" min="59" max="200" placeholder="e.g. 76"><span class="fielderr" id="err_score"></span></label>
+     <label>Playing HCP <span class="lbls">for this round</span><input type="number" inputmode="numeric" id="selChcp" min="-10" max="54" placeholder="e.g. 2"><span class="fielderr" id="err_chcp"></span></label>
    </div>
    <div class="teeline"><span class="est" id="teeEst"></span><button class="star" id="starBtn">★ default</button></div>
    <div class="setupacts"><button class="startbtn" id="startBtn">Start round →</button></div>
@@ -1605,8 +1607,10 @@ function startRound(){var sc=document.getElementById('selScore'),ch=document.get
  R.holesMode=hm?hm.value:'18';if(R.holesMode==='front'){R.hStart=0;R.hEnd=9;}else if(R.holesMode==='back'){R.hStart=9;R.hEnd=18;}else{R.hStart=0;R.hEnd=18;}
  var nine=(R.hEnd-R.hStart)===9,minSc=nine?27:59,maxSc=nine?110:200;
  var sv=sc?String(sc.value).trim():'',cv=ch?String(ch.value).trim():'';
- if(sv!==''&&(+sv<minSc||+sv>maxSc)){alert('Enter a realistic score ('+minSc+'–'+maxSc+'), or leave it blank.');sc.focus();return;}
- if(cv!==''&&(+cv<-10||+cv>54)){alert('Enter a valid playing handicap (−10 to 54), or leave it blank.');ch.focus();return;}
+ var es=document.getElementById('err_score'),ec=document.getElementById('err_chcp');
+ if(es)es.textContent='';if(ec)ec.textContent='';if(sc)sc.classList.remove('bad');if(ch)ch.classList.remove('bad');
+ if(sv!==''&&(+sv<minSc||+sv>maxSc)){if(es)es.textContent='Enter '+minSc+'–'+maxSc+', or leave blank.';if(sc){sc.classList.add('bad');sc.focus();}return;}
+ if(cv!==''&&(+cv<-10||+cv>54)){if(ec)ec.textContent='Enter −10 to 54, or leave blank.';if(ch){ch.classList.add('bad');ch.focus();}return;}
  R.score=sv;R.chcp=cv;R.phase='play';gotoHole(R.hStart);}
 function render(){
  var setup=document.getElementById('setupPanel'),play=document.getElementById('playPanel');
