@@ -359,6 +359,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
    <div class="setupgrid">
      <label>Course<select id="selCourse"></select></label>
      <label>Tee<select id="selTee"></select></label>
+     <label>Holes<select id="selHoles"><option value="18">18 holes</option><option value="front">Front 9 (1–9)</option><option value="back">Back 9 (10–18)</option></select></label>
      <label>Date<input type="date" id="selDate"></label>
      <label>Score <span class="lbls">your total — cross-check</span><input type="number" inputmode="numeric" id="selScore" min="59" max="200" placeholder="e.g. 76"></label>
      <label>Course handicap <span class="lbls">for this round</span><input type="number" inputmode="numeric" id="selChcp" min="-10" max="54" placeholder="e.g. 2"></label>
@@ -1450,7 +1451,7 @@ function shortLabel(){return PROF.t5mode==='dchip'?('Double chip ≤'+t5x()+'y')
 function roundRecord(){
  var fw=0,gir=0,putts=0,pen=0,bir=0,bog=0,dbl=0,par=0,strokes=0,drives=[];
  var sg={ott:0,app:0,atg:0,putt:0,tot:0};
- (R.holes||[]).forEach(function(h){var s=h.shots||[],m=holeSG(h);
+ (R.holes||[]).slice(R.hStart!=null?R.hStart:0,R.hEnd!=null?R.hEnd:18).forEach(function(h){var s=h.shots||[],m=holeSG(h);
    sg.ott+=m.ott;sg.app+=m.app;sg.atg+=m.atg;sg.putt+=m.putt;sg.tot+=m.tot;
    var hp=0,np=0,pens=0,hasPutt=false;
    for(var i=0;i<s.length;i++){var sh=s[i];pens+=sh.pen||0;hp+=1+(sh.pen||0);if(sh.lie==='putt'){putts++;hasPutt=true;}else np++;}
@@ -1532,12 +1533,12 @@ function predictHole(course,tee,i,par,yd){const p=PROFILE[pkey(course,tee,i)];
  return seedHole(par,yd);}
 function newRound(course,tee){const c=COURSES[course],t=c.tees[tee];
  return {course,tee,courseName:c.name,cr:t.cr,slope:t.slope,date:new Date().toISOString().slice(0,10),
-  score:'',chcp:'',phase:'setup',cur:0,
+  score:'',chcp:'',phase:'setup',cur:0,holesMode:'18',hStart:0,hEnd:18,
   holes:c.par.map((par,i)=>{const yd=stdYd(course,tee,i);return{par,yd,hcp:c.hcp[i],shots:[],done:false};})};}
 let DEFT=loadDefault();
 let R=(function(){try{const r=JSON.parse(localStorage.getItem(RKEY));
   /* only restore rounds created by the guided wizard (they carry a phase); discard older formats */
-  if(r&&r.holes&&r.tee&&r.phase&&Array.isArray(r.holes)&&r.holes.length===18){if(r.cur==null)r.cur=0;r.holes.forEach(function(h){if(h.done==null)h.done=false;if(!Array.isArray(h.shots))h.shots=[];});return r;}}catch(e){}
+  if(r&&r.holes&&r.tee&&r.phase&&Array.isArray(r.holes)&&r.holes.length===18){if(r.cur==null)r.cur=0;if(r.hStart==null){r.hStart=0;r.hEnd=18;r.holesMode='18';}r.holes.forEach(function(h){if(h.done==null)h.done=false;if(!Array.isArray(h.shots))h.shots=[];});return r;}}catch(e){}
   localStorage.removeItem(RKEY);return newRound(DEFT.course,DEFT.tee);})();
 function save(){localStorage.setItem(RKEY,JSON.stringify(R));}
 function reseedPredicted(){/* wizard predicts shot-by-shot; no bulk pre-seed */}
@@ -1581,13 +1582,15 @@ function predictNext(hi){
  lie=rem<=18?'putt':'fw';
  return {lie:lie,dist:rem,pen:0,conf:false};
 }
-function gotoHole(i){R.cur=Math.max(0,Math.min(17,i));var h=R.holes[R.cur];if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];render();focusEntry();}
-function finishHole(){var h=R.holes[R.cur];if(confShots(h).length===0){alert('Enter at least the tee shot before finishing the hole.');return;}h.shots=confShots(h);h.done=true;if(R.cur<17)gotoHole(R.cur+1);else render();}
-function startRound(){var sc=document.getElementById('selScore'),ch=document.getElementById('selChcp');
+function gotoHole(i){R.cur=Math.max(R.hStart,Math.min(R.hEnd-1,i));var h=R.holes[R.cur];if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];render();focusEntry();}
+function finishHole(){var h=R.holes[R.cur];if(confShots(h).length===0){alert('Enter at least the tee shot before finishing the hole.');return;}h.shots=confShots(h);h.done=true;if(R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
+function startRound(){var sc=document.getElementById('selScore'),ch=document.getElementById('selChcp'),hm=document.getElementById('selHoles');
+ R.holesMode=hm?hm.value:'18';if(R.holesMode==='front'){R.hStart=0;R.hEnd=9;}else if(R.holesMode==='back'){R.hStart=9;R.hEnd=18;}else{R.hStart=0;R.hEnd=18;}
+ var nine=(R.hEnd-R.hStart)===9,minSc=nine?27:59,maxSc=nine?110:200;
  var sv=sc?String(sc.value).trim():'',cv=ch?String(ch.value).trim():'';
- if(sv!==''&&(+sv<59||+sv>200)){alert('Enter a realistic score (59 or higher), or leave it blank.');sc.focus();return;}
+ if(sv!==''&&(+sv<minSc||+sv>maxSc)){alert('Enter a realistic score ('+minSc+'–'+maxSc+'), or leave it blank.');sc.focus();return;}
  if(cv!==''&&(+cv<-10||+cv>54)){alert('Enter a valid course handicap (−10 to 54), or leave it blank.');ch.focus();return;}
- R.score=sv;R.chcp=cv;R.phase='play';gotoHole(0);}
+ R.score=sv;R.chcp=cv;R.phase='play';gotoHole(R.hStart);}
 function render(){
  var setup=document.getElementById('setupPanel'),play=document.getElementById('playPanel');
  if(R.phase!=='play'){setup.style.display='';play.style.display='none';renderSetup();save();return;}
@@ -1601,6 +1604,7 @@ function renderSetup(){
  var ti=document.getElementById('lgTitle');if(ti)ti.textContent=editRoundId?'Edit round':'Start a round';
  var sc=document.getElementById('selScore');if(sc&&document.activeElement!==sc)sc.value=R.score||'';
  var ch=document.getElementById('selChcp');if(ch&&document.activeElement!==ch)ch.value=R.chcp||'';
+ var sh=document.getElementById('selHoles');if(sh)sh.value=R.holesMode||'18';
  document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+R.tee;
  renderSel();
 }
@@ -1609,11 +1613,11 @@ function renderHoleBar(hi){
  var h=R.holes[hi],hv=holeView(h),sg=holeSGlive(h),m=holeMistakes(hv);
  var flags=[m.p3?'3-putt':'',m.db?'double':'',m.bp5?'bogey P5':'',m.f150?'bogey ≤'+bogeyXyd()+'y':'',m.short?shortLabel():''].filter(Boolean).join(' · ');
  /* running round score, including the hole in progress */
- var tsc=0,tpar=0,thru=0;R.holes.forEach(function(x,xi){if(x.done){var t=holeSG(holeView(x));tsc+=t.strokes;tpar+=x.par;thru++;}else if(xi===hi){var c=confShots(x);if(c.length){tsc+=c.reduce(function(a,s){return a+1+(s.pen||0);},0);tpar+=x.par;thru++;}}});
+ var tsc=0,tpar=0,thru=0;R.holes.forEach(function(x,xi){if(xi<R.hStart||xi>=R.hEnd)return;if(x.done){var t=holeSG(holeView(x));tsc+=t.strokes;tpar+=x.par;thru++;}else if(xi===hi){var c=confShots(x);if(c.length){tsc+=c.reduce(function(a,s){return a+1+(s.pen||0);},0);tpar+=x.par;thru++;}}});
  var tp=tsc-tpar,tpTxt=(tp>0?'+':'')+(tp===0?'E':tp);
  var hstr=sg.strokes,hdiff=hstr-h.par,hdt=hstr?(hdiff===0?'E':(hdiff>0?'+'+hdiff:hdiff)):'';
  document.getElementById('holebar').innerHTML=
-   '<div class="hbL"><span class="hn">Hole '+(hi+1)+'</span><span class="hofN">of 18</span>'+
+   '<div class="hbL"><span class="hn">Hole '+(hi+1)+'</span><span class="hofN">of '+(R.hEnd-R.hStart)+'</span>'+
    '<span class="parchip">Par '+h.par+'</span>'+
    '<span class="sichip" title="Stroke index / hole handicap">SI '+(h.hcp||'—')+'</span>'+
    (hstr?'<span class="holescore" title="Hole score">'+hstr+' <small>('+hdt+')</small></span>':'')+'</div>'+
@@ -1653,20 +1657,21 @@ function renderHoleActs(hi){
    '<div class="inshint">Need a shot between two others? Tap the <b>+</b> on a row to insert one above it.</div>';
 }
 function renderHoleNav(hi){
- var done=R.holes.filter(function(h){return h.done;}).length;
+ var act=R.holes.slice(R.hStart,R.hEnd),done=act.filter(function(h){return h.done;}).length,count=R.hEnd-R.hStart;
  document.getElementById('holenav').innerHTML=
-   '<button class="navb" id="btnPrev"'+(hi===0?' disabled':'')+'>◀ Prev</button>'+
-   '<div class="prog"><div class="progbar"><span style="width:'+Math.round(done/18*100)+'%"></span></div><div class="progtxt">'+done+' / 18 holes done</div></div>'+
-   '<button class="navb" id="btnNext"'+(hi===17?' disabled':'')+'>Next ▶</button>';
+   '<button class="navb" id="btnPrev"'+(hi<=R.hStart?' disabled':'')+'>◀ Prev</button>'+
+   '<div class="prog"><div class="progbar"><span style="width:'+Math.round(done/count*100)+'%"></span></div><div class="progtxt">'+done+' / '+count+' holes done</div></div>'+
+   '<button class="navb" id="btnNext"'+(hi>=R.hEnd-1?' disabled':'')+'>Next ▶</button>';
 }
 function totals(){
- var done=R.holes.filter(function(h){return h.done;});
+ var done=R.holes.slice(R.hStart,R.hEnd).filter(function(h){return h.done;});
+ var count=R.hEnd-R.hStart;
  var sc=0,sg=0,par=0;done.forEach(function(h){var t=holeSG(holeView(h));sc+=t.strokes;sg+=t.tot;par+=h.par;});
  document.getElementById('totScore').textContent=done.length?sc:'—';
  document.getElementById('totSG').innerHTML=done.length?('<b class="toparbig">'+(sc-par>0?'+':'')+(sc-par===0?'E':(sc-par))+'</b> · thru '+done.length+' <span class="sgmini '+(sg<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg)+'</span>'):'—';
- var rem=18-done.length,w=document.getElementById('warn');
+ var rem=count-done.length,w=document.getElementById('warn');
  if(rem>0){w.className='warn';w.textContent='⚠ '+rem+' hole'+(rem>1?'s':'')+' to finish before saving.';}
- else{var cross=(R.score!==''&&R.score!=null&&+R.score!==sc)?(' — ⚠ you entered score '+R.score+', but your shots add up to '+sc):'';w.className='warn ok';w.textContent='✓ All 18 holes done — ready to save.'+cross;}
+ else{var cross=(R.score!==''&&R.score!=null&&+R.score!==sc)?(' — ⚠ you entered score '+R.score+', but your shots add up to '+sc):'';w.className='warn ok';w.textContent='✓ All '+count+' holes done — ready to save.'+cross;}
  var sv=document.getElementById('lgSaveBtn');sv.disabled=rem>0;sv.textContent=rem>0?(rem+' to go'):'Save round';
  document.getElementById('snote').textContent=(R.courseName||R.course)+' · '+R.tee+' · '+R.date;
  document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+R.tee;
@@ -1742,22 +1747,23 @@ function wire(){
  var nx=document.getElementById('btnNext');if(nx)nx.onclick=function(){gotoHole(R.cur+1);};
 }
 document.getElementById('lgSaveBtn').onclick=()=>{
- R.holes.forEach((h,i)=>{const key=pkey(R.course,R.tee,i);const prev=PROFILE[key]||{n:0,shots:[],pos:{}};const n=prev.n||0;const pshots=prev.shots||[];
+ var hS=R.hStart!=null?R.hStart:0,hE=R.hEnd!=null?R.hEnd:18,nine=(hE-hS)===9;
+ R.holes.forEach((h,i)=>{if(i<hS||i>=hE)return;if(!(h.shots&&h.shots.length))return;const key=pkey(R.course,R.tee,i);const prev=PROFILE[key]||{n:0,shots:[],pos:{}};const n=prev.n||0;const pshots=prev.shots||[];
    const merged=h.shots.map((s,j)=>{const p=pshots[j];const dist=(p&&p.lie===s.lie)?Math.round((p.dist*n+s.dist)/(n+1)):s.dist;return{lie:s.lie,dist,pen:s.pen||0};});
    const pos=prev.pos||{};
    h.shots.forEach(function(s,j){if(!pos[j])pos[j]={};var c=pos[j][s.lie]||{dist:0,n:0};c.dist=Math.round((c.dist*c.n+s.dist)/(c.n+1));c.n=c.n+1;pos[j][s.lie]=c;});
    PROFILE[key]={n:n+1,shots:merged,par:h.par,yd:h.yd,pos:pos};});
  localStorage.setItem(PKEY,JSON.stringify(PROFILE));
- let t={ott:0,app:0,atg:0,putt:0,tot:0,strokes:0,par:0};R.holes.forEach(h=>{const s=holeSG(h);['ott','app','atg','putt','tot','strokes'].forEach(k=>t[k]+=s[k]);t.par+=h.par;});
- const diff=Math.round(((t.strokes-R.cr)*113/R.slope)*10)/10; // WHS score differential
- var rec=roundRecord();rec.id=editRoundId||('r'+Date.now());
+ let t={ott:0,app:0,atg:0,putt:0,tot:0,strokes:0,par:0};R.holes.slice(hS,hE).forEach(h=>{const s=holeSG(h);['ott','app','atg','putt','tot','strokes'].forEach(k=>t[k]+=s[k]);t.par+=h.par;});
+ const diff=Math.round(((t.strokes-R.cr)*113/R.slope)*10)/10; // WHS score differential (18-hole)
+ var rec=roundRecord();rec.id=editRoundId||('r'+Date.now());rec.holesMode=R.holesMode||'18';
  var arr=(window.getLoggedRounds?window.getLoggedRounds():[]);var replaced=false;
  if(editRoundId){for(var qi=0;qi<arr.length;qi++){if(arr[qi].id===editRoundId){arr[qi]=rec;replaced=true;break;}}}
  if(!replaced)arr.push(rec);
  var cnt=0;try{if(window.saveLoggedRounds)cnt=window.saveLoggedRounds(arr)||0;}catch(e){}
- if(!editRoundId){HIST.push({date:R.date,course:R.course,tee:R.tee,score:t.strokes,par:t.par,diff});saveHist();}
+ if(!editRoundId&&!nine){HIST.push({date:R.date,course:R.course,tee:R.tee,score:t.strokes,par:t.par,diff});saveHist();}
  const hi=effHI();const m=roundMistakes();
- alert(`${replaced?'Round updated':'Saved & learned'}.\nScore ${t.strokes} (${t.strokes-t.par>=0?'+':''}${t.strokes-t.par}) · differential ${diff}\nSG ${fmt(t.tot)} — OTT ${fmt(t.ott)} · APP ${fmt(t.app)} · ATG ${fmt(t.atg)} · PUTT ${fmt(t.putt)}\nTiger's 5: ${m.total} — 3-putts ${m.p3} · doubles ${m.db} · bogey par-5 ${m.bp5} · 3+ from 150 ${m.f150} · ${shortLabel()} ${m.short}${(hi!=null&&!editRoundId)?'\nHandicap Index now ≈ '+hi+' ('+HIST.length+' rounds)':''}\n\n✓ ${replaced?'Updated in':'Added to'} your Statistics — ${cnt} logged round${cnt===1?'':'s'} in this browser.`);
+ alert(`${replaced?'Round updated':'Saved & learned'}.\nScore ${t.strokes} (${t.strokes-t.par>=0?'+':''}${t.strokes-t.par})${nine?' · 9 holes (not added to index)':' · differential '+diff}\nSG ${fmt(t.tot)} — OTT ${fmt(t.ott)} · APP ${fmt(t.app)} · ATG ${fmt(t.atg)} · PUTT ${fmt(t.putt)}\nTiger's 5: ${m.total} — 3-putts ${m.p3} · doubles ${m.db} · bogey par-5 ${m.bp5} · 3+ from 150 ${m.f150} · ${shortLabel()} ${m.short}${(hi!=null&&!editRoundId)?'\nHandicap Index now ≈ '+hi+' ('+HIST.length+' rounds)':''}\n\n✓ ${replaced?'Updated in':'Added to'} your Statistics — ${cnt} logged round${cnt===1?'':'s'} in this browser.`);
  editRoundId=null;
  localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);render();renderLogged();
 };
