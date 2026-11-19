@@ -373,11 +373,11 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 
  <div id="playPanel" style="display:none">
    <div class="holebar" id="holebar"></div>
+   <div class="holenav" id="holenav"></div>
    <div class="warn" id="warn"></div>
    <div class="lgtablewrap"><table><thead><tr><th class="lh">#</th><th>Tee</th><th>Fairway</th><th>Rough</th><th>Sand</th><th>Recovery</th><th>Green·ft</th><th>Pen</th><th>SG</th><th></th></tr></thead>
    <tbody id="lgBody"></tbody></table></div>
    <div class="holeacts" id="holeacts"></div>
-   <div class="holenav" id="holenav"></div>
    <div class="savebar"><span class="note" id="snote"></span><button class="cancelbtn" id="lgCancelBtn" type="button">Cancel round</button><button id="lgSaveBtn" disabled>Save round</button></div>
  </div>
 </div></div>
@@ -1689,8 +1689,7 @@ function renderHoleActs(hi){
  var h=R.holes[hi],el=document.getElementById('holeacts');
  var predOn=PROF.predict;
  el.innerHTML=(h.done?'<span class="donechip">✓ Hole complete — edit freely, changes save automatically</span>':(predOn?'<span class="predhint">Amber row = predicted next shot. Tap ✓ Accept if it\'s right, or type the real lie &amp; distance.</span>':'<span class="predhint">Enter each shot: type the distance under the lie it was played from.</span>'))+
-   '<div class="actbtns">'+(h.done?'<button class="ghost" id="btnAdd">+ Add a shot</button>':(predOn?'<button class="accept" id="btnAccept">✓ Accept predicted</button>':''))+
-   '<button class="finish" id="btnFinish">'+((R.cur<R.hEnd-1)?'Next hole ▶':'Finish ✓')+'</button></div>'+
+   '<div class="actbtns">'+(h.done?'<button class="ghost" id="btnAdd">+ Add a shot</button>':((predOn?'<button class="accept" id="btnAccept">✓ Accept predicted</button>':'')+'<button class="finish" id="btnHoled">✓ Holed it</button><button class="ghost" id="btnAdd">+ Add a shot</button>'))+'</div>'+
    '<div class="inshint">Tap the <b>+</b> on any row to add a shot right below it (use it on the last row to add one at the end).</div>';
 }
 function renderHoleNav(hi){
@@ -1787,7 +1786,7 @@ function wire(){
  document.querySelectorAll('input[data-ydtee]').forEach(function(el){el.addEventListener('change',function(){var hi=+el.dataset.ydtee,raw=Math.max(20,parseInt(el.value||'0',10)||0),v=U2Y(raw),hole=R.holes[hi];hole.yd=v;if(hole.shots[0]&&hole.shots[0].lie==='tee')hole.shots[0].dist=v;render();});});
  var acc=document.getElementById('btnAccept');if(acc)acc.onclick=function(){var pr=predictNext(R.cur);if(pr.lie==='')return;R.holes[R.cur].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();focusEntry();};
  var add=document.getElementById('btnAdd');if(add)add.onclick=function(){var h=R.holes[R.cur],last=confShots(h).slice(-1)[0];h.shots.push({lie:last&&last.lie==='putt'?'putt':'fw',dist:last&&last.lie==='putt'?2:20,pen:0,conf:true});render();focusEntry();};
- var fin=document.getElementById('btnFinish');if(fin)fin.onclick=function(){finishHole(R.cur<R.hEnd-1);};
+ var fin=document.getElementById('btnHoled');if(fin)fin.onclick=function(){finishHole(false);};
  var rop=document.getElementById('btnReopen');if(rop)rop.onclick=function(){R.holes[R.cur].done=false;render();};
  var pv=document.getElementById('btnPrev');if(pv)pv.onclick=function(){gotoHole(R.cur-1);};
  var nx=document.getElementById('btnNext');if(nx)nx.onclick=function(){gotoHole(R.cur+1);};
