@@ -494,7 +494,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
         <div class="fld"><label>Rating</label><input type="number" step="0.1" id="r_cr" value="70" style="width:80px"></div>
         <div class="fld"><label>Slope</label><input type="number" id="r_slope" value="113" style="width:80px"></div>
       </div>
-      <div class="holenav" id="holenav"></div>
+      <div class="holenav" id="addNav"></div>
       <div class="holeditor" id="holeditor"></div>
       <div class="live" id="live"></div>
       <p class="note" id="engnote"></p>
@@ -593,7 +593,7 @@ function computeRound(dr){
 }
 
 function renderNav(){
- const nav=document.getElementById('holenav');
+ const nav=document.getElementById('addNav');
  nav.innerHTML=draft.holes.map((h,i)=>{
    const shots=holeShots(h); const sc=shots.reduce((a,s)=>a+1+s.pen,0);
    return `<button class="${i===curHole?'on':''} ${sc?'done':''}" data-h="${i}"><span class="hn">${i+1}</span><span class="hs">${sc?('· '+sc):('p'+h.par)}</span></button>`;
@@ -635,7 +635,7 @@ function updateLive(){
 function persistDraft(){draft.date=document.getElementById('r_date').value;draft.course=document.getElementById('r_course').value;
  draft.cr=document.getElementById('r_cr').value;draft.slope=document.getElementById('r_slope').value;save(dkey(),draft);}
 
-document.getElementById('holenav').addEventListener('click',e=>{const b=e.target.closest('button');if(b){curHole=+b.dataset.h;renderNav();renderHole();}});
+document.getElementById('addNav').addEventListener('click',e=>{const b=e.target.closest('button');if(b){curHole=+b.dataset.h;renderNav();renderHole();}});
 ['r_date','r_course','r_cr','r_slope'].forEach(id=>document.getElementById(id).addEventListener('input',persistDraft));
 
 document.getElementById('saveBtn').addEventListener('click',()=>{
@@ -1652,16 +1652,13 @@ function holeSGlive(h){var cs=confShots(h),tot=0,strokes=0;for(var i=0;i<cs.leng
 function renderHoleBar(hi){
  var h=R.holes[hi],hv=holeView(h),sg=holeSGlive(h),m=holeMistakes(hv);
  var flags=[m.p3?'3-putt':'',m.db?'double':'',m.bp5?'bogey P5':'',m.f150?'bogey ≤'+bogeyXyd()+'y':'',m.short?shortLabel():''].filter(Boolean).join(' · ');
- /* running round score, including the hole in progress */
- var tsc=0,tpar=0,thru=0;R.holes.forEach(function(x,xi){if(xi<R.hStart||xi>=R.hEnd)return;if(x.done){var t=holeSG(holeView(x));tsc+=t.strokes;tpar+=x.par;thru++;}else if(xi===hi){var c=confShots(x);if(c.length){tsc+=c.reduce(function(a,s){return a+1+(s.pen||0);},0);tpar+=x.par;thru++;}}});
- var tp=tsc-tpar,tpTxt=(tp>0?'+':'')+(tp===0?'E':tp);
  var hstr=sg.strokes,hdiff=hstr-h.par,hdt=hstr?(hdiff===0?'E':(hdiff>0?'+'+hdiff:hdiff)):'';
  document.getElementById('holebar').innerHTML=
    '<div class="hbL"><span class="hn">Hole '+(hi+1)+'</span>'+
    '<span class="parchip">Par '+h.par+'</span>'+
    '<span class="sichip" title="Stroke index / hole handicap">SI '+(h.hcp||'—')+'</span>'+
    (hstr?'<span class="holescore" title="Hole score">'+hstr+' <small>('+hdt+')</small></span>':'')+'</div>'+
-   '<div class="hbR"><span class="scorechip" title="Round score so far">'+(thru?('Score '+tsc+' ('+tpTxt+') · thru '+thru):'Score —')+'</span><span class="sgmini"><span class="ydchip">'+Y2U(h.yd)+' '+PROF.units+'</span> · <span class="'+(sg.tot<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg.tot)+'</span> · '+sg.strokes+' strk'+(flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':'')+'</span></div>';
+   '<div class="hbR"><span class="sgmini"><span class="ydchip">'+Y2U(h.yd)+' '+PROF.units+'</span> · <span class="'+(sg.tot<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg.tot)+'</span>'+(flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':'')+'</span></div>';
 }
 function renderShots(hi){
  var h=R.holes[hi],body=document.getElementById('lgBody'),html='';
