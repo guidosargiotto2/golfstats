@@ -1715,6 +1715,7 @@ function totals(){
  var ti=document.getElementById('lgTitle');if(ti)ti.textContent=(editRoundId?'Editing round':'Round in progress');
 }
 /* focus the cell for the next shot to enter */
+var entryBusy=false;
 function focusEntry(){setTimeout(function(){try{var on=document.querySelector('#lgBody tr.entry input.lc.on');var el=on||document.querySelector('#lgBody tr.entry input.lc[data-lie="fw"]')||document.querySelector('#lgBody tr.entry input.lc');if(el){el.focus({preventScroll:false});if(el.select)el.select();}}catch(e){}},0);}
 /* ← → move between category cells in the same row (once the caret is at the edge) */
 function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input.p').forEach(function(el){el.addEventListener('keydown',function(e){
@@ -1724,8 +1725,8 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input
        /* first Enter after navigating = drop the cursor in to edit the yards; second Enter = confirm */
        if(el.dataset.stage!=='editing'){el.dataset.stage='editing';var L=(el.value||'').length;try{el.setSelectionRange(L,L);}catch(_){}return;}
        var h=+el.dataset.entry,v=(el.value||'').trim();
-       if(v!==''){var lie=el.dataset.lie,raw=Math.max(1,parseInt(v,10)||1),dist=(lie==='putt')?raw:U2Y(raw);R.holes[h].shots.push({lie:lie,dist:dist,pen:0,conf:true});render();focusEntry();return;}
-       var pr=predictNext(h);if(pr&&pr.lie!==''&&pr.dist!==''){R.holes[h].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();focusEntry();}return;}
+       if(v!==''){var lie=el.dataset.lie,raw=Math.max(1,parseInt(v,10)||1),dist=(lie==='putt')?raw:U2Y(raw);entryBusy=true;R.holes[h].shots.push({lie:lie,dist:dist,pen:0,conf:true});render();focusEntry();setTimeout(function(){entryBusy=false;},0);return;}
+       var pr=predictNext(h);if(pr&&pr.lie!==''&&pr.dist!==''){entryBusy=true;R.holes[h].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();focusEntry();setTimeout(function(){entryBusy=false;},0);}return;}
      el.blur();return;}
    if(e.key==='Delete'){var trr=el.closest('tr');
      if(trr.classList.contains('entry')){e.preventDefault();finishHole(false);return;}
@@ -1771,7 +1772,7 @@ function wire(){
      else{var pr=predictNext(h);disp=(pr&&pr.dist!=='')?(lie==='putt'?pr.dist:Y2U(pr.dist)):'';}
      cells.forEach(function(c){if(c!==el)c.value='';});el.value=disp;el.dataset.stage='armed';if(el.select)el.select();});
    el.addEventListener('input',function(){el.dataset.stage='editing';});
-   el.addEventListener('change',function(){var h=+el.dataset.entry,lie=el.dataset.lie,v=el.value.trim();if(v==='')return;
+   el.addEventListener('change',function(){if(entryBusy)return;var h=+el.dataset.entry,lie=el.dataset.lie,v=el.value.trim();if(v==='')return;
      var raw=Math.max(1,parseInt(v,10)||1),dist=(lie==='putt')?raw:U2Y(raw);
      R.holes[h].shots.push({lie:lie,dist:dist,pen:0,conf:true});render();focusEntry();});
  });
