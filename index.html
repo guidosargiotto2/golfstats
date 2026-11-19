@@ -293,6 +293,11 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope td .lcx{color:var(--line);font-family:var(--cond);}
 /* ===== setup panel ===== */
 .lgscope .setup{max-width:560px;margin:10px auto 0;padding:0 4px;}
+.lgscope .resumecard{background:rgba(46,110,70,.1);border:1px solid var(--fairway);border-radius:14px;padding:16px 18px;margin:4px 0 8px;}
+.lgscope .resumecard .rcH{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--pine);}
+.lgscope .resumecard .rcM{font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:3px 0 12px;}
+.lgscope .resumecard .rcB{display:flex;gap:10px;flex-wrap:wrap;}
+.lgscope .resumecard .startbtn{flex:1;min-width:180px;}
 .lgscope .setupgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:end;}
 .lgscope .setupgrid label{display:flex;flex-direction:column;gap:6px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft);font-weight:700;}
 .lgscope .setupgrid label:first-child{grid-column:1 / -1;}
@@ -358,6 +363,8 @@ table.rt tbody tr:hover{background:var(--line-soft);}
    <div class="tot"><div class="sc" id="totScore">—</div><div class="sg" id="totSG">—</div></div></div>
 
  <div id="setupPanel" class="setup">
+   <div id="resumeCard" class="resumecard" style="display:none"></div>
+   <div id="newRoundForm">
    <div class="setupgrid">
      <label>Course<select id="selCourse"></select></label>
      <label>Tee<select id="selTee"></select></label>
@@ -369,6 +376,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
    <div class="teeline"><span class="est" id="teeEst"></span><button class="star" id="starBtn">★ default</button></div>
    <div class="setupacts"><button class="startbtn" id="startBtn">Start round →</button></div>
    <div class="hint">You enter one hole at a time. <b>Shot 1 is always your tee shot</b> (locked). Enter where each shot finished — type the distance to the hole under the lie it was played from. Shot prediction is a Profile setting. Prototype — saves in this browser only.</div>
+   </div>
  </div>
 
  <div id="playPanel" style="display:none">
@@ -1565,6 +1573,7 @@ let R=(function(){try{const r=JSON.parse(localStorage.getItem(RKEY));
   if(r&&r.holes&&r.tee&&r.phase&&Array.isArray(r.holes)&&r.holes.length===18){if(r.cur==null)r.cur=0;if(r.hStart==null){r.hStart=0;r.hEnd=18;r.holesMode='18';}r.holes.forEach(function(h){if(h.done==null)h.done=false;if(!Array.isArray(h.shots))h.shots=[];});return r;}}catch(e){}
   localStorage.removeItem(RKEY);return newRound(DEFT.course,DEFT.tee);})();
 function save(){localStorage.setItem(RKEY,JSON.stringify(R));}
+var lgEntered=false; /* false until the user explicitly continues/starts, so a saved round shows a resume screen first */
 function reseedPredicted(){/* wizard predicts shot-by-shot; no bulk pre-seed */}
 var editRoundId=null;
 function renderLogged(){
@@ -1597,10 +1606,10 @@ function predictNext(hi){
  if(prev.lie==='putt'){var d=prev.dist;if(d<=4) return {lie:'',dist:'',pen:0,conf:false};var leave=d<=20?2:(d<=40?3:4);return {lie:'putt',dist:leave,pen:0,conf:false};}
  /* first shot after the tee */
  if(prev.lie==='tee'){
-   if(h.par===3){ /* tee shot onto/near the green */
-     if(histBest) return {lie:histBest.lie,dist:histBest.dist,pen:0,conf:false};
-     var r3=Math.max(6,Math.round(h.yd*0.07));
-     return {lie:(r3<=18?'putt':'fw'),dist:(r3<=18?Math.min(45,r3*3):r3),pen:0,conf:false};
+   if(h.par===3){ /* after a par-3 tee shot you're almost always on/around the green → a putt */
+     if(histBest&&(histBest.lie==='putt'||histBest.dist<=30)) return {lie:histBest.lie,dist:histBest.dist,pen:0,conf:false};
+     var ft=Math.min(48,Math.max(8,Math.round(8+h.yd*0.14)));
+     return {lie:'putt',dist:ft,pen:0,conf:false};
    }
    /* par 4/5: assume you hit driver — remaining = hole length minus your average drive; history gives only the lie */
    var rem0=Math.max(20,h.yd-driveYd());
@@ -1630,10 +1639,10 @@ function startRound(){var sc=document.getElementById('selScore'),ch=document.get
  if(es)es.textContent='';if(ec)ec.textContent='';if(sc)sc.classList.remove('bad');if(ch)ch.classList.remove('bad');
  if(sv!==''&&(+sv<minSc||+sv>maxSc)){if(es)es.textContent='Enter '+minSc+'–'+maxSc+', or leave blank.';if(sc){sc.classList.add('bad');sc.focus();}return;}
  if(cv!==''&&(+cv<-10||+cv>54)){if(ec)ec.textContent='Enter −10 to 54, or leave blank.';if(ch){ch.classList.add('bad');ch.focus();}return;}
- R.score=sv;R.chcp=cv;R.phase='play';gotoHole(R.hStart);}
+ R.score=sv;R.chcp=cv;R.phase='play';lgEntered=true;gotoHole(R.hStart);}
 function render(){
  var setup=document.getElementById('setupPanel'),play=document.getElementById('playPanel');
- if(R.phase!=='play'){setup.style.display='';play.style.display='none';renderSetup();save();return;}
+ if(R.phase!=='play'||!lgEntered){setup.style.display='';play.style.display='none';renderSetup();save();return;}
  setup.style.display='none';play.style.display='';
  var hi=R.cur,h=R.holes[hi];
  if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];
@@ -1641,6 +1650,19 @@ function render(){
  wire();totals();renderSel();save();
 }
 function renderSetup(){
+ var inProg=(R.phase==='play');
+ var rc=document.getElementById('resumeCard'),nf=document.getElementById('newRoundForm');
+ if(inProg){
+   var done=R.holes.slice(R.hStart,R.hEnd).filter(function(h){return h.done;}).length,count=R.hEnd-R.hStart;
+   if(rc){rc.style.display='';rc.innerHTML='<div class="rcH">Round in progress</div><div class="rcM">'+(R.courseName||R.course)+' · '+R.tee+' · '+(R.date||'')+' — '+done+' / '+count+' holes logged</div><div class="rcB"><button class="startbtn" id="btnResume">Continue round →</button><button class="cancelbtn" id="btnResumeCancel" type="button">Cancel round</button></div>';}
+   if(nf)nf.style.display='none';
+   var ti0=document.getElementById('lgTitle');if(ti0)ti0.textContent='Round in progress';
+   var br=document.getElementById('btnResume');if(br)br.onclick=function(){lgEntered=true;gotoHole(R.cur);};
+   var bc=document.getElementById('btnResumeCancel');if(bc)bc.onclick=function(){if(!confirm('Cancel the round in progress? Everything entered will be discarded.'))return;editRoundId=null;localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);lgEntered=false;render();renderLogged();};
+   document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+R.tee;
+   renderSel();return;
+ }
+ if(rc)rc.style.display='none';if(nf)nf.style.display='';
  var ti=document.getElementById('lgTitle');if(ti)ti.textContent=editRoundId?'Edit round':'Start a round';
  var sc=document.getElementById('selScore');if(sc&&document.activeElement!==sc)sc.value=R.score||'';
  var ch=document.getElementById('selChcp');if(ch&&document.activeElement!==ch)ch.value=R.chcp||'';
@@ -1690,7 +1712,7 @@ function renderHoleActs(hi){
  var predOn=PROF.predict;
  el.innerHTML=(h.done?'<span class="donechip">✓ Hole complete — edit freely, changes save automatically</span>':(predOn?'<span class="predhint">Amber row = predicted next shot. Tap ✓ Accept if it\'s right, or type the real lie &amp; distance.</span>':'<span class="predhint">Enter each shot: type the distance under the lie it was played from.</span>'))+
    '<div class="actbtns">'+(h.done?'<button class="ghost" id="btnAdd">+ Add a shot</button>':((predOn?'<button class="accept" id="btnAccept">✓ Accept predicted</button>':'')+'<button class="finish" id="btnHoled">✓ Holed it</button><button class="ghost" id="btnAdd">+ Add a shot</button>'))+'</div>'+
-   '<div class="inshint">Tap the <b>+</b> on any row to add a shot right below it (use it on the last row to add one at the end).</div>';
+   '<div class="inshint">Tap <b>+</b> on any row to add a shot below it. Keyboard: <b>Enter</b> = next shot · <b>Esc</b> = holed it (finish hole) · <b>Del</b> = remove shot.</div>';
 }
 function renderHoleNav(hi){
  var act=R.holes.slice(R.hStart,R.hEnd),done=act.filter(function(h){return h.done;}).length,count=R.hEnd-R.hStart;
@@ -1703,8 +1725,8 @@ function totals(){
  var done=R.holes.slice(R.hStart,R.hEnd).filter(function(h){return h.done;});
  var count=R.hEnd-R.hStart;
  var sc=0,sg=0,par=0;done.forEach(function(h){var t=holeSG(holeView(h));sc+=t.strokes;sg+=t.tot;par+=h.par;});
- document.getElementById('totScore').textContent=done.length?sc:'—';
- document.getElementById('totSG').innerHTML=done.length?('<b class="toparbig">'+(sc-par>0?'+':'')+(sc-par===0?'E':(sc-par))+'</b> · thru '+done.length+' <span class="sgmini '+(sg<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg)+'</span>'):'—';
+ document.getElementById('totScore').textContent=done.length?((sc-par>0?'+':'')+(sc-par===0?'E':(sc-par))):'—';
+ document.getElementById('totSG').innerHTML=done.length?('thru '+done.length+' <span class="sgmini '+(sg<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg)+'</span>'):'—';
  var rem=count-done.length,w=document.getElementById('warn');
  if(rem>0){w.className='warn';w.textContent='⚠ '+rem+' hole'+(rem>1?'s':'')+' to finish before saving.';}
  else{var cross=(R.score!==''&&R.score!=null&&+R.score!==sc)?(' — ⚠ you entered score '+R.score+', but your shots add up to '+sc):'';w.className='warn ok';w.textContent='✓ All '+count+' holes done — ready to save.'+cross;}
@@ -1726,7 +1748,9 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input
        var h=+el.dataset.entry,v=(el.value||'').trim();
        if(v!==''){var lie=el.dataset.lie,raw=Math.max(1,parseInt(v,10)||1),dist=(lie==='putt')?raw:U2Y(raw);entryBusy=true;R.holes[h].shots.push({lie:lie,dist:dist,pen:0,conf:true});render();focusEntry();setTimeout(function(){entryBusy=false;},0);return;}
        var pr=predictNext(h);if(pr&&pr.lie!==''&&pr.dist!==''){entryBusy=true;R.holes[h].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();focusEntry();setTimeout(function(){entryBusy=false;},0);}return;}
-     el.blur();return;}
+     /* Enter on the tee / a confirmed shot → commit the edit and jump to the predicted next shot (value highlighted) */
+     el.blur();focusEntry();return;}
+   if(e.key==='Escape'){e.preventDefault();el.blur();finishHole(false);return;}
    if(e.key==='Delete'){var trr=el.closest('tr');
      if(trr.classList.contains('entry')){e.preventDefault();finishHole(false);return;}
      if(el.dataset.s!=null&&(el.dataset.stage!=='editing'||(el.value||'')==='')){var hh=+el.dataset.h,ss=+el.dataset.s;if(ss>0){e.preventDefault();R.holes[hh].shots.splice(ss,1);render();focusEntry();return;}}}
@@ -1810,7 +1834,7 @@ document.getElementById('lgSaveBtn').onclick=()=>{
  const hi=effHI();const m=roundMistakes();
  alert(`${replaced?'Round updated':'Saved & learned'}.\nScore ${t.strokes} (${t.strokes-t.par>=0?'+':''}${t.strokes-t.par})${nine?' · 9 holes (not added to index)':' · differential '+diff}\nSG ${fmt(t.tot)} — OTT ${fmt(t.ott)} · APP ${fmt(t.app)} · ATG ${fmt(t.atg)} · PUTT ${fmt(t.putt)}\nTiger's 5: ${m.total} — 3-putts ${m.p3} · doubles ${m.db} · bogey par-5 ${m.bp5} · 3+ from 150 ${m.f150} · ${shortLabel()} ${m.short}${(hi!=null&&!editRoundId)?'\nHandicap Index now ≈ '+hi+' ('+HIST.length+' rounds)':''}\n\n✓ ${replaced?'Updated in':'Added to'} your Statistics — ${cnt} logged round${cnt===1?'':'s'} in this browser.`);
  editRoundId=null;
- localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);render();renderLogged();
+ localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);lgEntered=false;render();renderLogged();
 };
 /* ---- course / tee selector ---- */
 function anyConfirmed(){return R.holes.some(h=>h.shots.some(s=>s.conf));}
@@ -1924,9 +1948,9 @@ function lgLoad(o){
  if(!o||!o.holes)return;
  var c=COURSES[o.course]||COURSES.CGC, t=(c.tees[o.tee]||c.tees[Object.keys(c.tees)[0]]);
  R={course:(COURSES[o.course]?o.course:R.course),tee:(c.tees[o.tee]?o.tee:R.tee),courseName:c.name,cr:t.cr,slope:t.slope,date:o.date||new Date().toISOString().slice(0,10),
-   score:o.score||'',chcp:o.chcp||'',phase:'play',cur:0,
+   score:o.score||'',chcp:o.chcp||'',phase:'play',cur:0,holesMode:(o.holes.length===9?'front':'18'),hStart:0,hEnd:o.holes.length,
    holes:o.holes.map(function(h,i){return {par:h.par,yd:h.yd||((h.shots&&h.shots[0])?h.shots[0].dist:0),hcp:(c.hcp?c.hcp[i]:0),done:true,shots:(h.shots||[]).map(function(s){return {lie:s.lie,dist:s.dist,pen:s.pen||0,conf:true};})};})};
- save();render();renderSel();
+ lgEntered=true;save();render();renderSel();
 }
 render();renderSel();window.LGR={card:function(){render();renderSel();},profile:renderProf,load:lgLoad};
 /* inject a Load/import panel into the Log tab (robust; never throws) */
