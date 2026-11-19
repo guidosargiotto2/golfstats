@@ -293,7 +293,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope td .lcx{color:var(--line);font-family:var(--cond);}
 /* ===== setup panel ===== */
 .lgscope .setup{max-width:560px;margin:10px auto 0;padding:0 4px;}
-.lgscope .setupgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.lgscope .setupgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:end;}
 .lgscope .setupgrid label{display:flex;flex-direction:column;gap:6px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft);font-weight:700;}
 .lgscope .setupgrid label:first-child{grid-column:1 / -1;}
 .lgscope .setupgrid .lbls{text-transform:none;letter-spacing:0;font-weight:600;color:var(--amber);font-size:10px;}
@@ -362,7 +362,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
      <label>Holes<select id="selHoles"><option value="18">18 holes</option><option value="front">Front 9 (1–9)</option><option value="back">Back 9 (10–18)</option></select></label>
      <label>Date<input type="date" id="selDate"></label>
      <label>Score <span class="lbls">your total — cross-check</span><input type="number" inputmode="numeric" id="selScore" min="59" max="200" placeholder="e.g. 76"></label>
-     <label>Course handicap <span class="lbls">for this round</span><input type="number" inputmode="numeric" id="selChcp" min="-10" max="54" placeholder="e.g. 2"></label>
+     <label>Playing HCP <span class="lbls">for this round</span><input type="number" inputmode="numeric" id="selChcp" min="-10" max="54" placeholder="e.g. 2"></label>
    </div>
    <div class="teeline"><span class="est" id="teeEst"></span><button class="star" id="starBtn">★ default</button></div>
    <div class="setupacts"><button class="startbtn" id="startBtn">Start round →</button></div>
@@ -1606,7 +1606,7 @@ function startRound(){var sc=document.getElementById('selScore'),ch=document.get
  var nine=(R.hEnd-R.hStart)===9,minSc=nine?27:59,maxSc=nine?110:200;
  var sv=sc?String(sc.value).trim():'',cv=ch?String(ch.value).trim():'';
  if(sv!==''&&(+sv<minSc||+sv>maxSc)){alert('Enter a realistic score ('+minSc+'–'+maxSc+'), or leave it blank.');sc.focus();return;}
- if(cv!==''&&(+cv<-10||+cv>54)){alert('Enter a valid course handicap (−10 to 54), or leave it blank.');ch.focus();return;}
+ if(cv!==''&&(+cv<-10||+cv>54)){alert('Enter a valid playing handicap (−10 to 54), or leave it blank.');ch.focus();return;}
  R.score=sv;R.chcp=cv;R.phase='play';gotoHole(R.hStart);}
 function render(){
  var setup=document.getElementById('setupPanel'),play=document.getElementById('playPanel');
