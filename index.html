@@ -325,6 +325,13 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .scBog{display:inline-block;min-width:22px;line-height:20px;border:1.5px solid var(--clay);}
 .lgscope .scDbl{display:inline-block;min-width:22px;line-height:20px;border:1.5px solid var(--clay);box-shadow:0 0 0 2px var(--paper),0 0 0 3.5px var(--clay);}
 .lgscope .scHint{font-family:var(--cond);font-size:12px;color:var(--ink-soft);margin:8px 2px;}
+.lgscope .sgcats2{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 2px;}
+.lgscope .sgcat{display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:8px 14px;min-width:78px;}
+.lgscope .sgcat .sgcatL{font-family:var(--cond);text-transform:uppercase;letter-spacing:.06em;font-size:9.5px;color:var(--ink-soft);}
+.lgscope .sgcat b{font-family:var(--serif);font-size:17px;font-weight:600;}
+.lgscope .scNotes{display:flex;flex-direction:column;gap:12px;margin:14px 0 4px;max-width:560px;}
+.lgscope .scNotes label{display:flex;flex-direction:column;gap:5px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft);font-weight:700;}
+.lgscope .scNotes textarea{font-family:var(--sans);font-size:14px;line-height:1.5;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--cream);color:var(--ink);resize:vertical;}
 .lgscope .scbtn{font-size:11px;padding:5px 10px;}
 .lgscope .resumecard{background:rgba(46,110,70,.1);border:1px solid var(--fairway);border-radius:14px;padding:16px 18px;margin:4px 0 8px;}
 .lgscope .resumecard .rcH{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--pine);}
@@ -1560,7 +1567,7 @@ function roundRecord(){
    fw:fw,fwAtt:fwAtt,holesPlayed:(R.hEnd!=null?R.hEnd:18)-(R.hStart!=null?R.hStart:0),gir:gir,putts:putts,pen:pen,dist:dist,
    p3:mi.p3,db:mi.db,bp5:mi.bp5,f150:mi.f150,fx:mi.short,mtot:mi.total,
    ott:r2(sg.ott),app:r2(sg.app),atg:r2(sg.atg),putt:r2(sg.putt),sgtot:r2(sg.tot),bir:bir,bog:bog,dbl:dbl,
-   courseCode:R.course,tee:R.tee,holes:JSON.parse(JSON.stringify(R.holes))};
+   courseCode:R.course,tee:R.tee,notes:R.notes||'',lesson:R.lesson||'',holes:JSON.parse(JSON.stringify(R.holes))};
 }
 function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage.getItem(PROFK))||{})}catch(e){return Object.assign({},PROF_DEF)}}
 let PROF=loadProf();
@@ -1629,7 +1636,7 @@ function predictHole(course,tee,i,par,yd){const p=PROFILE[pkey(course,tee,i)];
  return seedHole(par,yd);}
 function newRound(course,tee){const c=COURSES[course],t=c.tees[tee];
  return {course,tee,courseName:c.name,cr:t.cr,slope:t.slope,date:new Date().toISOString().slice(0,10),
-  score:'',chcp:'',phase:'setup',cur:0,holesMode:'18',hStart:0,hEnd:18,
+  score:'',chcp:'',notes:'',lesson:'',phase:'setup',cur:0,holesMode:'18',hStart:0,hEnd:18,
   holes:c.par.map((par,i)=>{const yd=stdYd(course,tee,i);return{par,yd,hcp:c.hcp[i],shots:[],done:false};})};}
 let DEFT=loadDefault();
 let R=(function(){try{const r=JSON.parse(localStorage.getItem(RKEY));
@@ -1645,7 +1652,7 @@ function renderLogged(){
  var arr=(window.getLoggedRounds?window.getLoggedRounds():[]);
  if(!arr.length){el.innerHTML='<div class="hisub" style="padding:6px 0">No rounds logged in this browser yet.</div>';return;}
  el.innerHTML=arr.slice().reverse().map(function(r){var id=r.id||'';return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><span style="flex:1;font-family:var(--cond);font-size:12.5px">'+(r.date||'?')+' · '+(r.course||'')+' · '+r.score+' ('+(r.stp>=0?'+':'')+r.stp+')'+(editRoundId&&editRoundId===id?' · editing…':'')+'</span><button class="pf_btn" data-edr="'+id+'" style="padding:5px 10px">Scorecard</button><button class="pf_btn" data-dlr="'+id+'" style="padding:5px 10px;background:var(--clay)">Delete</button></div>';}).join('');
- el.querySelectorAll('[data-edr]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-edr');var r=(window.getLoggedRounds()||[]).find(function(x){return (x.id||'')===id;});if(!r||!r.holes){alert('This round was logged before editing existed, so it has no shot detail to reopen. Re-log it (or Load it) to make it editable.');return;}editRoundId=id;lgLoad({course:r.courseCode||r.course,tee:r.tee,date:r.date,holes:r.holes});scMode=true;render();renderLogged();window.scrollTo(0,0);};});
+ el.querySelectorAll('[data-edr]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-edr');var r=(window.getLoggedRounds()||[]).find(function(x){return (x.id||'')===id;});if(!r||!r.holes){alert('This round was logged before editing existed, so it has no shot detail to reopen. Re-log it (or Load it) to make it editable.');return;}editRoundId=id;lgLoad({course:r.courseCode||r.course,tee:r.tee,date:r.date,notes:r.notes,lesson:r.lesson,holes:r.holes});scMode=true;render();renderLogged();window.scrollTo(0,0);};});
  el.querySelectorAll('[data-dlr]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-dlr');if(!confirm('Delete this logged round?'))return;var a2=(window.getLoggedRounds()||[]).filter(function(x){return (x.id||'')!==id;});if(window.saveLoggedRounds)window.saveLoggedRounds(a2);if(editRoundId===id)editRoundId=null;renderLogged();};});
 }
 const LIE_OPTS=[['tee','Tee'],['fw','Fairway'],['rough','Rough'],['sand','Sand'],['rec','Recovery'],['putt','Green (putt)']];
@@ -1767,11 +1774,23 @@ function renderScorecard(){
    var gtot=f.tot+bk.tot,gpar=f.par+bk.par,gtp=gtot-gpar,gsg=f.sgT+bk.sgT,gt5=f.t5T+bk.t5T;
    rowsHole+='<td class="scTotH scGrand">TOT</td>';rowsPar+='<td class="scTotH scGrand">'+gpar+'</td>';rowsSc+='<td class="scTotH scGrand">'+gtot+'</td>';rowsSt+='<td class="scTotH scGrand">'+(gtp>0?'+'+gtp:(gtp===0?'E':gtp))+'</td>';rowsSg+='<td class="scTotH scGrand">'+fmt(gsg)+'</td>';rowsT5+='<td class="scTotH scGrand">'+gt5+'</td>';
  } else {var s=seg(hs,he);addSeg(s,(hs===0?'OUT':'IN'));}
+ /* strokes gained by category over the active holes */
+ var cat={ott:0,app:0,atg:0,putt:0,tot:0};for(var k=hs;k<he;k++){var t=holeSG(holeView(R.holes[k]));cat.ott+=t.ott;cat.app+=t.app;cat.atg+=t.atg;cat.putt+=t.putt;cat.tot+=t.tot;}
+ var chip=function(l,v){return '<span class="sgcat"><span class="sgcatL">'+l+'</span><b class="'+(v<0?'sg-neg':'sg-pos')+'">'+fmt(v)+'</b></span>';};
+ var catRow='<div class="sgcats2">'+chip('Off tee',cat.ott)+chip('Approach',cat.app)+chip('Around grn',cat.atg)+chip('Putting',cat.putt)+chip('Total',cat.tot)+'</div>';
+ var esc=function(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');};
+ var notesBlk='<h3 style="font-family:var(--serif);font-weight:600;font-size:17px;color:var(--pine);margin:20px 0 4px">Round journal</h3>'+
+   '<div class="scNotes"><label>Notes<textarea id="scNotes" rows="2" placeholder="How it went, conditions, anything worth remembering…">'+esc(R.notes)+'</textarea></label>'+
+   '<label>What I learnt<textarea id="scLesson" rows="2" placeholder="One takeaway from this round…">'+esc(R.lesson)+'</textarea></label></div>';
  sv.innerHTML='<div class="scWrap"><table class="scTbl"><tbody>'+
    '<tr class="scRh">'+rowsHole+'</tr><tr class="scRp">'+rowsPar+'</tr><tr class="scRs">'+rowsSc+'</tr><tr class="scRst">'+rowsSt+'</tr><tr class="scRsg">'+rowsSg+'</tr><tr class="scRt5">'+rowsT5+'</tr></tbody></table></div>'+
+   catRow+
    '<div class="scHint">Tap any hole to edit it. <b>SG</b> = strokes gained per hole · <b>Tiger\'s 5</b>: 3P 3-putt · D double · P5 bogey par-5 · B bogey from short · S blow-out save.</div>'+
+   notesBlk+
    '<div class="scActs"><button class="ghost" id="btnCopySheet">⎘ Copy for sheet</button></div>';
  var cbs=document.getElementById('btnCopySheet');if(cbs)cbs.onclick=copyForSheet;
+ var nt=document.getElementById('scNotes');if(nt)nt.addEventListener('input',function(){R.notes=nt.value;save();});
+ var ls=document.getElementById('scLesson');if(ls)ls.addEventListener('input',function(){R.lesson=ls.value;save();});
  sv.querySelectorAll('[data-sc]').forEach(function(td){td.onclick=function(){scMode=false;gotoHole(+td.getAttribute('data-sc'));};});
 }
 function renderSetup(){
@@ -2076,7 +2095,7 @@ function lgLoad(o){
  if(!o||!o.holes)return;
  var c=COURSES[o.course]||COURSES.CGC, t=(c.tees[o.tee]||c.tees[Object.keys(c.tees)[0]]);
  R={course:(COURSES[o.course]?o.course:R.course),tee:(c.tees[o.tee]?o.tee:R.tee),courseName:c.name,cr:t.cr,slope:t.slope,date:o.date||new Date().toISOString().slice(0,10),
-   score:o.score||'',chcp:o.chcp||'',phase:'play',cur:0,holesMode:(o.holes.length===9?'front':'18'),hStart:0,hEnd:o.holes.length,
+   score:o.score||'',chcp:o.chcp||'',notes:o.notes||'',lesson:o.lesson||'',phase:'play',cur:0,holesMode:(o.holes.length===9?'front':'18'),hStart:0,hEnd:o.holes.length,
    holes:o.holes.map(function(h,i){return {par:h.par,yd:h.yd||((h.shots&&h.shots[0])?h.shots[0].dist:0),hcp:(c.hcp?c.hcp[i]:0),done:true,shots:(h.shots||[]).map(function(s){return {lie:s.lie,dist:s.dist,pen:s.pen||0,conf:true};})};})};
  lgEntered=true;save();render();renderSel();
 }
