@@ -1872,8 +1872,8 @@ function renderShots(hi){
 function renderHoleActs(hi){
  var h=R.holes[hi],el=document.getElementById('holeacts');
  var predOn=PROF.predict;
- el.innerHTML=(h.done?'':(predOn?'<span class="predhint">Amber row = predicted next shot. Tap ✓ Accept if it\'s right, or type the real lie &amp; distance.</span>':'<span class="predhint">Enter each shot: type the distance under the lie it was played from.</span>'))+
-   '<div class="actbtns">'+(h.done?'<button class="ghost" id="btnAdd">+ Add a shot</button>':((predOn?'<button class="accept" id="btnAccept">✓ Accept predicted</button>':'')+'<button class="finish" id="btnHoled">✓ Holed it</button><button class="ghost" id="btnAdd">+ Add a shot</button>'))+'</div>'+
+ el.innerHTML=(h.done?'':(predOn?'<span class="predhint">Amber row = predicted next shot. Press <b>Enter</b> to accept it, or type the real lie &amp; distance.</span>':'<span class="predhint">Enter each shot: type the distance under the lie it was played from.</span>'))+
+   '<div class="actbtns">'+(h.done?'<button class="ghost" id="btnAdd">+ Add a shot</button>':'<button class="finish" id="btnHoled">✓ Holed it</button><button class="ghost" id="btnAdd">+ Add a shot</button>')+'</div>'+
    '<div class="inshint">Tap <b>+</b> on any row to add a shot below it. Keyboard: <b>Enter</b> = next shot · <b>Esc</b> = holed it (finish hole) · <b>Del</b> = remove shot.</div>';
 }
 function renderHoleNav(hi){
@@ -1891,8 +1891,8 @@ function totals(){
  document.getElementById('totScore').textContent=done.length?((sc-par>0?'+':'')+(sc-par===0?'E':(sc-par))):'—';
  document.getElementById('totSG').innerHTML=done.length?('thru '+done.length+' <span class="sgmini '+(sg<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg)+'</span>'):'—';
  var rem=count-done.length,w=document.getElementById('warn');
- if(rem>0){w.className='warn';w.textContent='⚠ '+rem+' hole'+(rem>1?'s':'')+' to finish before saving.';}
- else{var cross=(R.score!==''&&R.score!=null&&+R.score!==sc)?(' — ⚠ you entered score '+R.score+', but your shots add up to '+sc):'';w.className='warn ok';w.textContent='✓ All '+count+' holes done — ready to save.'+cross;}
+ var cross=(rem===0&&R.score!==''&&R.score!=null&&+R.score!==sc)?('⚠ you entered score '+R.score+', but your shots add up to '+sc):'';
+ if(cross){w.className='warn';w.textContent=cross;w.style.display='';}else{w.textContent='';w.style.display='none';}
  var sv=document.getElementById('lgSaveBtn');sv.disabled=rem>0;sv.textContent=rem>0?(rem+' to go'):'Save round';
  document.getElementById('snote').textContent=(R.courseName||R.course)+' · '+R.tee+' · '+R.date;
  document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+R.tee;
