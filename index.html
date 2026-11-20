@@ -295,6 +295,8 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope tr.shot.pred input.lc.on{background:rgba(201,154,30,.1);border-color:rgba(201,154,30,.4);color:var(--amber);}
 .lgscope tr.shot.conf input.lc.on{background:var(--paper);color:var(--ink);}
 .lgscope input.lc:focus{outline:2px solid var(--fairway);outline-offset:-2px;}
+.lgscope tr.teerow td{background:var(--cream);}
+.lgscope input.lc[data-ydtee]{background:var(--cream);border-color:var(--line);color:var(--pine);font-family:var(--sans);font-weight:600;display:block;width:auto;min-width:72px;max-width:110px;margin:0 auto;padding:6px 10px;}
 .lgscope tr.shot.entry input.lc.on{background:rgba(201,154,30,.12);border-color:rgba(201,154,30,.5);color:var(--amber);font-weight:700;}
 .lgscope tr.shot.entry{background:rgba(201,154,30,.05);}
 .lgscope td .lcx{color:var(--line);font-family:var(--cond);}
@@ -1919,7 +1921,7 @@ function renderShots(hi){
      if(locked)return '<td class="liec">'+(lc==='tee'?('<input class="lc on" type="text" inputmode="numeric" data-ydtee="'+hi+'" value="'+shownDist+'" title="Tee shot = hole length — editable for this round">'):'<span class="lcx">·</span>')+'</td>';
      return '<td class="liec"><input class="lc'+(on?' on':'')+'" type="text" inputmode="numeric" data-h="'+hi+'" data-s="'+si+'" data-lie="'+lc+'" value="'+(on?shownDist:'')+'" placeholder="·"></td>';
    }).join('');
-   html+='<tr class="shot conf"><td class="sidx">'+(si+1)+'</td>'+cells+
+   html+='<tr class="shot conf'+(locked?' teerow':'')+'"><td class="sidx">'+(si+1)+'</td>'+cells+
      '<td><input class="p" type="number" inputmode="numeric" min="0" data-h="'+hi+'" data-s="'+si+'" value="'+(s.pen||'')+'" placeholder="0"></td>'+
      '<td class="sgc '+(sgv==null?'':(sgv<0?'sg-neg':'sg-pos'))+'">'+(sgv==null?'·':fmt(sgv))+'</td>'+
      '<td class="rm"><button class="insbtn" data-ins="'+hi+':'+si+'" title="insert a shot below this one">+</button>'+(locked?'':'<button data-del="'+hi+':'+si+'" title="delete">×</button>')+'</td></tr>';
