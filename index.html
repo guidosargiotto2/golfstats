@@ -2087,14 +2087,12 @@ function renderProf(){
  const courseOpts=Object.keys(COURSES).map(k=>`<option value="${k}" ${k===PROF.homeCourse?'selected':''}>${COURSES[k].name}</option>`).join('');
  const tkeys=Object.keys((COURSES[PROF.homeCourse]||COURSES.CGC).tees);
  const teeOpts=tkeys.map(k=>`<option value="${k}" ${k===PROF.defaultTee?'selected':''}>${k}</option>`).join('');
- const clubs=['Driver','3-wood','5-wood','Hybrid','2-iron','3-iron','4-iron','Other'];
  document.getElementById('pform').innerHTML=`
   <label>Name<input id="pf_name" value="${PROF.name||''}" placeholder="Guido Sargiotto"></label>
   <label>Nickname<input id="pf_nick" value="${PROF.nick||''}" placeholder="Guido"></label>
   <label>Units<select id="pf_units"><option value="yd" ${PROF.units==='yd'?'selected':''}>Yards</option><option value="m" ${PROF.units==='m'?'selected':''}>Meters</option></select></label>
   <label>Home course<select id="pf_course">${courseOpts}</select></label>
   <label>Default tee<select id="pf_tee">${teeOpts}</select></label>
-  <label>Default tee club<select id="pf_club">${clubs.map(c=>`<option ${PROF.teeClub===c?'selected':''}>${c}</option>`).join('')}</select></label>
   <label>Average drive (yards)<input id="pf_drive" type="number" min="100" max="400" step="5" value="${driveYd()}"></label>
   <div class="hiblock">
     <div class="hirow"><span>Tiger's 5</span></div>
@@ -2148,7 +2146,6 @@ function renderProf(){
  document.getElementById('pf_units').addEventListener('change',e=>{PROF.units=e.target.value;saveProf();render();renderProf();});
  document.getElementById('pf_course').addEventListener('change',e=>{PROF.homeCourse=e.target.value;PROF.defaultTee=Object.keys(COURSES[PROF.homeCourse].tees)[0];saveProf();renderProf();});
  document.getElementById('pf_tee').addEventListener('change',e=>{PROF.defaultTee=e.target.value;saveProf();});
- document.getElementById('pf_club').addEventListener('change',e=>{PROF.teeClub=e.target.value;saveProf();});
  document.getElementById('pf_drive').addEventListener('change',e=>{PROF.driveYd=Math.min(400,Math.max(100,parseInt(e.target.value||'250',10)||250));saveProf();reseedPredicted();render();});
  document.getElementById('pf_t5mode').addEventListener('change',e=>{PROF.t5mode=e.target.value;saveProf();});
  document.getElementById('pf_t5x').addEventListener('change',e=>{PROF.t5x=Math.min(50,Math.max(10,parseInt(e.target.value||'30',10)||30));saveProf();renderProf();});
