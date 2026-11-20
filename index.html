@@ -402,6 +402,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .itype.t-bug{background:rgba(194,80,46,.15);color:var(--clay);}
 .lgscope .itype.t-opportunity{background:rgba(31,122,77,.18);color:var(--fairway);}
 .lgscope .itype.t-improvement{background:rgba(201,154,30,.2);color:#7a5e12;}
+.lgscope .itype.t-course{background:rgba(46,110,70,.14);color:var(--pine);}
 .lgscope .idea .ihead{font-family:var(--serif);font-size:15px;color:var(--pine);font-weight:600;margin:0 0 4px;}
 .lgscope .idea .iaction{font-size:13px;color:var(--ink-soft);margin-top:6px;}
 .lgscope .idea .iaction b{color:var(--pine);font-family:var(--cond);text-transform:uppercase;font-size:10px;letter-spacing:.04em;}
@@ -495,16 +496,32 @@ table.rt tbody tr:hover{background:var(--line-soft);}
     <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 2px">Ideas &amp; feature requests</h2>
     <p style="font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:0 0 14px">Got an idea to make this better? Drop it here.</p>
     <div class="ideabox">
-      <label class="ifl">Improvement<input id="ideaTitle" type="text" placeholder="Short title, e.g. Add putting break capture"></label>
       <label class="ifl">Type
         <select id="ideaType">
           <option value="bug">Bug</option>
           <option value="opportunity">Opportunity</option>
           <option value="improvement">Improvement</option>
+          <option value="course">Course request</option>
         </select>
       </label>
-      <label class="ifl">Description<textarea id="ideaText" rows="3" placeholder="What's happening / what you'd like…"></textarea></label>
-      <label class="ifl">Suggested action<textarea id="ideaAction" rows="2" placeholder="What should we do about it?"></textarea></label>
+      <div id="ideaCourseWrap" style="display:none;flex-direction:column;gap:12px">
+        <label class="ifl">Country
+          <select id="ideaCountry">
+            <option value="Argentina">Argentina</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+        <label class="ifl" id="ideaCourseARwrap">Course (type to search)
+          <input id="ideaCourseAR" list="aagCourses" placeholder="Start typing a club name\u2026" autocomplete="off">
+          <datalist id="aagCourses"></datalist>
+        </label>
+        <label class="ifl" id="ideaCourseOtherWrap" style="display:none">Club &amp; country
+          <input id="ideaCourseOther" type="text" placeholder="e.g. Pinehurst No.2, USA">
+        </label>
+      </div>
+      <label class="ifl" id="ideaTitleWrap">Improvement<input id="ideaTitle" type="text" placeholder="Short title, e.g. Add putting break capture"></label>
+      <label class="ifl">Description<textarea id="ideaText" rows="3" placeholder="What's happening / what you'd like\u2026"></textarea></label>
+      <label class="ifl" id="ideaActionWrap">Suggested action<textarea id="ideaAction" rows="2" placeholder="What should we do about it?"></textarea></label>
       <button class="pf_btn" id="ideaSubmit" style="align-self:flex-start">Submit idea</button>
     </div>
     <div id="ideaList" style="margin-top:18px"></div>
@@ -2251,7 +2268,8 @@ try{(function(){
  function user(){return localStorage.getItem('app-user')||'\u2014';}
  function isAdmin(){return user()==='Guido';}
  var STATUS=[['new','New'],['progress','In progress'],['done','Done'],['rejected','Rejected']];
- var TYPE={bug:'Bug',opportunity:'Opportunity',improvement:'Improvement'};
+ var TYPE={bug:'Bug',opportunity:'Opportunity',improvement:'Improvement',course:'Course request'};
+ var AAG_COURSES=["ABRIL CLUB DE CAMPO","AERO CLUB FORTIN LOBOS","AERO CLUB LAS VARILLAS","AERO GOLF CLUB DE CORONEL SUAREZ","ALTA GRACIA GOLF CLUB","ALTO VERDE GOLF CLUB","ALTOS DE BELGRANO CABAÑAS & GOLF","ARANJUEZ COUNTRY CLUB","ARANZAZU CLUB DE CAMPO","AREA 60 GOLF CLUB","ARECO GOLF S.A.","ARELAUQUEN GOLF & COUNTRY CLUB","ARROYITO COUNTRY CLUB","ASOCIACION CIVIL G. C. BCO. PROVINCIA","ASOCIACION CIVIL HURLINGHAM CLUB","BARRANCAS COUNTRY GOLF RESORT","BELL VILLE GOLF CLUB","BOCA RATON COUNTRY LIFE S.A.","BOLIVAR GOLF CLUB","BOULOGNE GOLF CLUB","BRAGADO GOLF CLUB","BUENOS AIRES GOLF CLUB","C. A. C. MERCEDES GOLF CLUB","CAMELIAS GOLF","CAMPO CHICO COUNTRY CLUB","CAMPO DE GOLF LA ORQUIDEA","CAMPO DE GOLF LOS ALAMOS","CAMPO GRANDE CLUB DE CAMPO","CAMPO TIMBO CLUB DE CAMPO & GOLF","CAÑADA ROSQUIN GOLF CLUB","CAÑUELAS COUNTRY CLUB","CAÑUELAS GOLF","CARILO GOLF CLUB","CARMEL COUNTRY CLUB","CASILDA GOLF CLUB","CATAMARCA GOLF CLUB","CENTRO DEMOCRATICO ESPAÑOL","CHACABUCO GOLF CLUB","CHACO GOLF CLUB","CHACRAS DEL PARANA CLUB DE CAMPO","CHACRAS LA PRIMAVERA GOLF","CHAMPAQUI GOLF","CHAPELCO GOLF CLUB","CHARATA GOLF  CLUB","CIRCULO DE LA FUERZA AEREA","CIRCULO POLICIA FEDERAL","CISSAB","CLUB A. B. Y M. ARGENTINO","CLUB A. B. Y M. SAN MARTIN","CLUB A. TI. PE. CA. S.","CLUB A. Y B. CENTRAL ARGENTINO","CLUB AMANCAY","CLUB AT. BCO. PROVINCIA DE BS. AS.","CLUB AT. ESTUDIANTES DE LA PLATA","CLUB AT. ESTUDIANTES DE OLAVARRIA","CLUB ATLETICO 9 DE JULIO","CLUB ATLETICO ALVEAR","CLUB ATLETICO DE SAN ISIDRO","CLUB ATLETICO ESTUDIANTES DE PARANA","CLUB ATLETICO LOMAS","CLUB ATLETICO SAN JORGE","CLUB ATLETICO TREBOLENSE","CLUB ATLETICO UNION","CLUB C. DE G. LAS PRADERAS DE LUJAN","CLUB CERRO PAMPA","CLUB CIUDAD DE BUENOS AIRES","CLUB DE CAMPO ARMENIA","CLUB DE CAMPO EL MORO","CLUB DE CAMPO EL PASO","CLUB DE CAMPO GRAND BELL","CLUB DE CAMPO HARAS DEL SUR","CLUB DE CAMPO LA MARTONA","CLUB DE CAMPO LA TRADICION","CLUB DE CAMPO LAS PERDICES","CLUB DE CAMPO LIBERTADOR SAN MARTIN","CLUB DE CAMPO LOS BRETES","CLUB DE CAMPO LOS HORNEROS","CLUB DE CAMPO LOS PINGÜINOS","CLUB DE CAMPO MENDOZA","CLUB DE CAMPO SANTANA","CLUB DE CAMPO ST.THOMAS","CLUB DE CAMPO VALLE ESCONDICO","CLUB DE GOLF PALIHUE","CLUB DE PELOTA DE CNEL. PRINGLES","CLUB EL REFUGIO DEL GOLFISTA","CLUB FERROCARRIL MITRE D. S. Y C.","CLUB G. LA COMARCA DEL RIO NEGRO","CLUB HIPICO Y DE GOLF CITY BELL","CLUB MAR DEL PLATA S.A.","CLUB MUN. DE GOLF FORTIN TORDILLO","CLUB NAUTICO HACOAJ","CLUB NAUTICO SAN ISIDRO","CLUB NEWMAN","CLUB PRIVADO EL OMBU","CLUB PRIVADO LOMA VERDE","CLUB S. Y C. DE PATO GRAL. BALCARCE","CLUB SIRIO LIBANES","CLUB SOC. Y DEP. GRAL. MITRE (PEREZ)","CLUB SOCIAL Y ATLETICO LA PAMPA","CLUB UNIVERSITARIO (CONC. URUGUAY)","CLUB UNIVERSITARIO BUENOS AIRES","CLUB VELOCIDAD","COMAHUE GOLF CLUB","CONCORDIA GOLF CLUB","CONSORCIO COUNTRY MI REFUGIO","CORDOBA GOLF CLUB","CORONA GOLF CLUB","CORONEL MOLDES GOLF CLUB","CORONEL SUAREZ POLO CLUB","COSTA ESMERALDA GOLF CLUB","COUNTRY  Y GOLF LAS YUNGAS","COUNTRY CLUB EL BOSQUE","COUNTRY CLUB EL PATO","COUNTRY GOLF CARLOS PAZ","COUNTRY GOLF ROSARIO","CUMELEN COUNTRY CLUB","EL CANTON GOLF","EL CEIBO GOLF","El NACIONAL CLUB DE CAMPO","EL PARAISO COUNTRY CLUB","EL POTRERILLO DE LARRETA C. CLUB","EL RINCON CLUB DE CAMPO","EL SIAMBON COUNTRY CLUB","EL SOSIEGO COUNTRY CLUB","EL TERRON GOLF CLUB","EL VALLE DE TANDIL GOLF CLUB","EL VENADO COUNTRY CLUB","EL VENADO COUNTRY CLUB II","ESPERANZA GOLF CLUB","ESTANCIA BENQUERENCIA FARM CLUB","ESTANCIA LA PAZ COUNTRY CLUB","ESTANCIA VILLA MARIA GOLF CLUB","ESTANCIAS DE CAFAYATE","ESTANCIAS GOLF CLUB","ESTANCIAS LA RINCONADA CLUB DE CAMPO","EVERLINKS CLUB DE GOLF","EVERTON CLUB MOLDES GOLF","FINCAS DE SAN VICENTE CLUB DE CAMPO S. A.","FORMOSA CARANDAY GOLF CLUB","FORMOSA GOLF CLUB","GOLF AERO CLUB VILLAGUAY","GOLF CHASCOMUS COUNTRY CLUB","GOLF CLUB ANDINO","GOLF CLUB ARGENTINO","GOLF CLUB AZUL","GOLF CLUB CARHUE","GOLF CLUB COLON","GOLF CLUB CORRIENTES","GOLF CLUB DOLORES","GOLF CLUB GENERAL ROCA","GOLF CLUB GRAL. SAN MARTIN","GOLF CLUB JOSE JURADO","GOLF CLUB LAS GRUTAS","GOLF CLUB MERCEDES","GOLF CLUB MONTE HERMOSO","GOLF CLUB PEHUAJO","GOLF CLUB PUERTO BELGRANO","GOLF CLUB RIO GRANDE","GOLF CLUB RIO TERCERO","GOLF CLUB SAN LUIS","GOLF CLUB SIERRA DE LA VENTANA","GOLF CLUB SOCIAL LA PAZ","GOLF CLUB TAPALQUE","GOLF CLUB USHUAIA","GOLF CLUB YACANTO","GOLF SAN SEBASTIAN","GOLFER'S COUNTRY CLUB","GOOD YEAR GOLF CLUB","GOYA GOLF CLUB","GUALEGUAYCHU COUNTRY CLUB","HANDICAP EMPLEADOS","HARAS DEL SUR II C. CAMPO","HARAS DEL SUR III CLUB DE CAMPO","HARAS SANTA MARIA","HIGHLAND PARK COUNTRY CLUB","HINDU CLUB","HOTEL QUORUM GOLF & SPA","INDIO CUA COUNTRY CLUB","ITUZAINGO GOLF CLUB","JOCKEY CLUB ARGENTINO","JOCKEY CLUB DE CORDOBA","JOCKEY CLUB DE GALVEZ","JOCKEY CLUB DE RAFAELA","JOCKEY CLUB DE ROSARIO","JOCKEY CLUB DE SALTA","JOCKEY CLUB DE SAN FRANCISCO","JOCKEY CLUB DE SANTA FE","JOCKEY CLUB DE TUCUMAN","JOCKEY CLUB DE VENADO TUERTO","JOCKEY CLUB MORTEROS","JOCKEY CLUB SANTA ROSA","JUNIN GOLF CUB","KENTUCKY CLUB DE GOLF","LA CAROLINA GOLF &  COUNTRY CLUB","LA CASCADA CLUB RESIDENCIAL","LA COLINA GOLF CLUB","LA CUMBRE GOLF CLUB","LA ESPERANZA GOLF CLUB","LA LOMA GOLF CLUB","LA LUCILA POLO CLUB","LA MADRID GOLF CLUB","LA MELINCA GOLF","LA MERCED GOLF COUNTRY CLUB","LA POSTA GOLF CLUB","LA PROVIDENCIA RESORT","LA RESERVA CARDALES RESORT COUNTRY CLUB","LA RIOJA GOLF CLUB","LA VACHERIE COUNTRY GOLF","LAPRIDA GOLF CLUB","LARENA COUNTRY CLUB","LAS BARDAS CAMPO DE GOLF","LAS CAÑUELAS CLUB DE CAMPO","LAS COLINAS GOLF","LAS DELICIAS S.A.","LAS LAJAS COUNTRY CLUB","LAS MULITAS GOLF CLUB","LINCOLN GOLF CLUB","LINKS PINAMAR S.A.","LLAO LLAO GOLF CLUB","LOMAS DE LA CAROLINA","LOS CALDENES CLUB DE CAMPO","LOS CANALES DE PLOTIER","LOS CARDALES COUNTRY CLUB","LOS EUCALIPTUS CAMPO DE GOLF","LOS LAGARTOS COUNTRY CLUB","LOS MOLINOS COUNTRY CLUB","LOS QUEBRACHOS GOLF","LOS TIMBOES CAMPO DE GOLF","MAPUCHE COUNTRY CLUB","MAR DEL PLATA GOLF CLUB","MARAYUI COUNTRY CLUB","MARINAS GOLF","MARTINDALE COUNTRY CLUB","MASCHWITZ CLUB","MAYLING CLUB DE CAMPO","MEDAL COUNTRY CLUB PILAR","MEDIA LUNA POLO CLUB","MIRAFLORES COUNTRY CLUB","MIRALAGOS C. CAMPO","MIRAMAR LINKS","MONASTERIO GOLF CLUB","NAMUNCURA POLO CLUB","NAUTICO ESCOBAR COUNTRY CLUB","NAVARRO GOLF CLUB","NECOCHEA GOLF CLUB","NEVADO GOLF CLUB","NORDELTA GOLF CLUB","NORTH BEACH LINKS","OCARAGUA GOLF CLUB","OLIVOS GOLF CLUB","ORG. HEBREA ARGENTINA (MACABI)","PACHECO GOLF CLUB","PAGO CHICO COUNTRY CLUB","PALPALA GOLF TENIS CLUB","PIHUE GOLF","PILAR DEL LAGO","PILAR GOLF CLUB","PILARA GOLF","POSADA DEL SOL C.GOLF & RESORT","PUAN GOLF","PUEBLO NATIVO RESORT, GOLF, SPA","PUERTO MADRYN GOLF CLUB","PUERTO MINERAL GOLF","QUINTA MADARIAGA S.CULTURAL Y DEP.*","RANELAGH GOLF CLUB","RIO CUARTO GOLF CLUB","RIO GALLEGOS GOLF CLUB","RIO HONDO GOLF CLUB","ROCA GOLF LA ALMONA","ROSARIO DE LA FRONTERA GOLF CLUB","ROSARIO GOLF CLUB","SALADILLO GOLF CLUB","SALTA POLO CLUB","SAN ANDRES GOLF CLUB","SAN DIEGO COUNTRY CLUB","SAN ELISEO GOLF & COUNTRY CLUB","SAN ESTEBAN COUNTRY S. A.","SAN GERONIMO DEL REY GOLF (CIRC.F.AEREA)","SAN ISIDRO GOLF CLUB","SAN JORGE GOLF CLUB","SAN MARTIN DE LOS ANDES GOLF CLUB","SAN MIGUEL DE GHISO COUNTRY CLUB","SAN MIGUEL GOLF HOTEL","SAN NICOLAS GOLF CLUB","SAN PABLO COUNTRY LIFE & GOLF","SAN PATRICIO GOLF","SAN PEDRO GOLF CLUB","SANTA ELENA GOLF CLUB","SANTA LUCIA GOLF CLUB","SANTA MARGARITA GOLF CLUB","SANTA TERESITA GOLF CLUB","SANTIAGO DEL ESTERO GOLF CLUB","SIERRA DE LOS PADRES GOLF CLUB","SMITHFIELD GOLF CLUB","SOCIEDAD HEBRAICA ARGENTINA","SPORTING CLUB","ST. THOMAS SUR COUNTRY CLUB","TACURU SOCIAL CLUB","TAMARISCOS GOLF","TANDIL GOLF CLUB","TERMAS VILLA ELISA","TORTUGAS COUNTRY CLUB","TRENQUE LAUQUEN POLO CLUB","TRES ARROYOS GOLF CLUB","TRISQUELIA GOLF CLUB","UPCN GOLF","VALLE DEL GOLF","VENADO TUERTO POLO & ATHLETIC CLUB","VICTORIA GOLF COUNTRY CLUB","VILLA GESELL GOLF CLUB","VILLA MARIA GOLF CLUB","VILLA MERCEDES GOLF CLUB","VILLAGE GOLF AND TENNIS CLUB","VIÑAS DEL GOLF","ZEN GOLF  SPA"];
  function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
  function render(){
    var el=document.getElementById('ideaList');if(!el)return;
@@ -2265,7 +2283,8 @@ try{(function(){
      var ctrl=admin?('<select data-ist="'+it.id+'">'+STATUS.map(function(s){return '<option value="'+s[0]+'"'+(s[0]===it.status?' selected':'')+'>'+s[1]+'</option>';}).join('')+'</select><button class="pf_btn" data-idel="'+it.id+'" style="background:var(--clay);padding:4px 9px">\u00d7</button>')
        :('<span class="ibadge i-'+it.status+'">'+lbl+'</span>');
      var action=it.action?('<div class="iaction"><b>Suggested action</b><br>'+esc(it.action)+'</div>'):'';
-     var title=it.title?('<div class="ihead">'+esc(it.title)+'</div>'):'';
+     var hcap=it.type==='course'?(esc(it.title)+(it.country?(' \u00b7 '+esc(it.country)):'')):esc(it.title);
+     var title=it.title?('<div class="ihead">'+hcap+'</div>'):'';
      return '<div class="idea"><div class="itop"><span class="iby"><span class="itype t-'+ty+'">'+(TYPE[ty]||ty)+'</span>'+esc(it.by)+' \u00b7 '+(it.date||'')+'</span><span class="iact">'+ctrl+'</span></div>'+title+'<div class="itext">'+esc(it.text)+'</div>'+action+'</div>';
    }).join('');
    if(admin){
@@ -2276,15 +2295,44 @@ try{(function(){
  function submit(){
    var ti=document.getElementById('ideaTitle'),ty=document.getElementById('ideaType'),ta=document.getElementById('ideaText'),ac=document.getElementById('ideaAction');
    if(!ta)return;
-   var title=(ti&&ti.value||'').trim(),text=(ta.value||'').trim(),action=(ac&&ac.value||'').trim();
-   if(!title&&!text){(ti||ta).focus();return;}
+   var type=(ty&&ty.value)||'improvement',text=(ta.value||'').trim(),action=(ac&&ac.value||'').trim();
+   var title=(ti&&ti.value||'').trim(),country='';
+   if(type==='course'){
+     var cc=document.getElementById('ideaCountry'),car=document.getElementById('ideaCourseAR'),cot=document.getElementById('ideaCourseOther');
+     country=(cc&&cc.value)||'Argentina';
+     var cname=(country==='Argentina'?(car&&car.value||''):(cot&&cot.value||'')).trim();
+     if(!cname){(country==='Argentina'?car:cot).focus();return;}
+     title=cname;action='';
+   } else if(!title&&!text){(ti||ta).focus();return;}
    var a=load();
-   a.push({id:'i'+Date.now(),title:title,type:(ty&&ty.value)||'improvement',text:text,action:action,by:user(),date:new Date().toISOString().slice(0,10),ts:Date.now(),status:'new'});
+   a.push({id:'i'+Date.now(),title:title,type:type,country:country,text:text,action:action,by:user(),date:new Date().toISOString().slice(0,10),ts:Date.now(),status:'new'});
    save(a);
-   if(ti)ti.value='';ta.value='';if(ac)ac.value='';if(ty)ty.value='bug';
+   if(ti)ti.value='';ta.value='';if(ac)ac.value='';
+   var car2=document.getElementById('ideaCourseAR'),cot2=document.getElementById('ideaCourseOther');if(car2)car2.value='';if(cot2)cot2.value='';
+   if(ty)ty.value='bug';toggleType();
    render();
  }
+ function toggleType(){
+   var ty=document.getElementById('ideaType');if(!ty)return;var isC=ty.value==='course';
+   var cw=document.getElementById('ideaCourseWrap'),tw=document.getElementById('ideaTitleWrap'),aw=document.getElementById('ideaActionWrap');
+   if(cw)cw.style.display=isC?'flex':'none';
+   if(tw)tw.style.display=isC?'none':'flex';
+   if(aw)aw.style.display=isC?'none':'flex';
+ }
+ function toggleCountry(){
+   var cc=document.getElementById('ideaCountry');if(!cc)return;var ar=cc.value==='Argentina';
+   var arw=document.getElementById('ideaCourseARwrap'),ow=document.getElementById('ideaCourseOtherWrap');
+   if(arw)arw.style.display=ar?'flex':'none';
+   if(ow)ow.style.display=ar?'none':'flex';
+ }
+ function fillCourses(){
+   var dl=document.getElementById('aagCourses');if(!dl||dl.childElementCount)return;
+   dl.innerHTML=AAG_COURSES.map(function(n){return '<option value="'+esc(n)+'">';}).join('');
+ }
  var sb=document.getElementById('ideaSubmit');if(sb)sb.onclick=submit;
+ var tySel=document.getElementById('ideaType');if(tySel)tySel.onchange=toggleType;
+ var ccSel=document.getElementById('ideaCountry');if(ccSel)ccSel.onchange=toggleCountry;
+ fillCourses();toggleType();toggleCountry();
  window.IDEAS={render:render};
 })();
 </script>
