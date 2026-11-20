@@ -1773,7 +1773,7 @@ function predictNext(hi){
  var lie=histBest?histBest.lie:'fw'; if(lie==='putt'||lie==='tee')lie='fw';
  return {lie:lie,dist:rem,pen:0,conf:false};
 }
-function gotoHole(i){R.cur=Math.max(R.hStart,Math.min(R.hEnd-1,i));var h=R.holes[R.cur];if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];render();focusTee();}
+function gotoHole(i){R.cur=Math.max(R.hStart,Math.min(R.hEnd-1,i));var h=R.holes[R.cur];if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];teeArmed=confShots(h).length>1;render();focusTee();}
 function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert('Enter at least the tee shot before finishing the hole.');return;}h.shots=confShots(h);h.done=true;
  if(R.holes.slice(R.hStart,R.hEnd).every(function(x){return x.done;})){scMode=true;render();return;}
  if(adv&&R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
@@ -1925,7 +1925,7 @@ function renderShots(hi){
      '<td class="rm"><button class="insbtn" data-ins="'+hi+':'+si+'" title="insert a shot below this one">+</button>'+(locked?'':'<button data-del="'+hi+':'+si+'" title="delete">×</button>')+'</td></tr>';
  });
  /* add-a-shot row only while the hole is unfinished; a done hole uses the "+ Add a shot" button so there's no stray empty row */
- if(!h.done){
+ if(!h.done&&(confShots(h).length>1||teeArmed)){
    var cs2=confShots(h),last2=cs2[cs2.length-1];
    var holed=PROF.predict&&last2&&last2.lie==='putt'&&last2.dist<=4;
    if(holed){
@@ -1970,7 +1970,7 @@ function totals(){
  var ti=document.getElementById('lgTitle');if(ti)ti.textContent=(editRoundId?'Editing round':'Round in progress');
 }
 /* focus the cell for the next shot to enter */
-var entryBusy=false,lgToastT=null;
+var entryBusy=false,lgToastT=null,teeArmed=false;
 function lgToast(html){var el=document.getElementById('lgToast');if(!el)return;el.innerHTML=html;el.style.display='block';requestAnimationFrame(function(){el.classList.add('show');});clearTimeout(lgToastT);lgToastT=setTimeout(function(){el.classList.remove('show');setTimeout(function(){el.style.display='none';},350);},3600);}
 /* fresh hole → land the cursor on the tee-shot cell first (Tab cycles tee, Enter moves to the predicted shot) */
 function focusTee(){setTimeout(function(){try{var hh=R.holes[R.cur];var cs=hh?confShots(hh):[];if(hh&&!hh.done&&cs.length===1&&cs[0].lie==='tee'){var te=document.querySelector('input[data-ydtee="'+R.cur+'"]');if(te){te.focus();if(te.select)te.select();return;}}}catch(e){}focusEntry();},0);}
@@ -1985,7 +1985,9 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input
        var h=+el.dataset.entry,v=(el.value||'').trim();
        if(v!==''){var lie=el.dataset.lie,raw=Math.max(1,parseInt(v,10)||1),dist=(lie==='putt')?raw:U2Y(raw);entryBusy=true;R.holes[h].shots.push({lie:lie,dist:dist,pen:0,conf:true});render();focusEntry();setTimeout(function(){entryBusy=false;},0);return;}
        var pr=predictNext(h);if(pr&&pr.lie!==''&&pr.dist!==''){entryBusy=true;R.holes[h].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();focusEntry();setTimeout(function(){entryBusy=false;},0);}return;}
-     /* Enter on the tee / a confirmed shot → commit the edit and jump to the predicted next shot (value highlighted) */
+     /* Enter on the tee cell → commit the length, reveal the prediction, jump to it */
+     if(el.dataset.ydtee!=null){var thi=+el.dataset.ydtee,raw=Math.max(20,parseInt(el.value||'0',10)||0),v=U2Y(raw),hole=R.holes[thi];hole.yd=v;if(hole.shots[0]&&hole.shots[0].lie==='tee')hole.shots[0].dist=v;teeArmed=true;render();focusEntry();return;}
+     /* Enter on another confirmed shot → commit the edit and jump to the predicted next shot */
      el.blur();focusEntry();return;}
    if(e.key==='Escape'){e.preventDefault();el.blur();finishHole(false);return;}
    if(e.key==='Delete'){var trr=el.closest('tr');
