@@ -94,6 +94,9 @@ h2 .n{font-family:var(--cond);font-size:12px;letter-spacing:.2em;color:var(--san
 .dbar .dt{position:relative;height:17px;background:linear-gradient(90deg,transparent calc(50% - .5px),var(--line) calc(50% - .5px),var(--line) calc(50% + .5px),transparent calc(50% + .5px));}
 .dbar .dt i{position:absolute;top:2px;bottom:2px;border-radius:3px;}
 .dbar .dv{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;}
+.dbar.daxis{margin-top:2px;}
+.dbar.daxis .dt{position:relative;}
+.dbar .dax{position:absolute;top:0;transform:translateX(-50%);font-size:9px;color:var(--ink-soft);font-family:var(--cond);letter-spacing:.02em;white-space:nowrap;}
 .puttgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(74px,1fr));gap:6px;margin-top:12px;}
 .putcell{border:1px solid var(--line);border-radius:9px;padding:9px 6px;text-align:center;background:var(--paper);}
 .putcell .pf2{font-family:var(--cond);font-size:10px;letter-spacing:.04em;color:var(--ink-soft);text-transform:uppercase;}
@@ -1059,9 +1062,16 @@ function renderDistTable(){
   const barKey=distLie==='all'?'total':distLie;
   const bars=D.bands.map(b=>({l:bandLbl(b),v:(b.sgr&&b.sgr[barKey]!=null)?b.sgr[barKey]:0})).filter(x=>x.v!==0);
   const mx=Math.max(0.3,...bars.map(x=>Math.abs(x.v)));
+  const step=mx<=0.5?0.1:mx<=1?0.25:mx<=2?0.5:1;
+  const ticks=[];for(let g=step;g<=mx+1e-9;g+=step)ticks.push(+g.toFixed(2));
+  const lg=(p,c)=>'linear-gradient(90deg,transparent calc('+p+'% - 0.5px),'+c+' calc('+p+'% - 0.5px),'+c+' calc('+p+'% + 0.5px),transparent calc('+p+'% + 0.5px))';
+  const grads=[lg(50,'var(--ink-soft)')];ticks.forEach(g=>{const d=g/mx*50;grads.push(lg(50-d,'rgba(0,0,0,.09)'));grads.push(lg(50+d,'rgba(0,0,0,.09)'));});
+  const gridBg=grads.join(',');
+  const axis='<div class="dbar daxis"><span class="dl"></span><span class="dt" style="height:16px;background:none">'+
+    '<span class="dax" style="left:50%">0</span>'+ticks.map(g=>{const d=g/mx*50;return '<span class="dax" style="left:'+(50-d)+'%">-'+g+'</span><span class="dax" style="left:'+(50+d)+'%">+'+g+'</span>';}).join('')+'</span><span class="dv"></span></div>';
   document.getElementById('distBars').innerHTML='<div style="font-family:var(--cond);text-transform:uppercase;letter-spacing:.1em;font-size:10.5px;color:var(--ink-soft);margin-bottom:6px">SG / round by distance'+(distLie!=='all'?' · '+LIES.find(l=>l[0]===distLie)[1]:'')+'</div>'+
     bars.map(b=>{const w=Math.abs(b.v)/mx*50;const neg=b.v<0;
-      return `<div class="dbar"><span class="dl">${b.l}</span><span class="dt"><i style="${neg?'right:50%':'left:50%'};width:${w}%;background:${neg?'var(--clay)':'var(--fairway)'}"></i></span><span class="dv ${neg?'sg-neg':'sg-pos'}">${fmtSG(b.v)}</span></div>`;}).join('');
+      return `<div class="dbar"><span class="dl">${b.l}</span><span class="dt" style="background:${gridBg}"><i style="${neg?'right:50%':'left:50%'};width:${w}%;background:${neg?'var(--clay)':'var(--fairway)'}"></i></span><span class="dv ${neg?'sg-neg':'sg-pos'}">${fmtSG(b.v)}</span></div>`;}).join('')+axis;
   const t=D.total&&D.total.sgr?D.total.sgr:null;
   document.getElementById('distNote').innerHTML=t?('Total tee-to-green: '+fmtSG(t.total)+' / round · tee '+fmtSG(t.tee)+' · fairway '+fmtSG(t.fw)+' · rough '+fmtSG(t.rough)+' · bunker '+fmtSG(t.bunker)+' · read red = strokes lost, green = gained'):'';
 }
