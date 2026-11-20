@@ -296,9 +296,6 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope tr.shot.conf input.lc.on{background:var(--paper);color:var(--ink);}
 .lgscope input.lc:focus{outline:2px solid var(--fairway);outline-offset:-2px;}
 .lgscope tr.shot.entry input.lc.on{background:rgba(201,154,30,.12);border-color:rgba(201,154,30,.5);color:var(--amber);font-weight:700;}
-.lgscope tr.holedrow td{background:rgba(46,110,70,.06);}
-.lgscope .holedbtn{width:100%;border:none;border-radius:10px;padding:11px;font-family:var(--cond);font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:12px;color:#fff;background:linear-gradient(160deg,var(--fairway),var(--pine));cursor:pointer;}
-.lgscope .holedbtn:focus{outline:3px solid var(--amber);outline-offset:2px;}
 .lgscope tr.shot.entry{background:rgba(201,154,30,.05);}
 .lgscope td .lcx{color:var(--line);font-family:var(--cond);}
 /* ===== setup panel ===== */
@@ -379,6 +376,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .holeacts .actbtns{display:flex;gap:10px;flex-wrap:wrap;}
 .lgscope .accept{border:1px solid var(--fairway);background:rgba(46,110,70,.1);color:var(--fairway);border-radius:11px;padding:11px 18px;font-family:var(--cond);font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:12px;cursor:pointer;}
 .lgscope .finish{margin-left:auto;border:none;border-radius:11px;padding:11px 20px;font-family:var(--cond);font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:12px;color:#fff;background:linear-gradient(160deg,var(--fairway),var(--pine));cursor:pointer;}
+.lgscope .finish:focus{outline:3px solid var(--amber);outline-offset:2px;}
 .lgscope .ghost{border:1px dashed var(--line);background:none;color:var(--ink-soft);border-radius:11px;padding:11px 18px;font-family:var(--cond);font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:12px;cursor:pointer;}
 .lgscope .donechip{font-family:var(--cond);font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:12px;color:var(--fairway);}
 /* ===== hole nav ===== */
@@ -1906,8 +1904,7 @@ function renderShots(hi){
    var cs2=confShots(h),last2=cs2[cs2.length-1];
    var holed=PROF.predict&&last2&&last2.lie==='putt'&&last2.dist<=4;
    if(holed){
-     /* the ball is holed → the "next shot" row becomes a finish button you reach with Enter */
-     html+='<tr class="shot entry holedrow"><td class="sidx">✓</td><td colspan="8" class="lh"><button class="finish holedbtn" id="btnFinishRow">Holed it — Enter for next hole ▶</button></td><td class="rm"></td></tr>';
+     /* the ball is holed → no extra row; the "✓ Holed it" button gets focus and Enter advances */
    } else {
      var pr=predictNext(hi),isPred=PROF.predict&&pr.lie!=='';
      var cells=LIECOLS.map(function(lc){var on=pr.lie===lc;var val=on?(lc==='putt'?pr.dist:Y2U(pr.dist)):'';
@@ -1950,7 +1947,7 @@ function totals(){
 /* focus the cell for the next shot to enter */
 var entryBusy=false,lgToastT=null;
 function lgToast(html){var el=document.getElementById('lgToast');if(!el)return;el.innerHTML=html;el.style.display='block';requestAnimationFrame(function(){el.classList.add('show');});clearTimeout(lgToastT);lgToastT=setTimeout(function(){el.classList.remove('show');setTimeout(function(){el.style.display='none';},350);},3600);}
-function focusEntry(){setTimeout(function(){try{var fb=document.getElementById('btnFinishRow');if(fb){fb.focus();return;}var on=document.querySelector('#lgBody tr.entry input.lc.on');var el=on||document.querySelector('#lgBody tr.entry input.lc[data-lie="fw"]')||document.querySelector('#lgBody tr.entry input.lc');if(el){el.focus({preventScroll:false});if(el.select)el.select();}}catch(e){}},0);}
+function focusEntry(){setTimeout(function(){try{var fb=document.getElementById('btnHoled');var hh=R.holes[R.cur];var cs=hh?confShots(hh):[],l=cs[cs.length-1];var holed=PROF.predict&&l&&l.lie==='putt'&&l.dist<=4;if(fb&&holed){fb.focus();return;}var on=document.querySelector('#lgBody tr.entry input.lc.on');var el=on||document.querySelector('#lgBody tr.entry input.lc[data-lie="fw"]')||document.querySelector('#lgBody tr.entry input.lc');if(el){el.focus({preventScroll:false});if(el.select)el.select();}}catch(e){}},0);}
 /* ← → move between category cells in the same row (once the caret is at the edge) */
 function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input.p').forEach(function(el){el.addEventListener('keydown',function(e){
    if(e.key==='Enter'){e.preventDefault();
@@ -2029,8 +2026,7 @@ function wire(){
  document.querySelectorAll('input[data-ydtee]').forEach(function(el){el.addEventListener('change',function(){var hi=+el.dataset.ydtee,raw=Math.max(20,parseInt(el.value||'0',10)||0),v=U2Y(raw),hole=R.holes[hi];hole.yd=v;if(hole.shots[0]&&hole.shots[0].lie==='tee')hole.shots[0].dist=v;render();});});
  var acc=document.getElementById('btnAccept');if(acc)acc.onclick=function(){var pr=predictNext(R.cur);if(pr.lie==='')return;R.holes[R.cur].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();focusEntry();};
  var add=document.getElementById('btnAdd');if(add)add.onclick=function(){var h=R.holes[R.cur],last=confShots(h).slice(-1)[0];h.shots.push({lie:last&&last.lie==='putt'?'putt':'fw',dist:last&&last.lie==='putt'?2:20,pen:0,conf:true});render();focusEntry();};
- var fin=document.getElementById('btnHoled');if(fin)fin.onclick=function(){finishHole(false);};
- var bfr=document.getElementById('btnFinishRow');if(bfr)bfr.onclick=function(){finishHole(R.cur<R.hEnd-1);};
+ var fin=document.getElementById('btnHoled');if(fin)fin.onclick=function(){finishHole(R.cur<R.hEnd-1);};
  var rop=document.getElementById('btnReopen');if(rop)rop.onclick=function(){R.holes[R.cur].done=false;render();};
  var pv=document.getElementById('btnPrev');if(pv)pv.onclick=function(){gotoHole(R.cur-1);};
  var nx=document.getElementById('btnNext');if(nx)nx.onclick=function(){gotoHole(R.cur+1);};
