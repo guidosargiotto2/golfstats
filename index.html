@@ -363,6 +363,13 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .sgmini{font-family:var(--cond);font-size:11px;color:var(--ink-soft);opacity:.85;}
 .lgscope .toparbig{font-size:14px;font-weight:700;color:var(--pine);}
 .lgscope .holebar .hbR{font-family:var(--cond);font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:6px;}
+.lgscope .holeadj{flex-basis:100%;display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);}
+.lgscope .holeadj .ha{font-family:var(--cond);text-transform:uppercase;letter-spacing:.06em;font-size:10px;color:var(--ink-soft);font-weight:700;display:flex;align-items:center;gap:6px;}
+.lgscope .hatee{font-family:var(--sans);font-size:13px;border:1px solid var(--line);border-radius:8px;padding:5px 7px;background:var(--cream);color:var(--pine);font-weight:600;}
+.lgscope .haseg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;}
+.lgscope .hpin{border:none;background:var(--paper);color:var(--ink-soft);font-family:var(--cond);font-weight:700;font-size:11px;padding:6px 10px;cursor:pointer;border-left:1px solid var(--line);}
+.lgscope .hpin:first-child{border-left:none;}
+.lgscope .hpin.on{background:var(--sand);color:var(--pine);}
 /* ===== hole actions ===== */
 .lgscope .holeacts{display:flex;flex-direction:column;gap:10px;padding:12px 2px 4px;}
 .lgscope .holeacts .predhint{font-family:var(--cond);font-size:12px;color:var(--ink-soft);}
@@ -1820,13 +1827,23 @@ function renderHoleBar(hi){
  var h=R.holes[hi],hv=holeView(h),sg=holeSGlive(h),m=holeMistakes(hv);
  var flags=[m.p3?'3-putt':'',m.db?'double':'',m.bp5?'bogey P5':'',m.f150?'bogey ≤'+bogeyXyd()+'y':'',m.short?shortLabel():''].filter(Boolean).join(' · ');
  var hstr=sg.strokes,hdiff=hstr-h.par,hdt=hstr?(hdiff===0?'E':(hdiff>0?'+'+hdiff:hdiff)):'';
+ var tees=COURSES[R.course]?COURSES[R.course].tees:{},teeKeys=Object.keys(tees),curTee=h.teeOv||R.tee,pin=h.pin||'M';
+ var teeSel=teeKeys.length>1?('<span class="ha">Tee <select class="hatee" data-hatee="'+hi+'">'+teeKeys.map(function(k){return '<option value="'+k+'"'+(k===curTee?' selected':'')+'>'+k+'</option>';}).join('')+'</select></span>'):'';
+ var pinSeg='<span class="ha">Pin <span class="haseg">'+
+   '<button class="hpin'+(pin==='F'?' on':'')+'" data-hpin="'+hi+':F" title="Flag short of middle">Front −10</button>'+
+   '<button class="hpin'+(pin==='M'?' on':'')+'" data-hpin="'+hi+':M">Mid</button>'+
+   '<button class="hpin'+(pin==='B'?' on':'')+'" data-hpin="'+hi+':B" title="Flag back of middle">Back +10</button></span></span>';
  document.getElementById('holebar').innerHTML=
    '<div class="hbL"><span class="hn">Hole '+(hi+1)+'</span>'+
    '<span class="parchip">Par '+h.par+'</span>'+
    '<span class="sichip" title="Stroke index / hole handicap">SI '+(h.hcp||'—')+'</span>'+
    (hstr?'<span class="holescore" title="Hole score">'+hstr+' <small>('+hdt+')</small></span>':'')+'</div>'+
-   '<div class="hbR"><span class="sgmini"><span class="ydchip">'+Y2U(h.yd)+' '+PROF.units+'</span> · <span class="'+(sg.tot<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg.tot)+'</span>'+(flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':'')+'</span></div>';
+   '<div class="hbR"><span class="sgmini"><span class="ydchip">'+Y2U(h.yd)+' '+PROF.units+'</span> · <span class="'+(sg.tot<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg.tot)+'</span>'+(flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':'')+'</span></div>'+
+   '<div class="holeadj">'+teeSel+pinSeg+'</div>';
+ var hts=document.querySelector('[data-hatee]');if(hts)hts.onchange=function(){h.teeOv=hts.value;recomputeHoleYd(hi);render();};
+ document.querySelectorAll('[data-hpin]').forEach(function(b){b.onclick=function(){var a=b.dataset.hpin.split(':');h.pin=a[1];recomputeHoleYd(hi);render();};});
 }
+function recomputeHoleYd(hi){var h=R.holes[hi];var base=stdYd(R.course,h.teeOv||R.tee,hi);var off=h.pin==='F'?-10:h.pin==='B'?10:0;h.yd=Math.max(20,base+off);if(h.shots&&h.shots[0]&&h.shots[0].lie==='tee')h.shots[0].dist=h.yd;}
 function renderShots(hi){
  var h=R.holes[hi],body=document.getElementById('lgBody'),html='';
  h.shots.forEach(function(s,si){
