@@ -472,35 +472,28 @@ table.rt tbody tr:hover{background:var(--line-soft);}
     <div class="kpis" id="kpis"></div></section>
 
   <section>
-    <h2><span class="n">01</span> Tiger's 5 · per round</h2>
+    <h2><span class="n">01</span> Tiger's 5</h2>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:6px 0 6px;">Per round</h3>
     <div class="card"><div class="chartbox" style="height:260px"><canvas id="mistChart" role="img" aria-label="Mistakes per round"></canvas></div>
       <div id="mistRec" style="margin-top:14px;padding:12px 15px;background:rgba(216,196,140,.16);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;font-size:14px;line-height:1.5;color:var(--ink)"></div></div>
-  </section>
-
-  <section>
-    <h2><span class="n">02</span> Tiger's 5</h2>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:24px 0 2px;">Control chart</h3>
     <div class="controls" id="ctrl_t5"></div>
     <div class="chtype"><span id="mlbl_t5">XmR</span> chart</div>
     <div class="card" id="panel_t5"></div>
   </section>
 
-  <section>
-    <h2><span class="n">03</span> Strokes gained</h2>
+  <section id="sgdist">
+    <h2><span class="n">02</span> Strokes gained</h2>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:6px 0 2px;">Average per round by phase</h3>
+    <p class="lead" style="margin:2px 0 10px">Bars left of zero cost you shots.</p>
+    <div class="card"><div class="chartbox" style="height:275px"><canvas id="sgBar" role="img" aria-label="Average strokes gained by category, with total and each category's share"></canvas></div></div>
+    <div id="focusRec" style="margin-top:16px;padding:14px 16px;background:rgba(216,196,140,.16);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;font-size:15px;line-height:1.55;color:var(--ink)"></div>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:26px 0 2px;">Control chart</h3>
     <div class="controls" id="ctrl_sg"></div>
     <div class="chtype">XmR chart</div>
     <div class="card" id="panel_sg"></div>
-  </section>
-
-  <section>
-    <h2><span class="n">04</span> Strokes gained</h2>
-    <p class="lead">Average strokes gained per round by phase. Bars left of zero cost you shots.</p>
-    <div class="card"><div class="chartbox" style="height:275px"><canvas id="sgBar" role="img" aria-label="Average strokes gained by category, with total and each category's share"></canvas></div></div>
-    <div id="focusRec" style="margin-top:16px;padding:14px 16px;background:rgba(216,196,140,.16);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;font-size:15px;line-height:1.55;color:var(--ink)"></div>
-  </section>
-
-  <section id="sgdist">
-    <h2><span class="n">◆</span> Strokes gained explorer</h2>
-    <p class="lead">Where your strokes go — every category, then drilled down by distance and lie. The grid reads like a leak map: clay cells cost you shots, green cells gain them. Live from your sheet.</p>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:26px 0 2px;">Explorer — by distance &amp; lie</h3>
+    <p class="lead">Where your strokes go, drilled down by distance and lie. The grid reads like a leak map: clay cells cost you shots, green cells gain them.</p>
     <div class="sgcats" id="sgCats"></div>
     <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:22px 0 2px;">Practice priorities</h3>
     <div class="prio" id="sgPrio"></div>
@@ -519,14 +512,14 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   </section>
 
   <section>
-    <h2><span class="n">05</span> Traditional stats</h2>
+    <h2><span class="n">03</span> Traditional stats</h2>
     <div class="controls" id="ctrl_tr"></div>
     <div class="chtype"><span id="mlbl_tr">XmR</span> chart</div>
     <div class="card" id="panel_tr"></div>
   </section>
 
   <section>
-    <h2><span class="n">5b</span> Short game &amp; scoring process</h2>
+    <h2><span class="n">04</span> Short game &amp; scoring process</h2>
     <p class="lead">Scrambling, putts per GIR and greenside proximity — each on control-chart footing, so you see a real shift, not a hot or cold round. Built from your shot-by-shot rounds.</p>
     <div class="controls" id="ctrl_sh"></div>
     <div class="chtype"><span id="mlbl_sh">XmR</span> chart</div>
@@ -540,14 +533,14 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   </section>
 
   <section>
-    <h2><span class="n">06</span> Scoring trend</h2>
+    <h2><span class="n">05</span> Scoring trend</h2>
     <p class="lead" style="font-size:16.5px;max-width:none;line-height:1.6">Everything above adds up to this — your score to par, round by round, on control-chart footing. Below zero is the goal; lower is better, so a point below the lower limit is a breakthrough round and one above the upper limit is a blow-up. Whenever a signal fires the limits recalculate, so each stable stretch is judged against its own baseline.</p>
     <div class="controls" id="ctrl_sc" style="display:none"></div>
     <div class="card" id="panel_sc"></div>
   </section>
 
   <section>
-    <h2><span class="n">07</span> Every round</h2>
+    <h2><span class="n">06</span> Every round</h2>
     <p class="lead">Sortable — click any header. Green is under par or shots gained; clay is over par or shots lost.</p>
     <div><div id="grid"></div></div>
   </section>
