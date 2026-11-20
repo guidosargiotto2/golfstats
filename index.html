@@ -371,6 +371,33 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .savebar .cancelbtn:hover{filter:brightness(1.08);}
 .lgscope .savebar button#lgSaveBtn{margin-left:0;}
 .lgscope .savebar{gap:10px;}
+/* ===== mobile tuning ===== */
+@media (max-width:560px){
+ .wrap{padding:16px 10px 56px;}
+ #view-log .wrap{padding:0 8px 56px;}
+ /* drop the # and per-shot SG columns on phones (shot no. is obvious; round SG is in the hole bar) */
+ .lgscope #lgBody tr.shot td.sidx, .lgscope .lgtablewrap thead th:first-child{display:none;}
+ .lgscope #lgBody td.sgc, .lgscope .lgtablewrap thead th:nth-child(9){display:none;}
+ .lgscope .lgtablewrap thead th{font-size:9px;padding:6px 2px;letter-spacing:.02em;}
+ .lgscope td.liec{padding:2px 2px;}
+ .lgscope input.lc{min-width:44px;padding:11px 2px;font-size:15px;}
+ .lgscope input.p{width:34px;padding:10px 2px;}
+ .lgscope .holebar{padding:10px 10px;}
+ .lgscope .holebar .hn{font-size:20px;}
+ .lgscope .holescore{font-size:24px;}
+ /* setup form one column */
+ .lgscope .setupgrid{grid-template-columns:1fr;}
+ .lgscope .setupgrid label:first-child{grid-column:auto;}
+ /* actions + nav stack full-width for thumb reach */
+ .lgscope .actbtns{flex-direction:column;}
+ .lgscope .actbtns button{width:100%;margin-left:0!important;}
+ .lgscope .holenav{gap:8px;}
+ .lgscope .savebar{flex-wrap:wrap;}
+ .lgscope .savebar .note{flex-basis:100%;}
+ .lgscope .savebar .cancelbtn,.lgscope .savebar #lgSaveBtn{flex:1;margin-left:0;}
+ /* dashboard tables: let them scroll, don't force huge min-width */
+ table.rt{font-size:11px;min-width:900px;}
+}
 </style>
 </head>
 <body>
