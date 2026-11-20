@@ -280,6 +280,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .hiblock .hirow span{font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft);font-weight:700;}
 .lgscope .hiblock .hirow b{margin-left:auto;font-family:var(--serif);font-size:26px;font-weight:600;color:var(--pine);}
 .lgscope .hiblock .hisub{font-family:var(--cond);font-size:11px;color:var(--ink-soft);margin-top:-4px;}
+.lgscope .hiblock .hisub2{font-family:var(--cond);font-size:11.5px;font-weight:700;color:var(--pine);margin-top:4px;}
 .lgscope{max-width:none}
 /* ===== full-screen round editor with a frozen header ===== */
 #view-log{width:100vw;position:relative;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;}
@@ -2023,16 +2024,14 @@ function renderProf(){
   <label>Default tee club<select id="pf_club">${clubs.map(c=>`<option ${PROF.teeClub===c?'selected':''}>${c}</option>`).join('')}</select></label>
   <label>Average drive (yards)<input id="pf_drive" type="number" min="100" max="400" step="5" value="${driveYd()}"></label>
   <div class="hiblock">
-    <div class="hirow"><span>Tiger's 5 · Blow-out easy saves</span></div>
-    <div class="hisub">A wasted save around the green. Pick what counts and the short distance.</div>
+    <div class="hirow"><span>Tiger's 5</span></div>
+    <div class="hisub">The two configurable mistakes in your Tiger's 5.</div>
+    <div class="hisub2">Blow-out easy saves — a wasted save around the green.</div>
     <label>Counts when<select id="pf_t5mode">
       <option value="dist" ${PROF.t5mode!=='dchip'?'selected':''}>3+ shots from X yards (incl. putts)</option>
       <option value="dchip" ${PROF.t5mode==='dchip'?'selected':''}>Double chip — chipped twice inside X yards</option></select></label>
     <label>Short distance X (yd, 10–50)<input id="pf_t5x" type="number" min="10" max="50" step="5" value="${t5x()}"></label>
-  </div>
-  <div class="hiblock">
-    <div class="hirow"><span>Tiger's 5 · Bogey from X yards</span></div>
-    <div class="hisub">A dropped shot (bogey or worse) when you had a scoring-range approach ≤ X. Suggested X = your 9-iron carry (max 150).</div>
+    <div class="hisub2" style="margin-top:8px">Bogey from X yards — a dropped shot with a scoring-range approach ≤ X (suggested X = your 9-iron carry, max 150).</div>
     <label>Your 9-iron carry (yd)<input id="pf_nine" type="number" min="80" max="200" step="5" value="${nineIron()}"></label>
     <label>X — bogey-from distance (yd, 50–150)<input id="pf_bogeyx" type="number" min="50" max="150" step="5" value="${bogeyXyd()}"></label>
   </div>
