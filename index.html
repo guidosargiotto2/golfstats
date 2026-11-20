@@ -397,8 +397,16 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .savebar{gap:10px;}
 /* ===== ideas / feature requests ===== */
 .lgscope .ideaswrap{max-width:640px;margin:0 auto;padding-top:4px;}
-.lgscope .ideabox{display:flex;flex-direction:column;gap:8px;}
-.lgscope .ideabox textarea{font-family:var(--sans);font-size:14px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--cream);color:var(--ink);resize:vertical;}
+.lgscope .ideabox{display:flex;flex-direction:column;gap:12px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;}
+.lgscope .ifl{display:flex;flex-direction:column;gap:5px;font-family:var(--cond);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--pine);}
+.lgscope .ideabox textarea,.lgscope .ideabox input[type=text],.lgscope .ideabox select{font-family:var(--sans);font-weight:400;text-transform:none;letter-spacing:0;font-size:14px;border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:var(--cream);color:var(--ink);resize:vertical;}
+.lgscope .itype{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:10px;padding:3px 9px;border-radius:999px;margin-right:6px;}
+.lgscope .itype.t-bug{background:rgba(194,80,46,.15);color:var(--clay);}
+.lgscope .itype.t-opportunity{background:rgba(31,122,77,.18);color:var(--fairway);}
+.lgscope .itype.t-improvement{background:rgba(201,154,30,.2);color:#7a5e12;}
+.lgscope .idea .ihead{font-family:var(--serif);font-size:15px;color:var(--pine);font-weight:600;margin:0 0 4px;}
+.lgscope .idea .iaction{font-size:13px;color:var(--ink-soft);margin-top:6px;}
+.lgscope .idea .iaction b{color:var(--pine);font-family:var(--cond);text-transform:uppercase;font-size:10px;letter-spacing:.04em;}
 .lgscope .idea{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--paper);}
 .lgscope .idea .itop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
 .lgscope .idea .iby{font-family:var(--cond);font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;}
@@ -467,7 +475,6 @@ table.rt tbody tr:hover{background:var(--line-soft);}
    </div>
    <div class="teeline"><span class="est" id="teeEst"></span><button class="star" id="starBtn">★ default</button></div>
    <div class="setupacts"><button class="startbtn" id="startBtn">Start round →</button></div>
-   <div class="hint">You enter one hole at a time. <b>Shot 1 is always your tee shot</b> (locked). Enter where each shot finished — type the distance to the hole under the lie it was played from. Shot prediction is a Profile setting. Prototype — saves in this browser only.</div>
    </div>
  </div>
 
@@ -489,7 +496,19 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   <div id="view-ideas" class="lgscope" style="display:none"><div class="ideaswrap">
     <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 2px">Ideas &amp; feature requests</h2>
     <p style="font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:0 0 14px">Got an idea to make this better? Drop it here.</p>
-    <div class="ideabox"><textarea id="ideaText" rows="3" placeholder="Describe your idea…"></textarea><button class="pf_btn" id="ideaSubmit" style="align-self:flex-start">Submit idea</button></div>
+    <div class="ideabox">
+      <label class="ifl">Improvement<input id="ideaTitle" type="text" placeholder="Short title, e.g. Add putting break capture"></label>
+      <label class="ifl">Type
+        <select id="ideaType">
+          <option value="bug">Bug</option>
+          <option value="opportunity">Opportunity</option>
+          <option value="improvement">Improvement</option>
+        </select>
+      </label>
+      <label class="ifl">Description<textarea id="ideaText" rows="3" placeholder="What's happening / what you'd like…"></textarea></label>
+      <label class="ifl">Suggested action<textarea id="ideaAction" rows="2" placeholder="What should we do about it?"></textarea></label>
+      <button class="pf_btn" id="ideaSubmit" style="align-self:flex-start">Submit idea</button>
+    </div>
     <div id="ideaList" style="margin-top:18px"></div>
   </div></div>
   <div id="view-stats">
@@ -1948,6 +1967,12 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input
    if(e.key==='Delete'){var trr=el.closest('tr');
      if(trr.classList.contains('entry')){e.preventDefault();finishHole(false);return;}
      if(el.dataset.s!=null&&(el.dataset.stage!=='editing'||(el.value||'')==='')){var hh=+el.dataset.h,ss=+el.dataset.s;if(ss>0){e.preventDefault();R.holes[hh].shots.splice(ss,1);render();focusEntry();return;}}}
+   if(e.key==='Tab'&&el.dataset.ydtee!=null){e.preventDefault();
+     var thi=+el.dataset.ydtee,hole=R.holes[thi],tks=Object.keys(COURSES[R.course].tees);
+     if(tks.length>1){var cur=hole.teeOv||R.tee,idx=tks.indexOf(cur);idx=e.shiftKey?(idx<=0?tks.length-1:idx-1):(idx+1)%tks.length;
+       hole.teeOv=tks[idx];recomputeHoleYd(thi);render();
+       var ne=document.querySelector('input[data-ydtee="'+thi+'"]');if(ne){ne.focus();if(ne.select)ne.select();}}
+     return;}
    if(e.key==='Tab'){var row=el.closest('tr');var cells=Array.prototype.slice.call(row.querySelectorAll('input.lc, input.p')).filter(function(c){return c.dataset.lie!=='tee'&&!c.disabled;});
      if(!cells.length)return;e.preventDefault();var ci=cells.indexOf(el),cj;
      if(e.shiftKey)cj=(ci<=0)?cells.length-1:ci-1;else cj=(ci===-1)?0:(ci+1)%cells.length;
@@ -2223,6 +2248,7 @@ try{(function(){
  function user(){return localStorage.getItem('app-user')||'\u2014';}
  function isAdmin(){return user()==='Guido';}
  var STATUS=[['new','New'],['progress','In progress'],['done','Done'],['rejected','Rejected']];
+ var TYPE={bug:'Bug',opportunity:'Opportunity',improvement:'Improvement'};
  function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
  function render(){
    var el=document.getElementById('ideaList');if(!el)return;
@@ -2232,16 +2258,29 @@ try{(function(){
    var admin=isAdmin();
    el.innerHTML=arr.map(function(it){
      var lbl=(STATUS.filter(function(s){return s[0]===it.status;})[0]||['new','New'])[1];
+     var ty=it.type||'improvement';
      var ctrl=admin?('<select data-ist="'+it.id+'">'+STATUS.map(function(s){return '<option value="'+s[0]+'"'+(s[0]===it.status?' selected':'')+'>'+s[1]+'</option>';}).join('')+'</select><button class="pf_btn" data-idel="'+it.id+'" style="background:var(--clay);padding:4px 9px">\u00d7</button>')
        :('<span class="ibadge i-'+it.status+'">'+lbl+'</span>');
-     return '<div class="idea"><div class="itop"><span class="iby">'+esc(it.by)+' \u00b7 '+(it.date||'')+'</span><span class="iact">'+ctrl+'</span></div><div class="itext">'+esc(it.text)+'</div></div>';
+     var action=it.action?('<div class="iaction"><b>Suggested action</b><br>'+esc(it.action)+'</div>'):'';
+     var title=it.title?('<div class="ihead">'+esc(it.title)+'</div>'):'';
+     return '<div class="idea"><div class="itop"><span class="iby"><span class="itype t-'+ty+'">'+(TYPE[ty]||ty)+'</span>'+esc(it.by)+' \u00b7 '+(it.date||'')+'</span><span class="iact">'+ctrl+'</span></div>'+title+'<div class="itext">'+esc(it.text)+'</div>'+action+'</div>';
    }).join('');
    if(admin){
      el.querySelectorAll('[data-ist]').forEach(function(s){s.onchange=function(){var a=load(),it=a.filter(function(x){return x.id===s.getAttribute('data-ist');})[0];if(it){it.status=s.value;save(a);render();}};});
      el.querySelectorAll('[data-idel]').forEach(function(b){b.onclick=function(){if(!confirm('Delete this idea?'))return;save(load().filter(function(x){return x.id!==b.getAttribute('data-idel');}));render();};});
    }
  }
- function submit(){var ta=document.getElementById('ideaText');if(!ta)return;var t=(ta.value||'').trim();if(!t){ta.focus();return;}var a=load();a.push({id:'i'+Date.now(),text:t,by:user(),date:new Date().toISOString().slice(0,10),ts:Date.now(),status:'new'});save(a);ta.value='';render();}
+ function submit(){
+   var ti=document.getElementById('ideaTitle'),ty=document.getElementById('ideaType'),ta=document.getElementById('ideaText'),ac=document.getElementById('ideaAction');
+   if(!ta)return;
+   var title=(ti&&ti.value||'').trim(),text=(ta.value||'').trim(),action=(ac&&ac.value||'').trim();
+   if(!title&&!text){(ti||ta).focus();return;}
+   var a=load();
+   a.push({id:'i'+Date.now(),title:title,type:(ty&&ty.value)||'improvement',text:text,action:action,by:user(),date:new Date().toISOString().slice(0,10),ts:Date.now(),status:'new'});
+   save(a);
+   if(ti)ti.value='';ta.value='';if(ac)ac.value='';if(ty)ty.value='bug';
+   render();
+ }
  var sb=document.getElementById('ideaSubmit');if(sb)sb.onclick=submit;
  window.IDEAS={render:render};
 })();
