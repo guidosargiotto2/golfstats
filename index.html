@@ -1748,7 +1748,7 @@ function predictNext(hi){
  var lie=histBest?histBest.lie:'fw'; if(lie==='putt'||lie==='tee')lie='fw';
  return {lie:lie,dist:rem,pen:0,conf:false};
 }
-function gotoHole(i){R.cur=Math.max(R.hStart,Math.min(R.hEnd-1,i));var h=R.holes[R.cur];if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];render();focusEntry();}
+function gotoHole(i){R.cur=Math.max(R.hStart,Math.min(R.hEnd-1,i));var h=R.holes[R.cur];if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];render();focusTee();}
 function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert('Enter at least the tee shot before finishing the hole.');return;}h.shots=confShots(h);h.done=true;
  if(R.holes.slice(R.hStart,R.hEnd).every(function(x){return x.done;})){scMode=true;render();return;}
  if(adv&&R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
@@ -1947,6 +1947,8 @@ function totals(){
 /* focus the cell for the next shot to enter */
 var entryBusy=false,lgToastT=null;
 function lgToast(html){var el=document.getElementById('lgToast');if(!el)return;el.innerHTML=html;el.style.display='block';requestAnimationFrame(function(){el.classList.add('show');});clearTimeout(lgToastT);lgToastT=setTimeout(function(){el.classList.remove('show');setTimeout(function(){el.style.display='none';},350);},3600);}
+/* fresh hole → land the cursor on the tee-shot cell first (Tab cycles tee, Enter moves to the predicted shot) */
+function focusTee(){setTimeout(function(){try{var hh=R.holes[R.cur];var cs=hh?confShots(hh):[];if(hh&&!hh.done&&cs.length===1&&cs[0].lie==='tee'){var te=document.querySelector('input[data-ydtee="'+R.cur+'"]');if(te){te.focus();if(te.select)te.select();return;}}}catch(e){}focusEntry();},0);}
 function focusEntry(){setTimeout(function(){try{var fb=document.getElementById('btnHoled');var hh=R.holes[R.cur];var cs=hh?confShots(hh):[],l=cs[cs.length-1];var holed=PROF.predict&&l&&l.lie==='putt'&&l.dist<=4;if(fb&&holed){fb.focus();return;}var on=document.querySelector('#lgBody tr.entry input.lc.on');var el=on||document.querySelector('#lgBody tr.entry input.lc[data-lie="fw"]')||document.querySelector('#lgBody tr.entry input.lc');if(el){el.focus({preventScroll:false});if(el.select)el.select();}}catch(e){}},0);}
 /* ← → move between category cells in the same row (once the caret is at the edge) */
 function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input.p').forEach(function(el){el.addEventListener('keydown',function(e){
