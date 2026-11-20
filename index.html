@@ -395,6 +395,20 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .savebar .cancelbtn:hover{filter:brightness(1.08);}
 .lgscope .savebar button#lgSaveBtn{margin-left:0;}
 .lgscope .savebar{gap:10px;}
+/* ===== ideas / feature requests ===== */
+.lgscope .ideaswrap{max-width:640px;margin:0 auto;padding-top:4px;}
+.lgscope .ideabox{display:flex;flex-direction:column;gap:8px;}
+.lgscope .ideabox textarea{font-family:var(--sans);font-size:14px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--cream);color:var(--ink);resize:vertical;}
+.lgscope .idea{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--paper);}
+.lgscope .idea .itop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
+.lgscope .idea .iby{font-family:var(--cond);font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;}
+.lgscope .idea .itext{font-size:14px;line-height:1.45;color:var(--ink);white-space:pre-wrap;}
+.lgscope .idea .iact select{font-family:var(--sans);font-size:12px;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--cream);color:var(--pine);font-weight:600;margin-right:6px;}
+.lgscope .ibadge{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:10px;padding:3px 9px;border-radius:999px;}
+.lgscope .ibadge.i-new{background:var(--sand);color:var(--pine);}
+.lgscope .ibadge.i-progress{background:rgba(201,154,30,.2);color:#7a5e12;}
+.lgscope .ibadge.i-done{background:rgba(31,122,77,.18);color:var(--fairway);}
+.lgscope .ibadge.i-rejected{background:rgba(194,80,46,.15);color:var(--clay);}
 /* ===== mobile tuning ===== */
 @media (max-width:560px){
  .wrap{padding:16px 10px 56px;}
@@ -435,7 +449,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   </form>
 </div>
 <div class="wrap">
-  <div class="tabnav" id="tabnav"><button data-v="log">Log a round</button><button data-v="stats" class="on">Statistics</button><button data-v="profile">Profile</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button">Log out</button></div>
+  <div class="tabnav" id="tabnav"><button data-v="log">Log a round</button><button data-v="stats" class="on">Statistics</button><button data-v="profile">Profile</button><button data-v="ideas">Ideas</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button">Log out</button></div>
   <div id="view-log" class="lgscope" style="display:none"><div class="wrap">
  <div class="bar"><div><h1 id="lgTitle">Start a round</h1><div class="meta" id="meta">CGC</div></div>
    <div class="tot"><div class="sc" id="totScore">—</div><div class="sg" id="totSG">—</div></div></div>
@@ -472,6 +486,12 @@ table.rt tbody tr:hover{background:var(--line-soft);}
  <div id="lgToast" class="lgtoast" role="status" aria-live="polite"></div>
 </div></div>
   <div id="view-profile" class="lgscope" style="display:none"><div style="max-width:460px;margin:0 auto;padding-top:4px"><h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px">Player profile</h2><div class="pform" id="pform"></div></div></div>
+  <div id="view-ideas" class="lgscope" style="display:none"><div class="ideaswrap">
+    <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 2px">Ideas &amp; feature requests</h2>
+    <p style="font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:0 0 14px">Got an idea to make this better? Drop it here.</p>
+    <div class="ideabox"><textarea id="ideaText" rows="3" placeholder="Describe your idea…"></textarea><button class="pf_btn" id="ideaSubmit" style="align-self:flex-start">Submit idea</button></div>
+    <div id="ideaList" style="margin-top:18px"></div>
+  </div></div>
   <div id="view-stats">
   <div class="playertabs" id="playertabs"></div>
   <header class="masthead">
@@ -2149,11 +2169,12 @@ try{(function(){
 <script>
 /* tabs + login + collapse run in their own script so a logger error can never disable them */
 (function(){
- var views={log:'view-log',stats:'view-stats',profile:'view-profile'};
+ var views={log:'view-log',stats:'view-stats',profile:'view-profile',ideas:'view-ideas'};
  function show(v){for(var k in views){document.getElementById(views[k]).style.display=(k===v)?'':'none';}
    var bs=document.querySelectorAll('#tabnav button');for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',bs[i].dataset.v===v);
    if(v==='log'&&window.LGR)window.LGR.card();
    if(v==='profile'&&window.LGR)window.LGR.profile();
+   if(v==='ideas'&&window.IDEAS)window.IDEAS.render();
    window.scrollTo(0,0);
  }
  document.getElementById('tabnav').addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.dataset.v)show(b.dataset.v);});
@@ -2192,6 +2213,38 @@ try{(function(){
  })(secs[i]);}
 })();
 
+</script>
+<script>
+/* ---- Ideas & feature requests (local to this browser; Guido can manage status) ---- */
+(function(){
+ var KEY='golf-ideas-v1';
+ function load(){try{return JSON.parse(localStorage.getItem(KEY))||[];}catch(e){return[];}}
+ function save(a){try{localStorage.setItem(KEY,JSON.stringify(a));}catch(e){}}
+ function user(){return localStorage.getItem('app-user')||'\u2014';}
+ function isAdmin(){return user()==='Guido';}
+ var STATUS=[['new','New'],['progress','In progress'],['done','Done'],['rejected','Rejected']];
+ function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+ function render(){
+   var el=document.getElementById('ideaList');if(!el)return;
+   var ord={new:0,progress:1,done:2,rejected:3};
+   var arr=load().slice().sort(function(a,b){return (ord[a.status]-ord[b.status])||(b.ts-a.ts);});
+   if(!arr.length){el.innerHTML='<div style="font-family:var(--cond);color:var(--ink-soft);font-size:13px">No ideas yet \u2014 be the first.</div>';return;}
+   var admin=isAdmin();
+   el.innerHTML=arr.map(function(it){
+     var lbl=(STATUS.filter(function(s){return s[0]===it.status;})[0]||['new','New'])[1];
+     var ctrl=admin?('<select data-ist="'+it.id+'">'+STATUS.map(function(s){return '<option value="'+s[0]+'"'+(s[0]===it.status?' selected':'')+'>'+s[1]+'</option>';}).join('')+'</select><button class="pf_btn" data-idel="'+it.id+'" style="background:var(--clay);padding:4px 9px">\u00d7</button>')
+       :('<span class="ibadge i-'+it.status+'">'+lbl+'</span>');
+     return '<div class="idea"><div class="itop"><span class="iby">'+esc(it.by)+' \u00b7 '+(it.date||'')+'</span><span class="iact">'+ctrl+'</span></div><div class="itext">'+esc(it.text)+'</div></div>';
+   }).join('');
+   if(admin){
+     el.querySelectorAll('[data-ist]').forEach(function(s){s.onchange=function(){var a=load(),it=a.filter(function(x){return x.id===s.getAttribute('data-ist');})[0];if(it){it.status=s.value;save(a);render();}};});
+     el.querySelectorAll('[data-idel]').forEach(function(b){b.onclick=function(){if(!confirm('Delete this idea?'))return;save(load().filter(function(x){return x.id!==b.getAttribute('data-idel');}));render();};});
+   }
+ }
+ function submit(){var ta=document.getElementById('ideaText');if(!ta)return;var t=(ta.value||'').trim();if(!t){ta.focus();return;}var a=load();a.push({id:'i'+Date.now(),text:t,by:user(),date:new Date().toISOString().slice(0,10),ts:Date.now(),status:'new'});save(a);ta.value='';render();}
+ var sb=document.getElementById('ideaSubmit');if(sb)sb.onclick=submit;
+ window.IDEAS={render:render};
+})();
 </script>
 </body>
 </html>
