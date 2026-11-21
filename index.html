@@ -2076,6 +2076,11 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input
        hole.teeOv=tks[idx];recomputeHoleYd(thi);render();
        var ne=document.querySelector('input[data-ydtee="'+thi+'"]');if(ne){ne.focus();if(ne.select)ne.select();}}
      return;}
+   if(e.key==='Tab'&&el.dataset.s!=null){e.preventDefault();
+     var hh=+el.dataset.h,ss=+el.dataset.s,sh=R.holes[hh].shots[ss];var lies=['fw','rough','sand','rec','putt'];
+     var ci=lies.indexOf(sh.lie);if(ci<0)ci=0;var cj=e.shiftKey?(ci<=0?lies.length-1:ci-1):(ci+1)%lies.length;var nl=lies[cj];
+     var shown=sh.lie==='putt'?sh.dist:Y2U(sh.dist);sh.lie=nl;sh.dist=(nl==='putt')?shown:U2Y(shown);sh.conf=true;render();
+     var nx=document.querySelector('#lgBody input.lc[data-h="'+hh+'"][data-s="'+ss+'"][data-lie="'+nl+'"]');if(nx){nx.focus();if(nx.select)nx.select();}return;}
    if(e.key==='Tab'){var row=el.closest('tr');var cells=Array.prototype.slice.call(row.querySelectorAll('input.lc, input.p')).filter(function(c){return c.dataset.lie!=='tee'&&!c.disabled;});
      if(!cells.length)return;e.preventDefault();var ci=cells.indexOf(el),cj;
      if(e.shiftKey)cj=(ci<=0)?cells.length-1:ci-1;else cj=(ci===-1)?0:(ci+1)%cells.length;
