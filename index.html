@@ -568,6 +568,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .tabnav button.pllocked::after{content:' 🔒';font-size:10px;}
 .lgscope .plNote{font-family:var(--serif);font-style:italic;font-size:14.5px;line-height:1.45;color:var(--pine);background:rgba(216,196,140,.18);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;padding:10px 12px;margin:0 0 14px;}
 .lgscope .plNote span{font-family:var(--cond);font-style:normal;font-size:12px;color:var(--ink-soft);}
+.lgscope .resumecard .cancelbtn{border:none;background:var(--clay);color:#fff;border-radius:11px;padding:11px 18px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -2239,14 +2240,20 @@ function renderScorecard(){
 }
 function renderSetup(){
  var inProg=(R.phase==='play');
+ /* a saved round opened from Round Ledger and left unchanged is not "in progress": drop it quietly */
+ if(inProg&&!R._editId){try{var act0=R.holes.slice(R.hStart,R.hEnd);if(act0.length&&act0.every(function(h){return h.done;})){var rr0=roundRecord(),dup=(window.getLoggedRounds()||[]).some(function(x){return x.date===rr0.date&&x.score===rr0.score&&(x.putts==null||x.putts===rr0.putts);});
+   if(dup){R._editId='dup';R._snap=lgSnap();}}}catch(e){}}   /* finished round identical to one already saved = leftover copy */
+ if(inProg&&R._editId&&R._snap&&lgSnap()===R._snap){editRoundId=null;localStorage.removeItem(RKEY);(function(){var d=loadDefault();R=newRound(d.course,d.tee);})();inProg=false;}
  var rc=document.getElementById('resumeCard'),nf=document.getElementById('newRoundForm');
  if(inProg){
-   var done=R.holes.slice(R.hStart,R.hEnd).filter(function(h){return h.done;}).length,count=R.hEnd-R.hStart;
-   if(rc){rc.style.display='';rc.innerHTML='<div class="rcH">'+t('Round in progress')+'</div><div class="rcM">'+(R.courseName||R.course)+' · '+teeEN(R.course,R.tee)+' · '+(R.date||'')+' — '+done+' / '+count+(window.__LANG==='es'?' hoyos':' holes logged')+'</div><div class="rcB"><button class="startbtn" id="btnResume">'+t('Continue round →')+'</button><button class="cancelbtn" id="btnResumeCancel" type="button">'+t('Cancel round')+'</button></div>';}
+   var ES=(window.__LANG==='es'),done=R.holes.slice(R.hStart,R.hEnd).filter(function(h){return h.done;}).length,count=R.hEnd-R.hStart,fin=(done>=count&&count>0);
+   var hdr=R._editId?(ES?'Cambios sin guardar':'Unsaved changes'):(fin?(ES?'Vuelta terminada — falta guardar':'Round finished — not saved yet'):t('Round in progress'));
+   var sub=(R.courseName||R.course)+' · '+teeEN(R.course,R.tee)+' · '+(R.date||'')+(fin?(R._editId?(ES?' — vuelta ya guardada, con cambios':' — saved round, edited'):(ES?' — 18 hoyos cargados; completá “Qué aprendí” y guardala':' — all holes logged; add what you learnt and save it')):' — '+done+' / '+count+(ES?' hoyos':' holes logged'));
+   if(rc){rc.style.display='';rc.innerHTML='<div class="rcH">'+hdr+'</div><div class="rcM">'+sub+'</div><div class="rcB"><button class="startbtn" id="btnResume">'+(fin?(ES?'Revisar y guardar →':'Review & save →'):t('Continue round →'))+'</button><button class="cancelbtn" id="btnResumeCancel" type="button">'+(R._editId?(ES?'Descartar cambios':'Discard changes'):t('Cancel round'))+'</button></div>';}
    if(nf)nf.style.display='none';
-   var ti0=document.getElementById('lgTitle');if(ti0)ti0.textContent='Round in progress';
-   var br=document.getElementById('btnResume');if(br)br.onclick=function(){lgEntered=true;gotoHole(R.cur);};
-   var bc=document.getElementById('btnResumeCancel');if(bc)bc.onclick=function(){if(!confirm('Cancel the round in progress? Everything entered will be discarded.'))return;editRoundId=null;localStorage.removeItem(RKEY);(function(){var d=loadDefault();R=newRound(d.course,d.tee);})();lgEntered=false;render();renderLogged();};
+   var ti0=document.getElementById('lgTitle');if(ti0)ti0.textContent=hdr;
+   var br=document.getElementById('btnResume');if(br)br.onclick=function(){lgEntered=true;if(fin){editRoundId=R._editId||editRoundId;scMode=true;render();}else gotoHole(R.cur);};
+   var bc=document.getElementById('btnResumeCancel');if(bc)bc.onclick=function(){if(!R._editId&&!confirm(window.__LANG==='es'?'¿Cancelar la vuelta? Se descarta todo lo cargado.':'Cancel the round in progress? Everything entered will be discarded.'))return;editRoundId=null;localStorage.removeItem(RKEY);(function(){var d=loadDefault();R=newRound(d.course,d.tee);})();lgEntered=false;render();renderLogged();};
    document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+teeEN(R.course,R.tee);
    renderSel();return;
  }
@@ -2676,7 +2683,8 @@ function importCard(hl){
    '<div class="sgcats2">'+chip('Off tee',cat.ott)+chip('Approach',cat.app)+chip('Around grn',cat.atg)+chip('Putting',cat.putt)+chip('Total',cat.tot)+'</div>'+
    '<div class="scHint ihShots">'+t('Tap any hole to see its shots.')+'</div>',shots:shots,pars:H.map(function(h){return h.par;})};
 }
-function lgOpenCard(o){if(!o||!o.holes)return;editRoundId=o.id||null;lgLoad(o);scMode=true;render();renderLogged();}
+function lgSnap(){try{return JSON.stringify([R.notes||'',R.lesson||'',R.holes.map(function(h){return [h.pin||'M',h.teeOv||'',(h.shots||[]).filter(function(x){return x.conf!==false;}).map(function(x){return [x.lie,+x.dist,x.pen||0];})];})]);}catch(e){return '';}}
+function lgOpenCard(o){if(!o||!o.holes)return;editRoundId=o.id||null;lgLoad(o);R._editId=o.id||null;R._snap=lgSnap();save();scMode=true;render();renderLogged();}
 /* new user with no imported and no logged rounds → ask for a realistic average drive */
 (function(){try{var u=localStorage.getItem('app-user')||'';
  var hasImport=(typeof PLAYERS!=='undefined'&&PLAYERS[u]&&PLAYERS[u].length);
