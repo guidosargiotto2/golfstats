@@ -1974,7 +1974,7 @@ function renderHoleActs(hi){
  var h=R.holes[hi],el=document.getElementById('holeacts');
  var predOn=PROF.predict;
  el.innerHTML=(h.done?'':(predOn?'<span class="predhint">Amber row = predicted next shot. Press <b>Enter</b> to accept it, or type the real lie &amp; distance.</span>':'<span class="predhint">Enter each shot: type the distance under the lie it was played from.</span>'))+
-   '<div class="actbtns">'+(h.done?'<button class="ghost" id="btnAdd">+ Add a shot</button>':'<button class="finish" id="btnHoled">✓ Holed it</button><button class="ghost" id="btnAdd">+ Add a shot</button>')+'</div>'+
+   '<div class="actbtns">'+(h.done?'<button class="ghost" id="btnAdd">+ Add a shot</button>':'<button class="finish" id="btnHoled">Next hole →</button><button class="ghost" id="btnAdd">+ Add a shot</button>')+'</div>'+
    '<div class="inshint">Tap <b>+</b> on any row to add a shot below it. Keyboard: <b>Tab</b> on the tee = cycle tee · <b>Tab</b> in a row = next category · <b>Enter</b> = next shot · <b>Esc</b> = holed it (finish hole) · <b>Del</b> = remove shot.</div>';
 }
 function renderHoleNav(hi){
