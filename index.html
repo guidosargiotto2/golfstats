@@ -1816,6 +1816,12 @@ function predictNext(hi){
  if(D<=50){ /* greenside pitch/chip → on the green, a putt (feet) scaled by how far out */
    return {lie:'putt',dist:Math.max(3,Math.min(30,Math.round(D*0.5))),pen:0,conf:false};
  }
+ /* out of recovery you punch back into play — you do NOT reach the green from a full distance */
+ if(prev.lie==='rec'){
+   var adv=Math.max(20,Math.round(D*0.5));
+   var rl=histBest&&histBest.lie!=='putt'&&histBest.lie!=='tee'?histBest.lie:'fw';
+   return {lie:rl,dist:adv,pen:0,conf:false};
+ }
  if(D<=190){ /* an approach that reaches the green → putt, proximity scales with distance */
    return {lie:'putt',dist:Math.min(48,Math.max(8,Math.round(8+D*0.16))),pen:0,conf:false};
  }
@@ -2121,10 +2127,12 @@ function wire(){
    el.addEventListener('focus',function(){var h=+el.dataset.entry,lie=el.dataset.lie,idx=confShots(R.holes[h]).length;
      var cells=el.closest('tr').querySelectorAll('input.lc[data-entry]');
      var cur='';cells.forEach(function(c){if(c.value.trim()!=='')cur=c.value.trim();});
-     var hd=histDist(h,idx,lie),disp;
-     if(hd!=null){disp=(lie==='putt'?hd:Y2U(hd));}
-     else if(cur!==''){disp=cur;}
-     else{var pr=predictNext(h);disp=(pr&&pr.dist!=='')?(lie==='putt'?pr.dist:Y2U(pr.dist)):'';}
+     var pr=predictNext(h),disp;
+     if(pr&&pr.dist!==''&&pr.lie===lie){disp=(lie==='putt'?pr.dist:Y2U(pr.dist));}   /* predicted lie → context-aware leave */
+     else{var hd=histDist(h,idx,lie);
+       if(hd!=null){disp=(lie==='putt'?hd:Y2U(hd));}
+       else if(cur!==''){disp=cur;}
+       else{disp='';}}
      cells.forEach(function(c){if(c!==el){c.value='';c.classList.remove('on');}});el.value=disp;el.classList.add('on');el.dataset.stage='armed';if(el.select)el.select();});
    el.addEventListener('input',function(){el.dataset.stage='editing';});
    el.addEventListener('change',function(){if(entryBusy)return;var h=+el.dataset.entry,lie=el.dataset.lie,v=el.value.trim();if(v==='')return;
