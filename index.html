@@ -1830,7 +1830,11 @@ function predictNext(hi){
  var lie=histBest?histBest.lie:'fw'; if(lie==='putt'||lie==='tee')lie='fw';
  return {lie:lie,dist:rem,pen:0,conf:false};
 }
-function gotoHole(i){R.cur=Math.max(R.hStart,Math.min(R.hEnd-1,i));var h=R.holes[R.cur];if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];teeArmed=confShots(h).length>1;render();focusTee();}
+/* delete a shot; deleting a 2nd/3rd putt means you sank the previous one → treat the hole as holed */
+function delShot(hb,sb){var h=R.holes[hb];if(sb==null||sb<=0||sb>=h.shots.length)return;
+ var cur=h.shots[sb],priorPutt=(cur.lie==='putt'&&sb>0&&h.shots[sb-1]&&h.shots[sb-1].lie==='putt');
+ h.shots.splice(sb,1);h.done=false;scMode=false;h._sank=!!priorPutt;render();focusEntry();}
+function gotoHole(i){R.cur=Math.max(R.hStart,Math.min(R.hEnd-1,i));var h=R.holes[R.cur];if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];h._sank=false;teeArmed=confShots(h).length>1;render();focusTee();}
 function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert('Enter at least the tee shot before finishing the hole.');return;}h.shots=confShots(h);h.done=true;
  if(R.holes.slice(R.hStart,R.hEnd).every(function(x){return x.done;})){scMode=true;render();return;}
  if(adv&&R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
@@ -2003,7 +2007,7 @@ function renderShots(hi){
  /* add-a-shot row only while the hole is unfinished; a done hole uses the "+ Add a shot" button so there's no stray empty row */
  if(!h.done&&(confShots(h).length>1||teeArmed)){
    var cs2=confShots(h),last2=cs2[cs2.length-1];
-   var holed=PROF.predict&&last2&&last2.lie==='putt'&&last2.dist<=4;
+   var holed=(PROF.predict&&last2&&last2.lie==='putt'&&last2.dist<=4)||h._sank;
    if(holed){
      /* the ball is holed → no extra row; the "✓ Holed it" button gets focus and Enter advances */
    } else {
@@ -2027,7 +2031,7 @@ function renderHoleActs(hi){
  var predOn=PROF.predict;
  el.innerHTML=(h.done?'':(predOn?'<span class="predhint">Amber row = predicted next shot. Press <b>Enter</b> to accept it, or type the real lie &amp; distance.</span>':'<span class="predhint">Enter each shot: type the distance under the lie it was played from.</span>'))+
    '<div class="actbtns">'+(h.done?'<button class="ghost" id="btnAdd">+ Add a shot</button>':'<button class="finish" id="btnHoled">Next hole →</button><button class="ghost" id="btnAdd">+ Add a shot</button>')+'</div>'+
-   '<div class="inshint">Tap <b>+</b> on any row to add a shot below it. Keyboard: <b>Tab</b> on the tee = cycle tee · <b>Tab</b> in a row = next category · <b>Enter</b> = next shot · <b>Esc</b> = holed it (finish hole) · <b>Del</b> or <b>Backspace</b> on an empty cell = remove shot.</div>';
+   '<div class="inshint">Tap <b>+</b> on any row to add a shot below it. Keyboard: <b>Tab</b> on the tee = cycle tee · <b>Tab</b> in a row = next category · <b>Enter</b> = next shot · <b>↑↓</b> = move between shots · <b>Esc</b> = holed it · <b>Del</b>, empty-cell <b>Backspace</b>, or double-<b>Backspace</b> = remove shot (deleting a 2nd/3rd putt assumes you sank it).</div>';
 }
 function renderHoleNav(hi){
  var act=R.holes.slice(R.hStart,R.hEnd),done=act.filter(function(h){return h.done;}).length,count=R.hEnd-R.hStart,allDone=done===count;
@@ -2052,11 +2056,11 @@ function totals(){
  var ti=document.getElementById('lgTitle');if(ti)ti.textContent=(editRoundId?'Editing round':'Round in progress');
 }
 /* focus the cell for the next shot to enter */
-var entryBusy=false,lgToastT=null,teeArmed=false;
+var entryBusy=false,lgToastT=null,teeArmed=false,bkLast={el:null,t:0};
 function lgToast(html){var el=document.getElementById('lgToast');if(!el)return;el.innerHTML=html;el.style.display='block';requestAnimationFrame(function(){el.classList.add('show');});clearTimeout(lgToastT);lgToastT=setTimeout(function(){el.classList.remove('show');setTimeout(function(){el.style.display='none';},350);},3600);}
 /* fresh hole → land the cursor on the tee-shot cell first (Tab cycles tee, Enter moves to the predicted shot) */
 function focusTee(){setTimeout(function(){try{var hh=R.holes[R.cur];var cs=hh?confShots(hh):[];if(hh&&!hh.done&&cs.length===1&&cs[0].lie==='tee'){var te=document.querySelector('input[data-ydtee="'+R.cur+'"]');if(te){te.focus();if(te.select)te.select();return;}}}catch(e){}focusEntry();},0);}
-function focusEntry(){setTimeout(function(){try{var fb=document.getElementById('btnHoled');var hh=R.holes[R.cur];var cs=hh?confShots(hh):[],l=cs[cs.length-1];var holed=PROF.predict&&l&&l.lie==='putt'&&l.dist<=4;if(fb&&holed){fb.focus();return;}var on=document.querySelector('#lgBody tr.entry input.lc.on');var el=on||document.querySelector('#lgBody tr.entry input.lc[data-lie="fw"]')||document.querySelector('#lgBody tr.entry input.lc');if(el){el.focus({preventScroll:false});if(el.select)el.select();}}catch(e){}},0);}
+function focusEntry(){setTimeout(function(){try{var fb=document.getElementById('btnHoled');var hh=R.holes[R.cur];var cs=hh?confShots(hh):[],l=cs[cs.length-1];var holed=(PROF.predict&&l&&l.lie==='putt'&&l.dist<=4)||(hh&&hh._sank);if(fb&&holed){fb.focus();return;}var on=document.querySelector('#lgBody tr.entry input.lc.on');var el=on||document.querySelector('#lgBody tr.entry input.lc[data-lie="fw"]')||document.querySelector('#lgBody tr.entry input.lc');if(el){el.focus({preventScroll:false});if(el.select)el.select();}}catch(e){}},0);}
 /* ← → move between category cells in the same row (once the caret is at the edge) */
 function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input.p').forEach(function(el){el.addEventListener('keydown',function(e){
    if(e.key==='Enter'){e.preventDefault();
@@ -2074,8 +2078,10 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input
    if(e.key==='Escape'){e.preventDefault();el.blur();finishHole(false);return;}
    if(e.key==='Delete'){var trr=el.closest('tr');
      if(trr.classList.contains('entry')){e.preventDefault();finishHole(false);return;}
-     if(el.dataset.s!=null&&(el.dataset.stage!=='editing'||(el.value||'')==='')){var hh=+el.dataset.h,ss=+el.dataset.s;if(ss>0){e.preventDefault();R.holes[hh].shots.splice(ss,1);R.holes[hh].done=false;scMode=false;render();focusEntry();return;}}}
-   if(e.key==='Backspace'&&(el.value||'')===''&&el.dataset.s!=null){var hb=+el.dataset.h,sb=+el.dataset.s;if(sb>0){e.preventDefault();R.holes[hb].shots.splice(sb,1);R.holes[hb].done=false;scMode=false;render();focusEntry();return;}}
+     if(el.dataset.s!=null&&(el.dataset.stage!=='editing'||(el.value||'')==='')){var hh=+el.dataset.h,ss=+el.dataset.s;if(ss>0){e.preventDefault();delShot(hh,ss);return;}}}
+   if(e.key==='Backspace'&&el.dataset.s!=null){var hb=+el.dataset.h,sb=+el.dataset.s;
+     var empty=(el.value||'')==='',dbl=(bkLast.el===el&&(Date.now()-bkLast.t)<600);bkLast={el:el,t:Date.now()};
+     if((empty||dbl)&&sb>0){e.preventDefault();delShot(hb,sb);return;}}
    if(e.key==='Tab'&&el.dataset.ydtee!=null){e.preventDefault();
      var thi=+el.dataset.ydtee,hole=R.holes[thi],tks=Object.keys(COURSES[R.course].tees);
      if(tks.length>1){var cur=hole.teeOv||R.tee,idx=tks.indexOf(cur);idx=e.shiftKey?(idx<=0?tks.length-1:idx-1):(idx+1)%tks.length;
@@ -2139,7 +2145,7 @@ function wire(){
      var raw=Math.max(1,parseInt(v,10)||1),dist=(lie==='putt')?raw:U2Y(raw);
      R.holes[h].shots.push({lie:lie,dist:dist,pen:0,conf:true});render();focusEntry();});
  });
- document.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){var a=b.dataset.del.split(':').map(Number);R.holes[a[0]].shots.splice(a[1],1);R.holes[a[0]].done=false;scMode=false;render();focusEntry();};});
+ document.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){var a=b.dataset.del.split(':').map(Number);delShot(a[0],a[1]);};});
  document.querySelectorAll('[data-entryfin]').forEach(function(b){b.onclick=function(){finishHole(false);};});
  document.querySelectorAll('[data-ins]').forEach(function(b){b.onclick=function(){var a=b.dataset.ins.split(':').map(Number),h=a[0],si=a[1],sh=R.holes[h].shots,ins=si+1,before=sh[si],after=sh[ins];
    var lie=(before&&before.lie==='putt')?'putt':'fw';
@@ -2149,7 +2155,7 @@ function wire(){
  document.querySelectorAll('[data-par]').forEach(function(b){b.onclick=function(){var a=b.dataset.par.split(':').map(Number);R.holes[a[0]].par=a[1];render();};});
  document.querySelectorAll('input[data-ydtee]').forEach(function(el){el.addEventListener('change',function(){var hi=+el.dataset.ydtee,raw=Math.max(20,parseInt(el.value||'0',10)||0),v=U2Y(raw),hole=R.holes[hi];hole.yd=v;if(hole.shots[0]&&hole.shots[0].lie==='tee')hole.shots[0].dist=v;render();});});
  var acc=document.getElementById('btnAccept');if(acc)acc.onclick=function(){var pr=predictNext(R.cur);if(pr.lie==='')return;R.holes[R.cur].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();focusEntry();};
- var add=document.getElementById('btnAdd');if(add)add.onclick=function(){var h=R.holes[R.cur],last=confShots(h).slice(-1)[0];h.shots.push({lie:last&&last.lie==='putt'?'putt':'fw',dist:last&&last.lie==='putt'?2:20,pen:0,conf:true});render();focusEntry();};
+ var add=document.getElementById('btnAdd');if(add)add.onclick=function(){var h=R.holes[R.cur],last=confShots(h).slice(-1)[0];h._sank=false;h.done=false;scMode=false;h.shots.push({lie:last&&last.lie==='putt'?'putt':'fw',dist:last&&last.lie==='putt'?2:20,pen:0,conf:true});render();focusEntry();};
  var fin=document.getElementById('btnHoled');if(fin)fin.onclick=function(){finishHole(R.cur<R.hEnd-1);};
  var rop=document.getElementById('btnReopen');if(rop)rop.onclick=function(){R.holes[R.cur].done=false;render();};
  var pv=document.getElementById('btnPrev');if(pv)pv.onclick=function(){gotoHole(R.cur-1);};
