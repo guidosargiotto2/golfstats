@@ -2068,8 +2068,8 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input
    if(e.key==='Escape'){e.preventDefault();el.blur();finishHole(false);return;}
    if(e.key==='Delete'){var trr=el.closest('tr');
      if(trr.classList.contains('entry')){e.preventDefault();finishHole(false);return;}
-     if(el.dataset.s!=null&&(el.dataset.stage!=='editing'||(el.value||'')==='')){var hh=+el.dataset.h,ss=+el.dataset.s;if(ss>0){e.preventDefault();R.holes[hh].shots.splice(ss,1);render();focusEntry();return;}}}
-   if(e.key==='Backspace'&&(el.value||'')===''&&el.dataset.s!=null){var hb=+el.dataset.h,sb=+el.dataset.s;if(sb>0){e.preventDefault();R.holes[hb].shots.splice(sb,1);render();focusEntry();return;}}
+     if(el.dataset.s!=null&&(el.dataset.stage!=='editing'||(el.value||'')==='')){var hh=+el.dataset.h,ss=+el.dataset.s;if(ss>0){e.preventDefault();R.holes[hh].shots.splice(ss,1);R.holes[hh].done=false;scMode=false;render();focusEntry();return;}}}
+   if(e.key==='Backspace'&&(el.value||'')===''&&el.dataset.s!=null){var hb=+el.dataset.h,sb=+el.dataset.s;if(sb>0){e.preventDefault();R.holes[hb].shots.splice(sb,1);R.holes[hb].done=false;scMode=false;render();focusEntry();return;}}
    if(e.key==='Tab'&&el.dataset.ydtee!=null){e.preventDefault();
      var thi=+el.dataset.ydtee,hole=R.holes[thi],tks=Object.keys(COURSES[R.course].tees);
      if(tks.length>1){var cur=hole.teeOv||R.tee,idx=tks.indexOf(cur);idx=e.shiftKey?(idx<=0?tks.length-1:idx-1):(idx+1)%tks.length;
@@ -2126,7 +2126,7 @@ function wire(){
      var raw=Math.max(1,parseInt(v,10)||1),dist=(lie==='putt')?raw:U2Y(raw);
      R.holes[h].shots.push({lie:lie,dist:dist,pen:0,conf:true});render();focusEntry();});
  });
- document.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){var a=b.dataset.del.split(':').map(Number);R.holes[a[0]].shots.splice(a[1],1);render();};});
+ document.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){var a=b.dataset.del.split(':').map(Number);R.holes[a[0]].shots.splice(a[1],1);R.holes[a[0]].done=false;scMode=false;render();focusEntry();};});
  document.querySelectorAll('[data-entryfin]').forEach(function(b){b.onclick=function(){finishHole(false);};});
  document.querySelectorAll('[data-ins]').forEach(function(b){b.onclick=function(){var a=b.dataset.ins.split(':').map(Number),h=a[0],si=a[1],sh=R.holes[h].shots,ins=si+1,before=sh[si],after=sh[ins];
    var lie=(before&&before.lie==='putt')?'putt':'fw';
