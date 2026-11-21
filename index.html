@@ -538,7 +538,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
  </div>
  <div id="lgToast" class="lgtoast" role="status" aria-live="polite"></div>
 </div></div>
-  <div id="view-profile" class="lgscope" style="display:none"><div style="max-width:460px;margin:0 auto;padding-top:4px"><h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px">Player profile</h2><div class="pform" id="pform"></div></div></div>
+  <div id="view-profile" class="lgscope" style="display:none"><div style="max-width:460px;margin:0 auto;padding-top:4px"><h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px" data-i18n="Player profile">Player profile</h2><div class="pform" id="pform"></div></div></div>
   <div id="view-ledger" class="lgscope" style="display:none"><div style="max-width:900px;margin:0 auto;padding-top:4px">
     <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 2px" data-i18n="Round ledger">Round ledger</h2>
     <p style="font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:0 0 14px" data-i18n="Every round — imported and logged here. Open any one for its scorecard and details.">Every round — imported and logged here. Open any one for its scorecard and details.</p>
@@ -595,34 +595,34 @@ table.rt tbody tr:hover{background:var(--line-soft);}
     <button data-r="month">This month</button>
   </div>
 
-  <section id="kpi"><h2><span class="n">◍</span> Stats per round</h2>
+  <section id="kpi"><h2><span class="n">◍</span> <span data-i18n="Stats per round">Stats per round</span></h2>
     <div class="kpis" id="kpis"></div></section>
 
   <section>
-    <h2><span class="n">01</span> Tiger's 5</h2>
-    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:6px 0 6px;">Per round</h3>
+    <h2><span class="n">01</span> <span data-i18n="Tiger's 5">Tiger's 5</span></h2>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:6px 0 6px;" data-i18n="Per round">Per round</h3>
     <div class="card"><div class="chartbox" style="height:260px"><canvas id="mistChart" role="img" aria-label="Mistakes per round"></canvas></div>
       <div id="mistRec" style="margin-top:14px;padding:12px 15px;background:rgba(216,196,140,.16);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;font-size:14px;line-height:1.5;color:var(--ink)"></div></div>
-    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:24px 0 2px;">Control chart</h3>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:24px 0 2px;" data-i18n="Control chart">Control chart</h3>
     <div class="controls" id="ctrl_t5"></div>
-    <div class="chtype"><span id="mlbl_t5">XmR</span> chart</div>
+    <div class="chtype"><span id="mlbl_t5">XmR</span> <span data-i18n="chart">chart</span></div>
     <div class="card" id="panel_t5"></div>
   </section>
 
   <section id="sgdist">
-    <h2><span class="n">02</span> Strokes gained</h2>
-    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:6px 0 2px;">Average per round by phase</h3>
-    <p class="lead" style="margin:2px 0 10px">Bars left of zero cost you shots.</p>
+    <h2><span class="n">02</span> <span data-i18n="Strokes gained">Strokes gained</span></h2>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:6px 0 2px;" data-i18n="Average per round by phase">Average per round by phase</h3>
+    <p class="lead" style="margin:2px 0 10px" data-i18n="Bars left of zero cost you shots.">Bars left of zero cost you shots.</p>
     <div class="card"><div class="chartbox" style="height:275px"><canvas id="sgBar" role="img" aria-label="Average strokes gained by category, with total and each category's share"></canvas></div></div>
     <div id="focusRec" style="margin-top:16px;padding:14px 16px;background:rgba(216,196,140,.16);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;font-size:15px;line-height:1.55;color:var(--ink)"></div>
-    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:26px 0 2px;">Control chart</h3>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:26px 0 2px;" data-i18n="Control chart">Control chart</h3>
     <div class="controls" id="ctrl_sg"></div>
-    <div class="chtype">XmR chart</div>
+    <div class="chtype">XmR <span data-i18n="chart">chart</span></div>
     <div class="card" id="panel_sg"></div>
-    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:26px 0 2px;">Explorer — by distance &amp; lie</h3>
-    <p class="lead">Where your strokes go, drilled down by distance and lie. The grid reads like a leak map: clay cells cost you shots, green cells gain them.</p>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:26px 0 2px;" data-i18n="Explorer — by distance & lie">Explorer — by distance &amp; lie</h3>
+    <p class="lead" data-i18n="Where your strokes go, drilled down by distance and lie. The grid reads like a leak map: clay cells cost you shots, green cells gain them.">Where your strokes go, drilled down by distance and lie. The grid reads like a leak map: clay cells cost you shots, green cells gain them.</p>
     <div class="sgcats" id="sgCats"></div>
-    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:22px 0 2px;">Practice priorities</h3>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:22px 0 2px;" data-i18n="Practice priorities">Practice priorities</h3>
     <div class="prio" id="sgPrio"></div>
     <div class="card" style="margin-top:18px">
       <div class="distctrls">
@@ -633,42 +633,42 @@ table.rt tbody tr:hover{background:var(--line-soft);}
       <div class="dbars" id="distBars"></div>
       <div class="note" id="distNote" style="font-size:11.5px;color:var(--ink-soft);font-family:var(--cond);letter-spacing:.03em;margin-top:14px"></div>
     </div>
-    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:26px 0 2px;">Putting by distance</h3>
-    <p class="lead" style="margin:2px 0 10px">Strokes gained on the greens, split by first-putt distance (feet). This is where the 3-putts hide.</p>
+    <h3 style="font-family:var(--serif);font-weight:500;font-size:16px;color:var(--pine);margin:26px 0 2px;" data-i18n="Putting by distance">Putting by distance</h3>
+    <p class="lead" style="margin:2px 0 10px" data-i18n="Strokes gained on the greens, split by first-putt distance (feet). This is where the 3-putts hide.">Strokes gained on the greens, split by first-putt distance (feet). This is where the 3-putts hide.</p>
     <div class="card"><div class="puttgrid" id="puttGrid"></div><div class="note" id="puttNote" style="font-size:11.5px;color:var(--ink-soft);font-family:var(--cond);letter-spacing:.03em;margin-top:12px"></div></div>
   </section>
 
   <section>
-    <h2><span class="n">03</span> Traditional stats</h2>
+    <h2><span class="n">03</span> <span data-i18n="Traditional stats">Traditional stats</span></h2>
     <div class="controls" id="ctrl_tr"></div>
-    <div class="chtype"><span id="mlbl_tr">XmR</span> chart</div>
+    <div class="chtype"><span id="mlbl_tr">XmR</span> <span data-i18n="chart">chart</span></div>
     <div class="card" id="panel_tr"></div>
   </section>
 
   <section>
-    <h2><span class="n">04</span> Short game &amp; scoring process</h2>
-    <p class="lead">Scrambling, putts per GIR and greenside proximity — each on control-chart footing, so you see a real shift, not a hot or cold round. Built from your shot-by-shot rounds.</p>
+    <h2><span class="n">04</span> <span data-i18n="Short game & scoring process">Short game &amp; scoring process</span></h2>
+    <p class="lead" data-i18n="Scrambling, putts per GIR and greenside proximity — each on control-chart footing, so you see a real shift, not a hot or cold round. Built from your shot-by-shot rounds.">Scrambling, putts per GIR and greenside proximity — each on control-chart footing, so you see a real shift, not a hot or cold round. Built from your shot-by-shot rounds.</p>
     <div class="controls" id="ctrl_sh"></div>
-    <div class="chtype"><span id="mlbl_sh">XmR</span> chart</div>
+    <div class="chtype"><span id="mlbl_sh">XmR</span> <span data-i18n="chart">chart</span></div>
     <div class="card" id="panel_sh"></div>
   </section>
 
   <section>
-    <h2><span class="n">◎</span> What drives your score</h2>
+    <h2><span class="n">◎</span> <span data-i18n="What drives your score">What drives your score</span></h2>
     <div id="driversHead" style="margin:0 0 16px;padding:14px 16px;background:rgba(216,196,140,.16);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;font-size:15px;line-height:1.55;color:var(--ink)"></div>
     <div class="card"><div class="chartbox" style="height:420px"><canvas id="driversChart" role="img" aria-label="Correlation of each stat with score to par"></canvas></div></div>
   </section>
 
   <section>
-    <h2><span class="n">05</span> Scoring trend</h2>
+    <h2><span class="n">05</span> <span data-i18n="Scoring trend">Scoring trend</span></h2>
     <p class="lead" style="font-size:16.5px;max-width:none;line-height:1.6">Everything above adds up to this — your score to par, round by round, on control-chart footing. Below zero is the goal; lower is better, so a point below the lower limit is a breakthrough round and one above the upper limit is a blow-up. Whenever a signal fires the limits recalculate, so each stable stretch is judged against its own baseline.</p>
     <div class="controls" id="ctrl_sc" style="display:none"></div>
     <div class="card" id="panel_sc"></div>
   </section>
 
   <section>
-    <h2><span class="n">06</span> Every round</h2>
-    <p class="lead">Sortable — click any header. Green is under par or shots gained; clay is over par or shots lost.</p>
+    <h2><span class="n">06</span> <span data-i18n="Every round">Every round</span></h2>
+    <p class="lead" data-i18n="Sortable — click any header. Green is under par or shots gained; clay is over par or shots lost.">Sortable — click any header. Green is under par or shots gained; clay is over par or shots lost.</p>
     <div><div id="grid"></div></div>
   </section>
 
@@ -1059,7 +1059,8 @@ function buildPanels(){
  ['sg','t5','tr','sh','sc'].forEach(sfx=>{
    const g=GROUPS[sfx], ce=document.getElementById('ctrl_'+sfx);
    const hasPct=g.metrics.some(k=>PCT_OF[k]);
-   ce.innerHTML=g.metrics.map(k=>`<button data-k="${k}" class="${k===g.cur?'on':''}">${shortLbl(k)}</button>`).join('')+(hasPct?`<button id="unit_${sfx}" class="unittgl" data-unit="1" title="Toggle count / percentage">#</button>`:'');
+   var TT=window.t||function(s){return s;};
+   ce.innerHTML=g.metrics.map(k=>`<button data-k="${k}" class="${k===g.cur?'on':''}">${TT(shortLbl(k))}</button>`).join('')+(hasPct?`<button id="unit_${sfx}" class="unittgl" data-unit="1" title="Toggle count / percentage">#</button>`:'');
    ce.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.unit){g.pct=!g.pct;drawXmr(sfx);}else if(b.dataset.k){g.cur=b.dataset.k;drawXmr(sfx);}});
    document.getElementById('panel_'+sfx).innerHTML=panelHTML(sfx);
    const cvx=document.getElementById('xmr_'+sfx);
@@ -1788,13 +1789,26 @@ var I18N_ES={
  "rounds":"vueltas","Scorecard":"Scorecard","Details":"Detalles","imported":"importada","logged":"cargada",
  "Strokes gained":"Strokes gained","Card":"Tarjeta","Scoring":"Scoring","Off tee":"Del tee","App":"Approach","Around":"Alrededor","Putt":"Putt","Total":"Total","Birdies":"Birdies","Bogeys":"Bogeys","Doubles+":"Dobles+",
  "Imported summary — no shot-by-shot detail, so no hole-by-hole scorecard.":"Resumen importado — sin detalle tiro a tiro, por eso no hay scorecard hoyo por hoyo.",
- "No rounds yet.":"Sin vueltas todavía.","Round Ledger":"Mis Vueltas","Sign in":"Ingresar"
+ "No rounds yet.":"Sin vueltas todavía.","Round Ledger":"Mis Vueltas","Sign in":"Ingresar",
+ /* dashboard section + sub headers */
+ "Stats per round":"Stats por vuelta","Tiger's 5":"Tiger's 5","Strokes gained":"Strokes gained","Traditional stats":"Estadísticas tradicionales","Short game & scoring process":"Juego corto y proceso de score","What drives your score":"Qué define tu score","Scoring trend":"Tendencia de score","Every round":"Todas las vueltas",
+ "Per round":"Por vuelta","Control chart":"Gráfico de control","Average per round by phase":"Promedio por vuelta por fase","Explorer — by distance & lie":"Explorador — por distancia y lie","Practice priorities":"Prioridades de práctica","Putting by distance":"Putt por distancia","chart":"gráfico",
+ /* dashboard leads */
+ "Bars left of zero cost you shots.":"Las barras a la izquierda de cero te cuestan tiros.",
+ "Where your strokes go, drilled down by distance and lie. The grid reads like a leak map: clay cells cost you shots, green cells gain them.":"A dónde se van tus tiros, desglosado por distancia y lie. La grilla se lee como un mapa de fugas: las celdas terracota te cuestan tiros, las verdes te suman.",
+ "Strokes gained on the greens, split by first-putt distance (feet). This is where the 3-putts hide.":"Strokes gained en el green, por distancia del primer putt (pies). Acá se esconden los 3-putts.",
+ "Scrambling, putts per GIR and greenside proximity — each on control-chart footing, so you see a real shift, not a hot or cold round. Built from your shot-by-shot rounds.":"Scrambling, putts por GIR y proximidad al green — cada uno como gráfico de control, para ver un cambio real, no una vuelta buena o mala. Hecho con tus vueltas tiro a tiro.",
+ "Sortable — click any header. Green is under par or shots gained; clay is over par or shots lost.":"Ordenable — tocá cualquier encabezado. Verde es bajo par o tiros ganados; terracota es sobre par o tiros perdidos.",
+ /* metric short labels */
+ "Tee-to-green":"Tee a green","Around green":"Alrededor del green","Putting":"Putt","3-putts":"3-putts","double bogeys":"dobles bogeys","bogey par-5":"bogey en par-5","3+ from 150":"3+ desde 150","3+ from 40":"3+ desde 40","Fairways":"Fairways","Greens":"Greens","Putts":"Putts","Penalties":"Penalidades","Tee shot distance":"Distancia de drive","Bogey avoidance %":"Evitar bogey %","Score to par":"Score al par","Driving accuracy %":"Precisión de drive %","Scrambling %":"Scrambling %","Putts per GIR":"Putts por GIR","Short-game proximity (ft)":"Proximidad juego corto (ft)","Greenside inside 6 ft %":"A ≤6 ft del green %","Greenside outside 15 ft %":"A >15 ft del green %",
+ /* profile */
+ "Player profile":"Perfil del jugador","Shot prediction":"Predicción de tiros","Net par":"Par neto","Language":"Idioma","Home course":"Cancha habitual","Default tee":"Tee predeterminado"
 };
 function t(s){try{if((window.__LANG||'en')==='es'&&I18N_ES[s])return I18N_ES[s];}catch(e){}return s;}
 window.t=t;
 function applyI18n(){try{document.querySelectorAll('[data-i18n]').forEach(function(el){el.textContent=t(el.getAttribute('data-i18n'));});document.querySelectorAll('[data-i18n-ph]').forEach(function(el){el.setAttribute('placeholder',t(el.getAttribute('data-i18n-ph')));});}catch(e){}}
 window.applyI18n=applyI18n;
-function setLang(l){PROF.lang=(l==='es'?'es':'en');window.__LANG=PROF.lang;saveProf();applyI18n();try{render();renderSel();}catch(e){}}
+function setLang(l){PROF.lang=(l==='es'?'es':'en');window.__LANG=PROF.lang;saveProf();try{location.reload();}catch(e){applyI18n();}}
 window.setLang=setLang;window.__LANG=PROF.lang||'en';
 /* round history (for Handicap Index) */
 const HISTK=LU+'scard-hist-v1';
@@ -2340,7 +2354,7 @@ function renderProf(){
   <label>Default tee<select id="pf_tee">${teeOpts}</select></label>
   <label>Average drive (yards)<input id="pf_drive" type="number" min="100" max="400" step="5" value="${driveYd()}"></label>
   <div class="hiblock">
-    <div class="hirow"><span>Tiger's 5</span></div>
+    <div class="hirow"><span>${t("Tiger\'s 5")}</span></div>
     <div class="hisub">The two configurable mistakes in your Tiger's 5.</div>
     <div class="hisub2">Blow-out easy saves — a wasted save around the green.</div>
     <label>Counts when<select id="pf_t5mode">
@@ -2352,21 +2366,21 @@ function renderProf(){
     <label>X — 9-iron-or-less distance (yd, 50–150)<input id="pf_bogeyx" type="number" min="50" max="150" step="5" value="${bogeyXyd()}"></label>
   </div>
   <div class="hiblock">
-    <div class="hirow"><span>Shot prediction</span></div>
+    <div class="hirow"><span>${t('Shot prediction')}</span></div>
     <label>When logging a round<select id="pf_predict">
       <option value="on" ${PROF.predict!==false?'selected':''}>On — predict each next shot (confirm or correct)</option>
       <option value="off" ${PROF.predict===false?'selected':''}>Off — enter every shot manually</option></select></label>
     <div class="hisub">Predictions improve as you log more rounds; each one is based on your prior shots and learned patterns for that hole.</div>
   </div>
   <div class="hiblock">
-    <div class="hirow"><span>Net par</span></div>
+    <div class="hirow"><span>${t('Net par')}</span></div>
     <label>Score against your handicap<select id="pf_netpar">
       <option value="on" ${PROF.netPar!==false?'selected':''}>On — judge to-par, GIR &amp; Tiger's 5 against your net par</option>
       <option value="off" ${PROF.netPar===false?'selected':''}>Off — everything measured against scratch par</option></select></label>
     <div class="hisub">Spreads your playing handicap by stroke index. Net par lifts to-par, GIR (allowance = par−2 + strokes received) and the score-relative Tiger's 5 (double, bogey par-5, bogey w/ 9-iron). 3-putts, short-game fails and strokes gained stay absolute.</div>
   </div>
   <div class="hiblock">
-    <div class="hirow"><span>Language</span></div>
+    <div class="hirow"><span>${t('Language')}</span></div>
     <label>App language<select id="pf_lang"><option value="en" ${PROF.lang!=='es'?'selected':''}>English</option><option value="es" ${PROF.lang==='es'?'selected':''}>Español</option><option value="fr" disabled>Français (soon)</option><option value="ja" disabled>日本語 (soon)</option></select></label>
     <div class="hisub">These settings drive the logger. Historical Statistics rounds keep your sheet's original definitions.</div>
   </div>
@@ -2431,7 +2445,7 @@ function lgOpenCard(o){if(!o||!o.holes)return;editRoundId=o.id||null;lgLoad(o);s
  if(PROF.askedDrive||hasImport||hasLogged)return;
  var ov=document.getElementById('driveAsk'),inp=document.getElementById('driveAskInput'),btn=document.getElementById('driveAskSave');
  if(!ov||!inp||!btn)return;ov.style.display='flex';setTimeout(function(){inp.focus();},50);
- function done(){var v=parseInt(inp.value,10);if(!isNaN(v))PROF.driveYd=Math.min(400,Math.max(100,v));var lg=document.getElementById('driveAskLang');if(lg){PROF.lang=(lg.value==='es'?'es':'en');window.__LANG=PROF.lang;}PROF.askedDrive=true;saveProf();ov.style.display='none';try{applyI18n();}catch(e){}try{render();renderSel();}catch(e){}}
+ function done(){var v=parseInt(inp.value,10);if(!isNaN(v))PROF.driveYd=Math.min(400,Math.max(100,v));var lg=document.getElementById('driveAskLang');var wasEs=(lg&&lg.value==='es');if(lg){PROF.lang=(lg.value==='es'?'es':'en');window.__LANG=PROF.lang;}PROF.askedDrive=true;saveProf();ov.style.display='none';if(wasEs){try{location.reload();return;}catch(e){}}try{applyI18n();}catch(e){}try{render();renderSel();}catch(e){}}
  btn.onclick=done;inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();done();}});
 }catch(e){}})();
 render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel();},profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause};
