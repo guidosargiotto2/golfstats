@@ -578,7 +578,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
  </div>
  <div id="lgToast" class="lgtoast" role="status" aria-live="polite"></div>
 </div></div>
-  <div id="view-profile" class="lgscope" style="display:none"><div style="max-width:460px;margin:0 auto;padding-top:4px"><h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px" data-i18n="Player profile">Player profile</h2><div class="pform" id="pform"></div></div></div>
+  <div id="view-profile" class="lgscope" style="display:none"><div style="max-width:460px;margin:0 auto;padding-top:4px"><h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px" data-i18n="Player profile">Player profile</h2><div class="pform" id="pform"></div><div id="acctBody"></div></div></div>
   <div id="view-ledger" style="display:none"><div class="lgscope" style="max-width:900px;margin:0 auto;padding-top:4px">
     <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 2px" data-i18n="Round ledger">Round ledger</h2>
     <p style="font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:0 0 14px" data-i18n="Every round — imported and logged here. Open any one for its scorecard and details.">Every round — imported and logged here. Open any one for its scorecard and details.</p>
@@ -2588,6 +2588,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    var bs=document.querySelectorAll('#tabnav button');for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',bs[i].dataset.v===v);
    if(v==='log'&&window.LGR)window.LGR.card();
    if(v==='profile'&&window.LGR)window.LGR.profile();
+   if(v==='profile'&&window.FRIENDS)window.FRIENDS.render();
    if(v==='ideas'&&window.IDEAS)window.IDEAS.render();
    if(v==='ledger'&&window.LEDGER)window.LEDGER.render();
    if(v==='friends'&&window.FRIENDS)window.FRIENDS.render();
@@ -2968,7 +2969,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  }
  function findHTML(){
    return sec(T('Find players','Buscar jugadores'),'<div class="frline"><input id="frQ" placeholder="'+T('Name or username','Nombre o usuario')+'" autocapitalize="none"><button class="pf_btn" id="frGo">'+T('Search','Buscar')+'</button></div><div id="frRes"></div>',
-     T('Only players who chose to be findable appear here.','Solo aparecen los jugadores que eligieron ser encontrables.'));
+     T('Only players who chose to be findable appear here. Privacy, professor and password are in Profile.','Solo aparecen los jugadores que eligieron ser encontrables. Privacidad, profesor y contraseña están en Perfil.'));
  }
  function privacyHTML(){
    var fl=(ME.followers||[]).map(function(f){return '<span class="frchip">'+esc(f.display)+' <button class="frx" data-rmf="'+esc(f.username)+'" title="'+T('Remove follower','Quitar seguidor')+'">✕</button></span>';}).join('');
@@ -3011,12 +3012,13 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    return h;
  }
  function draw(){
-   var el=document.getElementById('friendsBody');if(!el)return;
-   if(!tok()){el.innerHTML='<p class="frsub" style="font-size:14px">'+T('Friends and professors work on the synced site, after signing in with a password.','Amigos y profesores funcionan en el sitio sincronizado, después de entrar con contraseña.')+'</p>';return;}
-   if(!ME){el.innerHTML='<p class="frsub">'+(MSG||'…')+'</p>';return;}
-   el.innerHTML=(MSG?'<p class="frmsg">'+esc(MSG)+'</p>':'')+compareHTML()+feedHTML()+studentsHTML()+findHTML()+profHTML()+privacyHTML()+adminHTML();
-   var st=document.getElementById('frStu');if(st)st.innerHTML=studentHTML();
-   wire(el);
+   var el=document.getElementById('friendsBody'),ac=document.getElementById('acctBody');
+   var msg=(MSG?'<p class="frmsg">'+esc(MSG)+'</p>':'');
+   if(!tok()){if(el)el.innerHTML='<p class="frsub" style="font-size:14px">'+T('Friends and professors work on the synced site, after signing in with a password.','Amigos y profesores funcionan en el sitio sincronizado, después de entrar con contraseña.')+'</p>';if(ac)ac.innerHTML='';return;}
+   if(!ME){if(el)el.innerHTML='<p class="frsub">'+(MSG||'…')+'</p>';if(ac)ac.innerHTML=MSG?'<p class="frsub">'+esc(MSG)+'</p>':'';return;}
+   if(el){el.innerHTML=msg+compareHTML()+feedHTML()+studentsHTML()+findHTML();
+     var st=document.getElementById('frStu');if(st)st.innerHTML=studentHTML();wire(el);}
+   if(ac){ac.innerHTML='<h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:26px 0 14px">'+T('Account','Cuenta')+'</h2>'+msg+profHTML()+privacyHTML()+adminHTML();wire(ac);}
  }
  function load(msg){MSG=msg||'';if(!tok()){draw();return;}
    Promise.all([api('me'),api('feed')]).then(function(a){if(a[0]&&a[0].ok){ME=a[0];FEED=(a[1]&&a[1].friends)||[];}else{ME=null;MSG=T('Could not load — sign in again.','No se pudo cargar — volvé a entrar.');}draw();}).catch(function(){ME=null;MSG=T('Offline — try again later.','Sin conexión — probá más tarde.');draw();});}
