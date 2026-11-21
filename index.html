@@ -1259,7 +1259,7 @@ function renderSGExplorer(){
   const detail={
     'Off the tee':()=>{const fwa=R.map(r=>r.fw).filter(v=>v!=null),pena=R.map(r=>r.pen).filter(v=>v!=null);const fw=fwa.length?mean(fwa):null,pen=pena.length?mean(pena):0;return {where:LX(`accuracy${fw!=null?` — about ${fw.toFixed(1)} fairways a round`:''}${pen>=0.5?`, plus ~${pen.toFixed(1)} penalty strokes`:''}`,`precisión${fw!=null?` — unos ${fw.toFixed(1)} fairways por vuelta`:''}${pen>=0.5?`, más ~${pen.toFixed(1)} golpes de penalidad`:''}`),focus:LX('Driver dispersion and strike — tighter start line and a repeatable shape, not more distance. This is your single biggest lever.','Dispersión y contacto con el driver — línea de salida más ajustada y un efecto repetible, no más distancia. Es tu mayor palanca.')};},
     'Approach':()=>{const b=DIST.bands.filter(x=>x.from>=150&&x.from<=249).map(x=>({b:x,v:(x.sgr.fw||0)+(x.sgr.rough||0)+(x.sgr.bunker||0)})).sort((a,b)=>a.v-b.v)[0];return{where:b?LX(`long approaches (${bandLbl(b.b)} yd, esp. rough)`,`approaches largos (${bandLbl(b.b)} yd, sobre todo desde el rough)`):LX('long approaches','approaches largos'),focus:LX('150–200 yd approaches and recovery from rough — proximity, not just greens hit.','Approaches de 150–200 yd y recuperación desde el rough — cercanía, no solo greens acertados.')};},
-    'Around green':()=>({where:LX('greenside (inside 50 yd)','alrededor del green (menos de 50 yd)'),focus:LX('Sharpen bunker technique and tight-lie chips; get the first one closer so putting is a tap-in.','Afinar la técnica de bunker y los chips desde lies apretados; dejar el primero más cerca para que el putt sea dado.')}),
+    'Around green':()=>({where:LX('greenside (inside '+((window.SGE&&window.SGE.atgYd())||50)+' yd)','alrededor del green (menos de '+((window.SGE&&window.SGE.atgYd())||50)+' yd)'),focus:LX('Sharpen bunker technique and tight-lie chips; get the first one closer so putting is a tap-in.','Afinar la técnica de bunker y los chips desde lies apretados; dejar el primero más cerca para que el putt sea dado.')}),
     'Putting':()=>{const w=(DIST.putt||[]).slice().sort((a,b)=>(a.sgp||0)-(b.sgp||0))[0];return{where:w?`${w.from}–${w.to} ft (${fmtSG(w.sgp)}/putt)`:LX('lag putting','putts largos'),focus:LX('Speed control from 15–30 ft so long first putts finish inside a 3-ft circle — directly cuts 3-putts.','Control de velocidad desde 15–30 ft para que el primer putt largo quede dentro de un círculo de 3 ft — reduce directamente los 3 putts.')};},
   };
   const pc=ranked.slice(0,3).map((c,i)=>{const d=detail[c.lbl]?detail[c.lbl]():{where:'',focus:''};
@@ -1406,8 +1406,9 @@ function shotsOf(r){
  if(r.holes)return r.holes.filter(h=>h&&h.shots&&h.shots.length).map(h=>({par:h.par,shots:h.shots.map(x=>({lie:x.lie,dist:+x.dist,pen:x.pen||0}))}));
  return null;}
 function rawSG(r){                                         /* cached per record: raw phases + shot counts per phase */
- if(r._raw!==undefined)return r._raw;
- const E=window.SGE,H=shotsOf(r);
+ const E=window.SGE,key=E&&E.atgYd?E.atgYd():50;
+ if(r._raw!==undefined&&r._rawK===key)return r._raw;
+ const H=shotsOf(r);r._rawK=key;
  if(!E||!H||!H.length){return null;}
  const o={ott:0,app:0,atg:0,putt:0,tot:0},n={ott:0,app:0,atg:0,putt:0};
  H.forEach(h=>{const g=E.holeSG(h);o.ott+=g.ott;o.app+=g.app;o.atg+=g.atg;o.putt+=g.putt;o.tot+=g.tot;h.shots.forEach((x,i)=>{n[E.roleOf(h.shots,i,h.par)]++;});});
@@ -1418,7 +1419,7 @@ function refHI(r){if(r.hi!=null&&!isNaN(+r.hi))return +r.hi;const h=window.SGE&&
 function sgView(r){
  const raw=rawSG(r);
  let base={ott:r.ott,app:r.app,atg:r.atg,putt:r.putt,sgtot:r.sgtot};
- if(r.sgAdj&&raw)base={ott:raw.sg.ott,app:raw.sg.app,atg:raw.sg.atg,putt:raw.sg.putt,sgtot:raw.sg.tot};   /* sheet stored handicap-adjusted values */
+ if(raw)base={ott:raw.sg.ott,app:raw.sg.app,atg:raw.sg.atg,putt:raw.sg.putt,sgtot:raw.sg.tot};   /* phases rebuilt from the shots, so the 'around the green' setting applies to every round */
  if(sgBase()!=='hcp'||!r.cr||!r.slope||r.score==null||base.sgtot==null)return Object.assign({},r,base);
  const H=refHI(r),nine=(r.holesPlayed||18)<18;
  const avgDiff=H+3*(50+H)/50;                              /* expected differential for this index (sheet: R15=3, S15=50) */
@@ -1823,7 +1824,8 @@ const PT=[[1,1],[2,1],[3,1.04],[4,1.13],[5,1.23],[6,1.34],[7,1.42],[8,1.5],[9,1.
 const LIECOL={tee:1,fw:2,rough:3,sand:4,rec:5};
 function flook(t,x,c){let b=null;for(const r of t){if(r[0]<=x)b=r;else break;}if(!b)b=t[0];return b[c];}
 function Estart(lie,dist){if(lie==='putt')return flook(PT,dist,1);const v=flook(LG,dist,LIECOL[lie]);return v==null?flook(LG,dist,2):v;}
-function roleOf(shots,i,par){const s=shots[i];if(s.lie==='putt')return'putt';if(i===0&&s.lie==='tee'&&par!==3)return'ott';return s.dist<=50?'atg':'app';}
+function atgYd(){var v=(typeof PROF!=='undefined'&&PROF)?+PROF.atgYd:NaN;return (v>=10&&v<=100)?v:50;}   /* 'around the green' = within this many yards (PGA TOUR: 30) */
+function roleOf(shots,i,par){const s=shots[i];if(s.lie==='putt')return'putt';if(i===0&&s.lie==='tee'&&par!==3)return'ott';return s.dist<=atgYd()?'atg':'app';}
 function holeSG(h){const o={ott:0,app:0,atg:0,putt:0,tot:0,strokes:0};const s=h.shots;
  for(let i=0;i<s.length;i++){const En=(i+1<s.length)?Estart(s[i+1].lie,s[i+1].dist):0;
    const sg=Estart(s[i].lie,s[i].dist)-En-1-(s[i].pen||0);o[roleOf(s,i,h.par)]+=sg;o.tot+=sg;o.strokes+=1+(s[i].pen||0);}return o;}
@@ -1859,7 +1861,7 @@ function saveYover(){localStorage.setItem(YKEY,JSON.stringify(YOVER));}
 function stdYd(course,tee,i){const k=course+'|'+tee+'#'+i;return YOVER[k]!=null?YOVER[k]:COURSES[course].tees[tee].yds[i];}
 /* ===== USER PROFILE ===== */
 const PROFK=LU+'scard-prof-v1';
-const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true,askedDrive:false,driveFromData:false,tourDone:false};
+const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true,atgYd:50,askedDrive:false,driveFromData:false,tourDone:false};
 function nineIron(){var x=parseInt(PROF.nineIron,10);if(isNaN(x))x=140;return Math.min(200,Math.max(80,x));}
 function bogeyXyd(){var x=parseInt(PROF.bogeyX,10);if(isNaN(x))x=nineIron();return Math.min(150,Math.max(50,x));}
 /* average drive in yards — where the predicted second shot is played from */
@@ -2592,6 +2594,8 @@ function renderProf(){
     <label>${window.__LANG==='es'?'Strokes gained contra':'Strokes gained against'}<select id="pf_sgbase">
       <option value="scratch" ${PROF.sgBase!=='hcp'?'selected':''}>${window.__LANG==='es'?'Scratch — referencia de tour':'Scratch — tour benchmark'}</option>
       <option value="hcp" ${PROF.sgBase==='hcp'?'selected':''}>${window.__LANG==='es'?'Mi hándicap — lo que gana un jugador de mi índice':'My handicap — what a player of my index usually gains'}</option></select></label>
+    <label>${window.__LANG==='es'?'Alrededor del green = a menos de (yd, 10–100)':'Around the green = within (yd, 10–100)'}<input id="pf_atg" type="number" min="10" max="100" step="5" value="${atgYd()}"></label>
+    <div class="hisub">${window.__LANG==='es'?'Separa Approach de Juego corto en strokes gained. El PGA TOUR usa 30 yardas; el valor por defecto es 50.':'Splits Approach from Around the green in strokes gained. The PGA TOUR uses 30 yards; the default is 50.'}</div>
     <div class="hisub">${window.__LANG==='es'?'Con “Mi hándicap”, 0 es tu vuelta típica: positivo es mejor que tu nivel. Usa la misma fórmula que la planilla. Los scorecards hoyo por hoyo siguen contra scratch.':'With “My handicap”, 0 is your typical round: positive means better than your level. Same formula as the spreadsheet. Hole-by-hole scorecards stay against scratch.'}</div>
     <div class="hisub">Spreads your playing handicap by stroke index. Net par lifts to-par, GIR (allowance = par−2 + strokes received) and the score-relative Tiger's 5 (double, bogey par-5, bogey w/ 9-iron). 3-putts, short-game fails and strokes gained stay absolute.</div>
   </div>
@@ -2636,6 +2640,7 @@ function renderProf(){
  document.getElementById('pf_predict').addEventListener('change',e=>{PROF.predict=(e.target.value!=='off');saveProf();try{render();}catch(_){}} );
  var ppc=document.getElementById('pf_pincourse');if(ppc)ppc.addEventListener('change',e=>{window.__pinCfg=e.target.value;renderProf();});
  document.querySelectorAll('#pform [data-pinpos]').forEach(s=>s.addEventListener('change',e=>{var c=pinCfgCourse();PROF.pinCol=PROF.pinCol||{};PROF.pinCol[c]=PROF.pinCol[c]||{};PROF.pinCol[c][s.dataset.pinpos]=e.target.value;saveProf();try{render();}catch(_){}}));
+ var pag=document.getElementById('pf_atg');if(pag)pag.addEventListener('change',e=>{var v=Math.round(+e.target.value);if(!(v>=10&&v<=100)){e.target.value=atgYd();return;}PROF.atgYd=v;saveProf();try{if(typeof renderAll==='function')renderAll();}catch(_){}try{render();}catch(_){}});
  var psb=document.getElementById('pf_sgbase');if(psb)psb.addEventListener('change',e=>{PROF.sgBase=e.target.value;saveProf();try{if(typeof renderAll==='function')renderAll();}catch(_){}});
  var pnp=document.getElementById('pf_netpar');if(pnp)pnp.addEventListener('change',e=>{PROF.netPar=(e.target.value!=='off');saveProf();try{render();}catch(_){}try{if(typeof draw==='function')draw();}catch(_){}} );
  var plg=document.getElementById('pf_lang');if(plg)plg.addEventListener('change',e=>{setLang(e.target.value);try{renderProf();}catch(_){}});
@@ -2702,7 +2707,7 @@ function lgPractice(){ /* throwaway practice round for the tour (not saved) */
  R=newRound(ck,tk);R.score='78';R.chcp='0';R.phase='play';R.markers=tk;lgEntered=true;scMode=false;R.cur=R.hStart;R._tour=true;
  var h=R.holes[R.cur];h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];teeArmed=false;render();focusTee();}
 function lgPracticeEnd(){ if(tourSavedR){R=tourSavedR;tourSavedR=null;}else{var d=loadDefault();R=newRound(d.course,d.tee);}lgEntered=false;scMode=false;render();renderSel();}
-window.SGE={Estart:Estart,holeSG:holeSG,roleOf:roleOf,hi:function(){try{return effHI();}catch(e){return null;}}};
+window.SGE={atgYd:atgYd,Estart:Estart,holeSG:holeSG,roleOf:roleOf,hi:function(){try{return effHI();}catch(e){return null;}}};
 render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel();},importCard:importCard,profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause,practice:lgPractice,practiceEnd:lgPracticeEnd,tourCard:function(){try{if(!R._tour)return;for(var i=R.hStart;i<R.hEnd;i++){var h=R.holes[i],y=h.yd;
    h.shots=h.par===3?[{lie:'tee',dist:y,pen:0,conf:true},{lie:'putt',dist:22,pen:0,conf:true},{lie:'putt',dist:2,pen:0,conf:true}]
     :h.par===5?[{lie:'tee',dist:y,pen:0,conf:true},{lie:'fw',dist:Math.max(150,y-280),pen:0,conf:true},{lie:(i%3?'fw':'rough'),dist:70,pen:0,conf:true},{lie:'putt',dist:14,pen:0,conf:true},{lie:'putt',dist:2,pen:0,conf:true}]
