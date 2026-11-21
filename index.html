@@ -482,6 +482,15 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 </style>
 </head>
 <body>
+<div id="driveAsk" class="login" style="display:none">
+  <div class="loginbox lgscope">
+    <h1 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:0 0 4px">Your average drive</h1>
+    <div class="sub2" style="font-family:var(--cond);color:var(--ink-soft);font-size:13px;margin:0 0 14px">Be realistic — this sets your shot predictions until you've logged a few rounds, then it switches to your real data.</div>
+    <label style="font-family:var(--cond);text-transform:uppercase;letter-spacing:.06em;font-size:11px;color:var(--ink-soft);font-weight:700;display:block;margin-bottom:5px">Average driving distance (yards)</label>
+    <input id="driveAskInput" type="number" inputmode="numeric" min="100" max="400" step="5" placeholder="e.g. 230" style="font-family:var(--sans);font-size:16px;border:1px solid var(--line);border-radius:10px;padding:11px;background:var(--cream);color:var(--ink);width:100%;box-sizing:border-box;font-weight:600">
+    <button id="driveAskSave" class="pf_btn" style="margin-top:14px;width:100%">Save</button>
+  </div>
+</div>
 <div id="loginOverlay" class="login" style="display:none">
   <form id="loginForm" class="loginbox" autocomplete="on">
     <h1>Round Ledger</h1><div class="sub2">Sign in</div>
@@ -492,7 +501,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   </form>
 </div>
 <div class="wrap">
-  <div class="tabnav" id="tabnav"><button data-v="log">Log a round</button><button data-v="stats" class="on">Statistics</button><button data-v="ledger">Round ledger</button><button data-v="profile">Profile</button><button data-v="ideas">Ideas</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button">Log out</button></div>
+  <div class="tabnav" id="tabnav"><button data-v="log">Log a round</button><button data-v="stats">Statistics</button><button data-v="ledger">Round ledger</button><button data-v="profile">Profile</button><button data-v="ideas">Ideas</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button">Log out</button></div>
   <div id="view-log" class="lgscope" style="display:none"><div class="wrap">
  <div class="bar"><div><h1 id="lgTitle">Start a round</h1><div class="meta" id="meta" style="display:none"></div></div>
    <div class="tot"><div class="sc" id="totScore">—</div><div class="sg" id="totSG">—</div></div></div>
@@ -1675,7 +1684,7 @@ function saveYover(){localStorage.setItem(YKEY,JSON.stringify(YOVER));}
 function stdYd(course,tee,i){const k=course+'|'+tee+'#'+i;return YOVER[k]!=null?YOVER[k]:COURSES[course].tees[tee].yds[i];}
 /* ===== USER PROFILE ===== */
 const PROFK=LU+'scard-prof-v1';
-const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true};
+const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true,askedDrive:false,driveFromData:false};
 function nineIron(){var x=parseInt(PROF.nineIron,10);if(isNaN(x))x=140;return Math.min(200,Math.max(80,x));}
 function bogeyXyd(){var x=parseInt(PROF.bogeyX,10);if(isNaN(x))x=nineIron();return Math.min(150,Math.max(50,x));}
 /* average drive in yards — where the predicted second shot is played from */
@@ -2239,6 +2248,8 @@ document.getElementById('lgSaveBtn').onclick=()=>{
  if(editRoundId){for(var qi=0;qi<arr.length;qi++){if(arr[qi].id===editRoundId){arr[qi]=rec;replaced=true;break;}}}
  if(!replaced)arr.push(rec);
  var cnt=0;try{if(window.saveLoggedRounds)cnt=window.saveLoggedRounds(arr)||0;}catch(e){}
+ /* once there are logged rounds, drive distance follows the real data */
+ try{var dd=arr.map(function(x){return x.dist;}).filter(function(x){return x;});if(dd.length){PROF.driveYd=Math.round(dd.reduce(function(a,b){return a+b;},0)/dd.length);PROF.driveFromData=true;saveProf();}}catch(e){}
  if(!editRoundId&&!nine){HIST.push({date:R.date,course:R.course,tee:R.tee,score:t.strokes,par:t.par,diff});saveHist();}
  const hi=effHI();const m=roundMistakes();
  var stp=t.strokes-t.par;
@@ -2377,6 +2388,16 @@ function lgLoad(o){
 }
 function lgPause(){if(R.phase==='play'){var act=R.holes.slice(R.hStart,R.hEnd),allDone=act.length>0&&act.every(function(x){return x.done;});if(!allDone&&lgEntered){lgEntered=false;render();}}}
 function lgOpenCard(o){if(!o||!o.holes)return;editRoundId=o.id||null;lgLoad(o);scMode=true;render();renderLogged();}
+/* new user with no imported and no logged rounds → ask for a realistic average drive */
+(function(){try{var u=localStorage.getItem('app-user')||'';
+ var hasImport=(typeof PLAYERS!=='undefined'&&PLAYERS[u]&&PLAYERS[u].length);
+ var hasLogged=(window.getLoggedRounds&&window.getLoggedRounds().length);
+ if(PROF.askedDrive||hasImport||hasLogged)return;
+ var ov=document.getElementById('driveAsk'),inp=document.getElementById('driveAskInput'),btn=document.getElementById('driveAskSave');
+ if(!ov||!inp||!btn)return;ov.style.display='flex';setTimeout(function(){inp.focus();},50);
+ function done(){var v=parseInt(inp.value,10);if(!isNaN(v))PROF.driveYd=Math.min(400,Math.max(100,v));PROF.askedDrive=true;saveProf();ov.style.display='none';try{render();}catch(e){}}
+ btn.onclick=done;inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();done();}});
+}catch(e){}})();
 render();renderSel();window.LGR={card:function(){render();renderSel();},profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause};
 /* inject a Load/import panel into the Log tab (robust; never throws) */
 try{(function(){
@@ -2412,7 +2433,7 @@ try{(function(){
  }
  window.showView=show;
  document.getElementById('tabnav').addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.dataset.v)show(b.dataset.v);});
- show('stats');
+ show('log');
 })();
 /* ---- soft login / per-user namespace (client-side only; see note) ---- */
 (function(){
