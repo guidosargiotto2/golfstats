@@ -303,7 +303,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope tr.totalrow td{border-top:2px solid var(--pine);background:rgba(46,110,70,.06);font-weight:700;padding:9px 6px;}
 .lgscope tr.totalrow .totlbl{text-align:right;font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;font-size:12px;color:var(--pine);padding-right:12px;}
 .lgscope tr.totalrow .totpen{text-align:center;}
-.lgscope .t5bad{display:inline-block;min-width:20px;padding:2px 6px;border-radius:999px;background:var(--clay);color:#fff;font-family:var(--cond);font-weight:700;font-size:12px;}
+.lgscope .t5bad{display:inline-block;min-width:16px;padding:2px 5px;margin:1px;border-radius:6px;background:var(--clay);color:#fff;font-family:var(--cond);font-weight:700;font-size:11px;letter-spacing:.02em;}
 .lgscope .t5ok{color:var(--fairway);font-weight:700;}
 .lgscope .teechips{display:flex;gap:8px;flex-wrap:wrap;}
 .lgscope .teechip{font-family:var(--sans);font-size:14px;font-weight:600;border:2px solid transparent;border-radius:10px;padding:10px 16px;cursor:pointer;opacity:.45;filter:saturate(.7);transition:opacity .15s,transform .15s,box-shadow .15s;}
@@ -1950,8 +1950,9 @@ function renderShots(hi){
  var h=R.holes[hi],body=document.getElementById('lgBody'),html='';
  var hm5=holeMistakes({par:h.par,yd:h.yd,hcp:h.hcp,shots:confShots(h)});
  var t5tags=[hm5.p3?'3-putt':'',hm5.db?'double':'',hm5.bp5?'bogey P5':'',hm5.f150?'bogey w/ 9i or less':'',hm5.short?shortLabel():''].filter(Boolean);
- var t5n=t5tags.length,nshot=confShots(h).length;
- var t5cell='<td class="t5c" rowspan="'+Math.max(1,nshot)+'" title="'+(t5n?t5tags.join(', '):'no Tiger’s-5 mistakes')+'">'+(t5n?('<span class="t5bad">'+t5n+'</span>'):(nshot>1?'<span class="t5ok">✓</span>':'·'))+'</td>';
+ var t5ac=[hm5.p3?'3P':'',hm5.db?'D':'',hm5.bp5?'P5':'',hm5.f150?'B':'',hm5.short?'S':''].filter(Boolean);
+ var t5n=t5ac.length,nshot=confShots(h).length;
+ var t5cell='<td class="t5c" rowspan="'+Math.max(1,nshot)+'" title="'+(t5n?t5tags.join(', '):'no Tiger’s-5 mistakes')+'">'+(t5n?t5ac.map(function(a){return '<span class="t5bad">'+a+'</span>';}).join(' '):(nshot>1?'<span class="t5ok">✓</span>':'·'))+'</td>';
  h.shots.forEach(function(s,si){
    var hasNext=(si+1<h.shots.length);var known=hasNext||h.done;
    var En=hasNext?Estart(h.shots[si+1].lie,h.shots[si+1].dist):0;
