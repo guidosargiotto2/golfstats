@@ -405,7 +405,8 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .haseg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;}
 .lgscope .hpin{border:none;background:var(--paper);color:var(--ink-soft);font-family:var(--cond);font-weight:700;font-size:11px;padding:6px 10px;cursor:pointer;border-left:1px solid var(--line);}
 .lgscope .hpin:first-child{border-left:none;}
-.lgscope .hpin.on{background:var(--sand);color:var(--pine);}
+.lgscope .hpin.on{background:var(--sand);color:var(--pine);box-shadow:inset 0 0 0 2px var(--pine);}
+.lgscope .pindot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;border:1px solid rgba(0,0,0,.25);vertical-align:middle;}
 /* ===== hole actions ===== */
 .lgscope .holeacts{display:flex;flex-direction:column;gap:10px;padding:12px 2px 4px;}
 .lgscope .holeacts .predhint{font-family:var(--cond);font-size:12px;color:var(--ink-soft);}
@@ -2082,6 +2083,12 @@ function teeColor(course,tee){var en=(teeEN(course,tee)||'').toLowerCase();
  if(/red|roj/.test(en))return{bg:'#b23a2e',fg:'#fff',bd:'#b23a2e'};
  if(/gold|dorad/.test(en))return{bg:'#c8921e',fg:'#1b1b1b',bd:'#b07d14'};
  return{bg:'var(--cream)',fg:'var(--pine)',bd:'var(--line)'};}
+var PINHEX={red:['#b23a2e','#fff'],white:['#ffffff','#1b1b1b'],blue:['#1f4e8c','#fff'],yellow:['#e0b21f','#1b1b1b'],none:null};
+var PINDEF={F:'red',M:'white',B:'blue'};
+function pinCfgCourse(){var c=window.__pinCfg||PROF.homeCourse||'CGC';return COURSES[c]?c:Object.keys(COURSES)[0];}
+function pinColName(course,pos){var pc=(PROF.pinCol&&PROF.pinCol[course])||{};return pc[pos]||PINDEF[pos];}
+function pinBtn(course,pos,on){var hx=PINHEX[pinColName(course,pos)];if(!hx)return {st:'',dot:''};
+ return on?{st:'background:'+hx[0]+';color:'+hx[1]+';',dot:''}:{st:'',dot:'<i class="pindot" style="background:'+hx[0]+'"></i>'};}
 function teeStyle(course,tee){var c=teeColor(course,tee);return 'background:'+c.bg+';color:'+c.fg+';border-color:'+c.bd+';';}
 function renderHoleBar(hi){
  var h=R.holes[hi],hv=holeView(h),sg=holeSGlive(h),m=holeMistakes(hv,hi);
@@ -2090,9 +2097,9 @@ function renderHoleBar(hi){
  var tees=COURSES[R.course]?COURSES[R.course].tees:{},teeKeys=Object.keys(tees),curTee=h.teeOv||R.markers||R.tee,pin=h.pin||'M';
  var teeSel=teeKeys.length>1?('<span class="ha">'+t('Markers')+' <span class="teechips">'+teeKeys.map(function(k){return '<button type="button" class="teechip'+(k===curTee?' on':'')+'" data-hatee="'+hi+'" data-tk="'+k+'" style="'+teeStyle(R.course,k)+'">'+teeEN(R.course,k)+'</button>';}).join('')+'</span></span>'):'';
  var pinSeg='<span class="ha">'+t('Pin')+' <span class="haseg">'+
-   '<button class="hpin'+(pin==='F'?' on':'')+'" data-hpin="'+hi+':F" title="Flag short of middle">'+t('Front −10')+'</button>'+
-   '<button class="hpin'+(pin==='M'?' on':'')+'" data-hpin="'+hi+':M">'+t('Mid')+'</button>'+
-   '<button class="hpin'+(pin==='B'?' on':'')+'" data-hpin="'+hi+':B" title="Flag back of middle">'+t('Back +10')+'</button></span></span>';
+   '<button class="hpin'+(pin==='F'?' on':'')+'" style="'+pinBtn(R.course,'F',pin==='F').st+'" data-hpin="'+hi+':F" title="Flag short of middle">'+pinBtn(R.course,'F',pin==='F').dot+t('Front −10')+'</button>'+
+   '<button class="hpin'+(pin==='M'?' on':'')+'" style="'+pinBtn(R.course,'M',pin==='M').st+'" data-hpin="'+hi+':M">'+pinBtn(R.course,'M',pin==='M').dot+t('Mid')+'</button>'+
+   '<button class="hpin'+(pin==='B'?' on':'')+'" style="'+pinBtn(R.course,'B',pin==='B').st+'" data-hpin="'+hi+':B" title="Flag back of middle">'+pinBtn(R.course,'B',pin==='B').dot+t('Back +10')+'</button></span></span>';
  document.getElementById('holebar').innerHTML=
    '<div class="hbL"><span class="hn">'+t('Hole')+' '+(hi+1)+'</span>'+
    '<span class="parchip">'+t('Par')+' '+h.par+'</span>'+
@@ -2373,6 +2380,14 @@ function renderProf(){
     <div class="hisub">Predictions improve as you log more rounds; each one is based on your prior shots and learned patterns for that hole.</div>
   </div>
   <div class="hiblock">
+    <div class="hirow"><span>Pin flag colours</span></div>
+    <label>Course<select id="pf_pincourse">${Object.keys(COURSES).map(k=>`<option value="${k}" ${k===pinCfgCourse()?'selected':''}>${COURSES[k].name}</option>`).join('')}</select></label>
+    <label>Front<select data-pinpos="F">${['red','white','blue','yellow','none'].map(c=>`<option value="${c}" ${pinColName(pinCfgCourse(),'F')===c?'selected':''}>${c[0].toUpperCase()+c.slice(1)}</option>`).join('')}</select></label>
+    <label>Middle<select data-pinpos="M">${['red','white','blue','yellow','none'].map(c=>`<option value="${c}" ${pinColName(pinCfgCourse(),'M')===c?'selected':''}>${c[0].toUpperCase()+c.slice(1)}</option>`).join('')}</select></label>
+    <label>Back<select data-pinpos="B">${['red','white','blue','yellow','none'].map(c=>`<option value="${c}" ${pinColName(pinCfgCourse(),'B')===c?'selected':''}>${c[0].toUpperCase()+c.slice(1)}</option>`).join('')}</select></label>
+    <div class="hisub">Flag colours differ by club — set them per course. Shown on the Pin selector while logging.</div>
+  </div>
+  <div class="hiblock">
     <div class="hirow"><span>${t('Net par')}</span></div>
     <label>Score against your handicap<select id="pf_netpar">
       <option value="on" ${PROF.netPar!==false?'selected':''}>On — judge to-par, GIR &amp; Tiger's 5 against your net par</option>
@@ -2418,6 +2433,8 @@ function renderProf(){
  document.getElementById('pf_nine').addEventListener('change',e=>{var n=Math.min(200,Math.max(80,parseInt(e.target.value||'140',10)||140));PROF.nineIron=n;if(!PROF.bogeyX||PROF.bogeyX==='')PROF.bogeyX=Math.min(150,n);saveProf();renderProf();});
  document.getElementById('pf_bogeyx').addEventListener('change',e=>{PROF.bogeyX=Math.min(150,Math.max(50,parseInt(e.target.value||'140',10)||140));saveProf();renderProf();});
  document.getElementById('pf_predict').addEventListener('change',e=>{PROF.predict=(e.target.value!=='off');saveProf();try{render();}catch(_){}} );
+ var ppc=document.getElementById('pf_pincourse');if(ppc)ppc.addEventListener('change',e=>{window.__pinCfg=e.target.value;renderProf();});
+ document.querySelectorAll('#pform [data-pinpos]').forEach(s=>s.addEventListener('change',e=>{var c=pinCfgCourse();PROF.pinCol=PROF.pinCol||{};PROF.pinCol[c]=PROF.pinCol[c]||{};PROF.pinCol[c][s.dataset.pinpos]=e.target.value;saveProf();try{render();}catch(_){}}));
  var pnp=document.getElementById('pf_netpar');if(pnp)pnp.addEventListener('change',e=>{PROF.netPar=(e.target.value!=='off');saveProf();try{render();}catch(_){}try{if(typeof draw==='function')draw();}catch(_){}} );
  var plg=document.getElementById('pf_lang');if(plg)plg.addEventListener('change',e=>{setLang(e.target.value);try{renderProf();}catch(_){}});
  document.getElementById('pf_himode').addEventListener('change',e=>{PROF.hiMode=e.target.value;saveProf();renderProf();});
