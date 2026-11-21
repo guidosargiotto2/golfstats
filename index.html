@@ -1699,6 +1699,9 @@ function effHI(){const auto=computeHI();if(PROF.hiMode==='manual')return PROF.hi
 function suggestChcp(){var hi=effHI();if(hi==null||isNaN(hi))return null;var c=COURSES[R.course],t=c&&c.tees[R.tee];if(!t)return null;
  var par=c.par.reduce(function(a,b){return a+b;},0);var ch=hi*(t.slope/113)+(t.cr-par);
  var hm=(document.getElementById('selHoles')||{}).value||R.holesMode||'18';if(hm!=='18')ch=ch/2;return Math.round(ch);}
+/* suggested gross score ≈ par (for holes played) + playing handicap */
+function parForHoles(){var c=COURSES[R.course];if(!c)return null;var hm=(document.getElementById('selHoles')||{}).value||R.holesMode||'18';var idx=hm==='front'?[0,9]:hm==='back'?[9,18]:[0,18];var p=0;for(var i=idx[0];i<idx[1];i++)p+=c.par[i];return p;}
+function suggestScore(){var par=parForHoles(),ch=suggestChcp();if(par==null)return null;return par+(ch==null?0:ch);}
 /* units: engine is yards internally */
 const Y2U=y=>PROF.units==='m'?Math.round(y*0.9144):y;
 const U2Y=u=>PROF.units==='m'?Math.round(u/0.9144):u;
@@ -1902,6 +1905,8 @@ function renderSetup(){
  var sh=document.getElementById('selHoles');if(sh)sh.value=R.holesMode||'18';
  document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+teeEN(R.course,R.tee);
  renderSel();
+ /* land on the (suggested) score, highlighted, so Enter/Tab confirms → HCP → Start */
+ setTimeout(function(){var s=document.getElementById('selScore');if(!s)return;var ae=document.activeElement;if(ae&&ae.closest&&ae.closest('#newRoundForm'))return;s.focus();if(s.select)s.select();},0);
 }
 function holeSGlive(h){var cs=confShots(h),tot=0,strokes=0;for(var i=0;i<cs.length;i++){strokes+=1+(cs[i].pen||0);var hasN=i+1<cs.length;if(hasN||h.done){var En=hasN?Estart(cs[i+1].lie,cs[i+1].dist):0;tot+=Estart(cs[i].lie,cs[i].dist)-En-1-(cs[i].pen||0);}}return {tot:tot,strokes:strokes};}
 function teeEN(course,tee){var t=COURSES[course]&&COURSES[course].tees[tee];if(t&&t.label&&t.label.indexOf('/')>=0)return t.label.split('/')[1].trim();return tee;}
@@ -2122,6 +2127,7 @@ function renderSel(){
  const t=tees[R.tee];const totY=R.holes.reduce((a,h)=>a+(h.yd||0),0);
  document.getElementById('teeEst').textContent=Y2U(totY)+' '+PROF.units+' · CR '+t.cr+' · Slope '+t.slope+(t.est?' · est.':'');
  var ci=document.getElementById('selChcp');if(ci&&document.activeElement!==ci&&((R.chcp==null||R.chcp==='')||R.chcpAuto)){var sug=suggestChcp();if(sug!=null){R.chcp=String(sug);ci.value=sug;R.chcpAuto=true;}}
+ var si=document.getElementById('selScore');if(si&&document.activeElement!==si&&((R.score==null||R.score==='')||R.scoreAuto)){var ssug=suggestScore();if(ssug!=null){R.score=String(ssug);si.value=ssug;R.scoreAuto=true;}}
  const dEl=document.getElementById('selDate');if(dEl){dEl.value=R.date||new Date().toISOString().slice(0,10);if(!dEl.dataset.init){dEl.dataset.init='1';dEl.addEventListener('change',function(){R.date=dEl.value||R.date;save();});}}
  const d=loadDefault(),isd=d.course===R.course&&d.tee===R.tee,sb=document.getElementById('starBtn');
  sb.classList.toggle('isdef',isd);sb.textContent=isd?'★ default':'☆ set default';
@@ -2130,7 +2136,10 @@ document.getElementById('selCourse').onchange=e=>{const c=e.target.value,tee=COU
 document.getElementById('starBtn').onclick=()=>{setDefault(R.course,R.tee);renderSel();};
 document.getElementById('startBtn').onclick=()=>startRound();
 document.getElementById('lgCancelBtn').onclick=()=>{if(!confirm('Cancel this round? Everything entered will be discarded.'))return;editRoundId=null;localStorage.removeItem(RKEY);(function(){var d=loadDefault();R=newRound(d.course,d.tee);})();render();renderLogged();};
-document.getElementById('selScore').addEventListener('change',e=>{R.score=e.target.value;save();});
+document.getElementById('selScore').addEventListener('input',()=>{R.scoreAuto=false;});
+document.getElementById('selScore').addEventListener('change',e=>{R.score=e.target.value;R.scoreAuto=false;save();});
+document.getElementById('selScore').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key==='Tab')&&!e.shiftKey){e.preventDefault();R.score=e.target.value;save();var ch=document.getElementById('selChcp');if(ch){ch.focus();ch.select();}}});
+document.getElementById('selChcp').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key==='Tab')&&!e.shiftKey){e.preventDefault();R.chcp=e.target.value;R.chcpAuto=false;save();var sb=document.getElementById('startBtn');if(sb)sb.focus();}});
 document.getElementById('selHoles').addEventListener('change',e=>{R.holesMode=e.target.value;save();renderSel();});
 document.getElementById('selChcp').addEventListener('input',()=>{R.chcpAuto=false;});
 document.getElementById('selChcp').addEventListener('change',e=>{R.chcp=e.target.value;R.chcpAuto=false;save();});
