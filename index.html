@@ -1608,12 +1608,12 @@ window.saveLoggedRounds=function(a){try{save(uckey(),a||[]);if(PLAYER===(localSt
  function esc(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
  function fmt(v){return v==null?'·':((v>0?'+':'')+(+v).toFixed(2));}
  function sgn(x){return x==null?'·':((x>=0?'+':'')+(+x).toFixed(2));}
- function detail(r){return '<div class="leddetgrid">'+
-   '<div><span class="ldh">Strokes gained</span>Off tee '+sgn(r.ott)+' · App '+sgn(r.app)+' · Around '+sgn(r.atg)+' · Putt '+sgn(r.putt)+' · <b>Total '+sgn(r.sgtot)+'</b></div>'+
-   '<div><span class="ldh">Card</span>FW '+(r.fw!=null?r.fw:'·')+' · GIR '+(r.gir!=null?r.gir:'·')+' · Putts '+(r.putts!=null?r.putts:'·')+' · Pen '+(r.pen!=null?r.pen:'·')+' · Drive '+(r.dist!=null?r.dist+'y':'·')+'</div>'+
-   '<div><span class="ldh">Scoring</span>Birdies '+(r.bir!=null?r.bir:'·')+' · Bogeys '+(r.bog!=null?r.bog:'·')+' · Doubles+ '+(r.dbl!=null?r.dbl:'·')+' · Tiger’s 5 '+(r.mtot!=null?r.mtot:'·')+'</div>'+
-   (r.lesson?'<div><span class="ldh">What I learnt</span>'+esc(r.lesson)+'</div>':'')+
-   (r.holes?'':'<div style="color:var(--ink-soft);font-size:12px;grid-column:1/-1">Imported summary — no shot-by-shot detail, so no hole-by-hole scorecard.</div>')+
+ function detail(r){var T=window.t||function(s){return s;};return '<div class="leddetgrid">'+
+   '<div><span class="ldh">'+T('Strokes gained')+'</span>'+T('Off tee')+' '+sgn(r.ott)+' · '+T('App')+' '+sgn(r.app)+' · '+T('Around')+' '+sgn(r.atg)+' · '+T('Putt')+' '+sgn(r.putt)+' · <b>'+T('Total')+' '+sgn(r.sgtot)+'</b></div>'+
+   '<div><span class="ldh">'+T('Card')+'</span>FW '+(r.fw!=null?r.fw:'·')+' · GIR '+(r.gir!=null?r.gir:'·')+' · '+T('Putt')+'s '+(r.putts!=null?r.putts:'·')+' · Pen '+(r.pen!=null?r.pen:'·')+' · Drive '+(r.dist!=null?r.dist+'y':'·')+'</div>'+
+   '<div><span class="ldh">'+T('Scoring')+'</span>'+T('Birdies')+' '+(r.bir!=null?r.bir:'·')+' · '+T('Bogeys')+' '+(r.bog!=null?r.bog:'·')+' · '+T('Doubles+')+' '+(r.dbl!=null?r.dbl:'·')+' · Tiger’s 5 '+(r.mtot!=null?r.mtot:'·')+'</div>'+
+   (r.lesson?'<div><span class="ldh">'+T('What I learnt')+'</span>'+esc(r.lesson)+'</div>':'')+
+   (r.holes?'':'<div style="color:var(--ink-soft);font-size:12px;grid-column:1/-1">'+T('Imported summary — no shot-by-shot detail, so no hole-by-hole scorecard.')+'</div>')+
    '</div>';}
  window.LEDGER={render:function(){
    var el=document.getElementById('ledgerList');if(!el)return;
@@ -1622,14 +1622,15 @@ window.saveLoggedRounds=function(a){try{save(uckey(),a||[]);if(PLAYER===(localSt
      .concat((window.getLoggedRounds?window.getLoggedRounds():[]).map(function(r){return {r:r,src:'logged'};}))
      .filter(function(o){return o.r&&o.r.date;});
    all.sort(function(a,b){return a.r.date<b.r.date?1:(a.r.date>b.r.date?-1:0);});
-   if(!all.length){el.innerHTML='<div style="font-family:var(--cond);color:var(--ink-soft)">No rounds yet.</div>';return;}
-   el.innerHTML='<div class="ledcount">'+all.length+' rounds</div>'+all.map(function(o,i){var r=o.r,stp=(r.stp>=0?'+':'')+r.stp,sg=r.sgtot,card=(o.src==='logged'&&r.holes);
+   var T=window.t||function(s){return s;};
+   if(!all.length){el.innerHTML='<div style="font-family:var(--cond);color:var(--ink-soft)">'+T('No rounds yet.')+'</div>';return;}
+   el.innerHTML='<div class="ledcount">'+all.length+' '+T('rounds')+'</div>'+all.map(function(o,i){var r=o.r,stp=(r.stp>=0?'+':'')+r.stp,sg=r.sgtot,card=(o.src==='logged'&&r.holes);
      return '<div class="ledrow" data-li="'+i+'">'+
        '<div class="ledL"><span class="leddate">'+r.date+'</span><span class="ledcourse">'+esc(r.course||'')+'</span></div>'+
        '<div class="ledR"><span class="ledsc">'+r.score+' <small>('+stp+')</small></span>'+
        '<span class="ledsg '+((sg!=null&&sg<0)?'sg-neg':'sg-pos')+'">SG '+(sg!=null?fmt(sg):'·')+'</span>'+
-       '<span class="ledsrc '+(o.src==='logged'?'lg':'im')+'">'+o.src+'</span>'+
-       '<span class="ledgo">'+(card?'Scorecard ▶':'Details ▾')+'</span></div>'+
+       '<span class="ledsrc '+(o.src==='logged'?'lg':'im')+'">'+T(o.src)+'</span>'+
+       '<span class="ledgo">'+(card?T('Scorecard')+' ▶':T('Details')+' ▾')+'</span></div>'+
        '<div class="leddet" id="leddet_'+i+'" style="display:none"></div></div>';
    }).join('');
    el.querySelectorAll('.ledrow').forEach(function(row){row.addEventListener('click',function(){
@@ -2521,17 +2522,18 @@ try{(function(){
    var el=document.getElementById('ideaList');if(!el)return;
    var ord={new:0,progress:1,done:2,rejected:3};
    var arr=load().slice().sort(function(a,b){return (ord[a.status]-ord[b.status])||(b.ts-a.ts);});
-   if(!arr.length){el.innerHTML='<div style="font-family:var(--cond);color:var(--ink-soft);font-size:13px">No ideas yet \u2014 be the first.</div>';return;}
+   var T=window.t||function(s){return s;};
+   if(!arr.length){el.innerHTML='<div style="font-family:var(--cond);color:var(--ink-soft);font-size:13px">'+T('No ideas yet \u2014 be the first.')+'</div>';return;}
    var admin=isAdmin();
    el.innerHTML=arr.map(function(it){
-     var lbl=(STATUS.filter(function(s){return s[0]===it.status;})[0]||['new','New'])[1];
+     var lbl=T((STATUS.filter(function(s){return s[0]===it.status;})[0]||['new','New'])[1]);
      var ty=it.type||'improvement';
-     var ctrl=admin?('<select data-ist="'+it.id+'">'+STATUS.map(function(s){return '<option value="'+s[0]+'"'+(s[0]===it.status?' selected':'')+'>'+s[1]+'</option>';}).join('')+'</select><button class="pf_btn" data-idel="'+it.id+'" style="background:var(--clay);padding:4px 9px">\u00d7</button>')
+     var ctrl=admin?('<select data-ist="'+it.id+'">'+STATUS.map(function(s){return '<option value="'+s[0]+'"'+(s[0]===it.status?' selected':'')+'>'+T(s[1])+'</option>';}).join('')+'</select><button class="pf_btn" data-idel="'+it.id+'" style="background:var(--clay);padding:4px 9px">\u00d7</button>')
        :('<span class="ibadge i-'+it.status+'">'+lbl+'</span>');
-     var action=it.action?('<div class="iaction"><b>Suggested action</b><br>'+esc(it.action)+'</div>'):'';
+     var action=it.action?('<div class="iaction"><b>'+T('Suggested action')+'</b><br>'+esc(it.action)+'</div>'):'';
      var hcap=it.type==='course'?(esc(it.title)+(it.country?(' \u00b7 '+esc(it.country)):'')):esc(it.title);
      var title=it.title?('<div class="ihead">'+hcap+'</div>'):'';
-     return '<div class="idea"><div class="itop"><span class="iby"><span class="itype t-'+ty+'">'+(TYPE[ty]||ty)+'</span>'+esc(it.by)+' \u00b7 '+(it.date||'')+'</span><span class="iact">'+ctrl+'</span></div>'+title+'<div class="itext">'+esc(it.text)+'</div>'+action+'</div>';
+     return '<div class="idea"><div class="itop"><span class="iby"><span class="itype t-'+ty+'">'+T(TYPE[ty]||ty)+'</span>'+esc(it.by)+' \u00b7 '+(it.date||'')+'</span><span class="iact">'+ctrl+'</span></div>'+title+'<div class="itext">'+esc(it.text)+'</div>'+action+'</div>';
    }).join('');
    if(admin){
      el.querySelectorAll('[data-ist]').forEach(function(s){s.onchange=function(){var a=load(),it=a.filter(function(x){return x.id===s.getAttribute('data-ist');})[0];if(it){it.status=s.value;save(a);render();}};});
