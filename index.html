@@ -533,10 +533,10 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 <div id="loginOverlay" class="login" style="display:none">
   <form id="loginForm" class="loginbox" autocomplete="on">
     <h1 data-i18n="Round Ledger">Round Ledger</h1><div class="sub2" data-i18n="Sign in">Sign in</div>
-    <input id="lg_user" name="username" placeholder="Username" autocomplete="username" autocapitalize="none">
-    <input id="lg_pass" name="password" type="password" placeholder="Password" autocomplete="current-password">
+    <input id="lg_user" name="username" placeholder="Username · Usuario" autocomplete="username" autocapitalize="none">
+    <input id="lg_pass" name="password" type="password" placeholder="Password · Contraseña" autocomplete="current-password">
     <div id="lg_reg" style="display:none;flex-direction:column;gap:12px"><input id="lg_name" placeholder="Your name · Tu nombre" autocomplete="name"><input id="lg_code" placeholder="Invite code · Código de invitación" autocapitalize="none" autocomplete="off"></div>
-    <button type="submit" id="lg_btn">Enter</button>
+    <button type="submit" id="lg_btn">Enter · Entrar</button>
     <a href="#" id="lg_toggle" style="display:none;font-family:var(--cond);font-size:12.5px;color:var(--fairway);margin-top:10px;text-align:center">Create account · Crear cuenta</a>
     <div class="lgerr" id="lg_err"></div>
     <div id="lg_hint" style="display:none;font-family:var(--cond);font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.4"></div>
@@ -1628,7 +1628,8 @@ function buildTable(){
   const sgCols=new Set([18,19,20,21,22]), parCol=4;
   rows.sort((a,b)=>{const x=a[tblSort.c],y=b[tblSort.c];const c=(typeof x==='number'&&typeof y==='number')?x-y:String(x).localeCompare(String(y));return c*tblSort.d;});
   const cell=(v,ci)=>{ if(v==null)return '<td>·</td>'; if(sgCols.has(ci))return `<td class="${v<0?'neg':v>0?'pos':''}">${v>0?'+':''}${v}</td>`; if(ci===parCol)return `<td class="${v>0?'neg':v<0?'pos':''}">${v>0?'+':''}${v}</td>`; return `<td>${v==null?'·':v}</td>`; };
-  const th=cols.map((c,i)=>`<th data-c="${i}" style="cursor:pointer;user-select:none;white-space:nowrap">${c}${tblSort.c===i?(tblSort.d>0?' ▲':' ▼'):''}</th>`).join('');
+  const TH_ES={'Date':'Fecha','Course':'Cancha','Scr':'Score','±Par':'±Par','Putt':'Putts','Pen':'Pen','Drv':'Drive','Bog':'Bog','Dbl':'Dob','3Pt':'3P','DbB':'DB','BP5':'BP5','Mist':'T5'};
+  const th=cols.map((c,i)=>`<th data-c="${i}" style="cursor:pointer;user-select:none;white-space:nowrap">${(window.__LANG==='es'&&TH_ES[c])?TH_ES[c]:c}${tblSort.c===i?(tblSort.d>0?' ▲':' ▼'):''}</th>`).join('');
   const body=rows.map(r=>'<tr>'+r.map((v,ci)=>cell(v,ci)).join('')+'</tr>').join('');
   el.innerHTML=`<div class="rtfull"><div style="overflow:auto;max-height:calc(100vh - 220px);border:1px solid var(--line);border-radius:10px"><table class="rt"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table></div></div>`;
   el.querySelectorAll('th').forEach(h=>h.addEventListener('click',()=>{const c=+h.dataset.c; if(tblSort.c===c)tblSort.d*=-1; else {tblSort.c=c;tblSort.d=1;} buildTable();}));
@@ -1828,7 +1829,7 @@ function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage
 let PROF=loadProf();
 function saveProf(){localStorage.setItem(PROFK,JSON.stringify(PROF));}
 /* ===== i18n (Stage 1: on-course flow) ===== */
-var I18N_ES={"Friends":"Amigos","Share":"Compartir","NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
+var I18N_ES={"Approach":"Approach","Around grn":"Juego corto","Copy for sheet":"Copiar para planilla","pen":"pen","Friends":"Amigos","Share":"Compartir","NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
  "Log a round":"Cargar vuelta","Statistics":"Estadísticas","Round ledger":"Mis vueltas","Profile":"Perfil","Ideas":"Ideas","Log out":"Salir",
  "Course":"Cancha","Tee":"Tee","Holes":"Hoyos","Score":"Score","Playing HCP":"HCP de juego","Date":"Fecha",
  "18 holes":"18 hoyos","Front 9 (1–9)":"Primeros 9 (1–9)","Back 9 (10–18)":"Segundos 9 (10–18)",
@@ -2098,7 +2099,7 @@ function renderScorecard(){
  } else {var s=seg(hs,he);addSeg(s,(hs===0?t('OUT'):t('IN')));}
  /* strokes gained by category over the active holes */
  var cat={ott:0,app:0,atg:0,putt:0,tot:0};for(var k=hs;k<he;k++){var hsg=holeSG(holeView(R.holes[k]));cat.ott+=hsg.ott;cat.app+=hsg.app;cat.atg+=hsg.atg;cat.putt+=hsg.putt;cat.tot+=hsg.tot;}
- var chip=function(l,v){return '<span class="sgcat"><span class="sgcatL">'+l+'</span><b class="'+(v<0?'sg-neg':'sg-pos')+'">'+fmt(v)+'</b></span>';};
+ var chip=function(l,v){return '<span class="sgcat"><span class="sgcatL">'+t(l)+'</span><b class="'+(v<0?'sg-neg':'sg-pos')+'">'+fmt(v)+'</b></span>';};
  var catRow='<div class="sgcats2">'+chip('Off tee',cat.ott)+chip('Approach',cat.app)+chip('Around grn',cat.atg)+chip('Putting',cat.putt)+chip('Total',cat.tot)+'</div>';
  var esc=function(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');};
  var notesBlk='<h3 style="font-family:var(--serif);font-weight:600;font-size:17px;color:var(--pine);margin:20px 0 4px">'+t('Round journal')+'</h3>'+
@@ -2108,9 +2109,9 @@ function renderScorecard(){
    '<tr class="scRh">'+rowsHole+'</tr><tr class="scRp">'+rowsPar+'</tr>'+(netOn?'<tr class="scRp">'+rowsNP+'</tr>':'')+'<tr class="scRs">'+rowsSc+'</tr><tr class="scRst">'+(netOn?rowsSt.replace('>'+t('STATUS')+'<','>'+t('NET STATUS')+'<'):rowsSt)+'</tr><tr class="scRsg">'+rowsSg+'</tr><tr class="scRt5">'+rowsT5+'</tr></tbody></table></div>'+
    (netOn?'<div class="scHint">'+t('Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).')+'</div>':'')+
    catRow+
-   '<div class="scHint">Tap any hole to edit it. <b>SG</b> = strokes gained per hole · <b>Tiger\'s 5</b>: 3P 3-putt · D double · P5 bogey par-5 · B bogey w/ 9-iron or less · S blow-out save.</div>'+
+   '<div class="scHint">'+(window.__LANG==='es'?'Tocá cualquier hoyo para editarlo. <b>SG</b> = strokes gained por hoyo · <b>Tiger 5</b>: 3P 3 putts · D doble · P5 bogey en par 5 · B bogey con hierro 9 o menos · S salvada desperdiciada.':'Tap any hole to edit it. <b>SG</b> = strokes gained per hole · <b>Tiger\'s 5</b>: 3P 3-putt · D double · P5 bogey par-5 · B bogey w/ 9-iron or less · S blow-out save.')+'</div>'+
    notesBlk+
-   '<div class="scActs"><button class="ghost" id="btnCopySheet">⎘ Copy for sheet</button> <button class="ghost" id="btnShareCard">⤴ '+t('Share')+'</button></div>';
+   '<div class="scActs"><button class="ghost" id="btnCopySheet">⎘ '+t('Copy for sheet')+'</button> <button class="ghost" id="btnShareCard">⤴ '+t('Share')+'</button></div>';
  var bsh=document.getElementById('btnShareCard');if(bsh)bsh.onclick=function(){try{var rr=roundRecord();rr.lesson=R.lesson;if(window.SHARE)window.SHARE.round(rr,localStorage.getItem('app-user')||'');}catch(e){}};
  var cbs=document.getElementById('btnCopySheet');if(cbs)cbs.onclick=copyForSheet;
  var nt=document.getElementById('scNotes');if(nt)nt.addEventListener('input',function(){R.notes=nt.value;save();});
@@ -2546,7 +2547,7 @@ function importCard(hl){
    rH+='<td class="scTotH scGrand">'+t('TOT')+'</td>';rP+='<td class="scTotH scGrand">'+G.par+'</td>';rS+='<td class="scTotH scGrand">'+G.tot+'</td>';rSt+='<td class="scTotH scGrand">'+(gp>0?'+'+gp:(gp===0?'E':gp))+'</td>';rG+='<td class="scTotH scGrand">'+fmt(G.sg)+'</td>';rT+='<td class="scTotH scGrand">'+G.t5+'</td>';
  } else seg(0,H.length,t('OUT'));
  var chip=function(l,v){return '<span class="sgcat"><span class="sgcatL">'+t(l)+'</span><b class="'+(v<0?'sg-neg':'sg-pos')+'">'+fmt(v)+'</b></span>';};
- var shots=H.map(function(h){return h.shots.map(function(x){return t(LN[x.lie])+' '+Math.round(x.dist)+(x.lie==='putt'?' ft':'')+(x.pen?' (+'+x.pen+' pen)':'');}).join(' → ');});
+ var shots=H.map(function(h){return h.shots.map(function(x){return t(LN[x.lie])+' '+Math.round(x.dist)+(x.lie==='putt'?' ft':'')+(x.pen?' (+'+x.pen+' '+t('pen')+')':'');}).join(' → ');});
  return {html:'<div class="scWrap"><table class="scTbl"><tbody><tr class="scRh">'+rH+'</tr><tr class="scRp">'+rP+'</tr><tr class="scRs">'+rS+'</tr><tr class="scRst">'+rSt+'</tr><tr class="scRsg">'+rG+'</tr><tr class="scRt5">'+rT+'</tr></tbody></table></div>'+
    '<div class="sgcats2">'+chip('Off tee',cat.ott)+chip('Approach',cat.app)+chip('Around grn',cat.atg)+chip('Putting',cat.putt)+chip('Total',cat.tot)+'</div>'+
    '<div class="scHint ihShots">'+t('Tap any hole to see its shots.')+'</div>',shots:shots,pars:H.map(function(h){return h.par;})};
@@ -2756,7 +2757,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    fetch('/api/login').then(function(r){return r.json();}).then(function(j){
      if(!j||!j.api||!j.db)return;
      var tg=document.getElementById('lg_toggle'),rb=document.getElementById('lg_reg'),bt=document.getElementById('lg_btn');
-     if(tg&&rb){tg.style.display='block';tg.onclick=function(e){e.preventDefault();var on=rb.style.display==='none';rb.style.display=on?'flex':'none';if(bt)bt.textContent=on?'Create account · Crear cuenta':'Enter';tg.textContent=on?'I already have an account · Ya tengo cuenta':'Create account · Crear cuenta';document.getElementById('lg_err').textContent='';};}
+     if(tg&&rb){tg.style.display='block';tg.onclick=function(e){e.preventDefault();var on=rb.style.display==='none';rb.style.display=on?'flex':'none';if(bt)bt.textContent=on?'Create account · Crear cuenta':'Enter · Entrar';tg.textContent=on?'I already have an account · Ya tengo cuenta':'Create account · Crear cuenta';document.getElementById('lg_err').textContent='';};}
    }).catch(function(){});
  }
 })();
@@ -3101,6 +3102,15 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
      fallback(blob);},'image/png');
  }
  window.SHARE={round:shareRound};
+})();
+
+/* Spanish for the Profile form (rendered as a template): translate its text nodes and option labels after each render */
+(function(){var D={"Name": "Nombre", "Nickname": "Apodo", "Units": "Unidades", "Yards": "Yardas", "Meters": "Metros", "Home course": "Cancha habitual", "Default tee": "Tee por defecto", "Average drive (yards)": "Drive promedio (yardas)", "The two configurable mistakes in your Tiger's 5.": "Los dos errores configurables de tu Tiger 5.", "Blow-out easy saves — a wasted save around the green.": "Salvadas fáciles desperdiciadas — una salvada perdida alrededor del green.", "Counts when": "Cuenta cuando", "3+ shots from X yards (incl. putts)": "3+ tiros desde X yardas (incl. putts)", "Double chip — chipped twice inside X yards": "Doble chip — dos chips dentro de X yardas", "Short distance X (yd, 10–50)": "Distancia corta X (yd, 10–50)", "Bogey with a 9-iron or less — a dropped shot (bogey+) when your closest approach was within X yards (set X to your 9-iron carry).": "Bogey con hierro 9 o menos — un golpe perdido (bogey o peor) cuando tu approach más cercano estuvo dentro de X yardas (poné X en tu distancia de hierro 9).", "Your 9-iron carry (yd)": "Tu distancia de hierro 9 (yd)", "X — 9-iron-or-less distance (yd, 50–150)": "X — distancia de hierro 9 o menos (yd, 50–150)", "When logging a round": "Al cargar una vuelta", "On — predict each next shot (confirm or correct)": "Sí — predecir cada tiro (confirmá o corregí)", "Off — enter every shot manually": "No — cargar cada tiro a mano", "Predictions improve as you log more rounds; each one is based on your prior shots and learned patterns for that hole.": "Las predicciones mejoran a medida que cargás vueltas; cada una se basa en tus tiros anteriores y en lo aprendido de ese hoyo.", "Pin flag colours": "Colores de bandera", "Course": "Cancha", "Front": "Adelante", "Middle": "Medio", "Back": "Atrás", "Red": "Roja", "White": "Blanca", "Blue": "Azul", "Yellow": "Amarilla", "None": "Ninguna", "Flag colours differ by club — set them per course. Shown on the Pin selector while logging.": "Los colores de bandera cambian según el club — configuralos por cancha. Se muestran en el selector de bandera al cargar.", "Score against your handicap": "Score contra tu hándicap", "Off — everything measured against scratch par": "No — todo medido contra el par scratch", "On — judge to-par, GIR & Tiger's 5 against your net par": "Sí — score al par, GIR y Tiger 5 contra tu par neto", "Spreads your playing handicap by stroke index. Net par lifts to-par, GIR (allowance = par−2 + strokes received) and the score-relative Tiger's 5 (double, bogey par-5, bogey w/ 9-iron). 3-putts, short-game fails and strokes gained stay absolute.": "Reparte tu hándicap de juego según el índice de cada hoyo. El par neto ajusta el score al par, el GIR (par−2 + golpes recibidos) y los Tiger 5 que dependen del score (doble, bogey en par 5, bogey con hierro 9). Los 3 putts, los errores de juego corto y el strokes gained siguen siendo absolutos.", "App language": "Idioma de la app", "Français (soon)": "Français (pronto)", "日本語 (soon)": "日本語 (pronto)", "These settings drive the logger. Historical Statistics rounds keep your sheet's original definitions.": "Estos ajustes se aplican al cargar vueltas. Las vueltas históricas de Estadísticas mantienen las definiciones originales de tu planilla.", "Handicap Index": "Índice de hándicap", "Source": "Fuente", "Computed, override allowed": "Calculado, con ajuste manual", "Computed only": "Solo calculado", "Manual only": "Solo manual", "Manual index": "Índice manual", "Import rounds (differentials)": "Importar vueltas (diferenciales)", "Paste your AAG record rows — date · club · differential (e.g.": "Pegá las filas de tu registro AAG — fecha · club · diferencial (ej.", "). These seed your Handicap Index.": "). Con eso se calcula tu índice.", "Import rounds": "Importar vueltas", "Published HI history": "Historial de índice publicado", "Optional — paste your official index over time (date · HI) to track and compare against the computed one.": "Opcional — pegá tu índice oficial a lo largo del tiempo (fecha · índice) para compararlo con el calculado.", "Import HI history": "Importar historial de índice"};
+ function tr(root){if(window.__LANG!=='es'||!root)return;var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),n,list=[];while((n=w.nextNode()))list.push(n);
+   list.forEach(function(x){var v=x.nodeValue,k=v.trim();if(k&&D[k]!=null)x.nodeValue=v.replace(k,D[k]);});}
+ window.trProfile=tr;
+ function hook(){var el=document.getElementById('pform');if(!el)return;tr(el);try{new MutationObserver(function(){tr(el);}).observe(el,{childList:true,subtree:true});}catch(e){}}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hook);else hook();
 })();
 </script>
 </body>
