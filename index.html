@@ -471,11 +471,11 @@ table.rt tbody tr:hover{background:var(--line-soft);}
      <label>Course<select id="selCourse"></select></label>
      <label>Tee<select id="selTee"></select></label>
      <label>Holes<select id="selHoles"><option value="18">18 holes</option><option value="front">Front 9 (1–9)</option><option value="back">Back 9 (10–18)</option></select></label>
-     <label>Score <span class="lbls">your total — required</span><input type="number" inputmode="numeric" id="selScore" min="59" max="200" placeholder="e.g. 76" required><span class="fielderr" id="err_score"></span></label>
-     <label>Playing HCP <span class="lbls">suggested from your index</span><input type="number" inputmode="numeric" id="selChcp" min="-10" max="54" placeholder="e.g. 2"><span class="fielderr" id="err_chcp"></span></label>
+     <label>Score<input type="number" inputmode="numeric" id="selScore" min="59" max="200" placeholder="e.g. 76" required><span class="fielderr" id="err_score"></span></label>
+     <label>Playing HCP<input type="number" inputmode="numeric" id="selChcp" min="-10" max="54" placeholder="e.g. 2"><span class="fielderr" id="err_chcp"></span></label>
      <label>Date<input type="date" id="selDate"></label>
    </div>
-   <div class="teeline"><span class="est" id="teeEst"></span><button class="star" id="starBtn">★ default</button></div>
+   <div class="teeline"><span class="est" id="teeEst" style="display:none"></span><button class="star" id="starBtn">★ default</button></div>
    <div class="setupacts"><button class="startbtn" id="startBtn">Start round →</button></div>
    </div>
  </div>
