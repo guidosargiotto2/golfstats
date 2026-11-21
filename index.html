@@ -471,9 +471,9 @@ table.rt tbody tr:hover{background:var(--line-soft);}
      <label>Course<select id="selCourse"></select></label>
      <label>Tee<select id="selTee"></select></label>
      <label>Holes<select id="selHoles"><option value="18">18 holes</option><option value="front">Front 9 (1–9)</option><option value="back">Back 9 (10–18)</option></select></label>
+     <label>Score <span class="lbls">your total — required</span><input type="number" inputmode="numeric" id="selScore" min="59" max="200" placeholder="e.g. 76" required><span class="fielderr" id="err_score"></span></label>
+     <label>Playing HCP <span class="lbls">suggested from your index</span><input type="number" inputmode="numeric" id="selChcp" min="-10" max="54" placeholder="e.g. 2"><span class="fielderr" id="err_chcp"></span></label>
      <label>Date<input type="date" id="selDate"></label>
-     <label>Score <span class="lbls">your total — cross-check</span><input type="number" inputmode="numeric" id="selScore" min="59" max="200" placeholder="e.g. 76"><span class="fielderr" id="err_score"></span></label>
-     <label>Playing HCP <span class="lbls">for this round</span><input type="number" inputmode="numeric" id="selChcp" min="-10" max="54" placeholder="e.g. 2"><span class="fielderr" id="err_chcp"></span></label>
    </div>
    <div class="teeline"><span class="est" id="teeEst"></span><button class="star" id="starBtn">★ default</button></div>
    <div class="setupacts"><button class="startbtn" id="startBtn">Start round →</button></div>
@@ -1689,6 +1689,10 @@ function adjForN(n){return n===3?-2:((n===4||n===6)?-1:0);}
 function computeHI(){const d=HIST.slice(-20).map(r=>r.diff).filter(x=>typeof x==='number');const n=d.length;if(n<3)return null;
  const k=kForN(n);const low=d.slice().sort((a,b)=>a-b).slice(0,k);return Math.round((low.reduce((s,x)=>s+x,0)/k+adjForN(n))*10)/10;}
 function effHI(){const auto=computeHI();if(PROF.hiMode==='manual')return PROF.hiManual!==''?+PROF.hiManual:auto;if(PROF.hiMode==='auto')return auto;return PROF.hiManual!==''?+PROF.hiManual:auto;}
+/* Course/Playing handicap = HI × (Slope/113) + (CR − Par); halved for a 9-hole round */
+function suggestChcp(){var hi=effHI();if(hi==null||isNaN(hi))return null;var c=COURSES[R.course],t=c&&c.tees[R.tee];if(!t)return null;
+ var par=c.par.reduce(function(a,b){return a+b;},0);var ch=hi*(t.slope/113)+(t.cr-par);
+ var hm=(document.getElementById('selHoles')||{}).value||R.holesMode||'18';if(hm!=='18')ch=ch/2;return Math.round(ch);}
 /* units: engine is yards internally */
 const Y2U=y=>PROF.units==='m'?Math.round(y*0.9144):y;
 const U2Y=u=>PROF.units==='m'?Math.round(u/0.9144):u;
@@ -1717,7 +1721,9 @@ function newRound(course,tee){const c=COURSES[course],t=c.tees[tee];
 let DEFT=loadDefault();
 let R=(function(){try{const r=JSON.parse(localStorage.getItem(RKEY));
   /* only restore rounds created by the guided wizard (they carry a phase); discard older formats */
-  if(r&&r.holes&&r.tee&&r.phase&&Array.isArray(r.holes)&&r.holes.length===18){if(r.cur==null)r.cur=0;if(r.hStart==null){r.hStart=0;r.hEnd=18;r.holesMode='18';}r.holes.forEach(function(h){if(h.done==null)h.done=false;if(!Array.isArray(h.shots))h.shots=[];});return r;}}catch(e){}
+  /* restore only an actually-started round; a fresh/unstarted setup defaults to the home course */
+  var started=r&&r.holes&&Array.isArray(r.holes)&&r.holes.some(function(h){return h.shots&&h.shots.some(function(s){return s.conf&&s.lie!=='tee';})||(h.shots&&h.shots.length>1);});
+  if(r&&r.holes&&r.tee&&r.phase==='play'&&started&&Array.isArray(r.holes)&&r.holes.length===18){if(r.cur==null)r.cur=0;if(r.hStart==null){r.hStart=0;r.hEnd=18;r.holesMode='18';}r.holes.forEach(function(h){if(h.done==null)h.done=false;if(!Array.isArray(h.shots))h.shots=[];});return r;}}catch(e){}
   localStorage.removeItem(RKEY);return newRound(DEFT.course,DEFT.tee);})();
 function save(){localStorage.setItem(RKEY,JSON.stringify(R));}
 var lgEntered=false; /* false until the user explicitly continues/starts, so a saved round shows a resume screen first */
@@ -1786,7 +1792,8 @@ function startRound(){var sc=document.getElementById('selScore'),ch=document.get
  var sv=sc?String(sc.value).trim():'',cv=ch?String(ch.value).trim():'';
  var es=document.getElementById('err_score'),ec=document.getElementById('err_chcp');
  if(es)es.textContent='';if(ec)ec.textContent='';if(sc)sc.classList.remove('bad');if(ch)ch.classList.remove('bad');
- if(sv!==''&&(+sv<minSc||+sv>maxSc)){if(es)es.textContent='Enter '+minSc+'–'+maxSc+', or leave blank.';if(sc){sc.classList.add('bad');sc.focus();}return;}
+ if(sv===''){if(es)es.textContent='Enter your score to start the round.';if(sc){sc.classList.add('bad');sc.focus();}return;}
+ if(+sv<minSc||+sv>maxSc){if(es)es.textContent='Enter '+minSc+'–'+maxSc+'.';if(sc){sc.classList.add('bad');sc.focus();}return;}
  if(cv!==''&&(+cv<-10||+cv>54)){if(ec)ec.textContent='Enter −10 to 54, or leave blank.';if(ch){ch.classList.add('bad');ch.focus();}return;}
  R.score=sv;R.chcp=cv;R.phase='play';lgEntered=true;gotoHole(R.hStart);}
 var scMode=false;
@@ -1878,7 +1885,7 @@ function renderSetup(){
    if(nf)nf.style.display='none';
    var ti0=document.getElementById('lgTitle');if(ti0)ti0.textContent='Round in progress';
    var br=document.getElementById('btnResume');if(br)br.onclick=function(){lgEntered=true;gotoHole(R.cur);};
-   var bc=document.getElementById('btnResumeCancel');if(bc)bc.onclick=function(){if(!confirm('Cancel the round in progress? Everything entered will be discarded.'))return;editRoundId=null;localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);lgEntered=false;render();renderLogged();};
+   var bc=document.getElementById('btnResumeCancel');if(bc)bc.onclick=function(){if(!confirm('Cancel the round in progress? Everything entered will be discarded.'))return;editRoundId=null;localStorage.removeItem(RKEY);(function(){var d=loadDefault();R=newRound(d.course,d.tee);})();lgEntered=false;render();renderLogged();};
    document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+teeEN(R.course,R.tee);
    renderSel();return;
  }
@@ -2092,7 +2099,7 @@ document.getElementById('lgSaveBtn').onclick=()=>{
  var stp=t.strokes-t.par;
  lgToast('<b>'+(replaced?'Round updated':'Saved')+'</b> · '+t.strokes+' ('+(stp>=0?'+':'')+stp+')'+(nine?' · 9 holes':' · diff '+diff)+'<br><span class="tsg">SG '+fmt(t.tot)+' · Tiger\'s 5: '+m.total+((hi!=null&&!editRoundId)?' · HI ≈ '+hi:'')+' · ✓ in Statistics</span>');
  editRoundId=null;
- localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);lgEntered=false;render();renderLogged();
+ localStorage.removeItem(RKEY);(function(){var d=loadDefault();R=newRound(d.course,d.tee);})();lgEntered=false;render();renderLogged();
 };
 /* ---- course / tee selector ---- */
 function anyConfirmed(){return R.holes.some(h=>h.shots.some(s=>s.conf));}
@@ -2108,6 +2115,7 @@ function renderSel(){
  ts.setAttribute('style',teeStyle(R.course,R.tee)+'font-weight:600;');
  const t=tees[R.tee];const totY=R.holes.reduce((a,h)=>a+(h.yd||0),0);
  document.getElementById('teeEst').textContent=Y2U(totY)+' '+PROF.units+' · CR '+t.cr+' · Slope '+t.slope+(t.est?' · est.':'');
+ var ci=document.getElementById('selChcp');if(ci&&document.activeElement!==ci&&((R.chcp==null||R.chcp==='')||R.chcpAuto)){var sug=suggestChcp();if(sug!=null){R.chcp=String(sug);ci.value=sug;R.chcpAuto=true;}}
  const dEl=document.getElementById('selDate');if(dEl){dEl.value=R.date||new Date().toISOString().slice(0,10);if(!dEl.dataset.init){dEl.dataset.init='1';dEl.addEventListener('change',function(){R.date=dEl.value||R.date;save();});}}
  const d=loadDefault(),isd=d.course===R.course&&d.tee===R.tee,sb=document.getElementById('starBtn');
  sb.classList.toggle('isdef',isd);sb.textContent=isd?'★ default':'☆ set default';
@@ -2116,9 +2124,11 @@ document.getElementById('selCourse').onchange=e=>{const c=e.target.value,tee=COU
 document.getElementById('selTee').onchange=e=>switchTo(R.course,e.target.value);
 document.getElementById('starBtn').onclick=()=>{setDefault(R.course,R.tee);renderSel();};
 document.getElementById('startBtn').onclick=()=>startRound();
-document.getElementById('lgCancelBtn').onclick=()=>{if(!confirm('Cancel this round? Everything entered will be discarded.'))return;editRoundId=null;localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);render();renderLogged();};
+document.getElementById('lgCancelBtn').onclick=()=>{if(!confirm('Cancel this round? Everything entered will be discarded.'))return;editRoundId=null;localStorage.removeItem(RKEY);(function(){var d=loadDefault();R=newRound(d.course,d.tee);})();render();renderLogged();};
 document.getElementById('selScore').addEventListener('change',e=>{R.score=e.target.value;save();});
-document.getElementById('selChcp').addEventListener('change',e=>{R.chcp=e.target.value;save();});
+document.getElementById('selHoles').addEventListener('change',e=>{R.holesMode=e.target.value;save();renderSel();});
+document.getElementById('selChcp').addEventListener('input',()=>{R.chcpAuto=false;});
+document.getElementById('selChcp').addEventListener('change',e=>{R.chcp=e.target.value;R.chcpAuto=false;save();});
 /* ---- player profile ---- */
 function renderProf(){
  const auto=computeHI(),eff=effHI();
