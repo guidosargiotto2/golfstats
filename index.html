@@ -2123,7 +2123,7 @@ function renderScorecard(){
  /* strokes gained by category over the active holes */
  var cat={ott:0,app:0,atg:0,putt:0,tot:0};for(var k=hs;k<he;k++){var hsg=holeSG(holeView(R.holes[k]));cat.ott+=hsg.ott;cat.app+=hsg.app;cat.atg+=hsg.atg;cat.putt+=hsg.putt;cat.tot+=hsg.tot;}
  var chip=function(l,v){return '<span class="sgcat"><span class="sgcatL">'+t(l)+'</span><b class="'+(v<0?'sg-neg':'sg-pos')+'">'+fmt(v)+'</b></span>';};
- var catRow='<div class="sgcats2">'+chip('Off tee',cat.ott)+chip('Approach',cat.app)+chip('Around grn',cat.atg)+chip('Putting',cat.putt)+chip('Total',cat.tot)+'</div>';
+ var catRow='<h3 style="font-family:var(--serif);font-weight:600;font-size:17px;color:var(--pine);margin:18px 0 6px">'+(window.__LANG==='es'?'Categorías de strokes gained':'Strokes gained categories')+'</h3><div class="sgcats2">'+chip('Off tee',cat.ott)+chip('Approach',cat.app)+chip('Around grn',cat.atg)+chip('Putting',cat.putt)+chip('Total',cat.tot)+'</div>';
  var esc=function(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');};
  var notesBlk='<h3 style="font-family:var(--serif);font-weight:600;font-size:17px;color:var(--pine);margin:20px 0 4px">'+t('Round journal')+'</h3>'+
    '<div class="scNotes"><label>'+t('Notes')+'<textarea id="scNotes" rows="2" placeholder="'+(window.__LANG==='es'?'Cómo fue, condiciones, algo para recordar…':'How it went, conditions, anything worth remembering…')+'">'+esc(R.notes)+'</textarea></label>'+
