@@ -516,6 +516,22 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .ledshare{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--sand-deep);cursor:pointer;padding:2px 4px;border-radius:6px;}
 .lgscope .ledshare:hover{background:rgba(184,154,82,.14);}
 @media(max-width:600px){.lgscope .frnote{padding-left:0;}}
+
+/* scorecard header */
+.lgscope .scHead{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;padding:18px 20px 16px;margin:0 0 12px;border-top:3px solid var(--pine);border-radius:0 0 14px 14px;
+  background:linear-gradient(180deg,rgba(216,196,140,.20),rgba(216,196,140,0) 85%),var(--paper);box-shadow:0 1px 0 var(--line);animation:scHeadIn .45s cubic-bezier(.2,.7,.2,1);}
+.lgscope .scKick{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sand-deep);margin-bottom:4px;}
+.lgscope .scCourse{font-family:var(--serif);font-weight:600;font-size:28px;line-height:1.1;color:var(--pine);letter-spacing:-.01em;}
+.lgscope .scMeta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:10px;font-family:var(--cond);font-size:12.5px;letter-spacing:.04em;color:var(--ink-soft);}
+.lgscope .scMeta span+span:not(.scTee)::before{content:'';display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--sand);margin:0 10px 2px -6px;vertical-align:middle;}
+.lgscope .scTee{border:1px solid;border-radius:999px;padding:3px 11px;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;}
+.lgscope .scHeadR{text-align:right;flex:none;}
+.lgscope .scBig{font-family:var(--serif);font-weight:700;font-size:54px;line-height:.9;color:var(--pine);}
+.lgscope .scTp{display:inline-block;margin-top:6px;font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.06em;padding:3px 10px;border-radius:999px;background:var(--cream);color:var(--ink-soft);}
+.lgscope .scTp.u{background:rgba(31,122,77,.12);color:var(--fairway);}
+.lgscope .scTp.o{background:rgba(194,80,46,.10);color:var(--clay);}
+@keyframes scHeadIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media(max-width:600px){.lgscope .scCourse{font-size:22px}.lgscope .scBig{font-size:42px}.lgscope .scHead{padding:14px}}
 </style>
 </head>
 <body>
@@ -2042,6 +2058,7 @@ function render(){
  setup.style.display='none';play.style.display='';
  var act=R.holes.slice(R.hStart,R.hEnd),allDone=act.length>0&&act.every(function(x){return x.done;});
  var hv=document.getElementById('holeView'),sv=document.getElementById('scorecardView');
+ {var sn0=document.getElementById('snote');if(sn0)sn0.style.display='';}
  if(allDone&&scMode){hv.style.display='none';sv.style.display='';renderScorecard();totals();renderSel();save();return;}
  hv.style.display='';sv.style.display='none';
  var hi=R.cur,h=R.holes[hi];
@@ -2105,7 +2122,16 @@ function renderScorecard(){
  var notesBlk='<h3 style="font-family:var(--serif);font-weight:600;font-size:17px;color:var(--pine);margin:20px 0 4px">'+t('Round journal')+'</h3>'+
    '<div class="scNotes"><label>'+t('Notes')+'<textarea id="scNotes" rows="2" placeholder="'+(window.__LANG==='es'?'Cómo fue, condiciones, algo para recordar…':'How it went, conditions, anything worth remembering…')+'">'+esc(R.notes)+'</textarea></label>'+
    '<label>'+t('What I learnt')+' <span class="lbls" style="color:var(--clay)">'+t('required')+'</span><textarea id="scLesson" rows="2" placeholder="'+(window.__LANG==='es'?'Un aprendizaje de esta vuelta…':'One takeaway from this round…')+'">'+esc(R.lesson)+'</textarea></label></div>';
- sv.innerHTML='<div class="scWrap"><table class="scTbl"><tbody>'+
+ var hdTot=0,hdPar=0;for(var q=hs;q<he;q++){hdTot+=holeSG(holeView(R.holes[q])).strokes;hdPar+=R.holes[q].par;}
+ var hdTp=hdTot-hdPar,hdTee=COURSES[R.course]&&COURSES[R.course].tees[R.tee],hdDate='';
+ try{hdDate=R.date?new Date(R.date+'T12:00:00').toLocaleDateString(window.__LANG==='es'?'es-AR':'en-GB',{weekday:'short',day:'numeric',month:'long',year:'numeric'}):'';}catch(e){hdDate=R.date||'';}
+ var head='<div class="scHead"><div class="scHeadL"><div class="scKick">'+(window.__LANG==='es'?'Tarjeta':'Scorecard')+(hdDate?' · '+hdDate:'')+'</div>'+
+   '<div class="scCourse">'+esc(R.courseName||(COURSES[R.course]&&COURSES[R.course].name)||R.course||'')+'</div>'+
+   '<div class="scMeta"><span class="scTee" style="'+teeStyle(R.course,R.tee)+'">'+esc(teeEN(R.course,R.tee))+'</span>'+
+   '<span>'+(he-hs)+' '+(window.__LANG==='es'?'hoyos':'holes')+'</span><span>Par '+hdPar+'</span>'+(hdTee&&hdTee.cr?'<span>CR '+hdTee.cr+' / '+hdTee.slope+'</span>':'')+'</div></div>'+
+   '<div class="scHeadR"><div class="scBig">'+hdTot+'</div><div class="scTp '+(hdTp<0?'u':(hdTp>0?'o':'e'))+'">'+(hdTp===0?'E':(hdTp>0?'+':'')+hdTp)+'</div></div></div>';
+ {var sn=document.getElementById('snote');if(sn)sn.style.display='none';}
+ sv.innerHTML=head+'<div class="scWrap"><table class="scTbl"><tbody>'+
    '<tr class="scRh">'+rowsHole+'</tr><tr class="scRp">'+rowsPar+'</tr>'+(netOn?'<tr class="scRp">'+rowsNP+'</tr>':'')+'<tr class="scRs">'+rowsSc+'</tr><tr class="scRst">'+(netOn?rowsSt.replace('>'+t('STATUS')+'<','>'+t('NET STATUS')+'<'):rowsSt)+'</tr><tr class="scRsg">'+rowsSg+'</tr><tr class="scRt5">'+rowsT5+'</tr></tbody></table></div>'+
    (netOn?'<div class="scHint">'+t('Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).')+'</div>':'')+
    catRow+
@@ -2247,7 +2273,7 @@ function totals(){
  var sc=0,sg=0,par=0,gpar=0,sr=srMap();for(var i=(R.hStart||0);i<(R.hEnd!=null?R.hEnd:18);i++){var h=R.holes[i];if(!h.done)continue;var hsg=holeSG(holeView(h));sc+=hsg.strokes;sg+=hsg.tot;par+=netParOf(i,sr);gpar+=h.par;}
  var tpf=function(d){return (d>0?'+':'')+(d===0?'E':d);};
  document.getElementById('totScore').textContent=done.length?tpf(sc-gpar):'—';
- document.getElementById('totSG').innerHTML=done.length?((par!==gpar?t('Net')+' '+tpf(sc-par)+' · ':'')+t('thru')+' '+done.length+' <span class="sgmini '+(sg<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg)+'</span>'):'—';
+ document.getElementById('totSG').style.display='none';void done.length?((par!==gpar?t('Net')+' '+tpf(sc-par)+' · ':'')+t('thru')+' '+done.length+' <span class="sgmini '+(sg<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg)+'</span>'):'—';
  var rem=count-done.length,w=document.getElementById('warn');
  var cross=(rem===0&&R.score!==''&&R.score!=null&&+R.score!==sc)?('⚠ you entered score '+R.score+', but your shots add up to '+sc):'';
  if(cross){w.className='warn';w.textContent=cross;w.style.display='';}else{w.textContent='';w.style.display='none';}
