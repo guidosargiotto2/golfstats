@@ -97,7 +97,10 @@ module.exports = async (req, res) => {
     }
     if (action === 'student') {
       // full rounds of one accepted student
-      const s = await sql`select display from gs_profiles where username = ${target} and professor = ${me} and prof_status = 'accepted'`;
+      // full rounds of one accepted student — or of anyone, for the admin (Guido prepares Pro calls)
+      const s = me === L.ADMIN
+        ? await sql`select display from gs_profiles where username = ${target}`
+        : await sql`select display from gs_profiles where username = ${target} and professor = ${me} and prof_status = 'accepted'`;
       if (!s.length) return bad(403, 'not-your-student');
       const rows = await sql`select data from gs_rounds where username = ${target} and deleted = false`;
       return ok({ username: target, name: s[0].display, rounds: rows.map(r => r.data).sort(byDateDesc).slice(0, 200) });
