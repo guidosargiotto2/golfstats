@@ -461,7 +461,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 <div class="wrap">
   <div class="tabnav" id="tabnav"><button data-v="log">Log a round</button><button data-v="stats" class="on">Statistics</button><button data-v="profile">Profile</button><button data-v="ideas">Ideas</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button">Log out</button></div>
   <div id="view-log" class="lgscope" style="display:none"><div class="wrap">
- <div class="bar"><div><h1 id="lgTitle">Start a round</h1><div class="meta" id="meta">CGC</div></div>
+ <div class="bar"><div><h1 id="lgTitle">Start a round</h1><div class="meta" id="meta" style="display:none"></div></div>
    <div class="tot"><div class="sc" id="totScore">—</div><div class="sg" id="totSG">—</div></div></div>
 
  <div id="setupPanel" class="setup">
@@ -1957,7 +1957,7 @@ function renderHoleActs(hi){
  var predOn=PROF.predict;
  el.innerHTML=(h.done?'':(predOn?'<span class="predhint">Amber row = predicted next shot. Press <b>Enter</b> to accept it, or type the real lie &amp; distance.</span>':'<span class="predhint">Enter each shot: type the distance under the lie it was played from.</span>'))+
    '<div class="actbtns">'+(h.done?'<button class="ghost" id="btnAdd">+ Add a shot</button>':'<button class="finish" id="btnHoled">✓ Holed it</button><button class="ghost" id="btnAdd">+ Add a shot</button>')+'</div>'+
-   '<div class="inshint">Tap <b>+</b> on any row to add a shot below it. Keyboard: <b>Enter</b> = next shot · <b>Esc</b> = holed it (finish hole) · <b>Del</b> = remove shot.</div>';
+   '<div class="inshint">Tap <b>+</b> on any row to add a shot below it. Keyboard: <b>Tab</b> on the tee = cycle tee · <b>Tab</b> in a row = next category · <b>Enter</b> = next shot · <b>Esc</b> = holed it (finish hole) · <b>Del</b> = remove shot.</div>';
 }
 function renderHoleNav(hi){
  var act=R.holes.slice(R.hStart,R.hEnd),done=act.filter(function(h){return h.done;}).length,count=R.hEnd-R.hStart,allDone=done===count;
