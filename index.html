@@ -503,7 +503,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   </form>
 </div>
 <div class="wrap">
-  <div class="tabnav" id="tabnav"><button data-v="log" data-i18n="Log a round">Log a round</button><button data-v="stats" data-i18n="Statistics">Statistics</button><button data-v="ledger" data-i18n="Round ledger">Round ledger</button><button data-v="profile" data-i18n="Profile">Profile</button><button data-v="ideas" data-i18n="Ideas">Ideas</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button" data-i18n="Log out">Log out</button></div>
+  <div class="tabnav" id="tabnav"><button data-v="log" data-i18n="Log a round">Log a round</button><button data-v="stats" data-i18n="Statistics">Statistics</button><button data-v="ledger" data-i18n="Round ledger">Round ledger</button><button data-v="profile" data-i18n="Profile">Profile</button><button data-v="ideas" data-i18n="Ideas">Ideas</button><button class="tourbtn" id="tourBtn" type="button" title="How to log a hole">?</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button" data-i18n="Log out">Log out</button></div>
   <div id="view-log" class="lgscope" style="display:none"><div class="wrap">
  <div class="bar"><div><h1 id="lgTitle">Start a round</h1><div class="meta" id="meta" style="display:none"></div></div>
    <div class="tot"><div class="sc" id="totScore">—</div><div class="sg" id="totSG">—</div></div></div>
@@ -1690,7 +1690,7 @@ function saveYover(){localStorage.setItem(YKEY,JSON.stringify(YOVER));}
 function stdYd(course,tee,i){const k=course+'|'+tee+'#'+i;return YOVER[k]!=null?YOVER[k]:COURSES[course].tees[tee].yds[i];}
 /* ===== USER PROFILE ===== */
 const PROFK=LU+'scard-prof-v1';
-const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true,askedDrive:false,driveFromData:false};
+const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true,askedDrive:false,driveFromData:false,tourDone:false};
 function nineIron(){var x=parseInt(PROF.nineIron,10);if(isNaN(x))x=140;return Math.min(200,Math.max(80,x));}
 function bogeyXyd(){var x=parseInt(PROF.bogeyX,10);if(isNaN(x))x=nineIron();return Math.min(150,Math.max(50,x));}
 /* average drive in yards — where the predicted second shot is played from */
@@ -2448,7 +2448,14 @@ function lgOpenCard(o){if(!o||!o.holes)return;editRoundId=o.id||null;lgLoad(o);s
  function done(){var v=parseInt(inp.value,10);if(!isNaN(v))PROF.driveYd=Math.min(400,Math.max(100,v));var lg=document.getElementById('driveAskLang');var wasEs=(lg&&lg.value==='es');if(lg){PROF.lang=(lg.value==='es'?'es':'en');window.__LANG=PROF.lang;}PROF.askedDrive=true;saveProf();ov.style.display='none';if(wasEs){try{location.reload();return;}catch(e){}}try{applyI18n();}catch(e){}try{render();renderSel();}catch(e){}}
  btn.onclick=done;inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();done();}});
 }catch(e){}})();
-render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel();},profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause};
+var tourSavedR=null;
+function lgPractice(){ /* throwaway practice round for the tour (not saved) */
+ tourSavedR=JSON.parse(JSON.stringify(R));
+ var c=COURSES.CGC||COURSES[Object.keys(COURSES)[0]];var ck=COURSES.CGC?'CGC':Object.keys(COURSES)[0];var tk=Object.keys(c.tees)[0];
+ R=newRound(ck,tk);R.score='78';R.chcp='0';R.phase='play';R.markers=tk;lgEntered=true;scMode=false;R.cur=R.hStart;R._tour=true;
+ var h=R.holes[R.cur];h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];teeArmed=false;render();focusTee();}
+function lgPracticeEnd(){ if(tourSavedR){R=tourSavedR;tourSavedR=null;}else{var d=loadDefault();R=newRound(d.course,d.tee);}lgEntered=false;scMode=false;render();renderSel();}
+render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel();},profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause,practice:lgPractice,practiceEnd:lgPracticeEnd,needTour:function(){return !PROF.tourDone;},setTourDone:function(){PROF.tourDone=true;saveProf();}};
 /* inject a Load/import panel into the Log tab (robust; never throws) */
 try{(function(){
  var parent=document.getElementById('setupPanel')||document.getElementById('view-log');
@@ -2596,6 +2603,77 @@ try{(function(){
  var ccSel=document.getElementById('ideaCountry');if(ccSel)ccSel.onchange=toggleCountry;
  fillCourses();toggleType();toggleCountry();
  window.IDEAS={render:render};
+})();
+</script>
+<style>
+#tourBtn{width:30px;height:30px;border-radius:50%;border:1px solid var(--line,#ccc);background:var(--paper,#fff);color:var(--pine,#1c3d2e);font-weight:700;cursor:pointer;margin-left:8px;}
+#tourBtn:hover{border-color:var(--fairway,#1f7a4d);color:var(--fairway,#1f7a4d);}
+.tourmask{position:fixed;inset:0;z-index:9000;pointer-events:auto;}
+.tourring{position:fixed;z-index:9001;border:3px solid #c99a1e;border-radius:12px;box-shadow:0 0 0 9999px rgba(20,30,22,.55);pointer-events:none;transition:all .2s ease;}
+.tourcard{position:fixed;z-index:9002;max-width:330px;background:#fbf8ef;border:1px solid #d8c48c;border-radius:14px;padding:16px 18px;box-shadow:0 12px 40px rgba(0,0,0,.3);font-family:var(--sans,system-ui);}
+.tourcard h4{font-family:var(--serif,Georgia);color:#1c3d2e;font-size:17px;font-weight:600;margin:0 0 6px;}
+.tourcard p{font-size:14px;line-height:1.5;color:#2d2a22;margin:0 0 12px;}
+.tourcard .tk{display:inline-block;background:#e9e0c8;border-radius:5px;padding:1px 6px;font-family:var(--cond,sans-serif);font-weight:700;font-size:12px;color:#1c3d2e;margin:0 2px;}
+.tourrow{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.tourrow .tstep{font-family:var(--cond,sans-serif);font-size:11px;color:#8a8471;letter-spacing:.05em;}
+.tourrow .tbtns button{font-family:var(--cond,sans-serif);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:12px;border:none;border-radius:8px;padding:7px 13px;cursor:pointer;margin-left:6px;}
+.tourrow .tnext{background:linear-gradient(160deg,#2e8650,#1c3d2e);color:#fff;}
+.tourrow .tback{background:transparent;color:#8a8471;}
+.tourskip{position:fixed;z-index:9002;top:14px;right:16px;background:rgba(251,248,239,.9);border:1px solid #d8c48c;border-radius:8px;padding:6px 12px;font-family:var(--cond,sans-serif);font-weight:700;font-size:12px;color:#8a8471;cursor:pointer;}
+</style>
+<script>
+/* ===== New-user interactive tour (practice hole) ===== */
+(function(){
+ function T(s){return (window.t?window.t(s):s);}
+ var ES=function(){return (window.__LANG==='es');};
+ function q(sel){try{return document.querySelector(sel);}catch(e){return null;}}
+ var steps=[
+  {center:true,en:{h:"Let's log one hole",p:"We'll play a quick <b>practice hole</b> together so you learn the flow. Nothing here is saved."},es:{h:"Carguemos un hoyo",p:"Vamos a jugar un <b>hoyo de práctica</b> juntos para que aprendas el flujo. Nada de esto se guarda."}},
+  {pre:function(){if(window.LGR&&window.LGR.practice)window.LGR.practice();},sel:'input[data-ydtee]',en:{h:"Your tee shot",p:"The cursor starts here. Press <span class='tk'>Tab</span> to switch tee, type a number to change the length, then <span class='tk'>Enter</span> to confirm."},es:{h:"Tu tiro de salida",p:"El cursor arranca acá. Apretá <span class='tk'>Tab</span> para cambiar de tee, escribí un número para cambiar la distancia, y <span class='tk'>Enter</span> para confirmar."}},
+  {sel:'#holebar',en:{h:"The hole at a glance",p:"Hole number, par, stroke index and your score to par. The <b>Markers</b> and <b>Pin</b> chips tweak the playing length for this hole."},es:{h:"El hoyo de un vistazo",p:"Número de hoyo, par, hándicap del hoyo y tu score al par. Las etiquetas <b>Banderas</b> y <b>Pin</b> ajustan la distancia de este hoyo."}},
+  {sel:'#lgBody',en:{h:"Enter each shot",p:"The <b>amber row</b> is the predicted next shot. Press <span class='tk'>Enter</span> to accept it, or type the real distance under the lie you played from. <span class='tk'>Tab</span> moves across Fairway / Rough / Sand / Recovery / Green."},es:{h:"Cargá cada tiro",p:"La <b>fila ámbar</b> es el tiro siguiente previsto. Apretá <span class='tk'>Enter</span> para aceptarlo, o escribí la distancia real bajo el lie desde donde jugaste. <span class='tk'>Tab</span> se mueve entre Fairway / Rough / Bunker / Recuperación / Green."}},
+  {sel:'#lgBody',en:{h:"Fixing mistakes",p:"<span class='tk'>↑</span><span class='tk'>↓</span> jump between shots. <span class='tk'>Del</span>, <span class='tk'>Backspace</span> on an empty cell, or double-<span class='tk'>Backspace</span> removes a shot — and deleting a 2nd/3rd putt assumes you sank the previous one."},es:{h:"Corregir errores",p:"<span class='tk'>↑</span><span class='tk'>↓</span> saltan entre tiros. <span class='tk'>Supr</span>, <span class='tk'>Backspace</span> en celda vacía, o doble <span class='tk'>Backspace</span> borra un tiro — y borrar el 2º/3er putt asume que embocaste el anterior."}},
+  {sel:'#holeacts',en:{h:"Finish the hole",p:"A putt inside 4 ft counts as holed. Press <span class='tk'>Enter</span> or tap <b>Next hole →</b> to move on. Keep going and the scorecard builds itself."},es:{h:"Terminá el hoyo",p:"Un putt dentro de 4 ft cuenta como embocado. Apretá <span class='tk'>Enter</span> o tocá <b>Siguiente hoyo →</b> para avanzar. Seguí y el scorecard se arma solo."}},
+  {center:true,en:{h:"Keyboard cheat-sheet",p:"<span class='tk'>Enter</span> next / accept · <span class='tk'>Tab</span> category (or tee) · <span class='tk'>↑↓</span> between shots · <span class='tk'>Esc</span> holed · <span class='tk'>Del</span>/<span class='tk'>Backspace</span> remove.<br><br>That's it — your turn. ¡A jugar!"},es:{h:"Atajos de teclado",p:"<span class='tk'>Enter</span> siguiente / aceptar · <span class='tk'>Tab</span> categoría (o tee) · <span class='tk'>↑↓</span> entre tiros · <span class='tk'>Esc</span> embocado · <span class='tk'>Supr</span>/<span class='tk'>Backspace</span> borrar.<br><br>Listo — es tu turno. ¡A jugar!"}}
+ ];
+ var idx=0,els=[];
+ function clear(){els.forEach(function(e){if(e&&e.parentNode)e.parentNode.removeChild(e);});els=[];}
+ function end(save){clear();try{if(window.LGR&&window.LGR.practiceEnd)window.LGR.practiceEnd();}catch(e){}if(save&&window.LGR&&window.LGR.setTourDone)window.LGR.setTourDone();}
+ function show(){
+   clear();var st=steps[idx];if(!st)return end(true);
+   if(st.pre){try{st.pre();}catch(e){}}
+   setTimeout(function(){
+     var txt=ES()?st.es:st.en;
+     var mask=document.createElement('div');mask.className='tourmask';els.push(mask);document.body.appendChild(mask);
+     var card=document.createElement('div');card.className='tourcard';els.push(card);
+     var skip=document.createElement('button');skip.className='tourskip';skip.textContent=ES()?'Saltar':'Skip';skip.onclick=function(){end(true);};els.push(skip);document.body.appendChild(skip);
+     var last=(idx===steps.length-1);
+     card.innerHTML='<h4>'+txt.h+'</h4><p>'+txt.p+'</p><div class="tourrow"><span class="tstep">'+(idx+1)+' / '+steps.length+'</span><span class="tbtns">'+(idx>0?'<button class="tback">'+(ES()?'Atrás':'Back')+'</button>':'')+'<button class="tnext">'+(last?(ES()?'Listo':'Done'):(ES()?'Siguiente':'Next'))+'</button></span></div>';
+     document.body.appendChild(card);
+     var tgt=st.sel?q(st.sel):null;
+     if(tgt&&!st.center){var r=tgt.getBoundingClientRect();
+       var ring=document.createElement('div');ring.className='tourring';ring.style.left=(r.left-6)+'px';ring.style.top=(r.top-6)+'px';ring.style.width=(r.width+12)+'px';ring.style.height=(r.height+12)+'px';els.push(ring);document.body.appendChild(ring);
+       var below=r.bottom+14, cw=330, cl=Math.min(Math.max(10,r.left),window.innerWidth-cw-10);
+       if(below+180>window.innerHeight){card.style.top=Math.max(10,r.top-190)+'px';}else{card.style.top=below+'px';}
+       card.style.left=cl+'px';
+       try{tgt.scrollIntoView({block:'center',behavior:'smooth'});}catch(e){}
+     } else {
+       mask.style.background='rgba(20,30,22,.55)';
+       card.style.left='50%';card.style.top='50%';card.style.transform='translate(-50%,-50%)';
+     }
+     card.querySelector('.tnext').onclick=function(){if(last){end(true);}else{idx++;show();}};
+     var bk=card.querySelector('.tback');if(bk)bk.onclick=function(){idx=Math.max(0,idx-1);show();};
+   },st.pre?260:30);
+ }
+ window.TOUR={start:function(){idx=0;try{if(window.showView)window.showView('log');}catch(e){}show();}};
+ var tb=document.getElementById('tourBtn');if(tb)tb.onclick=function(){window.TOUR.start();};
+ /* auto-start once for brand-new users (wait until the welcome / login overlays are gone) */
+ var tries=0;function maybeAuto(){tries++;if(tries>40)return;try{
+   var vis=function(id){var e=document.getElementById(id);return e&&getComputedStyle(e).display!=='none';};
+   if(vis('driveAsk')||vis('loginOverlay')){return setTimeout(maybeAuto,700);}
+   if(window.LGR&&window.LGR.needTour&&window.LGR.needTour()){if(window.LGR.setTourDone)window.LGR.setTourDone();window.TOUR.start();}
+ }catch(e){}}
+ setTimeout(maybeAuto,1200);
 })();
 </script>
 </body>
