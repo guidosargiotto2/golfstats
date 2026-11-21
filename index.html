@@ -298,6 +298,9 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope tr.teerow td{background:var(--cream);}
 .lgscope input.lc[data-ydtee]{background:var(--cream);border-color:var(--line);color:var(--pine);font-family:var(--sans);font-weight:600;display:block;width:auto;min-width:72px;max-width:110px;margin:0 auto;padding:6px 10px;}
 .lgscope input.lc[data-ydtee]:focus{outline:none;box-shadow:0 0 0 2px rgba(255,255,255,.35) inset;}
+.lgscope td.t5c{text-align:center;vertical-align:middle;}
+.lgscope .t5bad{display:inline-block;min-width:20px;padding:2px 6px;border-radius:999px;background:var(--clay);color:#fff;font-family:var(--cond);font-weight:700;font-size:12px;}
+.lgscope .t5ok{color:var(--fairway);font-weight:700;}
 .lgscope .teechips{display:flex;gap:8px;flex-wrap:wrap;}
 .lgscope .teechip{font-family:var(--sans);font-size:14px;font-weight:600;border:2px solid transparent;border-radius:10px;padding:10px 16px;cursor:pointer;opacity:.45;filter:saturate(.7);transition:opacity .15s,transform .15s,box-shadow .15s;}
 .lgscope .teechip.on{opacity:1;filter:none;transform:translateY(-1px);box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--pine),0 3px 10px rgba(0,0,0,.18);}
@@ -491,7 +494,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
    <div class="holebar" id="holebar"></div>
    <div class="holenav" id="holenav"></div>
    <div class="warn" id="warn"></div>
-   <div class="lgtablewrap"><table><thead><tr><th class="lh">#</th><th>Tee</th><th>Fairway</th><th>Rough</th><th>Sand</th><th>Recovery</th><th>Green·ft</th><th>Pen</th><th>SG</th><th></th></tr></thead>
+   <div class="lgtablewrap"><table><thead><tr><th class="lh">#</th><th>Tee</th><th>Fairway</th><th>Rough</th><th>Sand</th><th>Recovery</th><th>Green·ft</th><th>Pen</th><th>SG</th><th title="Tiger's 5 mistakes on this hole">T5</th><th></th></tr></thead>
    <tbody id="lgBody"></tbody></table></div>
    <div class="holeacts" id="holeacts"></div>
    </div>
@@ -1941,6 +1944,10 @@ function renderHoleBar(hi){
 function recomputeHoleYd(hi){var h=R.holes[hi];var base=stdYd(R.course,h.teeOv||R.tee,hi);var off=h.pin==='F'?-10:h.pin==='B'?10:0;h.yd=Math.max(20,base+off);if(h.shots&&h.shots[0]&&h.shots[0].lie==='tee')h.shots[0].dist=h.yd;}
 function renderShots(hi){
  var h=R.holes[hi],body=document.getElementById('lgBody'),html='';
+ var hm5=holeMistakes({par:h.par,yd:h.yd,hcp:h.hcp,shots:confShots(h)});
+ var t5tags=[hm5.p3?'3-putt':'',hm5.db?'double':'',hm5.bp5?'bogey P5':'',hm5.f150?'bogey ≤'+bogeyXyd()+'y':'',hm5.short?shortLabel():''].filter(Boolean);
+ var t5n=t5tags.length,nshot=confShots(h).length;
+ var t5cell='<td class="t5c" rowspan="'+Math.max(1,nshot)+'" title="'+(t5n?t5tags.join(', '):'no Tiger’s-5 mistakes')+'">'+(t5n?('<span class="t5bad">'+t5n+'</span>'):(nshot>1?'<span class="t5ok">✓</span>':'·'))+'</td>';
  h.shots.forEach(function(s,si){
    var hasNext=(si+1<h.shots.length);var known=hasNext||h.done;
    var En=hasNext?Estart(h.shots[si+1].lie,h.shots[si+1].dist):0;
@@ -1952,6 +1959,7 @@ function renderShots(hi){
    html+='<tr class="shot conf'+(locked?' teerow':'')+'"><td class="sidx">'+(si+1)+'</td>'+cells+
      '<td><input class="p" type="number" inputmode="numeric" min="0" data-h="'+hi+'" data-s="'+si+'" value="'+(s.pen||'')+'" placeholder="0"></td>'+
      '<td class="sgc '+(sgv==null?'':(sgv<0?'sg-neg':'sg-pos'))+'">'+(sgv==null?'·':fmt(sgv))+'</td>'+
+     (si===0?t5cell:'')+
      '<td class="rm"><button class="insbtn" data-ins="'+hi+':'+si+'" title="insert a shot below this one">+</button>'+(locked?'':'<button data-del="'+hi+':'+si+'" title="delete">×</button>')+'</td></tr>';
  });
  /* add-a-shot row only while the hole is unfinished; a done hole uses the "+ Add a shot" button so there's no stray empty row */
@@ -1965,7 +1973,7 @@ function renderShots(hi){
      var cells=LIECOLS.map(function(lc){var on=pr.lie===lc;var val=on?(lc==='putt'?pr.dist:Y2U(pr.dist)):'';
        return '<td class="liec"><input class="lc'+(on?' on':'')+'" type="text" inputmode="numeric" data-entry="'+hi+'" data-lie="'+lc+'" value="'+val+'" placeholder="·"></td>';}).join('');
      html+='<tr class="shot entry'+(isPred?' pred':'')+'"><td class="sidx">'+(confShots(h).length+1)+'</td>'+cells+
-       '<td></td><td class="sgc"></td><td class="rm"><button data-entryfin="1" title="Holed it — no more shots on this hole (or press Delete). Stays here so you can review.">×</button></td></tr>';
+       '<td></td><td class="sgc"></td><td class="t5c">·</td><td class="rm"><button data-entryfin="1" title="Holed it — no more shots on this hole (or press Delete). Stays here so you can review.">×</button></td></tr>';
    }
  }
  body.innerHTML=html;
