@@ -1873,12 +1873,12 @@ function renderSetup(){
  var rc=document.getElementById('resumeCard'),nf=document.getElementById('newRoundForm');
  if(inProg){
    var done=R.holes.slice(R.hStart,R.hEnd).filter(function(h){return h.done;}).length,count=R.hEnd-R.hStart;
-   if(rc){rc.style.display='';rc.innerHTML='<div class="rcH">Round in progress</div><div class="rcM">'+(R.courseName||R.course)+' · '+R.tee+' · '+(R.date||'')+' — '+done+' / '+count+' holes logged</div><div class="rcB"><button class="startbtn" id="btnResume">Continue round →</button><button class="cancelbtn" id="btnResumeCancel" type="button">Cancel round</button></div>';}
+   if(rc){rc.style.display='';rc.innerHTML='<div class="rcH">Round in progress</div><div class="rcM">'+(R.courseName||R.course)+' · '+teeEN(R.course,R.tee)+' · '+(R.date||'')+' — '+done+' / '+count+' holes logged</div><div class="rcB"><button class="startbtn" id="btnResume">Continue round →</button><button class="cancelbtn" id="btnResumeCancel" type="button">Cancel round</button></div>';}
    if(nf)nf.style.display='none';
    var ti0=document.getElementById('lgTitle');if(ti0)ti0.textContent='Round in progress';
    var br=document.getElementById('btnResume');if(br)br.onclick=function(){lgEntered=true;gotoHole(R.cur);};
    var bc=document.getElementById('btnResumeCancel');if(bc)bc.onclick=function(){if(!confirm('Cancel the round in progress? Everything entered will be discarded.'))return;editRoundId=null;localStorage.removeItem(RKEY);R=newRound(R.course,R.tee);lgEntered=false;render();renderLogged();};
-   document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+R.tee;
+   document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+teeEN(R.course,R.tee);
    renderSel();return;
  }
  if(rc)rc.style.display='none';if(nf)nf.style.display='';
@@ -1886,16 +1886,25 @@ function renderSetup(){
  var sc=document.getElementById('selScore');if(sc&&document.activeElement!==sc)sc.value=R.score||'';
  var ch=document.getElementById('selChcp');if(ch&&document.activeElement!==ch)ch.value=R.chcp||'';
  var sh=document.getElementById('selHoles');if(sh)sh.value=R.holesMode||'18';
- document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+R.tee;
+ document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+teeEN(R.course,R.tee);
  renderSel();
 }
 function holeSGlive(h){var cs=confShots(h),tot=0,strokes=0;for(var i=0;i<cs.length;i++){strokes+=1+(cs[i].pen||0);var hasN=i+1<cs.length;if(hasN||h.done){var En=hasN?Estart(cs[i+1].lie,cs[i+1].dist):0;tot+=Estart(cs[i].lie,cs[i].dist)-En-1-(cs[i].pen||0);}}return {tot:tot,strokes:strokes};}
+function teeEN(course,tee){var t=COURSES[course]&&COURSES[course].tees[tee];if(t&&t.label&&t.label.indexOf('/')>=0)return t.label.split('/')[1].trim();return tee;}
+function teeColor(course,tee){var en=(teeEN(course,tee)||'').toLowerCase();
+ if(/black|negr/.test(en))return{bg:'#1b1b1b',fg:'#fff',bd:'#1b1b1b'};
+ if(/blue|azul/.test(en))return{bg:'#1f4e8c',fg:'#fff',bd:'#1f4e8c'};
+ if(/white|blanc/.test(en))return{bg:'#ffffff',fg:'#1b1b1b',bd:'#cfc9b8'};
+ if(/red|roj/.test(en))return{bg:'#b23a2e',fg:'#fff',bd:'#b23a2e'};
+ if(/gold|dorad/.test(en))return{bg:'#c8921e',fg:'#1b1b1b',bd:'#b07d14'};
+ return{bg:'var(--cream)',fg:'var(--pine)',bd:'var(--line)'};}
+function teeStyle(course,tee){var c=teeColor(course,tee);return 'background:'+c.bg+';color:'+c.fg+';border-color:'+c.bd+';';}
 function renderHoleBar(hi){
  var h=R.holes[hi],hv=holeView(h),sg=holeSGlive(h),m=holeMistakes(hv);
  var flags=[m.p3?'3-putt':'',m.db?'double':'',m.bp5?'bogey P5':'',m.f150?'bogey ≤'+bogeyXyd()+'y':'',m.short?shortLabel():''].filter(Boolean).join(' · ');
  var hstr=sg.strokes,hdiff=hstr-h.par,hdt=hstr?(hdiff===0?'E':(hdiff>0?'+'+hdiff:hdiff)):'';
  var tees=COURSES[R.course]?COURSES[R.course].tees:{},teeKeys=Object.keys(tees),curTee=h.teeOv||R.tee,pin=h.pin||'M';
- var teeSel=teeKeys.length>1?('<span class="ha">Tee <select class="hatee" data-hatee="'+hi+'">'+teeKeys.map(function(k){return '<option value="'+k+'"'+(k===curTee?' selected':'')+'>'+k+'</option>';}).join('')+'</select></span>'):'';
+ var teeSel=teeKeys.length>1?('<span class="ha">Tee <select class="hatee" data-hatee="'+hi+'" style="'+teeStyle(R.course,curTee)+'">'+teeKeys.map(function(k){return '<option value="'+k+'"'+(k===curTee?' selected':'')+'>'+teeEN(R.course,k)+'</option>';}).join('')+'</select></span>'):'';
  var pinSeg='<span class="ha">Pin <span class="haseg">'+
    '<button class="hpin'+(pin==='F'?' on':'')+'" data-hpin="'+hi+':F" title="Flag short of middle">Front −10</button>'+
    '<button class="hpin'+(pin==='M'?' on':'')+'" data-hpin="'+hi+':M">Mid</button>'+
@@ -1918,7 +1927,7 @@ function renderShots(hi){
    var En=hasNext?Estart(h.shots[si+1].lie,h.shots[si+1].dist):0;
    var sgv=known?(Estart(s.lie,s.dist)-En-1-(s.pen||0)):null;var shownDist=s.lie==='putt'?s.dist:Y2U(s.dist);var locked=si===0;
    var cells=LIECOLS.map(function(lc){var on=s.lie===lc;
-     if(locked)return '<td class="liec">'+(lc==='tee'?('<input class="lc on" type="text" inputmode="numeric" data-ydtee="'+hi+'" value="'+shownDist+'" title="Tee shot = hole length — editable for this round">'):'<span class="lcx">·</span>')+'</td>';
+     if(locked)return '<td class="liec">'+(lc==='tee'?('<input class="lc on" type="text" inputmode="numeric" data-ydtee="'+hi+'" value="'+shownDist+'" style="'+teeStyle(R.course,h.teeOv||R.tee)+'" title="Tee shot = hole length — editable for this round">'):'<span class="lcx">·</span>')+'</td>';
      return '<td class="liec"><input class="lc'+(on?' on':'')+'" type="text" inputmode="numeric" data-h="'+hi+'" data-s="'+si+'" data-lie="'+lc+'" value="'+(on?shownDist:'')+'" placeholder="·"></td>';
    }).join('');
    html+='<tr class="shot conf'+(locked?' teerow':'')+'"><td class="sidx">'+(si+1)+'</td>'+cells+
@@ -1968,7 +1977,7 @@ function totals(){
  if(cross){w.className='warn';w.textContent=cross;w.style.display='';}else{w.textContent='';w.style.display='none';}
  var sv=document.getElementById('lgSaveBtn');sv.disabled=rem>0;sv.textContent=rem>0?(rem+' to go'):'Save round';
  document.getElementById('snote').textContent=(R.courseName||R.course)+' · '+R.tee+' · '+R.date;
- document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+R.tee;
+ document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+teeEN(R.course,R.tee);
  var ti=document.getElementById('lgTitle');if(ti)ti.textContent=(editRoundId?'Editing round':'Round in progress');
 }
 /* focus the cell for the next shot to enter */
@@ -2094,7 +2103,8 @@ function renderSel(){
  const cs=document.getElementById('selCourse');
  cs.innerHTML=Object.keys(COURSES).map(k=>`<option value="${k}" ${k===R.course?'selected':''}>${COURSES[k].name}</option>`).join('');
  const tees=COURSES[R.course].tees,ts=document.getElementById('selTee');
- ts.innerHTML=Object.keys(tees).map(k=>`<option value="${k}" ${k===R.tee?'selected':''}>${tees[k].label}</option>`).join('');
+ ts.innerHTML=Object.keys(tees).map(k=>`<option value="${k}" ${k===R.tee?'selected':''}>${teeEN(R.course,k)}</option>`).join('');
+ ts.setAttribute('style',teeStyle(R.course,R.tee)+'font-weight:600;');
  const t=tees[R.tee];const totY=R.holes.reduce((a,h)=>a+(h.yd||0),0);
  document.getElementById('teeEst').textContent=Y2U(totY)+' '+PROF.units+' · CR '+t.cr+' · Slope '+t.slope+(t.est?' · est.':'');
  const dEl=document.getElementById('selDate');if(dEl){dEl.value=R.date||new Date().toISOString().slice(0,10);if(!dEl.dataset.init){dEl.dataset.init='1';dEl.addEventListener('change',function(){R.date=dEl.value||R.date;save();});}}
