@@ -3061,7 +3061,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    return sec(T('My students','Mis alumnos'),h+'<div id="frStu"></div>');
  }
  function planHTML(){
-   var p=ME.plan||'free',N={free:'Free',lite:'Lite',pro:'Pro'},B={free:T('free','gratis'),lite:T('1 Pro V1 a month','1 Pro V1 por mes'),pro:T('half a dozen Pro V1 a month','media docena de Pro V1 por mes')};
+   var p=ME.plan||'free',N={free:'Free',lite:'Lite',pro:'Pro'},B={free:T('free','gratis'),lite:T('1 ball a month','1 pelota por mes'),pro:T('half a dozen balls a month','media docena de pelotas por mes')};
    return sec(T('Your plan','Tu plan'),'<div class="frline"><span><b>'+N[p]+'</b> · '+B[p]+'</span><button class="pf_btn" id="frPlans">'+T('See plans','Ver planes')+'</button></div>');
  }
  function membersHTML(list){var N=['free','lite','pro'];
@@ -3193,10 +3193,10 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
 </script>
 <script>
 
-/* ===== Plans: Free / Lite / Pro, priced in Pro V1 balls (no payments yet) ===== */
+/* ===== Plans: Free / Lite / Pro, priced in golf balls (no payments yet) ===== */
 (function(){
  var ES=function(){return window.__LANG==='es';},T=function(en,es){return ES()?es:en;};
- var BALL_USD=59/12;   /* Titleist Pro V1 US list price, per ball */
+ var BALL_USD=59/12;   /* premium tour ball, US list price per ball */
  var PLANS=[
   {k:'free',balls:0,name:'Free',
    en:['Shot-by-shot logging with predictions','Round Ledger and every scorecard (SG + Tiger 5 per round)','Share image for WhatsApp'],
@@ -3205,8 +3205,8 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    en:['Everything in Free','Statistics: trends, control charts, what drives your score, practice priorities','Friends: follow and compare','Link to your professor'],
    es:['Todo lo de Free','Estadísticas: tendencias, gráficos de control, qué define tu score, prioridades de práctica','Amigos: seguir y comparar','Vincular a tu profesor']},
   {k:'pro',balls:6,name:'Pro',
-   en:['Everything in Lite','A monthly 30-minute call with Guido, prepared from your numbers','Limited places'],
-   es:['Todo lo de Lite','Una llamada mensual de 30 minutos con Guido, preparada con tus números','Lugares limitados']}
+   en:['Everything in Lite','A monthly 30-minute call with Guido, prepared from your numbers','Early access to new features','Priority support — your questions and requests go first','Limited places'],
+   es:['Todo lo de Lite','Una llamada mensual de 30 minutos con Guido, preparada con tus números','Acceso anticipado a las funciones nuevas','Soporte prioritario — tus consultas y pedidos van primero','Lugares limitados']}
  ];
  var rank=function(p){return ({free:0,lite:1,pro:2})[p]||0;};
  function plan(){return localStorage.getItem('gs-token')?(localStorage.getItem('gs-plan')||''):'';}   /* '' = unknown → never lock */
@@ -3216,17 +3216,17 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  var LOCKMSG={stats:['Statistics are part of Lite','Las estadísticas son parte de Lite'],friends:['Friends are part of Lite','Amigos es parte de Lite']};
  function render(reason){
    var el=document.getElementById('plansBody');if(!el)return;var cur=plan();
-   var h=reason&&LOCKMSG[reason]?'<div class="plLock">🔒 '+T(LOCKMSG[reason][0],LOCKMSG[reason][1])+' — '+T('one Pro V1 a month.','una Pro V1 por mes.')+'</div>':'';
-   h+='<p class="plLead">'+T('Priced in Pro V1 balls, like buying someone a coffee — but in golf balls.','Precios en pelotas Pro V1, como invitar un cafecito — pero en pelotas de golf.')+'</p><div class="plGrid">';
+   var h=reason&&LOCKMSG[reason]?'<div class="plLock">🔒 '+T(LOCKMSG[reason][0],LOCKMSG[reason][1])+' — '+T('one ball a month.','una pelota por mes.')+'</div>':'';
+   h+='<p class="plLead">'+T('Priced in golf balls — like buying someone a coffee, but on the course.','Precios en pelotas de golf — como invitar un cafecito, pero en la cancha.')+'</p><div class="plGrid">';
    PLANS.forEach(function(p){var me=cur===p.k,usd=p.balls*BALL_USD;
      h+='<div class="plCard pl-'+p.k+(me?' on':'')+'">'+(p.k==='pro'?'<div class="plTag">'+T('With Guido','Con Guido')+'</div>':'')+
        '<div class="plName">'+p.name+'</div>'+
-       '<div class="plBalls">'+(p.balls?('<span class="plIcons">'+(p.balls<=3?Array(p.balls+1).join(ball(26)):ball(26)+'<b>×'+p.balls+'</b>')+'</span><span class="plQty">'+(p.balls===1?T('1 Pro V1','1 Pro V1'):(p.balls===6?T('half a dozen Pro V1','media docena de Pro V1'):(p.balls===12?T('a dozen Pro V1','una docena de Pro V1'):p.balls+' Pro V1')))+'<small>'+T(' / month',' / mes')+'</small></span>'):'<span class="plQty">'+T('Free','Gratis')+'</span>')+'</div>'+
+       '<div class="plBalls">'+(p.balls?('<span class="plIcons">'+(p.balls<=3?Array(p.balls+1).join(ball(26)):ball(26)+'<b>×'+p.balls+'</b>')+'</span><span class="plQty">'+(p.balls===1?T('1 ball','1 pelota'):(p.balls===6?T('half a dozen balls','media docena de pelotas'):(p.balls===12?T('a dozen balls','una docena de pelotas'):p.balls+T(' balls',' pelotas'))))+'<small>'+T(' / month',' / mes')+'</small></span>'):'<span class="plQty">'+T('Free','Gratis')+'</span>')+'</div>'+
        '<div class="plUsd">'+(p.balls?'≈ US$'+usd.toFixed(usd<10?2:0)+T(' a month · annual: 10 months',' por mes · anual: 10 meses'):'&nbsp;')+'</div>'+
        '<ul>'+(ES()?p.es:p.en).map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+
        (me?'<div class="plCur">'+T('Your plan','Tu plan')+'</div>':(rank(p.k)>rank(cur)&&cur?'<button class="plBtn" disabled>'+T('Payments coming soon','Pagos próximamente')+'</button>':''))+
      '</div>';});
-   h+='</div><p class="plFoot">'+T('One Pro V1 ≈ US$4.92 (Titleist list price, US$59 a dozen). Founders keep Pro.','Una Pro V1 ≈ US$4,92 (precio de lista de Titleist, US$59 la docena). Los fundadores mantienen Pro.')+'</p>';
+   h+='</div><p class="plFoot">'+T('One ball ≈ US$4.92 — a premium tour ball at list price (US$59 a dozen). Founders keep Pro.','Una pelota ≈ US$4,92 — una pelota tour premium a precio de lista (US$59 la docena). Los fundadores mantienen Pro.')+'</p>';
    el.innerHTML=h;
  }
  function refreshPlan(){
