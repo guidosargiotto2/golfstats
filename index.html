@@ -299,6 +299,9 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope input.lc[data-ydtee]{background:var(--cream);border-color:var(--line);color:var(--pine);font-family:var(--sans);font-weight:600;display:block;width:auto;min-width:72px;max-width:110px;margin:0 auto;padding:6px 10px;}
 .lgscope input.lc[data-ydtee]:focus{outline:none;box-shadow:0 0 0 2px rgba(255,255,255,.35) inset;}
 .lgscope td.t5c{text-align:center;vertical-align:middle;}
+.lgscope tr.totalrow td{border-top:2px solid var(--pine);background:rgba(46,110,70,.06);font-weight:700;padding:9px 6px;}
+.lgscope tr.totalrow .totlbl{text-align:right;font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;font-size:12px;color:var(--pine);padding-right:12px;}
+.lgscope tr.totalrow .totpen{text-align:center;}
 .lgscope .t5bad{display:inline-block;min-width:20px;padding:2px 6px;border-radius:999px;background:var(--clay);color:#fff;font-family:var(--cond);font-weight:700;font-size:12px;}
 .lgscope .t5ok{color:var(--fairway);font-weight:700;}
 .lgscope .teechips{display:flex;gap:8px;flex-wrap:wrap;}
@@ -1976,6 +1979,12 @@ function renderShots(hi){
        '<td></td><td class="sgc"></td><td class="t5c">·</td><td class="rm"><button data-entryfin="1" title="Holed it — no more shots on this hole (or press Delete). Stays here so you can review.">×</button></td></tr>';
    }
  }
+ if(nshot>=1){var sgTot=holeSGlive(h).tot,penTot=confShots(h).reduce(function(a,s){return a+(s.pen||0);},0);
+   html+='<tr class="totalrow"><td class="sidx"></td><td colspan="6" class="totlbl">Hole total</td>'+
+     '<td class="totpen">'+(penTot||0)+'</td>'+
+     '<td class="sgc '+(sgTot<0?'sg-neg':'sg-pos')+'">'+fmt(sgTot)+'</td>'+
+     '<td class="t5c">'+(t5n?'<span class="t5bad">'+t5n+'</span>':'<span class="t5ok">0</span>')+'</td>'+
+     '<td class="rm"></td></tr>';}
  body.innerHTML=html;
 }
 function renderHoleActs(hi){
