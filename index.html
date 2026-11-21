@@ -1849,7 +1849,7 @@ function renderScorecard(){
    if(st>=2)return '<span class="scDbl">'+sc+'</span>';
    return '<span>'+sc+'</span>';
  }
- function flTitle(m){return [m.p3?'3-putt':'',m.db?'double bogey':'',m.bp5?'bogey on par 5':'',m.f150?'bogey from ≤'+bogeyXyd()+'y':'',m.short?shortLabel():''].filter(Boolean).join(', ');}
+ function flTitle(m){return [m.p3?'3-putt':'',m.db?'double bogey':'',m.bp5?'bogey on par 5':'',m.f150?'bogey w/ 9-iron or less':'',m.short?shortLabel():''].filter(Boolean).join(', ');}
  function seg(a,b,label){ // holes [a,b)
    var cells='',parCells='',scCells='',stCells='',sgCells='',t5Cells='',run=0,runPar=0,tot=0,par=0,sgT=0,t5T=0;
    for(var i=a;i<b;i++){var h=R.holes[i],t=holeSG(holeView(h)),m=holeMistakes(holeView(h)),st=t.strokes-h.par;
@@ -1883,7 +1883,7 @@ function renderScorecard(){
  sv.innerHTML='<div class="scWrap"><table class="scTbl"><tbody>'+
    '<tr class="scRh">'+rowsHole+'</tr><tr class="scRp">'+rowsPar+'</tr><tr class="scRs">'+rowsSc+'</tr><tr class="scRst">'+rowsSt+'</tr><tr class="scRsg">'+rowsSg+'</tr><tr class="scRt5">'+rowsT5+'</tr></tbody></table></div>'+
    catRow+
-   '<div class="scHint">Tap any hole to edit it. <b>SG</b> = strokes gained per hole · <b>Tiger\'s 5</b>: 3P 3-putt · D double · P5 bogey par-5 · B bogey from short · S blow-out save.</div>'+
+   '<div class="scHint">Tap any hole to edit it. <b>SG</b> = strokes gained per hole · <b>Tiger\'s 5</b>: 3P 3-putt · D double · P5 bogey par-5 · B bogey w/ 9-iron or less · S blow-out save.</div>'+
    notesBlk+
    '<div class="scActs"><button class="ghost" id="btnCopySheet">⎘ Copy for sheet</button></div>';
  var cbs=document.getElementById('btnCopySheet');if(cbs)cbs.onclick=copyForSheet;
@@ -1926,7 +1926,7 @@ function teeColor(course,tee){var en=(teeEN(course,tee)||'').toLowerCase();
 function teeStyle(course,tee){var c=teeColor(course,tee);return 'background:'+c.bg+';color:'+c.fg+';border-color:'+c.bd+';';}
 function renderHoleBar(hi){
  var h=R.holes[hi],hv=holeView(h),sg=holeSGlive(h),m=holeMistakes(hv);
- var flags=[m.p3?'3-putt':'',m.db?'double':'',m.bp5?'bogey P5':'',m.f150?'bogey ≤'+bogeyXyd()+'y':'',m.short?shortLabel():''].filter(Boolean).join(' · ');
+ var flags=[m.p3?'3-putt':'',m.db?'double':'',m.bp5?'bogey P5':'',m.f150?'bogey w/ 9i or less':'',m.short?shortLabel():''].filter(Boolean).join(' · ');
  var hstr=sg.strokes,hdiff=hstr-h.par,hdt=hstr?(hdiff===0?'E':(hdiff>0?'+'+hdiff:hdiff)):'';
  var tees=COURSES[R.course]?COURSES[R.course].tees:{},teeKeys=Object.keys(tees),curTee=h.teeOv||R.tee,pin=h.pin||'M';
  var teeSel=teeKeys.length>1?('<span class="ha">Tee <span class="teechips">'+teeKeys.map(function(k){return '<button type="button" class="teechip'+(k===curTee?' on':'')+'" data-hatee="'+hi+'" data-tk="'+k+'" style="'+teeStyle(R.course,k)+'">'+teeEN(R.course,k)+'</button>';}).join('')+'</span></span>'):'';
@@ -1948,7 +1948,7 @@ function recomputeHoleYd(hi){var h=R.holes[hi];var base=stdYd(R.course,h.teeOv||
 function renderShots(hi){
  var h=R.holes[hi],body=document.getElementById('lgBody'),html='';
  var hm5=holeMistakes({par:h.par,yd:h.yd,hcp:h.hcp,shots:confShots(h)});
- var t5tags=[hm5.p3?'3-putt':'',hm5.db?'double':'',hm5.bp5?'bogey P5':'',hm5.f150?'bogey ≤'+bogeyXyd()+'y':'',hm5.short?shortLabel():''].filter(Boolean);
+ var t5tags=[hm5.p3?'3-putt':'',hm5.db?'double':'',hm5.bp5?'bogey P5':'',hm5.f150?'bogey w/ 9i or less':'',hm5.short?shortLabel():''].filter(Boolean);
  var t5n=t5tags.length,nshot=confShots(h).length;
  var t5cell='<td class="t5c" rowspan="'+Math.max(1,nshot)+'" title="'+(t5n?t5tags.join(', '):'no Tiger’s-5 mistakes')+'">'+(t5n?('<span class="t5bad">'+t5n+'</span>'):(nshot>1?'<span class="t5ok">✓</span>':'·'))+'</td>';
  h.shots.forEach(function(s,si){
@@ -2181,9 +2181,9 @@ function renderProf(){
       <option value="dist" ${PROF.t5mode!=='dchip'?'selected':''}>3+ shots from X yards (incl. putts)</option>
       <option value="dchip" ${PROF.t5mode==='dchip'?'selected':''}>Double chip — chipped twice inside X yards</option></select></label>
     <label>Short distance X (yd, 10–50)<input id="pf_t5x" type="number" min="10" max="50" step="5" value="${t5x()}"></label>
-    <div class="hisub2" style="margin-top:8px">Bogey from X yards — a dropped shot with a scoring-range approach ≤ X (suggested X = your 9-iron carry, max 150).</div>
+    <div class="hisub2" style="margin-top:8px">Bogey with a 9-iron or less — a dropped shot (bogey+) when your closest approach was within X yards (set X to your 9-iron carry).</div>
     <label>Your 9-iron carry (yd)<input id="pf_nine" type="number" min="80" max="200" step="5" value="${nineIron()}"></label>
-    <label>X — bogey-from distance (yd, 50–150)<input id="pf_bogeyx" type="number" min="50" max="150" step="5" value="${bogeyXyd()}"></label>
+    <label>X — 9-iron-or-less distance (yd, 50–150)<input id="pf_bogeyx" type="number" min="50" max="150" step="5" value="${bogeyXyd()}"></label>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>Shot prediction</span></div>
