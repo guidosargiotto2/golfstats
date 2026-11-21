@@ -1784,7 +1784,7 @@ function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage
 let PROF=loadProf();
 function saveProf(){localStorage.setItem(PROFK,JSON.stringify(PROF));}
 /* ===== i18n (Stage 1: on-course flow) ===== */
-var I18N_ES={"NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles, squares and status are against net par (handicap strokes applied).":"Círculos, cuadrados y estado son contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
+var I18N_ES={"NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
  "Log a round":"Cargar vuelta","Statistics":"Estadísticas","Round ledger":"Mis vueltas","Profile":"Perfil","Ideas":"Ideas","Log out":"Salir",
  "Course":"Cancha","Tee":"Tee","Holes":"Hoyos","Score":"Score","Playing HCP":"HCP de juego","Date":"Fecha",
  "18 holes":"18 hoyos","Front 9 (1–9)":"Primeros 9 (1–9)","Back 9 (10–18)":"Segundos 9 (10–18)",
@@ -2035,7 +2035,7 @@ function renderScorecard(){
    for(var i=a;i<b;i++){var h=R.holes[i],t=holeSG(holeView(h)),m=holeMistakes(holeView(h),i),np=netParOf(i),st=t.strokes-np;
      cells+='<td class="scHole" data-sc="'+i+'">'+(i+1)+'</td>';
      parCells+='<td>'+h.par+'</td>';npCells+='<td'+(np!==h.par?' style="font-weight:700;color:var(--sand-deep)"':'')+'>'+np+'</td>';if(np!==h.par)netOn=true;
-     scCells+='<td class="scHole" data-sc="'+i+'">'+sym(st,t.strokes)+'</td>';
+     scCells+='<td class="scHole" data-sc="'+i+'">'+sym(t.strokes-h.par,t.strokes)+'</td>';
      run+=t.strokes;runNP+=np;tot+=t.strokes;par+=h.par;npar+=np;
      var rt=run-runNP;stCells+='<td class="scSt">'+(rt>0?'+'+rt:(rt===0?'E':rt))+'</td>';
      sgT+=t.tot;sgCells+='<td class="'+(t.tot<0?'sg-neg':'sg-pos')+'">'+fmt(t.tot)+'</td>';
@@ -2062,7 +2062,7 @@ function renderScorecard(){
    '<label>'+t('What I learnt')+' <span class="lbls" style="color:var(--clay)">'+t('required')+'</span><textarea id="scLesson" rows="2" placeholder="'+(window.__LANG==='es'?'Un aprendizaje de esta vuelta…':'One takeaway from this round…')+'">'+esc(R.lesson)+'</textarea></label></div>';
  sv.innerHTML='<div class="scWrap"><table class="scTbl"><tbody>'+
    '<tr class="scRh">'+rowsHole+'</tr><tr class="scRp">'+rowsPar+'</tr>'+(netOn?'<tr class="scRp">'+rowsNP+'</tr>':'')+'<tr class="scRs">'+rowsSc+'</tr><tr class="scRst">'+(netOn?rowsSt.replace('>'+t('STATUS')+'<','>'+t('NET STATUS')+'<'):rowsSt)+'</tr><tr class="scRsg">'+rowsSg+'</tr><tr class="scRt5">'+rowsT5+'</tr></tbody></table></div>'+
-   (netOn?'<div class="scHint">'+t('Circles, squares and status are against net par (handicap strokes applied).')+'</div>':'')+
+   (netOn?'<div class="scHint">'+t('Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).')+'</div>':'')+
    catRow+
    '<div class="scHint">Tap any hole to edit it. <b>SG</b> = strokes gained per hole · <b>Tiger\'s 5</b>: 3P 3-putt · D double · P5 bogey par-5 · B bogey w/ 9-iron or less · S blow-out save.</div>'+
    notesBlk+
