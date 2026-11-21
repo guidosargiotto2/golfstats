@@ -540,11 +540,14 @@ table.rt tbody tr:hover{background:var(--line-soft);}
  <div id="lgToast" class="lgtoast" role="status" aria-live="polite"></div>
 </div></div>
   <div id="view-profile" class="lgscope" style="display:none"><div style="max-width:460px;margin:0 auto;padding-top:4px"><h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px" data-i18n="Player profile">Player profile</h2><div class="pform" id="pform"></div></div></div>
-  <div id="view-ledger" class="lgscope" style="display:none"><div style="max-width:900px;margin:0 auto;padding-top:4px">
+  <div id="view-ledger" style="display:none"><div class="lgscope" style="max-width:900px;margin:0 auto;padding-top:4px">
     <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 2px" data-i18n="Round ledger">Round ledger</h2>
     <p style="font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:0 0 14px" data-i18n="Every round — imported and logged here. Open any one for its scorecard and details.">Every round — imported and logged here. Open any one for its scorecard and details.</p>
+    <div class="controls" id="ledgerMode" style="margin:0 0 12px"><button data-m="cards" class="on" data-i18n="Cards">Cards</button><button data-m="list" data-i18n="List">List</button></div>
     <div id="ledgerList"></div>
-  </div></div>
+  </div>
+  <div id="ledgerGridWrap" style="display:none;margin-top:4px"><p class="lead" style="margin:0 0 10px" data-i18n="Sortable — click any header. Green is under par or shots gained; clay is over par or shots lost.">Sortable — click any header. Green is under par or shots gained; clay is over par or shots lost.</p><div id="grid"></div></div>
+  </div>
   <div id="view-ideas" class="lgscope" style="display:none"><div class="ideaswrap">
     <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 2px" data-i18n="Ideas & feature requests">Ideas &amp; feature requests</h2>
     <p style="font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:0 0 14px" data-i18n="Got an idea to make this better? Drop it here.">Got an idea to make this better? Drop it here.</p>
@@ -573,7 +576,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
         </label>
       </div>
       <label class="ifl" id="ideaTitleWrap"><span data-i18n="Improvement">Improvement</span><input id="ideaTitle" type="text" placeholder="Short title, e.g. Add putting break capture" data-i18n-ph="Short title, e.g. Add putting break capture"></label>
-      <label class="ifl"><span data-i18n="Description">Description</span><textarea id="ideaText" rows="3" placeholder="What's happening / what you'd like\u2026"></textarea></label>
+      <label class="ifl"><span data-i18n="Description">Description</span><textarea id="ideaText" rows="3" data-i18n-ph="What's happening / what you'd like…" placeholder="What's happening / what you'd like…"></textarea></label>
       <label class="ifl" id="ideaActionWrap"><span data-i18n="Suggested action">Suggested action</span><textarea id="ideaAction" rows="2" placeholder="What should we do about it?" data-i18n-ph="What should we do about it?"></textarea></label>
       <button class="pf_btn" id="ideaSubmit" style="align-self:flex-start" data-i18n="Submit idea">Submit idea</button>
     </div>
@@ -665,11 +668,6 @@ table.rt tbody tr:hover{background:var(--line-soft);}
     <div class="card" id="panel_sc"></div>
   </section>
 
-  <section>
-    <h2><span class="n">06</span> <span data-i18n="Every round">Every round</span></h2>
-    <p class="lead" data-i18n="Sortable — click any header. Green is under par or shots gained; clay is over par or shots lost.">Sortable — click any header. Green is under par or shots gained; clay is over par or shots lost.</p>
-    <div><div id="grid"></div></div>
-  </section>
 
   <section id="addsec" style="display:none">
     <h2 id="addToggle" style="cursor:pointer;user-select:none"><span class="n">+</span> Log a round, shot by shot <span id="customBadge"></span> <span id="addCaret" style="margin-left:auto;font-family:var(--cond);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)">show ▸</span></h2>
@@ -1577,10 +1575,11 @@ let tblSort={c:0,d:1};
 function buildTable(){
   const el=document.getElementById('grid'); if(!el)return;
   const cols=['#','Date','Course','Scr','±Par','FW','GIR','Putt','Pen','Drv','Bir','Bog','Dbl','3Pt','DbB','BP5','≤150','≤40','OTT','APP','ATG','PUTT','TOT','Mist'];
-  const rows=R.map((r,i)=>[i+1,(r.date||''),r.course,r.score,r.stp,r.fw,r.gir,r.putts,r.pen,r.dist,r.bir,r.bog,r.dbl,r.p3,r.db,r.bp5,r.f150,r.fx,r.ott,r.app,r.atg,r.putt,r.sgtot,r.mtot]);
+  const SRC=(window.__ledgerRows||R);
+  const rows=SRC.map((r,i)=>[i+1,(r.date||''),r.course,r.score,r.stp,r.fw,r.gir,r.putts,r.pen,r.dist,r.bir,r.bog,r.dbl,r.p3,r.db,r.bp5,r.f150,r.fx,r.ott,r.app,r.atg,r.putt,r.sgtot,r.mtot]);
   const sgCols=new Set([18,19,20,21,22]), parCol=4;
   rows.sort((a,b)=>{const x=a[tblSort.c],y=b[tblSort.c];const c=(typeof x==='number'&&typeof y==='number')?x-y:String(x).localeCompare(String(y));return c*tblSort.d;});
-  const cell=(v,ci)=>{ if(sgCols.has(ci))return `<td class="${v<0?'neg':v>0?'pos':''}">${v>0?'+':''}${v}</td>`; if(ci===parCol)return `<td class="${v>0?'neg':v<0?'pos':''}">${v>0?'+':''}${v}</td>`; return `<td>${v}</td>`; };
+  const cell=(v,ci)=>{ if(v==null)return '<td>·</td>'; if(sgCols.has(ci))return `<td class="${v<0?'neg':v>0?'pos':''}">${v>0?'+':''}${v}</td>`; if(ci===parCol)return `<td class="${v>0?'neg':v<0?'pos':''}">${v>0?'+':''}${v}</td>`; return `<td>${v==null?'·':v}</td>`; };
   const th=cols.map((c,i)=>`<th data-c="${i}" style="cursor:pointer;user-select:none;white-space:nowrap">${c}${tblSort.c===i?(tblSort.d>0?' ▲':' ▼'):''}</th>`).join('');
   const body=rows.map(r=>'<tr>'+r.map((v,ci)=>cell(v,ci)).join('')+'</tr>').join('');
   el.innerHTML=`<div class="rtfull"><div style="overflow:auto;max-height:calc(100vh - 220px);border:1px solid var(--line);border-radius:10px"><table class="rt"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table></div></div>`;
@@ -1624,6 +1623,14 @@ window.saveLoggedRounds=function(a){try{save(uckey(),a||[]);if(PLAYER===(localSt
      .filter(function(o){return o.r&&o.r.date;});
    all.sort(function(a,b){return a.r.date<b.r.date?1:(a.r.date>b.r.date?-1:0);});
    var T=window.t||function(s){return s;};
+   var mode='cards';try{mode=localStorage.getItem('ledger-mode')||'cards';}catch(e){}
+   var mb=document.getElementById('ledgerMode'),gw=document.getElementById('ledgerGridWrap');
+   if(mb){mb.querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-m')===mode);});
+     if(!mb._w){mb._w=1;mb.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;try{localStorage.setItem('ledger-mode',b.getAttribute('data-m'));}catch(_){ }window.LEDGER.render();});}}
+   window.__ledgerRows=all.map(function(o){return o.r;}).slice().reverse();
+   if(gw)gw.style.display=(mode==='list'&&all.length)?'':'none';
+   el.style.display=(mode==='list'&&all.length)?'none':'';
+   if(mode==='list'&&all.length){try{buildTable();}catch(e){}return;}
    if(!all.length){el.innerHTML='<div style="font-family:var(--cond);color:var(--ink-soft)">'+T('No rounds yet.')+'</div>';return;}
    el.innerHTML='<div class="ledcount">'+all.length+' '+T('rounds')+'</div>'+all.map(function(o,i){var r=o.r,stp=(r.stp>=0?'+':'')+r.stp,sg=r.sgtot,card=(o.src==='logged'&&r.holes),icard=(!card&&r.hl);
      return '<div class="ledrow" data-li="'+i+'">'+
@@ -1771,7 +1778,7 @@ function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage
 let PROF=loadProf();
 function saveProf(){localStorage.setItem(PROFK,JSON.stringify(PROF));}
 /* ===== i18n (Stage 1: on-course flow) ===== */
-var I18N_ES={"Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
+var I18N_ES={"Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
  "Log a round":"Cargar vuelta","Statistics":"Estadísticas","Round ledger":"Mis vueltas","Profile":"Perfil","Ideas":"Ideas","Log out":"Salir",
  "Course":"Cancha","Tee":"Tee","Holes":"Hoyos","Score":"Score","Playing HCP":"HCP de juego","Date":"Fecha",
  "18 holes":"18 hoyos","Front 9 (1–9)":"Primeros 9 (1–9)","Back 9 (10–18)":"Segundos 9 (10–18)",
