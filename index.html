@@ -2033,7 +2033,7 @@ function renderScorecard(){
    rowsHole+='<td class="scTotH scGrand">'+t('TOT')+'</td>';rowsPar+='<td class="scTotH scGrand">'+gpar+'</td>';rowsSc+='<td class="scTotH scGrand">'+gtot+'</td>';rowsSt+='<td class="scTotH scGrand">'+(gtp>0?'+'+gtp:(gtp===0?'E':gtp))+'</td>';rowsSg+='<td class="scTotH scGrand">'+fmt(gsg)+'</td>';rowsT5+='<td class="scTotH scGrand">'+gt5+'</td>';
  } else {var s=seg(hs,he);addSeg(s,(hs===0?t('OUT'):t('IN')));}
  /* strokes gained by category over the active holes */
- var cat={ott:0,app:0,atg:0,putt:0,tot:0};for(var k=hs;k<he;k++){var t=holeSG(holeView(R.holes[k]));cat.ott+=t.ott;cat.app+=t.app;cat.atg+=t.atg;cat.putt+=t.putt;cat.tot+=t.tot;}
+ var cat={ott:0,app:0,atg:0,putt:0,tot:0};for(var k=hs;k<he;k++){var hsg=holeSG(holeView(R.holes[k]));cat.ott+=hsg.ott;cat.app+=hsg.app;cat.atg+=hsg.atg;cat.putt+=hsg.putt;cat.tot+=hsg.tot;}
  var chip=function(l,v){return '<span class="sgcat"><span class="sgcatL">'+l+'</span><b class="'+(v<0?'sg-neg':'sg-pos')+'">'+fmt(v)+'</b></span>';};
  var catRow='<div class="sgcats2">'+chip('Off tee',cat.ott)+chip('Approach',cat.app)+chip('Around grn',cat.atg)+chip('Putting',cat.putt)+chip('Total',cat.tot)+'</div>';
  var esc=function(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');};
@@ -2174,7 +2174,7 @@ function renderHoleNav(hi){
 function totals(){
  var done=R.holes.slice(R.hStart,R.hEnd).filter(function(h){return h.done;});
  var count=R.hEnd-R.hStart;
- var sc=0,sg=0,par=0,sr=srMap();for(var i=(R.hStart||0);i<(R.hEnd!=null?R.hEnd:18);i++){var h=R.holes[i];if(!h.done)continue;var t=holeSG(holeView(h));sc+=t.strokes;sg+=t.tot;par+=netParOf(i,sr);}
+ var sc=0,sg=0,par=0,sr=srMap();for(var i=(R.hStart||0);i<(R.hEnd!=null?R.hEnd:18);i++){var h=R.holes[i];if(!h.done)continue;var hsg=holeSG(holeView(h));sc+=hsg.strokes;sg+=hsg.tot;par+=netParOf(i,sr);}
  document.getElementById('totScore').textContent=done.length?((sc-par>0?'+':'')+(sc-par===0?'E':(sc-par))):'—';
  document.getElementById('totSG').innerHTML=done.length?('thru '+done.length+' <span class="sgmini '+(sg<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg)+'</span>'):'—';
  var rem=count-done.length,w=document.getElementById('warn');
@@ -2450,7 +2450,7 @@ function lgLoad(o){
  var c=COURSES[o.course]||COURSES.CGC, t=(c.tees[o.tee]||c.tees[Object.keys(c.tees)[0]]);
  R={course:(COURSES[o.course]?o.course:R.course),tee:(c.tees[o.tee]?o.tee:R.tee),courseName:c.name,cr:t.cr,slope:t.slope,date:o.date||new Date().toISOString().slice(0,10),
    score:o.score||'',chcp:o.chcp||'',notes:o.notes||'',lesson:o.lesson||'',phase:'play',cur:0,holesMode:(o.holes.length===9?'front':'18'),hStart:0,hEnd:o.holes.length,
-   holes:o.holes.map(function(h,i){return {par:h.par,yd:h.yd||((h.shots&&h.shots[0])?h.shots[0].dist:0),hcp:(c.hcp?c.hcp[i]:0),done:true,shots:(h.shots||[]).map(function(s){return {lie:s.lie,dist:s.dist,pen:s.pen||0,conf:true};})};})};
+   holes:o.holes.map(function(h,i){return {par:h.par,yd:h.yd||((h.shots&&h.shots[0])?h.shots[0].dist:0),hcp:(c.hcp?c.hcp[i]:0),pin:h.pin||'M',teeOv:h.teeOv||null,done:true,shots:(h.shots||[]).map(function(s){return {lie:s.lie,dist:s.dist,pen:s.pen||0,conf:true};})};})};
  lgEntered=true;save();render();renderSel();
 }
 function lgPause(){if(R.phase==='play'){var act=R.holes.slice(R.hStart,R.hEnd),allDone=act.length>0&&act.every(function(x){return x.done;});if(!allDone&&lgEntered){lgEntered=false;render();}}}
