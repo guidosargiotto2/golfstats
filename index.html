@@ -2085,6 +2085,11 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input
      if(!cells.length)return;e.preventDefault();var ci=cells.indexOf(el),cj;
      if(e.shiftKey)cj=(ci<=0)?cells.length-1:ci-1;else cj=(ci===-1)?0:(ci+1)%cells.length;
      cells[cj].focus();if(cells[cj].select)cells[cj].select();return;}
+   if(e.key==='ArrowUp'||e.key==='ArrowDown'){
+     var rws=Array.prototype.slice.call(document.querySelectorAll('#lgBody tr')).filter(function(t){return t.querySelector('input.lc');});
+     var ri=rws.indexOf(el.closest('tr'));if(ri<0)return;var rj=e.key==='ArrowUp'?ri-1:ri+1;if(rj<0||rj>=rws.length)return;
+     e.preventDefault();var tg=rws[rj].querySelector('input.lc.on')||rws[rj].querySelector('input[data-ydtee]')||rws[rj].querySelector('input.lc');
+     if(tg){tg.focus();if(tg.select)tg.select();}return;}
    if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;
    var armed=el.dataset.stage!=='editing';
    var atStart=el.selectionStart===0&&el.selectionEnd===0,atEnd=el.selectionStart===(el.value||'').length&&el.selectionEnd===(el.value||'').length;
