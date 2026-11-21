@@ -373,6 +373,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .holebar .hofN{font-family:var(--cond);text-transform:uppercase;letter-spacing:.1em;font-size:10px;color:var(--ink-soft);}
 .lgscope .parchip,.lgscope .sichip{font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.04em;padding:4px 10px;border-radius:999px;}
 .lgscope .parchip{background:var(--pine);color:#fff;}
+.lgscope .netchip{font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.04em;padding:4px 10px;border-radius:999px;background:var(--sand);color:var(--pine);}
 .lgscope .sichip{background:var(--sand);color:var(--pine);border:1px solid var(--sand-deep);}
 .lgscope .holescore{font-family:var(--serif);font-size:30px;font-weight:700;color:var(--pine);margin-left:6px;line-height:1;}
 .lgscope .holescore small{font-family:var(--cond);font-size:14px;font-weight:600;color:var(--ink-soft);}
@@ -891,7 +892,8 @@ function segLimits(v,count){
  let w=0;for(let i=0;i<N;i++){const g=segOf(i),sg=(g.mrb/1.128)||0;if(sg>0&&Math.abs(v[i]-g.m)<=sg)w++;else w=0;if(w>=15){notes.push('15+ rounds hugging the centre line — the limits may be wider than how you actually score now');break;}}
  let bb=0;for(let i=0;i<N;i++){const g=segOf(i),sg=(g.mrb/1.128)||0;if(sg>0&&Math.abs(v[i]-g.m)>sg)bb++;else bb=0;if(bb>=8){notes.push('8+ rounds in a row away from the centre — may be two different games blended in (e.g. different courses or tees)');break;}}
  return {segs,segOf,mr,r1,r4,breaks,notes,signals,sigSet};}
-const metrics={'SG: Total':r=>r.sgtot,'SG: Tee-to-green':r=>(r.ott==null||r.app==null||r.atg==null)?null:Math.round((r.ott+r.app+r.atg)*100)/100,'SG: Off tee':r=>r.ott,'SG: Approach':r=>r.app,'SG: Around green':r=>r.atg,'SG: Putting':r=>r.putt,'Mistakes: total':r=>r.mtot,'Mistakes: 3-putts':r=>r.p3,'Mistakes: double bogeys':r=>r.db,'Mistakes: bogey par-5':r=>r.bp5,'Mistakes: 3+ from 150':r=>r.f150,'Mistakes: 3+ from 40':r=>r.fx,'Fairways / round':r=>r.fw,'Driving accuracy %':r=>r.fw==null?null:Math.round(1000*r.fw/(r.fwAtt||14))/10,'Greens / round':r=>r.gir,'GIR %':r=>r.gir==null?null:Math.round(1000*r.gir/(r.holesPlayed||18))/10,'Scrambling %':r=>r.scrmb==null?null:r.scrmb,'Putts per GIR':r=>r.pptgir==null?null:r.pptgir,'Short-game proximity (ft)':r=>r.sgprox==null?null:r.sgprox,'Greenside inside 6 ft %':r=>r.in6==null?null:r.in6,'Greenside outside 15 ft %':r=>r.out15==null?null:r.out15,'Putts / round':r=>r.putts,'Penalties / round':r=>r.pen,'Tee shot distance':r=>r.dist,'Bogey avoidance %':r=>r.bog==null?null:Math.round(1000*(r.bog+r.dbl)/18)/10,'Birdies / round':r=>r.bir==null?null:r.bir,'Score to par':r=>r.stp};
+function np(){return typeof PROF!=='undefined'&&PROF&&PROF.netPar;}
+const metrics={'SG: Total':r=>r.sgtot,'SG: Tee-to-green':r=>(r.ott==null||r.app==null||r.atg==null)?null:Math.round((r.ott+r.app+r.atg)*100)/100,'SG: Off tee':r=>r.ott,'SG: Approach':r=>r.app,'SG: Around green':r=>r.atg,'SG: Putting':r=>r.putt,'Mistakes: total':r=>(np()&&r.mtotNet!=null)?r.mtotNet:r.mtot,'Mistakes: 3-putts':r=>r.p3,'Mistakes: double bogeys':r=>(np()&&r.dbNet!=null)?r.dbNet:r.db,'Mistakes: bogey par-5':r=>(np()&&r.bp5Net!=null)?r.bp5Net:r.bp5,'Mistakes: 3+ from 150':r=>(np()&&r.f150Net!=null)?r.f150Net:r.f150,'Mistakes: 3+ from 40':r=>r.fx,'Fairways / round':r=>r.fw,'Driving accuracy %':r=>r.fw==null?null:Math.round(1000*r.fw/(r.fwAtt||14))/10,'Greens / round':r=>(np()&&r.girNet!=null)?r.girNet:r.gir,'GIR %':r=>{var g=(np()&&r.girNet!=null)?r.girNet:r.gir;return g==null?null:Math.round(1000*g/(r.holesPlayed||18))/10;},'Scrambling %':r=>r.scrmb==null?null:r.scrmb,'Putts per GIR':r=>r.pptgir==null?null:r.pptgir,'Short-game proximity (ft)':r=>r.sgprox==null?null:r.sgprox,'Greenside inside 6 ft %':r=>r.in6==null?null:r.in6,'Greenside outside 15 ft %':r=>r.out15==null?null:r.out15,'Putts / round':r=>r.putts,'Penalties / round':r=>r.pen,'Tee shot distance':r=>r.dist,'Bogey avoidance %':r=>r.bog==null?null:Math.round(1000*(r.bog+r.dbl)/18)/10,'Birdies / round':r=>r.bir==null?null:r.bir,'Score to par':r=>(np()&&r.stpNet!=null)?r.stpNet:r.stp};
 const TOURAVG={'Bogey avoidance %':15.77,'Birdies / round':3.79};
 const TRAD=['Fairways / round','Greens / round','Putts / round','Penalties / round','Birdies / round'];
 const isCount=k=>k.startsWith('Mistakes')||TRAD.includes(k);
@@ -1610,14 +1612,26 @@ function saveYover(){localStorage.setItem(YKEY,JSON.stringify(YOVER));}
 function stdYd(course,tee,i){const k=course+'|'+tee+'#'+i;return YOVER[k]!=null?YOVER[k]:COURSES[course].tees[tee].yds[i];}
 /* ===== USER PROFILE ===== */
 const PROFK=LU+'scard-prof-v1';
-const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true};
+const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true};
 function nineIron(){var x=parseInt(PROF.nineIron,10);if(isNaN(x))x=140;return Math.min(200,Math.max(80,x));}
 function bogeyXyd(){var x=parseInt(PROF.bogeyX,10);if(isNaN(x))x=nineIron();return Math.min(150,Math.max(50,x));}
 /* average drive in yards — where the predicted second shot is played from */
 function driveYd(){var x=parseInt(PROF.driveYd,10);if(isNaN(x))x=250;return Math.min(400,Math.max(100,x));}
 function t5x(){var x=parseInt(PROF.t5x,10);if(isNaN(x))x=30;return Math.min(50,Math.max(10,x));}
-/* Tiger's 5 mistakes for one logged hole, honouring the short-game setting */
-function holeMistakes(h){
+/* ===== Net par (handicap strokes spread by stroke index) ===== */
+function phForRound(){var v=parseInt(R.chcp,10);return isNaN(v)?0:v;}
+function srMap(){ /* holeIndex -> strokes received, over the active holes */
+ var a=(R.hStart!=null?R.hStart:0),b=(R.hEnd!=null?R.hEnd:18),hs=[],map={};
+ for(var i=a;i<b;i++){hs.push(i);map[i]=0;}
+ var PH=phForRound();if(!PH||!PROF.netPar)return map;
+ var sign=PH>0?1:-1,k=Math.abs(PH),n=hs.length;if(!n)return map;
+ var order=hs.slice().sort(function(x,y){var hx=(R.holes[x].hcp||99),hy=(R.holes[y].hcp||99);return sign>0?hx-hy:hy-hx;});
+ for(var j=0;j<k;j++){map[order[j%n]]+=sign;}
+ return map;
+}
+function netParOf(hi,sr){var h=R.holes[hi];if(!PROF.netPar)return h.par;sr=sr||srMap();return h.par+(sr[hi]||0);}
+/* Tiger's 5 mistakes for one logged hole; pass hi to judge the score-relative ones against net par */
+function holeMistakes(h,hi,basisOverride){
  var s=h.shots||[],putts=0,pens=0,strokes=0,nonPuttNearX=0,nearX=0,minApp=999;
  var X=t5x(),BX=bogeyXyd();
  for(var i=0;i<s.length;i++){var sh=s[i];var p=sh.pen||0;pens+=p;strokes+=1+p;
@@ -1626,36 +1640,47 @@ function holeMistakes(h){
    if(sh.lie!=='putt'&&sh.lie!=='tee'&&sh.dist<=X){nonPuttNearX++;}
    if(sh.lie!=='putt'&&sh.lie!=='tee'&&sh.dist<minApp)minApp=sh.dist;
  }
- var overPar=strokes-h.par;
+ var basis=(basisOverride!=null)?basisOverride:((hi!=null&&PROF.netPar)?netParOf(hi):h.par);
+ var overPar=strokes-basis;
  return {
-   p3: putts>=3?1:0,
-   db: (h.par!==5&&overPar>=2)?1:0,
-   bp5:(h.par===5&&overPar>=1)?1:0,
-   f150:(minApp<=BX&&overPar>=1)?1:0,   /* "Bogey from X": dropped a shot with a scoring-range (≤X) approach */
-   short: PROF.t5mode==='dchip' ? (nonPuttNearX>=2?1:0) : (nearX>=3?1:0)
+   p3: putts>=3?1:0,                                   /* execution — never netted */
+   db: (h.par!==5&&overPar>=2)?1:0,                    /* net double */
+   bp5:(h.par===5&&overPar>=1)?1:0,                    /* net bogey on par-5 */
+   f150:(minApp<=BX&&overPar>=1)?1:0,                  /* net bogey with 9-iron or less */
+   short: PROF.t5mode==='dchip' ? (nonPuttNearX>=2?1:0) : (nearX>=3?1:0)  /* execution — never netted */
  };
 }
-function roundMistakes(){var t={p3:0,db:0,bp5:0,f150:0,short:0,total:0};(R.holes||[]).forEach(function(h){var m=holeMistakes(h);t.p3+=m.p3;t.db+=m.db;t.bp5+=m.bp5;t.f150+=m.f150;t.short+=m.short;});t.total=t.p3+t.db+t.bp5+t.f150+t.short;return t;}
+function roundMistakes(){var t={p3:0,db:0,bp5:0,f150:0,short:0,total:0},sr=srMap();(R.holes||[]).forEach(function(h,i){if(i<(R.hStart||0)||i>=(R.hEnd!=null?R.hEnd:18))return;var m=holeMistakes(h,i);t.p3+=m.p3;t.db+=m.db;t.bp5+=m.bp5;t.f150+=m.f150;t.short+=m.short;});t.total=t.p3+t.db+t.bp5+t.f150+t.short;return t;}
 function shortLabel(){return PROF.t5mode==='dchip'?('Double chip ≤'+t5x()+'y'):('3+ from '+t5x()+'y');}
 /* full per-round record in the dashboard's shape (only metrics shown in the dashboard) */
 function roundRecord(){
- var fw=0,fwAtt=0,gir=0,putts=0,pen=0,bir=0,bog=0,dbl=0,par=0,strokes=0,drives=[];
+ var fw=0,fwAtt=0,gir=0,girNet=0,putts=0,pen=0,bir=0,bog=0,dbl=0,par=0,netpar=0,strokes=0,drives=[];
  var sg={ott:0,app:0,atg:0,putt:0,tot:0};
- (R.holes||[]).slice(R.hStart!=null?R.hStart:0,R.hEnd!=null?R.hEnd:18).forEach(function(h){var s=h.shots||[],m=holeSG(h);
+ var scr={p3:0,db:0,bp5:0,f150:0,short:0},net={p3:0,db:0,bp5:0,f150:0,short:0};
+ var sr=srMap(),a=(R.hStart!=null?R.hStart:0),b=(R.hEnd!=null?R.hEnd:18);
+ for(var hi=a;hi<b;hi++){var h=R.holes[hi],s=h.shots||[],m=holeSG(h);
    sg.ott+=m.ott;sg.app+=m.app;sg.atg+=m.atg;sg.putt+=m.putt;sg.tot+=m.tot;
    var hp=0,np=0,pens=0,hasPutt=false;
    for(var i=0;i<s.length;i++){var sh=s[i];pens+=sh.pen||0;hp+=1+(sh.pen||0);if(sh.lie==='putt'){putts++;hasPutt=true;}else np++;}
-   pen+=pens;par+=h.par;strokes+=hp;var over=hp-h.par;
+   var recv=sr[hi]||0, npar=h.par+recv;
+   pen+=pens;par+=h.par;netpar+=npar;strokes+=hp;var over=hp-h.par;
    if(over<=-1)bir++;else if(over===1)bog++;else if(over>=2)dbl++;
    if(h.par===4||h.par===5){fwAtt++;if(s.length>1&&s[1].lie==='fw')fw++;}
    if((h.par===4||h.par===5)&&s.length>1&&s[1].lie!=='putt')drives.push(h.yd-s[1].dist);
    if(hasPutt&&(np+pens)<=h.par-2)gir++;
- });
- var mi=roundMistakes(),r2=function(x){return Math.round(x*100)/100;};
+   if(hasPutt&&(np+pens)<=(h.par-2+recv))girNet++;
+   var ms=holeMistakes(h,hi,h.par),mn=holeMistakes(h,hi,npar);   /* scratch basis vs net basis */
+   scr.p3+=ms.p3;scr.db+=ms.db;scr.bp5+=ms.bp5;scr.f150+=ms.f150;scr.short+=ms.short;
+   net.p3+=mn.p3;net.db+=mn.db;net.bp5+=mn.bp5;net.f150+=mn.f150;net.short+=mn.short;
+ }
+ var r2=function(x){return Math.round(x*100)/100;};
  var dist=drives.length?Math.round(drives.reduce(function(a,b){return a+b;},0)/drives.length*10)/10:0;
+ var mtotS=scr.p3+scr.db+scr.bp5+scr.f150+scr.short, mtotN=net.p3+net.db+net.bp5+net.f150+net.short;
  return {course:(R.courseName||R.course),date:(R.date||new Date().toISOString().slice(0,10)),score:strokes,par:par,stp:strokes-par,
-   fw:fw,fwAtt:fwAtt,holesPlayed:(R.hEnd!=null?R.hEnd:18)-(R.hStart!=null?R.hStart:0),gir:gir,putts:putts,pen:pen,dist:dist,
-   p3:mi.p3,db:mi.db,bp5:mi.bp5,f150:mi.f150,fx:mi.short,mtot:mi.total,
+   fw:fw,fwAtt:fwAtt,holesPlayed:b-a,gir:gir,putts:putts,pen:pen,dist:dist,
+   p3:scr.p3,db:scr.db,bp5:scr.bp5,f150:scr.f150,fx:scr.short,mtot:mtotS,
+   ph:phForRound(),netpar:netpar,stpNet:strokes-netpar,girNet:girNet,
+   p3Net:net.p3,dbNet:net.db,bp5Net:net.bp5,f150Net:net.f150,fxNet:net.short,mtotNet:mtotN,
    ott:r2(sg.ott),app:r2(sg.app),atg:r2(sg.atg),putt:r2(sg.putt),sgtot:r2(sg.tot),bir:bir,bog:bog,dbl:dbl,
    courseCode:R.course,tee:R.tee,notes:R.notes||'',lesson:R.lesson||'',holes:JSON.parse(JSON.stringify(R.holes))};
 }
@@ -1853,25 +1878,25 @@ function renderScorecard(){
  }
  function flTitle(m){return [m.p3?'3-putt':'',m.db?'double bogey':'',m.bp5?'bogey on par 5':'',m.f150?'bogey w/ 9-iron or less':'',m.short?shortLabel():''].filter(Boolean).join(', ');}
  function seg(a,b,label){ // holes [a,b)
-   var cells='',parCells='',scCells='',stCells='',sgCells='',t5Cells='',run=0,runPar=0,tot=0,par=0,sgT=0,t5T=0;
-   for(var i=a;i<b;i++){var h=R.holes[i],t=holeSG(holeView(h)),m=holeMistakes(holeView(h)),st=t.strokes-h.par;
+   var cells='',parCells='',scCells='',stCells='',sgCells='',t5Cells='',run=0,runNP=0,tot=0,par=0,npar=0,sgT=0,t5T=0;
+   for(var i=a;i<b;i++){var h=R.holes[i],t=holeSG(holeView(h)),m=holeMistakes(holeView(h),i),np=netParOf(i),st=t.strokes-np;
      cells+='<td class="scHole" data-sc="'+i+'">'+(i+1)+'</td>';
      parCells+='<td>'+h.par+'</td>';
      scCells+='<td class="scHole" data-sc="'+i+'">'+sym(st,t.strokes)+'</td>';
-     run+=t.strokes;runPar+=h.par;tot+=t.strokes;par+=h.par;
-     var rt=run-runPar;stCells+='<td class="scSt">'+(rt>0?'+'+rt:(rt===0?'E':rt))+'</td>';
+     run+=t.strokes;runNP+=np;tot+=t.strokes;par+=h.par;npar+=np;
+     var rt=run-runNP;stCells+='<td class="scSt">'+(rt>0?'+'+rt:(rt===0?'E':rt))+'</td>';
      sgT+=t.tot;sgCells+='<td class="'+(t.tot<0?'sg-neg':'sg-pos')+'">'+fmt(t.tot)+'</td>';
      var fl=[m.p3?'3P':'',m.db?'D':'',m.bp5?'P5':'',m.f150?'B':'',m.short?'S':''].filter(Boolean);t5T+=fl.length;
      t5Cells+='<td class="scT5'+(fl.length?' bad':'')+'" title="'+(fl.length?flTitle(m):'clean')+'">'+(fl.length?fl.join(' '):'·')+'</td>';
    }
-   return {cells:cells,parCells:parCells,scCells:scCells,stCells:stCells,sgCells:sgCells,t5Cells:t5Cells,tot:tot,par:par,sgT:sgT,t5T:t5T};
+   return {cells:cells,parCells:parCells,scCells:scCells,stCells:stCells,sgCells:sgCells,t5Cells:t5Cells,tot:tot,par:par,npar:npar,sgT:sgT,t5T:t5T};
  }
  var full=(hs===0&&he===18);
  var rowsHole='<td class="scLbl">HOLE</td>',rowsPar='<td class="scLbl">PAR</td>',rowsSc='<td class="scLbl">SCORE</td>',rowsSt='<td class="scLbl">STATUS</td>',rowsSg='<td class="scLbl">SG</td>',rowsT5='<td class="scLbl">TIGER&#39;S 5</td>';
  function addSeg(s,label){rowsHole+=s.cells;rowsPar+=s.parCells;rowsSc+=s.scCells;rowsSt+=s.stCells;rowsSg+=s.sgCells;rowsT5+=s.t5Cells;
-   if(label){var tp=s.tot-s.par;rowsHole+='<td class="scTotH">'+label+'</td>';rowsPar+='<td class="scTotH">'+s.par+'</td>';rowsSc+='<td class="scTotH">'+s.tot+'</td>';rowsSt+='<td class="scTotH">'+(tp>0?'+'+tp:(tp===0?'E':tp))+'</td>';rowsSg+='<td class="scTotH '+(s.sgT<0?'sg-neg':'sg-pos')+'">'+fmt(s.sgT)+'</td>';rowsT5+='<td class="scTotH">'+s.t5T+'</td>';}}
+   if(label){var tp=s.tot-s.npar;rowsHole+='<td class="scTotH">'+label+'</td>';rowsPar+='<td class="scTotH">'+s.par+'</td>';rowsSc+='<td class="scTotH">'+s.tot+'</td>';rowsSt+='<td class="scTotH">'+(tp>0?'+'+tp:(tp===0?'E':tp))+'</td>';rowsSg+='<td class="scTotH '+(s.sgT<0?'sg-neg':'sg-pos')+'">'+fmt(s.sgT)+'</td>';rowsT5+='<td class="scTotH">'+s.t5T+'</td>';}}
  if(full){var f=seg(0,9),bk=seg(9,18);addSeg(f,'OUT');addSeg(bk,'IN');
-   var gtot=f.tot+bk.tot,gpar=f.par+bk.par,gtp=gtot-gpar,gsg=f.sgT+bk.sgT,gt5=f.t5T+bk.t5T;
+   var gtot=f.tot+bk.tot,gpar=f.par+bk.par,gtp=gtot-(f.npar+bk.npar),gsg=f.sgT+bk.sgT,gt5=f.t5T+bk.t5T;
    rowsHole+='<td class="scTotH scGrand">TOT</td>';rowsPar+='<td class="scTotH scGrand">'+gpar+'</td>';rowsSc+='<td class="scTotH scGrand">'+gtot+'</td>';rowsSt+='<td class="scTotH scGrand">'+(gtp>0?'+'+gtp:(gtp===0?'E':gtp))+'</td>';rowsSg+='<td class="scTotH scGrand">'+fmt(gsg)+'</td>';rowsT5+='<td class="scTotH scGrand">'+gt5+'</td>';
  } else {var s=seg(hs,he);addSeg(s,(hs===0?'OUT':'IN'));}
  /* strokes gained by category over the active holes */
@@ -1927,9 +1952,9 @@ function teeColor(course,tee){var en=(teeEN(course,tee)||'').toLowerCase();
  return{bg:'var(--cream)',fg:'var(--pine)',bd:'var(--line)'};}
 function teeStyle(course,tee){var c=teeColor(course,tee);return 'background:'+c.bg+';color:'+c.fg+';border-color:'+c.bd+';';}
 function renderHoleBar(hi){
- var h=R.holes[hi],hv=holeView(h),sg=holeSGlive(h),m=holeMistakes(hv);
+ var h=R.holes[hi],hv=holeView(h),sg=holeSGlive(h),m=holeMistakes(hv,hi);
  var flags=[m.p3?'3-putt':'',m.db?'double':'',m.bp5?'bogey P5':'',m.f150?'bogey w/ 9i or less':'',m.short?shortLabel():''].filter(Boolean).join(' · ');
- var hstr=sg.strokes,hdiff=hstr-h.par,hdt=hstr?(hdiff===0?'E':(hdiff>0?'+'+hdiff:hdiff)):'';
+ var hstr=sg.strokes,hdiff=hstr-netParOf(hi),hdt=hstr?(hdiff===0?'E':(hdiff>0?'+'+hdiff:hdiff)):'';
  var tees=COURSES[R.course]?COURSES[R.course].tees:{},teeKeys=Object.keys(tees),curTee=h.teeOv||R.tee,pin=h.pin||'M';
  var teeSel=teeKeys.length>1?('<span class="ha">Tee <span class="teechips">'+teeKeys.map(function(k){return '<button type="button" class="teechip'+(k===curTee?' on':'')+'" data-hatee="'+hi+'" data-tk="'+k+'" style="'+teeStyle(R.course,k)+'">'+teeEN(R.course,k)+'</button>';}).join('')+'</span></span>'):'';
  var pinSeg='<span class="ha">Pin <span class="haseg">'+
@@ -1939,6 +1964,7 @@ function renderHoleBar(hi){
  document.getElementById('holebar').innerHTML=
    '<div class="hbL"><span class="hn">Hole '+(hi+1)+'</span>'+
    '<span class="parchip">Par '+h.par+'</span>'+
+   ((PROF.netPar&&netParOf(hi)!==h.par)?'<span class="netchip" title="Net par — '+(netParOf(hi)-h.par>0?'+':'')+(netParOf(hi)-h.par)+' stroke">Net '+netParOf(hi)+'</span>':'')+
    '<span class="sichip" title="Stroke index / hole handicap">SI '+(h.hcp||'—')+'</span>'+
    (hstr?'<span class="holescore" title="Hole score">'+hstr+' <small>('+hdt+')</small></span>':'')+'</div>'+
    '<div class="hbR"><span class="sgmini"><span class="ydchip">'+Y2U(h.yd)+' '+PROF.units+'</span> · <span class="'+(sg.tot<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg.tot)+'</span>'+(flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':'')+'</span></div>'+
@@ -1949,7 +1975,7 @@ function renderHoleBar(hi){
 function recomputeHoleYd(hi){var h=R.holes[hi];var base=stdYd(R.course,h.teeOv||R.tee,hi);var off=h.pin==='F'?-10:h.pin==='B'?10:0;h.yd=Math.max(20,base+off);if(h.shots&&h.shots[0]&&h.shots[0].lie==='tee')h.shots[0].dist=h.yd;}
 function renderShots(hi){
  var h=R.holes[hi],body=document.getElementById('lgBody'),html='';
- var hm5=holeMistakes({par:h.par,yd:h.yd,hcp:h.hcp,shots:confShots(h)});
+ var hm5=holeMistakes({par:h.par,yd:h.yd,hcp:h.hcp,shots:confShots(h)},hi);
  var t5tags=[hm5.p3?'3-putt':'',hm5.db?'double':'',hm5.bp5?'bogey P5':'',hm5.f150?'bogey w/ 9i or less':'',hm5.short?shortLabel():''].filter(Boolean);
  var t5ac=[hm5.p3?'3P':'',hm5.db?'D':'',hm5.bp5?'P5':'',hm5.f150?'B':'',hm5.short?'S':''].filter(Boolean);
  var t5n=t5ac.length,nshot=confShots(h).length;
@@ -2008,7 +2034,7 @@ function renderHoleNav(hi){
 function totals(){
  var done=R.holes.slice(R.hStart,R.hEnd).filter(function(h){return h.done;});
  var count=R.hEnd-R.hStart;
- var sc=0,sg=0,par=0;done.forEach(function(h){var t=holeSG(holeView(h));sc+=t.strokes;sg+=t.tot;par+=h.par;});
+ var sc=0,sg=0,par=0,sr=srMap();for(var i=(R.hStart||0);i<(R.hEnd!=null?R.hEnd:18);i++){var h=R.holes[i];if(!h.done)continue;var t=holeSG(holeView(h));sc+=t.strokes;sg+=t.tot;par+=netParOf(i,sr);}
  document.getElementById('totScore').textContent=done.length?((sc-par>0?'+':'')+(sc-par===0?'E':(sc-par))):'—';
  document.getElementById('totSG').innerHTML=done.length?('thru '+done.length+' <span class="sgmini '+(sg<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg)+'</span>'):'—';
  var rem=count-done.length,w=document.getElementById('warn');
@@ -2196,6 +2222,13 @@ function renderProf(){
     <div class="hisub">Predictions improve as you log more rounds; each one is based on your prior shots and learned patterns for that hole.</div>
   </div>
   <div class="hiblock">
+    <div class="hirow"><span>Net par</span></div>
+    <label>Score against your handicap<select id="pf_netpar">
+      <option value="on" ${PROF.netPar!==false?'selected':''}>On — judge to-par, GIR &amp; Tiger's 5 against your net par</option>
+      <option value="off" ${PROF.netPar===false?'selected':''}>Off — everything measured against scratch par</option></select></label>
+    <div class="hisub">Spreads your playing handicap by stroke index. Net par lifts to-par, GIR (allowance = par−2 + strokes received) and the score-relative Tiger's 5 (double, bogey par-5, bogey w/ 9-iron). 3-putts, short-game fails and strokes gained stay absolute.</div>
+  </div>
+  <div class="hiblock">
     <div class="hirow"><span>Language</span></div>
     <label>App language<select id="pf_lang"><option value="en" selected>English</option><option value="es" disabled>Español (soon)</option><option value="fr" disabled>Français (soon)</option><option value="ja" disabled>日本語 (soon)</option></select></label>
     <div class="hisub">These settings drive the logger. Historical Statistics rounds keep your sheet's original definitions.</div>
@@ -2234,6 +2267,7 @@ function renderProf(){
  document.getElementById('pf_nine').addEventListener('change',e=>{var n=Math.min(200,Math.max(80,parseInt(e.target.value||'140',10)||140));PROF.nineIron=n;if(!PROF.bogeyX||PROF.bogeyX==='')PROF.bogeyX=Math.min(150,n);saveProf();renderProf();});
  document.getElementById('pf_bogeyx').addEventListener('change',e=>{PROF.bogeyX=Math.min(150,Math.max(50,parseInt(e.target.value||'140',10)||140));saveProf();renderProf();});
  document.getElementById('pf_predict').addEventListener('change',e=>{PROF.predict=(e.target.value!=='off');saveProf();try{render();}catch(_){}} );
+ var pnp=document.getElementById('pf_netpar');if(pnp)pnp.addEventListener('change',e=>{PROF.netPar=(e.target.value!=='off');saveProf();try{render();}catch(_){}try{if(typeof draw==='function')draw();}catch(_){}} );
  document.getElementById('pf_himode').addEventListener('change',e=>{PROF.hiMode=e.target.value;saveProf();renderProf();});
  const man=document.getElementById('pf_himan');if(man)man.addEventListener('input',()=>{PROF.hiManual=man.value;saveProf();});
  document.getElementById('pf_impbtn').addEventListener('click',()=>{const rows=parseDiffPaste(document.getElementById('pf_imp').value);const n=mergeHist(rows);
