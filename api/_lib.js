@@ -2,7 +2,20 @@
 const crypto = require('crypto');
 const { neon } = require('@neondatabase/serverless');
 
-const URL = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.DATABASE_URL_UNPOOLED || '';
+// Vercel/Neon may add a prefix to the variable names (e.g. STORAGE_DATABASE_URL), so look for any that fit.
+function findUrl() {
+  const e = process.env;
+  const direct = e.DATABASE_URL || e.POSTGRES_URL || e.DATABASE_URL_UNPOOLED || e.POSTGRES_URL_NON_POOLING;
+  if (direct) return direct;
+  const keys = Object.keys(e).filter(k => /(DATABASE_URL|POSTGRES_URL)$/.test(k) && /^postgres(ql)?:\/\//.test(e[k] || ''));
+  keys.sort((a, b) => a.length - b.length);
+  if (keys.length) return e[keys[0]];
+  const any = Object.keys(e).find(k => /^postgres(ql)?:\/\//.test(e[k] || '') && !/PRISMA/.test(k));
+  return any ? e[any] : '';
+}
+const URL = findUrl();
+// Names only (never values) of database-looking variables, to diagnose a missing connection.
+const dbVarNames = () => Object.keys(process.env).filter(k => /(DATABASE|POSTGRES|NEON|PG(HOST|USER|DATABASE))/.test(k)).sort();
 // The four original players: they claim their username on first sign-in, no invite code needed.
 const LEGACY = { guido: 'Guido', manuel: 'Manuel', nicolas: 'Nicolas', diego: 'Diego' };
 const ADMIN = 'guido';
@@ -61,4 +74,4 @@ function fail(res, e) {
   return res.status(500).json({ error: 'server' });
 }
 
-module.exports = { LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };
+module.exports = { dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };
