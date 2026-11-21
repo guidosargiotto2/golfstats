@@ -562,7 +562,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   <div class="tabnav" id="tabnav"><button data-v="log" data-i18n="Log a round">Log a round</button><button data-v="stats" data-i18n="Statistics">Statistics</button><button data-v="ledger" data-i18n="Round ledger">Round ledger</button><button data-v="friends" data-i18n="Friends">Friends</button><button data-v="profile" data-i18n="Profile">Profile</button><button data-v="ideas" data-i18n="Ideas">Ideas</button><button class="tourbtn" id="tourBtn" type="button" title="How to log a hole">?</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button" data-i18n="Log out">Log out</button></div>
   <div id="view-log" class="lgscope" style="display:none"><div class="wrap">
  <div class="bar"><div><h1 id="lgTitle">Start a round</h1><div class="meta" id="meta" style="display:none"></div></div>
-   <div class="tot"><div class="sc" id="totScore">—</div><div class="sg" id="totSG">—</div></div></div>
+   <div class="tot" id="totBox"><div class="sc" id="totScore">—</div><div class="sg" id="totSG">—</div></div></div>
 
  <div id="setupPanel" class="setup">
    <div id="resumeCard" class="resumecard" style="display:none"></div>
@@ -2058,7 +2058,7 @@ function render(){
  setup.style.display='none';play.style.display='';
  var act=R.holes.slice(R.hStart,R.hEnd),allDone=act.length>0&&act.every(function(x){return x.done;});
  var hv=document.getElementById('holeView'),sv=document.getElementById('scorecardView');
- {var sn0=document.getElementById('snote');if(sn0)sn0.style.display='';}
+ {var sn0=document.getElementById('snote');if(sn0)sn0.style.display='';var tb0=document.getElementById('totBox');if(tb0)tb0.style.display='';}
  if(allDone&&scMode){hv.style.display='none';sv.style.display='';renderScorecard();totals();renderSel();save();return;}
  hv.style.display='';sv.style.display='none';
  var hi=R.cur,h=R.holes[hi];
@@ -2129,8 +2129,8 @@ function renderScorecard(){
    '<div class="scCourse">'+esc(R.courseName||(COURSES[R.course]&&COURSES[R.course].name)||R.course||'')+'</div>'+
    '<div class="scMeta"><span class="scTee" style="'+teeStyle(R.course,R.tee)+'">'+esc(teeEN(R.course,R.tee))+'</span>'+
    '<span>'+(he-hs)+' '+(window.__LANG==='es'?'hoyos':'holes')+'</span><span>Par '+hdPar+'</span>'+(hdTee&&hdTee.cr?'<span>CR '+hdTee.cr+' / '+hdTee.slope+'</span>':'')+'</div></div>'+
-   '<div class="scHeadR"><div class="scBig">'+hdTot+'</div><div class="scTp '+(hdTp<0?'u':(hdTp>0?'o':'e'))+'">'+(hdTp===0?'E':(hdTp>0?'+':'')+hdTp)+'</div></div></div>';
- {var sn=document.getElementById('snote');if(sn)sn.style.display='none';}
+   '</div>';
+ {var sn=document.getElementById('snote');if(sn)sn.style.display='none';var tb=document.getElementById('totBox');if(tb)tb.style.display='none';}
  sv.innerHTML=head+'<div class="scWrap"><table class="scTbl"><tbody>'+
    '<tr class="scRh">'+rowsHole+'</tr><tr class="scRp">'+rowsPar+'</tr>'+(netOn?'<tr class="scRp">'+rowsNP+'</tr>':'')+'<tr class="scRs">'+rowsSc+'</tr><tr class="scRst">'+(netOn?rowsSt.replace('>'+t('STATUS')+'<','>'+t('NET STATUS')+'<'):rowsSt)+'</tr><tr class="scRsg">'+rowsSg+'</tr><tr class="scRt5">'+rowsT5+'</tr></tbody></table></div>'+
    (netOn?'<div class="scHint">'+t('Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).')+'</div>':'')+
