@@ -3229,7 +3229,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
        '<ul>'+(ES()?p.es:p.en).map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+(p.note?'<div class="plNote">“'+(ES()?p.note[1]:p.note[0])+'” <span>— Guido</span></div>':'')+
        (me?'<div class="plCur">'+T('Your plan','Tu plan')+'</div>':(rank(p.k)>rank(cur)&&cur?'<button class="plBtn" disabled>'+T('Payments coming soon','Pagos próximamente')+'</button>':''))+
      '</div>';});
-   h+='</div><p class="plFoot">'+T('One ball ≈ US$4.92 — a premium tour ball at list price (US$59 a dozen). Founders keep Pro.','Una pelota ≈ US$4,92 — una pelota tour premium a precio de lista (US$59 la docena). Los fundadores mantienen Pro.')+'</p>';
+   h+='</div>';
    el.innerHTML=h;
  }
  function refreshPlan(){
