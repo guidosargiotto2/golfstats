@@ -7,7 +7,7 @@ module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
   try {
-    const user = L.verify(String(req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+    const user = L.auth(req);
     if (!user) return res.status(401).json({ error: 'auth' });
     await L.init();
     const sql = L.db();

@@ -481,6 +481,41 @@ table.rt tbody tr:hover{background:var(--line-soft);}
  /* dashboard tables: let them scroll, don't force huge min-width */
  table.rt{font-size:11px;min-width:900px;}
 }
+
+/* friends / professor */
+.lgscope .frsec{border:1px solid var(--line);border-radius:14px;background:var(--paper);padding:16px 18px;margin:0 0 14px;}
+.lgscope .frsec h3{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--pine);margin:0 0 4px;}
+.lgscope .frsec h4{font-family:var(--serif);font-weight:600;font-size:20px;color:var(--pine);margin:18px 0 2px;}
+.lgscope .frsub{font-family:var(--cond);font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;line-height:1.45;}
+.lgscope .frmsg{font-family:var(--cond);font-size:13px;color:var(--fairway);font-weight:700;margin:0 0 10px;}
+.lgscope .frscroll{overflow-x:auto;}
+.lgscope table.frtbl{border-collapse:collapse;width:100%;font-family:var(--cond);font-size:14px;}
+.lgscope table.frtbl th{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);padding:6px 8px;text-align:right;border-bottom:2px solid var(--pine);white-space:nowrap;}
+.lgscope table.frtbl td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;font-size:14px;}
+.lgscope table.frtbl tr.frme td{background:rgba(216,196,140,.16);}
+.lgscope table.frtbl td.frbest{color:var(--fairway);font-weight:700;}
+.lgscope .frx{border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:12px;padding:2px 5px;border-radius:6px;}
+.lgscope .frx:hover{color:var(--clay);background:rgba(194,80,46,.08);}
+.lgscope .frline{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:6px 0;font-family:var(--cond);font-size:14px;}
+.lgscope .frline input{flex:1;min-width:160px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:var(--cream);font-family:var(--cond);font-size:14px;color:var(--ink);}
+.lgscope .frgrey{background:var(--sand-deep)!important;}
+.lgscope .frchk{display:flex;gap:8px;align-items:center;font-family:var(--cond);font-size:14px;cursor:pointer;}
+.lgscope .frchip{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:999px;padding:3px 6px 3px 10px;font-family:var(--cond);font-size:12.5px;margin:2px 4px 2px 0;}
+.lgscope .frlbl{font-family:var(--cond);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-right:6px;}
+.lgscope .frrow{display:flex;gap:6px 14px;align-items:baseline;flex-wrap:wrap;padding:7px 0;border-top:1px solid var(--line);font-family:var(--cond);font-size:13.5px;}
+.lgscope .frrow .frd{color:var(--ink-soft);font-size:12px;min-width:78px;}
+.lgscope .frrow .frc{color:var(--ink-soft);flex:1;min-width:120px;}
+.lgscope .frrow .frs{font-family:var(--serif);font-weight:700;font-size:16px;color:var(--pine);}
+.lgscope .frrow .frt5{color:var(--ink-soft);}
+.lgscope .frlink{border:none;background:none;color:var(--fairway);font-family:var(--cond);font-weight:700;font-size:11px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;}
+.lgscope .frnote{font-family:var(--cond);font-size:13px;color:var(--ink);padding:0 0 6px 92px;line-height:1.45;}
+.lgscope .frks{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px;margin:0 0 12px;}
+.lgscope .frk{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--cream);}
+.lgscope .frk span{display:block;font-family:var(--cond);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);}
+.lgscope .frk b{font-family:var(--serif);font-size:19px;color:var(--pine);}
+.lgscope .ledshare{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--sand-deep);cursor:pointer;padding:2px 4px;border-radius:6px;}
+.lgscope .ledshare:hover{background:rgba(184,154,82,.14);}
+@media(max-width:600px){.lgscope .frnote{padding-left:0;}}
 </style>
 </head>
 <body>
@@ -500,13 +535,15 @@ table.rt tbody tr:hover{background:var(--line-soft);}
     <h1 data-i18n="Round Ledger">Round Ledger</h1><div class="sub2" data-i18n="Sign in">Sign in</div>
     <input id="lg_user" name="username" placeholder="Username" autocomplete="username" autocapitalize="none">
     <input id="lg_pass" name="password" type="password" placeholder="Password" autocomplete="current-password">
-    <button type="submit">Enter</button>
+    <div id="lg_reg" style="display:none;flex-direction:column;gap:12px"><input id="lg_name" placeholder="Your name · Tu nombre" autocomplete="name"><input id="lg_code" placeholder="Invite code · Código de invitación" autocapitalize="none" autocomplete="off"></div>
+    <button type="submit" id="lg_btn">Enter</button>
+    <a href="#" id="lg_toggle" style="display:none;font-family:var(--cond);font-size:12.5px;color:var(--fairway);margin-top:10px;text-align:center">Create account · Crear cuenta</a>
     <div class="lgerr" id="lg_err"></div>
     <div id="lg_hint" style="display:none;font-family:var(--cond);font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.4"></div>
   </form>
 </div>
 <div class="wrap">
-  <div class="tabnav" id="tabnav"><button data-v="log" data-i18n="Log a round">Log a round</button><button data-v="stats" data-i18n="Statistics">Statistics</button><button data-v="ledger" data-i18n="Round ledger">Round ledger</button><button data-v="profile" data-i18n="Profile">Profile</button><button data-v="ideas" data-i18n="Ideas">Ideas</button><button class="tourbtn" id="tourBtn" type="button" title="How to log a hole">?</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button" data-i18n="Log out">Log out</button></div>
+  <div class="tabnav" id="tabnav"><button data-v="log" data-i18n="Log a round">Log a round</button><button data-v="stats" data-i18n="Statistics">Statistics</button><button data-v="ledger" data-i18n="Round ledger">Round ledger</button><button data-v="friends" data-i18n="Friends">Friends</button><button data-v="profile" data-i18n="Profile">Profile</button><button data-v="ideas" data-i18n="Ideas">Ideas</button><button class="tourbtn" id="tourBtn" type="button" title="How to log a hole">?</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button" data-i18n="Log out">Log out</button></div>
   <div id="view-log" class="lgscope" style="display:none"><div class="wrap">
  <div class="bar"><div><h1 id="lgTitle">Start a round</h1><div class="meta" id="meta" style="display:none"></div></div>
    <div class="tot"><div class="sc" id="totScore">—</div><div class="sg" id="totSG">—</div></div></div>
@@ -550,6 +587,10 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   </div>
   <div id="ledgerGridWrap" style="display:none;margin-top:4px"><p class="lead" style="margin:0 0 10px" data-i18n="Sortable — click any header. Green is under par or shots gained; clay is over par or shots lost.">Sortable — click any header. Green is under par or shots gained; clay is over par or shots lost.</p><div id="grid"></div></div>
   </div>
+  <div id="view-friends" class="lgscope" style="display:none"><div style="max-width:900px;margin:0 auto;padding-top:4px">
+    <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px" data-i18n="Friends">Friends</h2>
+    <div id="friendsBody"></div>
+  </div></div>
   <div id="view-ideas" class="lgscope" style="display:none"><div class="ideaswrap">
     <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 2px" data-i18n="Ideas & feature requests">Ideas &amp; feature requests</h2>
     <p style="font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:0 0 14px" data-i18n="Got an idea to make this better? Drop it here.">Got an idea to make this better? Drop it here.</p>
@@ -1645,11 +1686,13 @@ window.saveLoggedRounds=function(a){try{save(uckey(),a||[]);if(PLAYER===(localSt
        '<div class="ledR"><span class="ledsc">'+r.score+' <small>('+stp+')</small></span>'+
        '<span class="ledsg '+((sg!=null&&sg<0)?'sg-neg':'sg-pos')+'">SG '+(sg!=null?fmt(sg):'·')+'</span>'+
        '<span class="ledsrc '+(o.src==='logged'?'lg':'im')+'">'+T(o.src)+'</span>'+
+       '<span class="ledshare" data-sh="1" title="WhatsApp · PNG">⤴ '+T('Share')+'</span>'+
        '<span class="ledgo">'+(card?T('Scorecard')+' ▶':(icard?T('Scorecard')+' ▾':T('Details')+' ▾'))+'</span></div>'+
        '<div class="leddet" id="leddet_'+i+'" style="display:none"></div></div>';
    }).join('');
-   el.querySelectorAll('.ledrow').forEach(function(row){row.addEventListener('click',function(){
+   el.querySelectorAll('.ledrow').forEach(function(row){row.addEventListener('click',function(ev){
      var i=+row.getAttribute('data-li'),o=all[i],r=o.r;
+     if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.ledshare')){if(window.SHARE)window.SHARE.round(r,user);return;}
      if(o.src==='logged'&&r.holes){if(window.showView)window.showView('log');if(window.LGR&&window.LGR.openCard)window.LGR.openCard({id:r.id,course:r.courseCode||r.course,tee:r.tee,date:r.date,score:r.score,chcp:r.ph,notes:r.notes,lesson:r.lesson,holes:r.holes});return;}
      var dd=document.getElementById('leddet_'+i);if(!dd)return;var open=dd.style.display!=='none';
      if(!open){var ic=null;try{if(r.hl&&window.LGR&&window.LGR.importCard)ic=window.LGR.importCard(r.hl);}catch(e){ic=null;}
@@ -1785,7 +1828,7 @@ function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage
 let PROF=loadProf();
 function saveProf(){localStorage.setItem(PROFK,JSON.stringify(PROF));}
 /* ===== i18n (Stage 1: on-course flow) ===== */
-var I18N_ES={"NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
+var I18N_ES={"Friends":"Amigos","Share":"Compartir","NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
  "Log a round":"Cargar vuelta","Statistics":"Estadísticas","Round ledger":"Mis vueltas","Profile":"Perfil","Ideas":"Ideas","Log out":"Salir",
  "Course":"Cancha","Tee":"Tee","Holes":"Hoyos","Score":"Score","Playing HCP":"HCP de juego","Date":"Fecha",
  "18 holes":"18 hoyos","Front 9 (1–9)":"Primeros 9 (1–9)","Back 9 (10–18)":"Segundos 9 (10–18)",
@@ -2067,7 +2110,8 @@ function renderScorecard(){
    catRow+
    '<div class="scHint">Tap any hole to edit it. <b>SG</b> = strokes gained per hole · <b>Tiger\'s 5</b>: 3P 3-putt · D double · P5 bogey par-5 · B bogey w/ 9-iron or less · S blow-out save.</div>'+
    notesBlk+
-   '<div class="scActs"><button class="ghost" id="btnCopySheet">⎘ Copy for sheet</button></div>';
+   '<div class="scActs"><button class="ghost" id="btnCopySheet">⎘ Copy for sheet</button> <button class="ghost" id="btnShareCard">⤴ '+t('Share')+'</button></div>';
+ var bsh=document.getElementById('btnShareCard');if(bsh)bsh.onclick=function(){try{var rr=roundRecord();rr.lesson=R.lesson;if(window.SHARE)window.SHARE.round(rr,localStorage.getItem('app-user')||'');}catch(e){}};
  var cbs=document.getElementById('btnCopySheet');if(cbs)cbs.onclick=copyForSheet;
  var nt=document.getElementById('scNotes');if(nt)nt.addEventListener('input',function(){R.notes=nt.value;save();});
  var ls=document.getElementById('scLesson');if(ls)ls.addEventListener('input',function(){R.lesson=ls.value;ls.classList.remove('bad');save();});
@@ -2538,7 +2582,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
 <script>
 /* tabs + login + collapse run in their own script so a logger error can never disable them */
 (function(){
- var views={log:'view-log',stats:'view-stats',ledger:'view-ledger',profile:'view-profile',ideas:'view-ideas'};
+ var views={log:'view-log',stats:'view-stats',ledger:'view-ledger',friends:'view-friends',profile:'view-profile',ideas:'view-ideas'};
  function show(v){if(v!=='log'&&window.LGR&&window.LGR.pause)window.LGR.pause();
    for(var k in views){document.getElementById(views[k]).style.display=(k===v)?'':'none';}
    var bs=document.querySelectorAll('#tabnav button');for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',bs[i].dataset.v===v);
@@ -2546,6 +2590,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    if(v==='profile'&&window.LGR)window.LGR.profile();
    if(v==='ideas'&&window.IDEAS)window.IDEAS.render();
    if(v==='ledger'&&window.LEDGER)window.LEDGER.render();
+   if(v==='friends'&&window.FRIENDS)window.FRIENDS.render();
    if(v==='stats'){try{renderAll();renderTabs();}catch(e){}}
    if(window.applyI18n)window.applyI18n();
    window.scrollTo(0,0);
@@ -2559,6 +2604,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  var CREDS={guido:'Guido',manuel:'Manuel',nicolas:'Nicolas',diego:'Diego'};
  var ov=document.getElementById('loginOverlay'), user=localStorage.getItem('app-user');
  function enter(name){
+   try{if(typeof PLAYERS!=='undefined'&&!PLAYERS[name]){PLAYERS[name]=[];PLAYERNAMES.push(name);}}catch(e){}   /* account created with an invite: no imported rounds */
    if(ov)ov.style.display='none';
    var w=document.getElementById('whoami');if(w)w.textContent=name;
    try{if(typeof setPlayer==='function'&&typeof PLAYERNAMES!=='undefined'&&PLAYERNAMES.indexOf(name)>=0)setPlayer(name);}catch(e){}
@@ -2574,16 +2620,18 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    function legacy(){ /* no sync server here (e.g. GitHub Pages): device-only sign-in as before */
      if(name&&p===u){localStorage.setItem('app-user',name);location.reload();}
      else{err.textContent=ES?'Usuario o contraseña incorrectos.':'Wrong username or password.';}}
-   if(!name){err.textContent=ES?'Usuario o contraseña incorrectos.':'Wrong username or password.';return;}
+   var regBox=document.getElementById('lg_reg'),reg=!!(regBox&&regBox.style.display!=='none');
+   var payload={user:u,pass:raw};if(reg){payload.register=true;payload.name=(document.getElementById('lg_name').value||'').trim();payload.code=(document.getElementById('lg_code').value||'').trim();}
+   var EM={'bad-login':['Wrong username or password.','Usuario o contraseña incorrectos.'],'short-password':['Choose a password of at least 6 characters.','Elegí una contraseña de al menos 6 caracteres.'],'bad-username':['Username: 3–20 lowercase letters, numbers, . or _','Usuario: 3–20 letras minúsculas, números, . o _'],'user-taken':['That username is taken.','Ese usuario ya existe.'],'bad-invite':['Wrong invite code.','Código de invitación incorrecto.'],'bad-name':['Name: 2–24 characters.','Nombre: 2–24 caracteres.'],'name-taken':['That name is taken — add a surname or initial.','Ese nombre ya existe — agregá apellido o inicial.']};
    err.textContent='…';
-   fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:u,pass:raw})})
+   fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
      .then(function(r){return r.json();})
      .then(function(j){
        if(j&&j.ok&&j.token){localStorage.setItem('app-user',j.name);localStorage.setItem('gs-token',j.token);location.reload();}
-       else if(j&&j.error==='bad-login'){err.textContent=ES?'Usuario o contraseña incorrectos.':'Wrong username or password.';}
-       else if(j&&j.error==='short-password'){err.textContent=ES?'Elegí una contraseña de al menos 6 caracteres.':'Choose a password of at least 6 characters.';}
+       else if(j&&EM[j.error]){err.textContent=EM[j.error][ES?1:0];}
+       else if(reg){err.textContent=ES?'No se pudo crear la cuenta.':'Could not create the account.';}
        else legacy();})
-     .catch(legacy);
+     .catch(function(){if(reg)err.textContent=ES?'Sin conexión.':'Offline.';else legacy();});
  });
  var lo=document.getElementById('logoutBtn');
  if(lo)lo.addEventListener('click',function(){localStorage.removeItem('app-user');localStorage.removeItem('gs-token');location.reload();});
@@ -2637,7 +2685,9 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  } else {
    fetch('/api/login').then(function(r){return r.json();}).then(function(j){
      if(!j||!j.api||!j.db)return;var h=document.getElementById('lg_hint');
-     if(h){h.style.display='';h.textContent='First time? The password you type (6+ characters) becomes your password. · ¿Primera vez? La contraseña que escribas (mínimo 6) queda como tu contraseña.';}
+     if(h){h.style.display='';h.textContent='Guido, Diego, Manuel, Nicolas: the first password you type (6+ characters) becomes yours. · La primera contraseña que escribas (mínimo 6) queda como tuya.';}
+     var tg=document.getElementById('lg_toggle'),rb=document.getElementById('lg_reg'),bt=document.getElementById('lg_btn');
+     if(tg&&rb){tg.style.display='block';tg.onclick=function(e){e.preventDefault();var on=rb.style.display==='none';rb.style.display=on?'flex':'none';if(bt)bt.textContent=on?'Create account · Crear cuenta':'Enter';tg.textContent=on?'I already have an account · Ya tengo cuenta':'Create account · Crear cuenta';document.getElementById('lg_err').textContent='';};}
    }).catch(function(){});
  }
 })();
@@ -2803,6 +2853,183 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    if(window.LGR&&window.LGR.needTour&&window.LGR.needTour()){if(window.LGR.setTourDone)window.LGR.setTourDone();window.TOUR.start();}
  }catch(e){}}
  setTimeout(maybeAuto,1200);
+})();
+</script>
+<script>
+/* ===== Friends, professor and share-image (needs the synced site: /api + sign-in token) ===== */
+(function(){
+ var ES=function(){return window.__LANG==='es';},T=function(en,es){return ES()?es:en;};
+ var esc=function(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};
+ var tok=function(){return localStorage.getItem('gs-token');},meName=function(){return localStorage.getItem('app-user')||'';};
+ function api(action,extra){var b={action:action};if(extra){for(var k in extra)b[k]=extra[k];}
+   return fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:JSON.stringify(b)}).then(function(r){return r.json();});}
+ var ME=null,FEED=[],STU=null,MSG='';
+ var num=function(x){return (typeof x==='number'&&isFinite(x))?x:null;};
+ var sgn=function(x,d){return x==null?'·':((x>0?'+':'')+x.toFixed(d==null?1:d));};
+ function embedded(name){try{return (typeof PLAYERS!=='undefined'&&PLAYERS[name])?PLAYERS[name]:[];}catch(e){return [];}}
+ function myRounds(){var a=embedded(meName()).slice();try{a=a.concat(window.getLoggedRounds?window.getLoggedRounds():[]);}catch(e){}return a;}
+ function agg(rounds,n){
+   var rs=(rounds||[]).filter(function(r){return r&&r.date&&(r.holesPlayed==null||r.holesPlayed>=18);}).sort(function(a,b){return a.date<b.date?1:(a.date>b.date?-1:0);}).slice(0,n||10);
+   var av=function(k){var v=rs.map(function(r){return num(r[k]);}).filter(function(x){return x!=null;});return v.length?v.reduce(function(s,x){return s+x;},0)/v.length:null;};
+   return {n:rs.length,stp:av('stp'),sg:av('sgtot'),ott:av('ott'),app:av('app'),atg:av('atg'),putt:av('putt'),t5:av('mtot'),last:rs.length?rs[0].date:''};
+ }
+ function friendRounds(f){var srv=[];FEED.forEach(function(x){if(x.username===f.username)srv=x.rounds||[];});return embedded(f.display).concat(srv);}
+ function sec(title,body,sub){return '<div class="frsec"><h3>'+title+'</h3>'+(sub?'<p class="frsub">'+sub+'</p>':'')+body+'</div>';}
+
+ function compareHTML(){
+   var rows=[{name:meName(),me:true,a:agg(myRounds(),10)}];
+   (ME.following||[]).forEach(function(f){rows.push({name:f.display,username:f.username,a:agg(friendRounds(f),10)});});
+   var cols=[['stp',T('To par','Al par'),-1,1],['sg','SG',1,1],['ott',T('Off tee','Salida'),1,1],['app','Approach',1,1],['atg',T('Around grn','Juego corto'),1,1],['putt','Putt',1,1],['t5','Tiger 5',-1,1]];
+   var best={};cols.forEach(function(c){var b=null;rows.forEach(function(r){var v=r.a[c[0]];if(v==null)return;if(b==null||(c[2]>0?v>b:v<b))b=v;});best[c[0]]=b;});
+   var h='<div class="frscroll"><table class="frtbl"><thead><tr><th style="text-align:left">'+T('Player','Jugador')+'</th><th>'+T('Rounds','Vueltas')+'</th>'+cols.map(function(c){return '<th>'+c[1]+'</th>';}).join('')+'<th>'+T('Last','Última')+'</th><th></th></tr></thead><tbody>';
+   rows.forEach(function(r){
+     h+='<tr'+(r.me?' class="frme"':'')+'><td style="text-align:left;font-weight:700">'+esc(r.name)+(r.me?' <small>'+T('(you)','(vos)')+'</small>':'')+'</td><td>'+(r.a.n||'·')+'</td>'+
+       cols.map(function(c){var v=r.a[c[0]];var cls=(v!=null&&rows.length>1&&v===best[c[0]])?' class="frbest"':'';return '<td'+cls+'>'+(c[0]==='t5'?(v==null?'·':v.toFixed(1)):sgn(v,1))+'</td>';}).join('')+
+       '<td>'+(r.a.last||'·')+'</td><td>'+(r.me?'':'<button class="frx" data-unf="'+esc(r.username)+'" title="'+T('Unfollow','Dejar de seguir')+'">✕</button>')+'</td></tr>';
+   });
+   h+='</tbody></table></div>';
+   if(rows.length===1)h+='<p class="frsub">'+T('Follow a friend below to compare.','Seguí a un amigo abajo para comparar.')+'</p>';
+   return sec(T('You vs. friends','Vos vs. amigos'),h,T('Average of each player\'s last 10 full rounds. Best in each column is highlighted.','Promedio de las últimas 10 vueltas completas de cada jugador. Se resalta el mejor de cada columna.'));
+ }
+ function feedHTML(){
+   var all=[];FEED.forEach(function(f){(f.rounds||[]).forEach(function(r){all.push({n:f.name,r:r});});});
+   all.sort(function(a,b){return (a.r.date||'')<(b.r.date||'')?1:-1;});all=all.slice(0,12);
+   if(!all.length)return '';
+   return sec(T('Latest rounds from friends','Últimas vueltas de amigos'),all.map(function(o){var r=o.r;
+     return '<div class="frrow"><span class="frd">'+esc(r.date||'')+'</span><b>'+esc(o.n)+'</b><span class="frc">'+esc(r.course||'')+'</span><span class="frs">'+(r.score!=null?r.score:'·')+(r.stp!=null?' <small>('+(r.stp>0?'+':'')+r.stp+')</small>':'')+'</span><span class="'+((r.sgtot!=null&&r.sgtot<0)?'sg-neg':'sg-pos')+'">SG '+sgn(num(r.sgtot),2)+'</span><span class="frt5">T5 '+(r.mtot!=null?r.mtot:'·')+'</span></div>';}).join(''));
+ }
+ function findHTML(){
+   return sec(T('Find players','Buscar jugadores'),'<div class="frline"><input id="frQ" placeholder="'+T('Name or username','Nombre o usuario')+'" autocapitalize="none"><button class="pf_btn" id="frGo">'+T('Search','Buscar')+'</button></div><div id="frRes"></div>',
+     T('Only players who chose to be findable appear here.','Solo aparecen los jugadores que eligieron ser encontrables.'));
+ }
+ function privacyHTML(){
+   var fl=(ME.followers||[]).map(function(f){return '<span class="frchip">'+esc(f.display)+' <button class="frx" data-rmf="'+esc(f.username)+'" title="'+T('Remove follower','Quitar seguidor')+'">✕</button></span>';}).join('');
+   return sec(T('Privacy','Privacidad'),'<label class="frchk"><input type="checkbox" id="frFind"'+(ME.findable?' checked':'')+'> '+T('Let other players find and follow me','Permitir que otros jugadores me encuentren y me sigan')+'</label>'+
+     '<p class="frsub" style="margin-top:8px">'+T('Followers see a summary of each round (date, course, score, strokes gained, Tiger 5) — never your shots, notes or lessons.','Tus seguidores ven un resumen de cada vuelta (fecha, cancha, score, strokes gained, Tiger 5) — nunca tus tiros, notas ni aprendizajes.')+'</p>'+
+     '<div style="margin-top:6px"><span class="frlbl">'+T('Followers','Seguidores')+' ('+(ME.followers||[]).length+')</span> '+(fl||'<span class="frsub">'+T('none yet','ninguno todavía')+'</span>')+'</div>'+
+     '<p class="frsub" style="margin-top:8px">'+T('Your username: ','Tu usuario: ')+'<b>'+esc(ME.username)+'</b></p>');
+ }
+ function profHTML(){
+   var b;
+   if(ME.professor){b='<div class="frline"><span><b>'+esc(ME.professorName||ME.professor)+'</b> · '+(ME.profStatus==='accepted'?T('accepted — sees your full rounds','aceptó — ve tus vueltas completas'):T('request pending','solicitud pendiente'))+'</span><button class="pf_btn frgrey" id="frProfClr">'+T('Remove','Quitar')+'</button></div>';}
+   else{b='<div class="frline"><input id="frProf" placeholder="'+T('Professor\'s username','Usuario del profesor')+'" autocapitalize="none"><button class="pf_btn" id="frProfSet">'+T('Send request','Enviar solicitud')+'</button></div>';}
+   return sec(T('My professor','Mi profesor'),b,T('Your professor sees everything: rounds, scorecards, notes and what you learnt. They must accept first.','Tu profesor ve todo: vueltas, scorecards, notas y aprendizajes. Primero tiene que aceptar.'));
+ }
+ function studentsHTML(){
+   var st=ME.students||[];if(!st.length)return '';
+   var h=st.map(function(s){
+     if(s.prof_status==='accepted')return '<div class="frline"><b>'+esc(s.display)+'</b><span><button class="pf_btn" data-stu="'+esc(s.username)+'">'+T('Open','Abrir')+'</button> <button class="pf_btn frgrey" data-stno="'+esc(s.username)+'">'+T('Drop','Quitar')+'</button></span></div>';
+     return '<div class="frline"><span><b>'+esc(s.display)+'</b> · '+T('wants you as professor','te pide como profesor')+'</span><span><button class="pf_btn" data-stok="'+esc(s.username)+'">'+T('Accept','Aceptar')+'</button> <button class="pf_btn frgrey" data-stno="'+esc(s.username)+'">'+T('Decline','Rechazar')+'</button></span></div>';}).join('');
+   return sec(T('My students','Mis alumnos'),h+'<div id="frStu"></div>');
+ }
+ function adminHTML(){
+   if(!ME.admin)return '';
+   return sec(T('Invite code','Código de invitación'),'<div class="frline"><input id="frInv" value="'+esc(ME.invite||'')+'" placeholder="'+T('e.g. CGC2026','ej. CGC2026')+'"><button class="pf_btn" id="frInvSet">'+T('Save','Guardar')+'</button></div>',
+     T('New players need this code to create an account. Leave it empty to close sign-ups.','Los jugadores nuevos necesitan este código para crear su cuenta. Dejalo vacío para cerrar los registros.'));
+ }
+ function holesToHl(r){if(r.hl)return r.hl;if(!r.holes)return null;var LC={tee:'t',fw:'f',rough:'r',sand:'s',rec:'x',putt:'p'};
+   return r.holes.filter(function(h){return h&&h.shots&&h.shots.length;}).map(function(h){return [h.par,0,h.shots.map(function(s){var p='';for(var i=0;i<(s.pen||0);i++)p+='*';return (LC[s.lie]||'f')+(+s.dist||0)+p;}).join('')];});}
+ function studentHTML(){
+   if(!STU)return '';
+   var rounds=embedded(STU.name).concat(STU.rounds||[]).sort(function(a,b){return (a.date||'')<(b.date||'')?1:-1;});
+   var a10=agg(rounds,10),aAll=agg(rounds,9999);
+   var k=function(l,v){return '<div class="frk"><span>'+l+'</span><b>'+v+'</b></div>';};
+   var kp=function(a){return k(T('Rounds','Vueltas'),a.n)+k(T('To par','Al par'),sgn(a.stp,1))+k('SG',sgn(a.sg,1))+k(T('Off tee','Salida'),sgn(a.ott,1))+k('Approach',sgn(a.app,1))+k(T('Around grn','Juego corto'),sgn(a.atg,1))+k('Putt',sgn(a.putt,1))+k('Tiger 5',a.t5==null?'·':a.t5.toFixed(1));};
+   var h='<h4>'+esc(STU.name)+'</h4><p class="frsub">'+T('Last 10 rounds','Últimas 10 vueltas')+'</p><div class="frks">'+kp(a10)+'</div><p class="frsub">'+T('All rounds','Todas las vueltas')+'</p><div class="frks">'+kp(aAll)+'</div>';
+   h+=rounds.slice(0,40).map(function(r,i){
+     return '<div class="frround"><div class="frrow"><span class="frd">'+esc(r.date||'')+'</span><span class="frc">'+esc(r.course||'')+'</span><span class="frs">'+(r.score!=null?r.score:'·')+(r.stp!=null?' <small>('+(r.stp>0?'+':'')+r.stp+')</small>':'')+'</span><span class="'+((r.sgtot!=null&&r.sgtot<0)?'sg-neg':'sg-pos')+'">SG '+sgn(num(r.sgtot),2)+'</span><span class="frt5">T5 '+(r.mtot!=null?r.mtot:'·')+'</span>'+((r.holes||r.hl)?'<button class="frlink" data-card="'+i+'">'+T('Scorecard','Scorecard')+' ▾</button>':'')+'</div>'+
+       (r.lesson?'<div class="frnote"><b>'+T('Learnt:','Aprendió:')+'</b> '+esc(r.lesson)+'</div>':'')+(r.notes?'<div class="frnote"><b>'+T('Notes:','Notas:')+'</b> '+esc(r.notes)+'</div>':'')+'<div class="frcard" id="frcard_'+i+'" style="display:none"></div></div>';}).join('');
+   STU._rounds=rounds;
+   return h;
+ }
+ function draw(){
+   var el=document.getElementById('friendsBody');if(!el)return;
+   if(!tok()){el.innerHTML='<p class="frsub" style="font-size:14px">'+T('Friends and professors work on the synced site, after signing in with a password.','Amigos y profesores funcionan en el sitio sincronizado, después de entrar con contraseña.')+'</p>';return;}
+   if(!ME){el.innerHTML='<p class="frsub">'+(MSG||'…')+'</p>';return;}
+   el.innerHTML=(MSG?'<p class="frmsg">'+esc(MSG)+'</p>':'')+compareHTML()+feedHTML()+studentsHTML()+findHTML()+profHTML()+privacyHTML()+adminHTML();
+   var st=document.getElementById('frStu');if(st)st.innerHTML=studentHTML();
+   wire(el);
+ }
+ function load(msg){MSG=msg||'';if(!tok()){draw();return;}
+   Promise.all([api('me'),api('feed')]).then(function(a){if(a[0]&&a[0].ok){ME=a[0];FEED=(a[1]&&a[1].friends)||[];}else{ME=null;MSG=T('Could not load — sign in again.','No se pudo cargar — volvé a entrar.');}draw();}).catch(function(){ME=null;MSG=T('Offline — try again later.','Sin conexión — probá más tarde.');draw();});}
+ var ERR={'not-findable':['That player is not findable.','Ese jugador no es encontrable.'],'no-user':['No player with that username.','No hay un jugador con ese usuario.'],'bad-user':['Check the username.','Revisá el usuario.']};
+ function act(action,extra,okMsg){api(action,extra).then(function(j){if(j&&j.ok)load(okMsg||'');else{var e=ERR[j&&j.error];MSG=e?T(e[0],e[1]):T('That did not work.','No funcionó.');draw();}}).catch(function(){MSG=T('Offline — try again later.','Sin conexión — probá más tarde.');draw();});}
+ function wire(el){
+   var q=el.querySelector('#frQ'),go=el.querySelector('#frGo');
+   function search(){var v=(q.value||'').trim();if(v.length<2)return;api('search',{q:v}).then(function(j){var res=el.querySelector('#frRes'),fol={};(ME.following||[]).forEach(function(f){fol[f.username]=1;});
+     res.innerHTML=(j&&j.results&&j.results.length)?j.results.map(function(u){return '<div class="frline"><span><b>'+esc(u.display)+'</b> <small>@'+esc(u.username)+'</small></span>'+(fol[u.username]?'<span class="frsub">'+T('following','siguiendo')+'</span>':'<button class="pf_btn" data-fol="'+esc(u.username)+'">'+T('Follow','Seguir')+'</button>')+'</div>';}).join(''):'<p class="frsub">'+T('No players found.','No se encontraron jugadores.')+'</p>';
+     res.querySelectorAll('[data-fol]').forEach(function(b){b.onclick=function(){act('follow',{user:b.getAttribute('data-fol')});};});});}
+   if(go)go.onclick=search;if(q)q.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();search();}});
+   el.querySelectorAll('[data-unf]').forEach(function(b){b.onclick=function(){act('unfollow',{user:b.getAttribute('data-unf')});};});
+   el.querySelectorAll('[data-rmf]').forEach(function(b){b.onclick=function(){act('removeFollower',{user:b.getAttribute('data-rmf')});};});
+   var ff=el.querySelector('#frFind');if(ff)ff.onchange=function(){act('setFindable',{findable:ff.checked});};
+   var ps=el.querySelector('#frProfSet');if(ps)ps.onclick=function(){var v=(el.querySelector('#frProf').value||'').trim().toLowerCase();if(v)act('setProfessor',{user:v},T('Request sent.','Solicitud enviada.'));};
+   var pc=el.querySelector('#frProfClr');if(pc)pc.onclick=function(){act('setProfessor',{user:''});};
+   el.querySelectorAll('[data-stok]').forEach(function(b){b.onclick=function(){act('profRespond',{user:b.getAttribute('data-stok'),accept:true});};});
+   el.querySelectorAll('[data-stno]').forEach(function(b){b.onclick=function(){if(STU&&STU.username===b.getAttribute('data-stno'))STU=null;act('profRespond',{user:b.getAttribute('data-stno'),accept:false});};});
+   el.querySelectorAll('[data-stu]').forEach(function(b){b.onclick=function(){api('student',{user:b.getAttribute('data-stu')}).then(function(j){if(j&&j.ok){STU=j;MSG='';}else{MSG=T('Could not open that student.','No se pudo abrir ese alumno.');}draw();var s=document.getElementById('frStu');if(s&&s.scrollIntoView)s.scrollIntoView({behavior:'smooth',block:'start'});});};});
+   el.querySelectorAll('[data-card]').forEach(function(b){b.onclick=function(){var i=+b.getAttribute('data-card'),box=document.getElementById('frcard_'+i);if(!box)return;
+     if(box.style.display!=='none'){box.style.display='none';return;}
+     try{var hl=holesToHl(STU._rounds[i]),ic=(hl&&window.LGR&&window.LGR.importCard)?window.LGR.importCard(hl):null;
+       if(ic){box.innerHTML=ic.html;box.onclick=function(ev){var td=ev.target.closest?ev.target.closest('[data-ih]'):null;if(!td)return;var k=+td.getAttribute('data-ih'),sh=box.querySelector('.ihShots');if(sh)sh.innerHTML='<b>'+(k+1)+' · Par '+ic.pars[k]+'</b> — '+ic.shots[k];};}
+       else box.innerHTML='<p class="frsub">'+T('No shot detail for this round.','Sin detalle de tiros para esta vuelta.')+'</p>';}catch(e){box.innerHTML='';}
+     box.style.display='';};});
+   var iv=el.querySelector('#frInvSet');if(iv)iv.onclick=function(){act('setInvite',{code:(el.querySelector('#frInv').value||'').trim()},T('Invite code saved.','Código guardado.'));};
+ }
+ window.FRIENDS={render:function(){load('');}};
+
+ /* ---------- share image: one round as a 1080×1350 card ---------- */
+ function shareRound(r,name){
+   if(!r)return;
+   var W=1080,H=1350,cv=document.createElement('canvas');cv.width=W;cv.height=H;var c=cv.getContext('2d');
+   var cs=getComputedStyle(document.documentElement),V=function(n,d){var v=(cs.getPropertyValue(n)||'').trim();return v||d;};
+   var pine=V('--pine','#0f3a2c'),cream=V('--cream','#f6f2e7'),paper=V('--paper','#fffdf7'),clay=V('--clay','#c2502e'),fair=V('--fairway','#1f7a4d'),sand=V('--sand-deep','#b89a52'),ink=V('--ink','#20261f'),soft=V('--ink-soft','#5c6357'),line=V('--line','#e2ddcc');
+   var SER="'Iowan Old Style','Palatino Linotype','Book Antiqua',Palatino,Georgia,serif",CON="'Trebuchet MS','Gill Sans','Optima',sans-serif";
+   c.fillStyle=cream;c.fillRect(0,0,W,H);
+   c.fillStyle=pine;c.fillRect(0,0,W,250);
+   c.fillStyle=sand;c.fillRect(0,250,W,8);
+   c.textBaseline='alphabetic';c.fillStyle='#fff';c.font="600 62px "+SER;c.fillText(name||'',70,120);
+   c.font="600 26px "+CON;c.fillStyle='rgba(255,255,255,.78)';c.fillText(((r.date||'')+'  ·  '+(r.course||'')).toUpperCase().slice(0,58),70,178);
+   c.textAlign='right';c.font="700 22px "+CON;c.fillStyle=sand;c.fillText('ROUND LEDGER',W-70,84);c.textAlign='left';
+   /* score block */
+   var stp=(r.stp!=null)?r.stp:((r.score!=null&&r.par!=null)?r.score-r.par:null);
+   c.fillStyle=ink;c.font="700 230px "+SER;c.fillText(String(r.score!=null?r.score:'—'),64,500);
+   var sw=c.measureText(String(r.score!=null?r.score:'—')).width;
+   c.font="600 70px "+SER;c.fillStyle=(stp!=null&&stp<0)?fair:(stp!=null&&stp>0?clay:ink);c.fillText(stp==null?'':(stp===0?'E':((stp>0?'+':'')+stp)),64+sw+30,430);
+   c.font="600 26px "+CON;c.fillStyle=soft;c.fillText(T('SCORE','SCORE'),72,560);
+   /* Tiger 5 block */
+   c.textAlign='right';c.fillStyle=ink;c.font="700 120px "+SER;c.fillText(r.mtot!=null?String(r.mtot):'·',W-70,470);
+   c.font="600 26px "+CON;c.fillStyle=soft;c.fillText(T("TIGER'S 5 MISTAKES",'ERRORES TIGER 5'),W-70,520);
+   var t5=[[T('3-putts','3 putts'),r.p3],[T('doubles','dobles'),r.db],[T('bogey par-5','bogey par 5'),r.bp5]].filter(function(x){return x[1]!=null;}).map(function(x){return x[1]+' '+x[0];}).join('  ·  ');
+   c.font="500 24px "+CON;c.fillText(t5,W-70,560);c.textAlign='left';
+   /* strokes gained bars */
+   c.fillStyle=line;c.fillRect(70,610,W-140,2);
+   c.fillStyle=pine;c.font="700 30px "+CON;c.fillText(T('STROKES GAINED','STROKES GAINED'),70,672);
+   var cats=[[T('Off the tee','Desde el tee'),r.ott],['Approach',r.app],[T('Around the green','Alrededor del green'),r.atg],[T('Putting','Putt'),r.putt],['Total',r.sgtot]];
+   var mx=Math.max.apply(null,cats.map(function(x){return Math.abs(+x[1]||0);}).concat([1])),x0=560,half=380,y=735;
+   cats.forEach(function(k,i){var v=(typeof k[1]==='number')?k[1]:null,tot=(i===4);
+     c.font=(tot?"700 ":"500 ")+"32px "+SER;c.fillStyle=ink;c.textAlign='left';c.fillText(k[0],70,y+12);
+     c.fillStyle=line;c.fillRect(x0-1,y-26,2,52);
+     if(v!=null){var w=Math.max(3,Math.abs(v)/mx*half*0.92);c.fillStyle=v<0?clay:fair;if(tot)c.globalAlpha=1;else c.globalAlpha=.85;c.fillRect(v<0?x0-w:x0,y-18,w,36);c.globalAlpha=1;
+       c.font="700 30px "+CON;c.fillStyle=v<0?clay:fair;c.textAlign=v<0?'left':'right';c.fillText((v>0?'+':'')+v.toFixed(2),v<0?x0+14:x0-14,y+11);}
+     y+=tot?0:78;if(i===3){c.fillStyle=line;c.fillRect(70,y-40,W-140,2);y+=4;}});
+   c.textAlign='left';
+   /* lesson */
+   var ly=1120;c.fillStyle=line;c.fillRect(70,ly-50,W-140,2);
+   if(r.lesson){c.fillStyle=sand;c.font="700 24px "+CON;c.fillText(T('WHAT I LEARNT','QUÉ APRENDÍ'),70,ly);
+     c.fillStyle=ink;c.font="italic 500 34px "+SER;var words=String(r.lesson).split(/\s+/),ln='',yy=ly+52,n=0;
+     for(var i=0;i<words.length&&n<3;i++){var tst=ln?ln+' '+words[i]:words[i];if(c.measureText(tst).width>W-140&&ln){c.fillText(n===2&&i<words.length?ln+'…':ln,70,yy);yy+=46;n++;ln=words[i];}else ln=tst;}
+     if(n<3&&ln)c.fillText(ln,70,yy);}
+   else{c.fillStyle=soft;c.font="500 28px "+CON;c.fillText('FW '+(r.fw!=null?r.fw:'·')+'   ·   GIR '+(r.gir!=null?r.gir:'·')+'   ·   '+T('Putts','Putts')+' '+(r.putts!=null?r.putts:'·')+'   ·   '+T('Penalties','Penalidades')+' '+(r.pen!=null?r.pen:'·'),70,ly+20);}
+   c.fillStyle=pine;c.fillRect(0,H-56,W,56);c.fillStyle='rgba(255,255,255,.8)';c.font="600 22px "+CON;c.textAlign='center';c.fillText(location.host||'Round Ledger',W/2,H-20);c.textAlign='left';
+   var fname='round-'+(r.date||'')+'.png';
+   var fallback=function(blob){try{var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},800);}catch(e){}};
+   cv.toBlob(function(blob){if(!blob)return;
+     try{var f=new File([blob],fname,{type:'image/png'});
+       if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'Round Ledger'}).catch(function(e){if(!e||e.name!=='AbortError')fallback(blob);});return;}}catch(e){}
+     fallback(blob);},'image/png');
+ }
+ window.SHARE={round:shareRound};
 })();
 </script>
 </body>
