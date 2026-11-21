@@ -3220,7 +3220,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  function render(reason){
    var el=document.getElementById('plansBody');if(!el)return;var cur=plan();
    var h=reason&&LOCKMSG[reason]?'<div class="plLock">🔒 '+T(LOCKMSG[reason][0],LOCKMSG[reason][1])+' — '+T('one ball a month.','una pelota por mes.')+'</div>':'';
-   h+='<p class="plLead">'+T('Priced in golf balls — like buying someone a coffee, but on the course.','Precios en pelotas de golf — como invitar un cafecito, pero en la cancha.')+'</p><div class="plGrid">';
+   h+='<p class="plLead">'+T('Priced in golf balls — the one currency every golfer already counts.','Precios en pelotas de golf — la moneda que todo golfista ya cuenta.')+'</p><div class="plGrid">';
    PLANS.forEach(function(p){var me=cur===p.k,usd=p.balls*BALL_USD;
      h+='<div class="plCard pl-'+p.k+(me?' on':'')+'">'+
        '<div class="plName">'+p.name+'</div>'+
