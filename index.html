@@ -511,8 +511,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
    <div id="newRoundForm">
    <div class="setupgrid">
      <label>Course<select id="selCourse"></select></label>
-     <label>Tee <span class="lbls">rated — sets rating/slope</span><div id="selTeeChips" class="teechips"></div></label>
-     <label>Markers <span class="lbls">where they're set today — sets length</span><div id="selMarkerChips" class="teechips"></div></label>
+     <label>Tee<div id="selTeeChips" class="teechips"></div></label>
      <label>Holes<select id="selHoles"><option value="18">18 holes</option><option value="front">Front 9 (1–9)</option><option value="back">Back 9 (10–18)</option></select></label>
      <label>Score<input type="number" inputmode="numeric" id="selScore" min="59" max="200" placeholder="e.g. 76" required><span class="fielderr" id="err_score"></span></label>
      <label>Playing HCP<input type="number" inputmode="numeric" id="selChcp" min="-10" max="54" placeholder="e.g. 2"><span class="fielderr" id="err_chcp"></span></label>
@@ -2269,9 +2268,6 @@ function renderSel(){
  const tees=COURSES[R.course].tees,ts=document.getElementById('selTeeChips');
  ts.innerHTML=Object.keys(tees).map(k=>`<button type="button" class="teechip${k===R.tee?' on':''}" data-teechip="${k}" style="${teeStyle(R.course,k)}">${teeEN(R.course,k)}</button>`).join('');
  ts.querySelectorAll('[data-teechip]').forEach(b=>{b.onclick=()=>switchTo(R.course,b.getAttribute('data-teechip'));});
- const mks=document.getElementById('selMarkerChips');
- if(mks){const mk=R.markers||R.tee;mks.innerHTML=Object.keys(tees).map(k=>`<button type="button" class="teechip${k===mk?' on':''}" data-marker="${k}" style="${teeStyle(R.course,k)}">${teeEN(R.course,k)}</button>`).join('');
-   mks.querySelectorAll('[data-marker]').forEach(b=>{b.onclick=()=>{R.markers=b.getAttribute('data-marker');for(var i=0;i<R.holes.length;i++)recomputeHoleYd(i);save();render();};});}
  const t=tees[R.tee];const totY=R.holes.reduce((a,h)=>a+(h.yd||0),0);
  document.getElementById('teeEst').textContent=Y2U(totY)+' '+PROF.units+' · CR '+t.cr+' · Slope '+t.slope+(t.est?' · est.':'');
  var ci=document.getElementById('selChcp');if(ci&&document.activeElement!==ci&&((R.chcp==null||R.chcp==='')||R.chcpAuto)){var sug=suggestChcp();if(sug!=null){R.chcp=String(sug);ci.value=sug;R.chcpAuto=true;}}
