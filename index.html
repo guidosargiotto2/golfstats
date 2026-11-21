@@ -566,6 +566,8 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .plBtn{border:none;border-radius:10px;padding:10px 14px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;background:var(--cream);color:var(--ink-soft);cursor:not-allowed;}
 .lgscope .plFoot{font-family:var(--cond);font-size:12px;color:var(--ink-soft);margin:14px 0 0;}
 .tabnav button.pllocked::after{content:' 🔒';font-size:10px;}
+.lgscope .plNote{font-family:var(--serif);font-style:italic;font-size:14.5px;line-height:1.45;color:var(--pine);background:rgba(216,196,140,.18);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;padding:10px 12px;margin:0 0 14px;}
+.lgscope .plNote span{font-family:var(--cond);font-style:normal;font-size:12px;color:var(--ink-soft);}
 </style>
 </head>
 <body>
@@ -3199,11 +3201,12 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  var BALL_USD=59/12;   /* premium tour ball, US list price per ball */
  var PLANS=[
   {k:'free',balls:0,name:'Free',
-   en:['Shot-by-shot logging with predictions','Round Ledger and every scorecard (SG + Tiger 5 per round)','Share image for WhatsApp'],
-   es:['Carga tiro a tiro con predicciones','Mis vueltas y cada scorecard (SG + Tiger 5 por vuelta)','Imagen para compartir por WhatsApp']},
+   en:['Log every shot of every round, with predictions','Each round on its own: scorecard, strokes gained and Tiger 5 per round','No trends across rounds','Everything you log is kept — upgrade and your Statistics fill in with your whole history','Share image for WhatsApp'],
+   es:['Cargá cada tiro de cada vuelta, con predicciones','Cada vuelta por separado: scorecard, strokes gained y Tiger 5 por vuelta','Sin tendencias entre vueltas','Todo lo que cargás queda guardado — al pasar a Lite tus estadísticas se completan con toda tu historia','Imagen para compartir por WhatsApp']},
   {k:'lite',balls:1,name:'Lite',
-   en:['Everything in Free','Statistics: trends, control charts, what drives your score, practice priorities','Friends: follow and compare','Link to your professor'],
-   es:['Todo lo de Free','Estadísticas: tendencias, gráficos de control, qué define tu score, prioridades de práctica','Amigos: seguir y comparar','Vincular a tu profesor']},
+   en:['Everything in Free','Statistics across all your rounds: trends, control charts, what drives your score, practice priorities','Friends: follow and compare','Link to your professor'],
+   es:['Todo lo de Free','Estadísticas de todas tus vueltas: tendencias, gráficos de control, qué define tu score, prioridades de práctica','Amigos: seguir y comparar','Vincular a tu profesor'],
+   note:['I\'m confident it pays for itself: if it saves you one ball a month, it\'s free.','Estoy seguro de que se paga sola: si te ahorra una pelota por mes, te sale gratis.']},
   {k:'pro',balls:6,name:'Pro',
    en:['Everything in Lite','A monthly 30-minute call with Guido, prepared from your numbers','Early access to new features','Priority support — your questions and requests go first','Limited places'],
    es:['Todo lo de Lite','Una llamada mensual de 30 minutos con Guido, preparada con tus números','Acceso anticipado a las funciones nuevas','Soporte prioritario — tus consultas y pedidos van primero','Lugares limitados']}
@@ -3213,7 +3216,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  function locked(view){var p=plan();if(!p)return false;return (view==='stats'||view==='friends')&&rank(p)<1;}
  var ball=function(sz){return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.3"/>'+
    [[8,8],[12,6.5],[16,8],[7,12],[12,11],[17,12],[8.5,16],[12,15.5],[15.5,16]].map(function(d){return '<circle cx="'+d[0]+'" cy="'+d[1]+'" r="1" fill="currentColor" opacity=".35"/>';}).join('')+'</svg>';};
- var LOCKMSG={stats:['Statistics are part of Lite','Las estadísticas son parte de Lite'],friends:['Friends are part of Lite','Amigos es parte de Lite']};
+ var LOCKMSG={stats:['Trends across rounds are part of Lite — your rounds are already saved','Las tendencias entre vueltas son parte de Lite — tus vueltas ya están guardadas'],friends:['Friends are part of Lite','Amigos es parte de Lite']};
  function render(reason){
    var el=document.getElementById('plansBody');if(!el)return;var cur=plan();
    var h=reason&&LOCKMSG[reason]?'<div class="plLock">🔒 '+T(LOCKMSG[reason][0],LOCKMSG[reason][1])+' — '+T('one ball a month.','una pelota por mes.')+'</div>':'';
@@ -3223,7 +3226,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
        '<div class="plName">'+p.name+'</div>'+
        '<div class="plBalls">'+(p.balls?('<span class="plIcons">'+(p.balls<=3?Array(p.balls+1).join(ball(26)):ball(26)+'<b>×'+p.balls+'</b>')+'</span><span class="plQty">'+(p.balls===1?T('1 ball','1 pelota'):(p.balls===6?T('half a dozen balls','media docena de pelotas'):(p.balls===12?T('a dozen balls','una docena de pelotas'):p.balls+T(' balls',' pelotas'))))+'<small>'+T(' / month',' / mes')+'</small></span>'):'<span class="plQty">'+T('Free','Gratis')+'</span>')+'</div>'+
        '<div class="plUsd">'+(p.balls?'≈ US$'+usd.toFixed(usd<10?2:0)+T(' a month · annual: 10 months',' por mes · anual: 10 meses'):'&nbsp;')+'</div>'+
-       '<ul>'+(ES()?p.es:p.en).map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+
+       '<ul>'+(ES()?p.es:p.en).map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+(p.note?'<div class="plNote">“'+(ES()?p.note[1]:p.note[0])+'” <span>— Guido</span></div>':'')+
        (me?'<div class="plCur">'+T('Your plan','Tu plan')+'</div>':(rank(p.k)>rank(cur)&&cur?'<button class="plBtn" disabled>'+T('Payments coming soon','Pagos próximamente')+'</button>':''))+
      '</div>';});
    h+='</div><p class="plFoot">'+T('One ball ≈ US$4.92 — a premium tour ball at list price (US$59 a dozen). Founders keep Pro.','Una pelota ≈ US$4,92 — una pelota tour premium a precio de lista (US$59 la docena). Los fundadores mantienen Pro.')+'</p>';
