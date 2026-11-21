@@ -114,6 +114,7 @@ h2 .n{font-family:var(--cond);font-size:12px;letter-spacing:.2em;color:var(--san
 .controls{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;}
 .controls button{font-family:var(--cond);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:12px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);cursor:pointer;transition:all .18s;}
 .controls button:hover{border-color:var(--moss);color:var(--fairway);}
+.controls button.unittgl{min-width:34px;background:var(--pine);color:#fff;border-color:var(--pine);font-size:13px;}
 .controls button.on{background:var(--pine);border-color:var(--pine);color:#fff;}
 .mrhead{font-family:var(--cond);text-transform:uppercase;letter-spacing:.14em;font-size:11.5px;color:var(--ink-soft);margin:20px 0 4px;border-top:1px dashed var(--line);padding-top:14px;}
 .mrtoggle{margin-top:14px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.1em;font-size:11px;color:var(--ink-soft);background:transparent;border:1px solid var(--line);border-radius:999px;padding:5px 14px;cursor:pointer;transition:all .15s ease;}
@@ -906,11 +907,12 @@ const lowerBetter=k=>k.startsWith('Mistakes')||k==='Putts / round'||k==='Penalti
 const GROUPS={
  sg:{metrics:['SG: Total','SG: Tee-to-green','SG: Off tee','SG: Approach','SG: Around green','SG: Putting'],cur:'SG: Total'},
  t5:{metrics:['Mistakes: total','Mistakes: 3-putts','Mistakes: double bogeys','Mistakes: bogey par-5','Mistakes: 3+ from 150','Mistakes: 3+ from 40'],cur:'Mistakes: total'},
- tr:{metrics:['Driving accuracy %','Fairways / round','GIR %','Greens / round','Putts / round','Penalties / round','Tee shot distance','Bogey avoidance %','Birdies / round'],cur:'Driving accuracy %'},
+ tr:{metrics:['Fairways / round','Greens / round','Putts / round','Penalties / round','Tee shot distance','Bogey avoidance %','Birdies / round'],cur:'Fairways / round'},
  sh:{metrics:['Scrambling %','Putts per GIR','Short-game proximity (ft)','Greenside inside 6 ft %','Greenside outside 15 ft %'],cur:'Scrambling %'},
  sc:{metrics:['Score to par'],cur:'Score to par'}
 };
 const shortLbl=k=>k.replace(/^SG: /,'').replace(/^Mistakes: /,'').replace(/ \/ round$/,'');
+const PCT_OF={'Fairways / round':'Driving accuracy %','Greens / round':'GIR %'};
 const PHASE={
  'SG: Off tee':'your driving',
  'SG: Approach':'your approach play',
@@ -1023,8 +1025,9 @@ function showPoint(sfx,i){
 function buildPanels(){
  ['sg','t5','tr','sh','sc'].forEach(sfx=>{
    const g=GROUPS[sfx], ce=document.getElementById('ctrl_'+sfx);
-   ce.innerHTML=g.metrics.map(k=>`<button data-k="${k}" class="${k===g.cur?'on':''}">${shortLbl(k)}</button>`).join('');
-   ce.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.k){g.cur=b.dataset.k;drawXmr(sfx);}});
+   const hasPct=g.metrics.some(k=>PCT_OF[k]);
+   ce.innerHTML=g.metrics.map(k=>`<button data-k="${k}" class="${k===g.cur?'on':''}">${shortLbl(k)}</button>`).join('')+(hasPct?`<button id="unit_${sfx}" class="unittgl" data-unit="1" title="Toggle count / percentage">#</button>`:'');
+   ce.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.unit){g.pct=!g.pct;drawXmr(sfx);}else if(b.dataset.k){g.cur=b.dataset.k;drawXmr(sfx);}});
    document.getElementById('panel_'+sfx).innerHTML=panelHTML(sfx);
    const cvx=document.getElementById('xmr_'+sfx);
    cvx.addEventListener('click',ev=>{const h=HIT['xmr_'+sfx];if(!h||!h.xs.length)return;const rect=cvx.getBoundingClientRect();const cx=ev.clientX-rect.left;let bi=0,bd=1e9;h.xs.forEach((x,i)=>{const dd=Math.abs(x-cx);if(dd<bd){bd=dd;bi=i;}});showPoint(sfx,bi);});
@@ -1356,7 +1359,7 @@ var GROUPR={};
 function drawXmr(sfx){
  if(!R.length)return;
  {const d=document.getElementById('det_'+sfx);if(d)d.style.display='none';}
- const key=GROUPS[sfx].cur;
+ const base=GROUPS[sfx].cur;let key=base;if(GROUPS[sfx].pct&&PCT_OF[base])key=PCT_OF[base];
  {const ml=document.getElementById('mlbl_'+sfx);if(ml)ml.textContent=CUSUM_METRICS.has(key)?'CUSUM':'XmR';}
  const RR=R.filter(r=>metrics[key](r)!=null);GROUPR[sfx]=RR;
  if(CUSUM_METRICS.has(key)){ drawCusum(sfx,key); return; }
@@ -1400,7 +1403,8 @@ function drawXmr(sfx){
  const dn=document.getElementById('dnote_'+sfx);
  if(dn)dn.innerHTML=`current stage R${last.start+1}–${last.end+1} vs normal · ±1σ ${Math.round(w1)}% <span style="opacity:.6">(68)</span> · ±2σ ${Math.round(w2)}% <span style="opacity:.6">(95)</span> · ${near?'roughly normal':(lv.length<12?'small sample':'note the skew')}`;
  try{drawDist(lv,{m:last.m,mrb:last.mrb},lo,hi,'dist_'+sfx);}catch(e){}
- document.getElementById('ctrl_'+sfx).querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===key));
+ document.getElementById('ctrl_'+sfx).querySelectorAll('button').forEach(b=>{if(b.dataset.k)b.classList.toggle('on',b.dataset.k===base);});
+ {var ut=document.getElementById('unit_'+sfx);if(ut){var able=!!PCT_OF[base];ut.style.display=able?'':'none';ut.textContent=GROUPS[sfx].pct?'%':'#';}}
 }
 function drawCusum(sfx,key){
  const v=R.map(metrics[key]), N=v.length, short=shortLbl(key);
