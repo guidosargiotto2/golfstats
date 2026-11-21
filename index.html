@@ -2660,6 +2660,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    if(v==='ideas'&&window.IDEAS)window.IDEAS.render();
    if(v==='ledger'&&window.LEDGER)window.LEDGER.render();
    if(v==='friends'&&window.FRIENDS)window.FRIENDS.render();
+   if(v==='plans'&&window.PLANS)window.PLANS.render('');
    if(v==='stats'){try{renderAll();renderTabs();}catch(e){}}
    if(window.applyI18n)window.applyI18n();
    window.scrollTo(0,0);
@@ -3239,7 +3240,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  var orig=window.showView;
  if(orig){window.showView=function(v){
    if(locked(v)){orig('plans');render(v);var bs=document.querySelectorAll('#tabnav button');for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',bs[i].dataset.v===v);return;}
-   orig(v);if(v==='plans')render('');};
+   orig(v);};
    var nav=document.getElementById('tabnav');
    if(nav)nav.addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.dataset.v&&locked(b.dataset.v)){e.stopImmediatePropagation();window.showView(b.dataset.v);}},true);}
  window.PLANS={render:render,refresh:refreshPlan,plan:plan,open:function(){if(window.showView)window.showView('plans');}};
