@@ -353,6 +353,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .scTotH{background:rgba(15,58,44,.06);font-weight:700;}
 .lgscope .scGrand{background:var(--pine);color:#fff!important;}
 .lgscope .scGrand *{color:#fff!important;}
+.lgscope .scTbl tr td.scGrand{background:var(--pine)!important;color:#fff!important;}
 .lgscope .scHole{cursor:pointer;}
 .lgscope .scRs .scHole:hover{background:rgba(201,154,30,.14);}
 .lgscope .scBir{display:inline-block;min-width:24px;line-height:22px;border:1.5px solid var(--pine);border-radius:999px;}
@@ -1783,7 +1784,7 @@ function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage
 let PROF=loadProf();
 function saveProf(){localStorage.setItem(PROFK,JSON.stringify(PROF));}
 /* ===== i18n (Stage 1: on-course flow) ===== */
-var I18N_ES={"Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
+var I18N_ES={"NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles, squares and status are against net par (handicap strokes applied).":"Círculos, cuadrados y estado son contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
  "Log a round":"Cargar vuelta","Statistics":"Estadísticas","Round ledger":"Mis vueltas","Profile":"Perfil","Ideas":"Ideas","Log out":"Salir",
  "Course":"Cancha","Tee":"Tee","Holes":"Hoyos","Score":"Score","Playing HCP":"HCP de juego","Date":"Fecha",
  "18 holes":"18 hoyos","Front 9 (1–9)":"Primeros 9 (1–9)","Back 9 (10–18)":"Segundos 9 (10–18)",
@@ -2028,11 +2029,12 @@ function renderScorecard(){
    return '<span>'+sc+'</span>';
  }
  function flTitle(m){return [m.p3?'3-putt':'',m.db?'double bogey':'',m.bp5?'bogey on par 5':'',m.f150?'bogey w/ 9-iron or less':'',m.short?shortLabel():''].filter(Boolean).join(', ');}
+ var run=0,runNP=0,netOn=false;   /* running status carries through the turn */
  function seg(a,b,label){ // holes [a,b)
-   var cells='',parCells='',scCells='',stCells='',sgCells='',t5Cells='',run=0,runNP=0,tot=0,par=0,npar=0,sgT=0,t5T=0;
+   var cells='',parCells='',npCells='',scCells='',stCells='',sgCells='',t5Cells='',tot=0,par=0,npar=0,sgT=0,t5T=0;
    for(var i=a;i<b;i++){var h=R.holes[i],t=holeSG(holeView(h)),m=holeMistakes(holeView(h),i),np=netParOf(i),st=t.strokes-np;
      cells+='<td class="scHole" data-sc="'+i+'">'+(i+1)+'</td>';
-     parCells+='<td>'+h.par+'</td>';
+     parCells+='<td>'+h.par+'</td>';npCells+='<td'+(np!==h.par?' style="font-weight:700;color:var(--sand-deep)"':'')+'>'+np+'</td>';if(np!==h.par)netOn=true;
      scCells+='<td class="scHole" data-sc="'+i+'">'+sym(st,t.strokes)+'</td>';
      run+=t.strokes;runNP+=np;tot+=t.strokes;par+=h.par;npar+=np;
      var rt=run-runNP;stCells+='<td class="scSt">'+(rt>0?'+'+rt:(rt===0?'E':rt))+'</td>';
@@ -2040,15 +2042,15 @@ function renderScorecard(){
      var fl=[m.p3?'3P':'',m.db?'D':'',m.bp5?'P5':'',m.f150?'B':'',m.short?'S':''].filter(Boolean);t5T+=fl.length;
      t5Cells+='<td class="scT5'+(fl.length?' bad':'')+'" title="'+(fl.length?flTitle(m):'clean')+'">'+(fl.length?fl.join(' '):'·')+'</td>';
    }
-   return {cells:cells,parCells:parCells,scCells:scCells,stCells:stCells,sgCells:sgCells,t5Cells:t5Cells,tot:tot,par:par,npar:npar,sgT:sgT,t5T:t5T};
+   return {cells:cells,parCells:parCells,npCells:npCells,scCells:scCells,stCells:stCells,sgCells:sgCells,t5Cells:t5Cells,tot:tot,par:par,npar:npar,sgT:sgT,t5T:t5T};
  }
  var full=(hs===0&&he===18);
- var rowsHole='<td class="scLbl">'+t('HOLE')+'</td>',rowsPar='<td class="scLbl">'+t('PAR')+'</td>',rowsSc='<td class="scLbl">'+t('SCORE')+'</td>',rowsSt='<td class="scLbl">'+t('STATUS')+'</td>',rowsSg='<td class="scLbl">SG</td>',rowsT5='<td class="scLbl">TIGER&#39;S 5</td>';
- function addSeg(s,label){rowsHole+=s.cells;rowsPar+=s.parCells;rowsSc+=s.scCells;rowsSt+=s.stCells;rowsSg+=s.sgCells;rowsT5+=s.t5Cells;
+ var rowsHole='<td class="scLbl">'+t('HOLE')+'</td>',rowsPar='<td class="scLbl">'+t('PAR')+'</td>',rowsSc='<td class="scLbl">'+t('SCORE')+'</td>',rowsSt='<td class="scLbl">'+t('STATUS')+'</td>',rowsSg='<td class="scLbl">SG</td>',rowsT5='<td class="scLbl">TIGER&#39;S 5</td>',rowsNP='<td class="scLbl">'+t('NET PAR')+'</td>';
+ function addSeg(s,label){rowsNP+=s.npCells;if(label)rowsNP+='<td class="scTotH">'+s.npar+'</td>';rowsHole+=s.cells;rowsPar+=s.parCells;rowsSc+=s.scCells;rowsSt+=s.stCells;rowsSg+=s.sgCells;rowsT5+=s.t5Cells;
    if(label){var tp=s.tot-s.npar;rowsHole+='<td class="scTotH">'+label+'</td>';rowsPar+='<td class="scTotH">'+s.par+'</td>';rowsSc+='<td class="scTotH">'+s.tot+'</td>';rowsSt+='<td class="scTotH">'+(tp>0?'+'+tp:(tp===0?'E':tp))+'</td>';rowsSg+='<td class="scTotH '+(s.sgT<0?'sg-neg':'sg-pos')+'">'+fmt(s.sgT)+'</td>';rowsT5+='<td class="scTotH">'+s.t5T+'</td>';}}
  if(full){var f=seg(0,9),bk=seg(9,18);addSeg(f,t('OUT'));addSeg(bk,t('IN'));
    var gtot=f.tot+bk.tot,gpar=f.par+bk.par,gtp=gtot-(f.npar+bk.npar),gsg=f.sgT+bk.sgT,gt5=f.t5T+bk.t5T;
-   rowsHole+='<td class="scTotH scGrand">'+t('TOT')+'</td>';rowsPar+='<td class="scTotH scGrand">'+gpar+'</td>';rowsSc+='<td class="scTotH scGrand">'+gtot+'</td>';rowsSt+='<td class="scTotH scGrand">'+(gtp>0?'+'+gtp:(gtp===0?'E':gtp))+'</td>';rowsSg+='<td class="scTotH scGrand">'+fmt(gsg)+'</td>';rowsT5+='<td class="scTotH scGrand">'+gt5+'</td>';
+   rowsHole+='<td class="scTotH scGrand">'+t('TOT')+'</td>';rowsNP+='<td class="scTotH scGrand">'+(f.npar+bk.npar)+'</td>';rowsPar+='<td class="scTotH scGrand">'+gpar+'</td>';rowsSc+='<td class="scTotH scGrand">'+gtot+'</td>';rowsSt+='<td class="scTotH scGrand">'+(gtp>0?'+'+gtp:(gtp===0?'E':gtp))+'</td>';rowsSg+='<td class="scTotH scGrand">'+fmt(gsg)+'</td>';rowsT5+='<td class="scTotH scGrand">'+gt5+'</td>';
  } else {var s=seg(hs,he);addSeg(s,(hs===0?t('OUT'):t('IN')));}
  /* strokes gained by category over the active holes */
  var cat={ott:0,app:0,atg:0,putt:0,tot:0};for(var k=hs;k<he;k++){var hsg=holeSG(holeView(R.holes[k]));cat.ott+=hsg.ott;cat.app+=hsg.app;cat.atg+=hsg.atg;cat.putt+=hsg.putt;cat.tot+=hsg.tot;}
@@ -2059,7 +2061,8 @@ function renderScorecard(){
    '<div class="scNotes"><label>'+t('Notes')+'<textarea id="scNotes" rows="2" placeholder="'+(window.__LANG==='es'?'Cómo fue, condiciones, algo para recordar…':'How it went, conditions, anything worth remembering…')+'">'+esc(R.notes)+'</textarea></label>'+
    '<label>'+t('What I learnt')+' <span class="lbls" style="color:var(--clay)">'+t('required')+'</span><textarea id="scLesson" rows="2" placeholder="'+(window.__LANG==='es'?'Un aprendizaje de esta vuelta…':'One takeaway from this round…')+'">'+esc(R.lesson)+'</textarea></label></div>';
  sv.innerHTML='<div class="scWrap"><table class="scTbl"><tbody>'+
-   '<tr class="scRh">'+rowsHole+'</tr><tr class="scRp">'+rowsPar+'</tr><tr class="scRs">'+rowsSc+'</tr><tr class="scRst">'+rowsSt+'</tr><tr class="scRsg">'+rowsSg+'</tr><tr class="scRt5">'+rowsT5+'</tr></tbody></table></div>'+
+   '<tr class="scRh">'+rowsHole+'</tr><tr class="scRp">'+rowsPar+'</tr>'+(netOn?'<tr class="scRp">'+rowsNP+'</tr>':'')+'<tr class="scRs">'+rowsSc+'</tr><tr class="scRst">'+(netOn?rowsSt.replace('>'+t('STATUS')+'<','>'+t('NET STATUS')+'<'):rowsSt)+'</tr><tr class="scRsg">'+rowsSg+'</tr><tr class="scRt5">'+rowsT5+'</tr></tbody></table></div>'+
+   (netOn?'<div class="scHint">'+t('Circles, squares and status are against net par (handicap strokes applied).')+'</div>':'')+
    catRow+
    '<div class="scHint">Tap any hole to edit it. <b>SG</b> = strokes gained per hole · <b>Tiger\'s 5</b>: 3P 3-putt · D double · P5 bogey par-5 · B bogey w/ 9-iron or less · S blow-out save.</div>'+
    notesBlk+
@@ -2195,9 +2198,10 @@ function renderHoleNav(hi){
 function totals(){
  var done=R.holes.slice(R.hStart,R.hEnd).filter(function(h){return h.done;});
  var count=R.hEnd-R.hStart;
- var sc=0,sg=0,par=0,sr=srMap();for(var i=(R.hStart||0);i<(R.hEnd!=null?R.hEnd:18);i++){var h=R.holes[i];if(!h.done)continue;var hsg=holeSG(holeView(h));sc+=hsg.strokes;sg+=hsg.tot;par+=netParOf(i,sr);}
- document.getElementById('totScore').textContent=done.length?((sc-par>0?'+':'')+(sc-par===0?'E':(sc-par))):'—';
- document.getElementById('totSG').innerHTML=done.length?('thru '+done.length+' <span class="sgmini '+(sg<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg)+'</span>'):'—';
+ var sc=0,sg=0,par=0,gpar=0,sr=srMap();for(var i=(R.hStart||0);i<(R.hEnd!=null?R.hEnd:18);i++){var h=R.holes[i];if(!h.done)continue;var hsg=holeSG(holeView(h));sc+=hsg.strokes;sg+=hsg.tot;par+=netParOf(i,sr);gpar+=h.par;}
+ var tpf=function(d){return (d>0?'+':'')+(d===0?'E':d);};
+ document.getElementById('totScore').textContent=done.length?tpf(sc-gpar):'—';
+ document.getElementById('totSG').innerHTML=done.length?((par!==gpar?t('Net')+' '+tpf(sc-par)+' · ':'')+t('thru')+' '+done.length+' <span class="sgmini '+(sg<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg)+'</span>'):'—';
  var rem=count-done.length,w=document.getElementById('warn');
  var cross=(rem===0&&R.score!==''&&R.score!=null&&+R.score!==sc)?('⚠ you entered score '+R.score+', but your shots add up to '+sc):'';
  if(cross){w.className='warn';w.textContent=cross;w.style.display='';}else{w.textContent='';w.style.display='none';}
