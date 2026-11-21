@@ -2627,7 +2627,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
      .then(function(r){return r.json();})
      .then(function(j){
-       if(j&&j.ok&&j.token){localStorage.setItem('app-user',j.name);localStorage.setItem('gs-token',j.token);location.reload();}
+       if(j&&j.ok&&j.token){localStorage.setItem('app-user',j.name);localStorage.setItem('gs-token',j.token);if(j.mustChange)localStorage.setItem('gs-mustchange','1');else localStorage.removeItem('gs-mustchange');location.reload();}
        else if(j&&EM[j.error]){err.textContent=EM[j.error][ES?1:0];}
        else if(reg){err.textContent=ES?'No se pudo crear la cuenta.':'Could not create the account.';}
        else legacy();})
@@ -2671,21 +2671,55 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
        if(gone.length&&user){var dk='golf-ledger-del-'+user,d=[];try{d=JSON.parse(localStorage.getItem(dk)||'[]')||[];}catch(e){}localStorage.setItem(dk,JSON.stringify(d.concat(gone)));}}catch(e){}
      var n=sv0(a);queue();return n;};
  })();
+ /* ---- change-password dialog (forced after the first sign-in with the old password, or voluntary) ---- */
+ function passDialog(forced){
+   var ES=(window.__LANG==='es'),old=document.getElementById('pwModal');if(old)old.remove();
+   var m=document.createElement('div');m.id='pwModal';m.className='login';m.style.display='flex';m.style.zIndex='10001';
+   m.innerHTML='<form class="loginbox" autocomplete="on"><h1 style="font-size:24px">'+(ES?'Nueva contraseña':'New password')+'</h1>'+
+     '<div class="sub2" style="text-transform:none;letter-spacing:0;font-size:13px;line-height:1.45">'+(forced?(ES?'Por seguridad, elegí una contraseña nueva para tu cuenta. Con ella vas a entrar desde cualquier dispositivo.':'For security, choose a new password for your account. You will use it to sign in on any device.'):(ES?'Cambiá tu contraseña.':'Change your password.'))+'</div>'+
+     '<input type="text" name="username" autocomplete="username" value="'+(user||'')+'" style="display:none">'+
+     (forced?'':'<input id="pw_old" type="password" placeholder="'+(ES?'Contraseña actual':'Current password')+'" autocomplete="current-password">')+
+     '<input id="pw_new" type="password" placeholder="'+(ES?'Contraseña nueva (mínimo 6)':'New password (6+ characters)')+'" autocomplete="new-password">'+
+     '<input id="pw_new2" type="password" placeholder="'+(ES?'Repetí la contraseña nueva':'Repeat new password')+'" autocomplete="new-password">'+
+     '<button type="submit">'+(ES?'Guardar':'Save')+'</button>'+(forced?'':'<a href="#" id="pw_cancel" style="font-family:var(--cond);font-size:12.5px;color:var(--ink-soft);text-align:center">'+(ES?'Cancelar':'Cancel')+'</a>')+
+     '<div class="lgerr" id="pw_err"></div></form>';
+   document.body.appendChild(m);
+   var f=m.querySelector('form'),er=m.querySelector('#pw_err'),c=m.querySelector('#pw_cancel');
+   if(c)c.onclick=function(e){e.preventDefault();m.remove();};
+   setTimeout(function(){var x=m.querySelector(forced?'#pw_new':'#pw_old');if(x)x.focus();},50);
+   f.onsubmit=function(e){e.preventDefault();
+     var a=m.querySelector('#pw_new').value,b2=m.querySelector('#pw_new2').value,o=m.querySelector('#pw_old');
+     if(a.length<6){er.textContent=ES?'Mínimo 6 caracteres.':'At least 6 characters.';return;}
+     if(a!==b2){er.textContent=ES?'Las contraseñas no coinciden.':'Passwords do not match.';return;}
+     er.textContent='…';
+     fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(localStorage.getItem('gs-token')||'')},body:JSON.stringify({action:'setpass',old:o?o.value:'',pass:a})})
+       .then(function(r){return r.json();}).then(function(j){
+         if(j&&j.ok){localStorage.removeItem('gs-mustchange');m.remove();mark('☁');try{runSync();}catch(_){}return;}
+         var E={'short-password':['At least 6 characters.','Mínimo 6 caracteres.'],'same-as-username':['Use something other than your username.','Usá algo distinto a tu usuario.'],'bad-old':['Current password is wrong.','La contraseña actual es incorrecta.']};
+         if(j&&j.error==='auth'){localStorage.removeItem('gs-token');localStorage.removeItem('gs-mustchange');location.reload();return;}
+         er.textContent=(j&&E[j.error])?E[j.error][ES?1:0]:(ES?'No se pudo guardar.':'Could not save.');})
+       .catch(function(){er.textContent=ES?'Sin conexión.':'Offline.';});};
+ }
+ window.GSPASS={open:function(){passDialog(false);}};
  if(user){
-   if(localStorage.getItem('gs-token')){runSync();window.addEventListener('focus',queue);}
-   else{ /* signed in on this device before sync existed → ask once for a password so rounds can follow the user */
+   if(localStorage.getItem('gs-token')){
+     if(localStorage.getItem('gs-mustchange'))passDialog(true);
+     runSync();window.addEventListener('focus',queue);}
+   else{ /* signed in on this device before sync existed: sign in with the old password, then force a new one */
      fetch('/api/login').then(function(r){return r.json();}).then(function(j){
-       if(!j||!j.api||!j.db||!ov)return;
-       var ES=(window.__LANG==='es'),h=document.getElementById('lg_hint'),lu=document.getElementById('lg_user');
-       if(h){h.style.display='';h.textContent=ES?'Para ver tus vueltas en cualquier dispositivo, elegí una contraseña (mínimo 6 caracteres). La primera vez, la que escribas queda como tu contraseña.':'To see your rounds on any device, choose a password (6+ characters). The first time, whatever you type becomes your password.';}
-       if(lu){for(var k in CREDS){if(CREDS[k]===user)lu.value=k;}}
-       ov.style.display='flex';
+       if(!j||!j.api||!j.db)return;
+       var un='';for(var k in CREDS){if(CREDS[k]===user)un=k;}
+       var ask=function(){if(!ov)return;var lu=document.getElementById('lg_user');if(lu&&un)lu.value=un;ov.style.display='flex';};
+       if(!un){ask();return;}
+       fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:un,pass:un})})
+         .then(function(r){return r.json();}).then(function(x){
+           if(x&&x.ok&&x.token){localStorage.setItem('gs-token',x.token);if(x.mustChange){localStorage.setItem('gs-mustchange','1');passDialog(true);}runSync();window.addEventListener('focus',queue);}
+           else ask();}).catch(function(){});
      }).catch(function(){});
    }
  } else {
    fetch('/api/login').then(function(r){return r.json();}).then(function(j){
-     if(!j||!j.api||!j.db)return;var h=document.getElementById('lg_hint');
-     if(h){h.style.display='';h.textContent='Guido, Diego, Manuel, Nicolas: the first password you type (6+ characters) becomes yours. · La primera contraseña que escribas (mínimo 6) queda como tuya.';}
+     if(!j||!j.api||!j.db)return;
      var tg=document.getElementById('lg_toggle'),rb=document.getElementById('lg_reg'),bt=document.getElementById('lg_btn');
      if(tg&&rb){tg.style.display='block';tg.onclick=function(e){e.preventDefault();var on=rb.style.display==='none';rb.style.display=on?'flex':'none';if(bt)bt.textContent=on?'Create account · Crear cuenta':'Enter';tg.textContent=on?'I already have an account · Ya tengo cuenta':'Create account · Crear cuenta';document.getElementById('lg_err').textContent='';};}
    }).catch(function(){});
@@ -2907,7 +2941,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    return sec(T('Privacy','Privacidad'),'<label class="frchk"><input type="checkbox" id="frFind"'+(ME.findable?' checked':'')+'> '+T('Let other players find and follow me','Permitir que otros jugadores me encuentren y me sigan')+'</label>'+
      '<p class="frsub" style="margin-top:8px">'+T('Followers see a summary of each round (date, course, score, strokes gained, Tiger 5) — never your shots, notes or lessons.','Tus seguidores ven un resumen de cada vuelta (fecha, cancha, score, strokes gained, Tiger 5) — nunca tus tiros, notas ni aprendizajes.')+'</p>'+
      '<div style="margin-top:6px"><span class="frlbl">'+T('Followers','Seguidores')+' ('+(ME.followers||[]).length+')</span> '+(fl||'<span class="frsub">'+T('none yet','ninguno todavía')+'</span>')+'</div>'+
-     '<p class="frsub" style="margin-top:8px">'+T('Your username: ','Tu usuario: ')+'<b>'+esc(ME.username)+'</b></p>');
+     '<p class="frsub" style="margin-top:8px">'+T('Your username: ','Tu usuario: ')+'<b>'+esc(ME.username)+'</b> · <a href="#" id="frPw" style="color:var(--fairway)">'+T('Change password','Cambiar contraseña')+'</a></p>');
  }
  function profHTML(){
    var b;
@@ -2962,6 +2996,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    if(go)go.onclick=search;if(q)q.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();search();}});
    el.querySelectorAll('[data-unf]').forEach(function(b){b.onclick=function(){act('unfollow',{user:b.getAttribute('data-unf')});};});
    el.querySelectorAll('[data-rmf]').forEach(function(b){b.onclick=function(){act('removeFollower',{user:b.getAttribute('data-rmf')});};});
+   var pw=el.querySelector('#frPw');if(pw)pw.onclick=function(e){e.preventDefault();if(window.GSPASS)window.GSPASS.open();};
    var ff=el.querySelector('#frFind');if(ff)ff.onchange=function(){act('setFindable',{findable:ff.checked});};
    var ps=el.querySelector('#frProfSet');if(ps)ps.onclick=function(){var v=(el.querySelector('#frProf').value||'').trim().toLowerCase();if(v)act('setProfessor',{user:v},T('Request sent.','Solicitud enviada.'));};
    var pc=el.querySelector('#frProfClr');if(pc)pc.onclick=function(){act('setProfessor',{user:''});};

@@ -32,6 +32,7 @@ async function init() {
     const s = db();
     ready = (async () => {
       await s`create table if not exists gs_users (username text primary key, salt text not null, hash text not null, created timestamptz default now())`;
+      await s`alter table gs_users add column if not exists must_change boolean not null default false`;
       await s`create table if not exists gs_rounds (username text not null, id text not null, data jsonb not null, upd bigint not null default 0, deleted boolean not null default false, primary key (username, id))`;
       await s`create table if not exists gs_profiles (username text primary key, display text not null, findable boolean not null default true, professor text, prof_status text)`;
       await s`create table if not exists gs_follows (follower text not null, followee text not null, primary key (follower, followee))`;
