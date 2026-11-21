@@ -306,6 +306,22 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope tr.totalrow .totpen{text-align:center;}
 .lgscope .t5bad{display:inline-block;min-width:16px;padding:2px 5px;margin:1px;border-radius:6px;background:var(--clay);color:#fff;font-family:var(--cond);font-weight:700;font-size:11px;letter-spacing:.02em;}
 .lgscope .t5ok{color:var(--fairway);font-weight:700;}
+.lgscope .ledcount{font-family:var(--cond);text-transform:uppercase;letter-spacing:.06em;font-size:11px;color:var(--ink-soft);margin:0 0 8px;}
+.lgscope .ledrow{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;background:var(--paper);cursor:pointer;transition:border-color .15s,box-shadow .15s;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;}
+.lgscope .ledrow:hover{border-color:var(--fairway);box-shadow:0 2px 10px rgba(0,0,0,.06);}
+.lgscope .ledL{display:flex;flex-direction:column;gap:2px;flex:1;min-width:150px;}
+.lgscope .leddate{font-family:var(--cond);font-size:12px;color:var(--ink-soft);letter-spacing:.04em;}
+.lgscope .ledcourse{font-family:var(--serif);font-size:16px;color:var(--pine);font-weight:600;}
+.lgscope .ledR{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.lgscope .ledsc{font-family:var(--sans);font-weight:700;color:var(--ink);} .lgscope .ledsc small{font-weight:600;color:var(--ink-soft);}
+.lgscope .ledsg{font-family:var(--cond);font-weight:700;font-size:13px;}
+.lgscope .ledsrc{font-family:var(--cond);text-transform:uppercase;letter-spacing:.05em;font-size:9px;font-weight:700;padding:3px 8px;border-radius:999px;}
+.lgscope .ledsrc.lg{background:rgba(31,122,77,.16);color:var(--fairway);} .lgscope .ledsrc.im{background:var(--sand);color:var(--pine);}
+.lgscope .ledgo{font-family:var(--cond);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--fairway);}
+.lgscope .leddet{flex-basis:100%;}
+.lgscope .leddetgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-family:var(--cond);font-size:13px;color:var(--ink);}
+.lgscope .leddetgrid .ldh{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);font-weight:700;margin-bottom:2px;}
+@media(max-width:560px){.lgscope .leddetgrid{grid-template-columns:1fr;}}
 .lgscope .teechips{display:flex;gap:8px;flex-wrap:wrap;}
 .lgscope .teechip{font-family:var(--sans);font-size:14px;font-weight:600;border:2px solid transparent;border-radius:10px;padding:10px 16px;cursor:pointer;opacity:.45;filter:saturate(.7);transition:opacity .15s,transform .15s,box-shadow .15s;}
 .lgscope .teechip.on{opacity:1;filter:none;transform:translateY(-1px);box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--pine),0 3px 10px rgba(0,0,0,.18);}
@@ -476,7 +492,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   </form>
 </div>
 <div class="wrap">
-  <div class="tabnav" id="tabnav"><button data-v="log">Log a round</button><button data-v="stats" class="on">Statistics</button><button data-v="profile">Profile</button><button data-v="ideas">Ideas</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button">Log out</button></div>
+  <div class="tabnav" id="tabnav"><button data-v="log">Log a round</button><button data-v="stats" class="on">Statistics</button><button data-v="ledger">Round ledger</button><button data-v="profile">Profile</button><button data-v="ideas">Ideas</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button">Log out</button></div>
   <div id="view-log" class="lgscope" style="display:none"><div class="wrap">
  <div class="bar"><div><h1 id="lgTitle">Start a round</h1><div class="meta" id="meta" style="display:none"></div></div>
    <div class="tot"><div class="sc" id="totScore">—</div><div class="sg" id="totSG">—</div></div></div>
@@ -513,6 +529,11 @@ table.rt tbody tr:hover{background:var(--line-soft);}
  <div id="lgToast" class="lgtoast" role="status" aria-live="polite"></div>
 </div></div>
   <div id="view-profile" class="lgscope" style="display:none"><div style="max-width:460px;margin:0 auto;padding-top:4px"><h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px">Player profile</h2><div class="pform" id="pform"></div></div></div>
+  <div id="view-ledger" class="lgscope" style="display:none"><div style="max-width:900px;margin:0 auto;padding-top:4px">
+    <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 2px">Round ledger</h2>
+    <p style="font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:0 0 14px">Every round — imported and logged here. Open any one for its scorecard and details.</p>
+    <div id="ledgerList"></div>
+  </div></div>
   <div id="view-ideas" class="lgscope" style="display:none"><div class="ideaswrap">
     <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 2px">Ideas &amp; feature requests</h2>
     <p style="font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:0 0 14px">Got an idea to make this better? Drop it here.</p>
@@ -1570,6 +1591,41 @@ document.getElementById('playertabs').addEventListener('click',e=>{const b=e.tar
 window.addLoggedRound=function(rec){try{const a=load(ckey(),[]);a.push(rec);save(ckey(),a);CUSTOM=a;renderAll();renderTabs();return a.length;}catch(e){return 0;}};
 window.getLoggedRounds=function(){try{return load(ckey(),[]);}catch(e){return [];}};
 window.saveLoggedRounds=function(a){try{save(ckey(),a||[]);CUSTOM=a||[];renderAll();renderTabs();return (a||[]).length;}catch(e){return 0;}};
+/* ===== Round ledger ===== */
+(function(){
+ function esc(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+ function sgn(x){return x==null?'·':((x>=0?'+':'')+(+x).toFixed(2));}
+ function detail(r){return '<div class="leddetgrid">'+
+   '<div><span class="ldh">Strokes gained</span>Off tee '+sgn(r.ott)+' · App '+sgn(r.app)+' · Around '+sgn(r.atg)+' · Putt '+sgn(r.putt)+' · <b>Total '+sgn(r.sgtot)+'</b></div>'+
+   '<div><span class="ldh">Card</span>FW '+(r.fw!=null?r.fw:'·')+' · GIR '+(r.gir!=null?r.gir:'·')+' · Putts '+(r.putts!=null?r.putts:'·')+' · Pen '+(r.pen!=null?r.pen:'·')+' · Drive '+(r.dist!=null?r.dist+'y':'·')+'</div>'+
+   '<div><span class="ldh">Scoring</span>Birdies '+(r.bir!=null?r.bir:'·')+' · Bogeys '+(r.bog!=null?r.bog:'·')+' · Doubles+ '+(r.dbl!=null?r.dbl:'·')+' · Tiger’s 5 '+(r.mtot!=null?r.mtot:'·')+'</div>'+
+   (r.lesson?'<div><span class="ldh">What I learnt</span>'+esc(r.lesson)+'</div>':'')+
+   (r.holes?'':'<div style="color:var(--ink-soft);font-size:12px;grid-column:1/-1">Imported summary — no shot-by-shot detail, so no hole-by-hole scorecard.</div>')+
+   '</div>';}
+ window.LEDGER={render:function(){
+   var el=document.getElementById('ledgerList');if(!el)return;
+   var user=localStorage.getItem('app-user')||'Guido';
+   var all=(PLAYERS[user]||[]).map(function(r){return {r:r,src:'imported'};})
+     .concat((window.getLoggedRounds?window.getLoggedRounds():[]).map(function(r){return {r:r,src:'logged'};}))
+     .filter(function(o){return o.r&&o.r.date;});
+   all.sort(function(a,b){return a.r.date<b.r.date?1:(a.r.date>b.r.date?-1:0);});
+   if(!all.length){el.innerHTML='<div style="font-family:var(--cond);color:var(--ink-soft)">No rounds yet.</div>';return;}
+   el.innerHTML='<div class="ledcount">'+all.length+' rounds</div>'+all.map(function(o,i){var r=o.r,stp=(r.stp>=0?'+':'')+r.stp,sg=r.sgtot,card=(o.src==='logged'&&r.holes);
+     return '<div class="ledrow" data-li="'+i+'">'+
+       '<div class="ledL"><span class="leddate">'+r.date+'</span><span class="ledcourse">'+esc(r.course||'')+'</span></div>'+
+       '<div class="ledR"><span class="ledsc">'+r.score+' <small>('+stp+')</small></span>'+
+       '<span class="ledsg '+((sg!=null&&sg<0)?'sg-neg':'sg-pos')+'">SG '+(sg!=null?fmt(sg):'·')+'</span>'+
+       '<span class="ledsrc '+(o.src==='logged'?'lg':'im')+'">'+o.src+'</span>'+
+       '<span class="ledgo">'+(card?'Scorecard ▶':'Details ▾')+'</span></div>'+
+       '<div class="leddet" id="leddet_'+i+'" style="display:none"></div></div>';
+   }).join('');
+   el.querySelectorAll('.ledrow').forEach(function(row){row.addEventListener('click',function(){
+     var i=+row.getAttribute('data-li'),o=all[i],r=o.r;
+     if(o.src==='logged'&&r.holes){if(window.showView)window.showView('log');if(window.LGR&&window.LGR.openCard)window.LGR.openCard({id:r.id,course:r.courseCode||r.course,tee:r.tee,date:r.date,score:r.score,chcp:r.ph,notes:r.notes,lesson:r.lesson,holes:r.holes});return;}
+     var dd=document.getElementById('leddet_'+i);if(!dd)return;var open=dd.style.display!=='none';if(!open)dd.innerHTML=detail(r);dd.style.display=open?'none':'';
+   });});
+ }};
+})();
 
 /* init — fully self-contained, native canvas charts (no external libraries) */
 renderTabs(); fillForm(); renderNav(); renderHole(); updateLive(); renderAll();
@@ -2321,7 +2377,8 @@ function lgLoad(o){
  lgEntered=true;save();render();renderSel();
 }
 function lgPause(){if(R.phase==='play'){var act=R.holes.slice(R.hStart,R.hEnd),allDone=act.length>0&&act.every(function(x){return x.done;});if(!allDone&&lgEntered){lgEntered=false;render();}}}
-render();renderSel();window.LGR={card:function(){render();renderSel();},profile:renderProf,load:lgLoad,pause:lgPause};
+function lgOpenCard(o){if(!o||!o.holes)return;editRoundId=o.id||null;lgLoad(o);scMode=true;render();renderLogged();}
+render();renderSel();window.LGR={card:function(){render();renderSel();},profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause};
 /* inject a Load/import panel into the Log tab (robust; never throws) */
 try{(function(){
  var parent=document.getElementById('setupPanel')||document.getElementById('view-log');
@@ -2344,15 +2401,17 @@ try{(function(){
 <script>
 /* tabs + login + collapse run in their own script so a logger error can never disable them */
 (function(){
- var views={log:'view-log',stats:'view-stats',profile:'view-profile',ideas:'view-ideas'};
+ var views={log:'view-log',stats:'view-stats',ledger:'view-ledger',profile:'view-profile',ideas:'view-ideas'};
  function show(v){if(v!=='log'&&window.LGR&&window.LGR.pause)window.LGR.pause();
    for(var k in views){document.getElementById(views[k]).style.display=(k===v)?'':'none';}
    var bs=document.querySelectorAll('#tabnav button');for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',bs[i].dataset.v===v);
    if(v==='log'&&window.LGR)window.LGR.card();
    if(v==='profile'&&window.LGR)window.LGR.profile();
    if(v==='ideas'&&window.IDEAS)window.IDEAS.render();
+   if(v==='ledger'&&window.LEDGER)window.LEDGER.render();
    window.scrollTo(0,0);
  }
+ window.showView=show;
  document.getElementById('tabnav').addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.dataset.v)show(b.dataset.v);});
  show('stats');
 })();
