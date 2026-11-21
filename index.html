@@ -2671,6 +2671,40 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
        if(gone.length&&user){var dk='golf-ledger-del-'+user,d=[];try{d=JSON.parse(localStorage.getItem(dk)||'[]')||[];}catch(e){}localStorage.setItem(dk,JSON.stringify(d.concat(gone)));}}catch(e){}
      var n=sv0(a);queue();return n;};
  })();
+ /* ---- moving rounds from the old GitHub Pages address to the synced site ---- */
+ var SYNCED='https://golfstats-three.vercel.app/';
+ (function(){ /* arriving with #gsimport=... : keep the payload until the right user is signed in */
+   var h=location.hash||'';if(h.indexOf('#gsimport=')!==0)return;
+   try{var js=decodeURIComponent(escape(atob(h.slice(10))));JSON.parse(js);localStorage.setItem('gs-import',js);}catch(e){}
+   try{history.replaceState(null,'',location.pathname+location.search);}catch(e){location.hash='';}
+ })();
+ function importPending(){
+   var raw=localStorage.getItem('gs-import');if(!raw||!user)return;
+   var pay;try{pay=JSON.parse(raw);}catch(e){localStorage.removeItem('gs-import');return;}
+   var mine=(pay&&pay.rounds&&pay.rounds[user])||[];
+   var key='golf-ledger-custom-'+user,cur=[];try{cur=JSON.parse(localStorage.getItem(key)||'[]')||[];}catch(e){}
+   var have={};cur.forEach(function(r){rid(r);have[r.id]=1;});
+   var added=0;mine.forEach(function(r){if(!r)return;rid(r);if(!r.upd)r.upd=Date.now();if(!have[r.id]){cur.push(r);have[r.id]=1;added++;}});
+   cur.sort(function(a,b){return (a.date||'')<(b.date||'')?-1:((a.date||'')>(b.date||'')?1:0);});
+   localStorage.setItem(key,JSON.stringify(cur));
+   delete pay.rounds[user];
+   if(Object.keys(pay.rounds).some(function(k){return (pay.rounds[k]||[]).length;}))localStorage.setItem('gs-import',JSON.stringify(pay));else localStorage.removeItem('gs-import');
+   try{if(typeof PLAYER!=='undefined'&&PLAYER===user){CUSTOM=cur;renderAll();renderTabs();}}catch(e){}
+   if(mine.length)setTimeout(function(){var ES=(window.__LANG==='es');alert(ES?(added+' vuelta'+(added===1?'':'s')+' traída'+(added===1?'':'s')+' del sitio anterior'+(added<mine.length?' ('+(mine.length-added)+' ya estaba'+(mine.length-added===1?'':'n')+')':'')+'.'):(added+' round'+(added===1?'':'s')+' brought over from the old site'+(added<mine.length?' ('+(mine.length-added)+' already here)':'')+'.'));},400);
+ }
+ importPending();
+ if(/github\.io$/.test(location.hostname)){ /* old address: offer to move every logged round in this browser */
+   var all={},n=0;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('golf-ledger-custom-')===0){var who=k.slice(19);try{var a=JSON.parse(localStorage.getItem(k)||'[]')||[];if(a.length){all[who]=a;n+=a.length;}}catch(e){}}}
+   var ES0=(window.__LANG==='es'),bar=document.createElement('div');
+   bar.style.cssText='position:sticky;top:0;z-index:9000;background:var(--pine);color:#fff;font-family:var(--cond);font-size:14px;padding:10px 16px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap';
+   bar.innerHTML='<span>'+(ES0?'Round Ledger se mudó a <b>golfstats-three.vercel.app</b> — tus vueltas se sincronizan en todos tus dispositivos.':'Round Ledger moved to <b>golfstats-three.vercel.app</b> — your rounds sync across devices.')+'</span>'+
+     '<button id="gsMove" style="border:none;border-radius:8px;padding:8px 14px;font-family:var(--cond);font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:12px;background:var(--sand);color:var(--pine);cursor:pointer">'+(n?(ES0?'Mover mis '+n+' vueltas →':'Move my '+n+' rounds →'):(ES0?'Ir al sitio nuevo →':'Go to the new site →'))+'</button>';
+   document.body.insertBefore(bar,document.body.firstChild);
+   document.getElementById('gsMove').onclick=function(){
+     if(!n){location.href=SYNCED;return;}
+     var js=JSON.stringify({from:location.host,rounds:all});
+     location.href=SYNCED+'#gsimport='+btoa(unescape(encodeURIComponent(js)));};
+ }
  /* ---- change-password dialog (forced after the first sign-in with the old password, or voluntary) ---- */
  function passDialog(forced){
    var ES=(window.__LANG==='es'),old=document.getElementById('pwModal');if(old)old.remove();
