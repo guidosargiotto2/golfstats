@@ -569,6 +569,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .plNote{font-family:var(--serif);font-style:italic;font-size:14.5px;line-height:1.45;color:var(--pine);background:rgba(216,196,140,.18);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;padding:10px 12px;margin:0 0 14px;}
 .lgscope .plNote span{font-family:var(--cond);font-style:normal;font-size:12px;color:var(--ink-soft);}
 .lgscope .resumecard .cancelbtn{border:none;background:var(--clay);color:#fff;border-radius:11px;padding:11px 18px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;cursor:pointer;}
+.lgscope .plTrial{font-family:var(--cond);font-size:14px;color:var(--pine);background:var(--paper);border:1px dashed var(--sand-deep);border-radius:12px;padding:12px 16px;margin:0 0 14px;}
 </style>
 </head>
 <body>
@@ -728,7 +729,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 
 <section class="blk" id="l-plans"><div class="lw rv">
  <h2 data-l="Pricing|Precios">Pricing</h2>
- <p class="sub" data-l="Priced in golf balls — the one currency every golfer already counts.|Precios en pelotas de golf — la moneda que todo golfista ya cuenta.">Priced in golf balls — the one currency every golfer already counts.</p>
+ <p class="sub" data-l="Priced in golf balls. Everyone starts with a free month — no one can buy before 30 days. Log some rounds, see if it works for you, then decide.|Precios en pelotas de golf. Todos empiezan con un mes gratis — nadie puede comprar antes de los 30 días. Cargá algunas vueltas, mirá si te sirve y después decidí.">Priced in golf balls. Everyone starts with a free month — no one can buy before 30 days. Log some rounds, see if it works for you, then decide.</p>
  <div class="tiers">
   <div class="tier"><div class="tn">Free</div><div class="tp" data-l="Free|Gratis">Free</div><p data-l="Log every shot. Each round on its own: scorecard, strokes gained, Tiger's 5. Everything is kept for later.|Cargá cada tiro. Cada vuelta por separado: scorecard, strokes gained, Tiger 5. Todo queda guardado.">Log every shot. Each round on its own: scorecard, strokes gained, Tiger's 5. Everything is kept for later.</p></div>
   <div class="tier"><div class="tn">Lite</div><div class="tp" data-l="1 ball / month|1 pelota / mes">1 ball / month</div><p data-l="Trends across all your rounds, what drives your score, practice priorities, friends and your professor. If it saves you one ball a month, it's free.|Tendencias de todas tus vueltas, qué define tu score, prioridades de práctica, amigos y tu profesor. Si te ahorra una pelota por mes, te sale gratis.">Trends across all your rounds, what drives your score, practice priorities, friends and your professor. If it saves you one ball a month, it's free.</p></div>
@@ -2956,7 +2957,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
      .catch(function(){if(reg)err.textContent=ES?'Sin conexión.':'Offline.';else legacy();});
  });
  var lo=document.getElementById('logoutBtn');
- if(lo)lo.addEventListener('click',function(){localStorage.removeItem('app-user');localStorage.removeItem('gs-token');localStorage.removeItem('gs-plan');localStorage.removeItem('gs-mustchange');location.reload();});
+ if(lo)lo.addEventListener('click',function(){localStorage.removeItem('app-user');localStorage.removeItem('gs-token');localStorage.removeItem('gs-plan');localStorage.removeItem('gs-upfrom');localStorage.removeItem('gs-mustchange');location.reload();});
 
  /* ---- cloud sync of logged rounds (only where /api exists and a database is connected) ---- */
  var busy=false,again=false,timer=null;
@@ -3357,7 +3358,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    if(ac){ac.innerHTML='<h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:26px 0 14px">'+T('Account','Cuenta')+'</h2>'+msg+planHTML()+profHTML()+privacyHTML()+adminHTML();wire(ac);}
  }
  function load(msg){MSG=msg||'';if(!tok()){draw();return;}
-   Promise.all([api('me'),api('feed')]).then(function(a){if(a[0]&&a[0].ok){ME=a[0];FEED=(a[1]&&a[1].friends)||[];if(ME.plan){localStorage.setItem('gs-plan',ME.plan);}
+   Promise.all([api('me'),api('feed')]).then(function(a){if(a[0]&&a[0].ok){ME=a[0];FEED=(a[1]&&a[1].friends)||[];if(ME.plan){localStorage.setItem('gs-plan',ME.plan);}if(ME.upgradeFrom)localStorage.setItem('gs-upfrom',ME.upgradeFrom);
        if(ME.admin){api('members').then(function(m){MEMBERS=(m&&m.members)||[];draw();}).catch(function(){});}}else{ME=null;MSG=T('Could not load — sign in again.','No se pudo cargar — volvé a entrar.');}draw();}).catch(function(){ME=null;MSG=T('Offline — try again later.','Sin conexión — probá más tarde.');draw();});}
  var ERR={'not-findable':['That player is not findable.','Ese jugador no es encontrable.'],'no-user':['No player with that username.','No hay un jugador con ese usuario.'],'bad-user':['Check the username.','Revisá el usuario.']};
  function act(action,extra,okMsg){api(action,extra).then(function(j){if(j&&j.ok)load(okMsg||'');else{var e=ERR[j&&j.error];MSG=e?T(e[0],e[1]):T('That did not work.','No funcionó.');draw();}}).catch(function(){MSG=T('Offline — try again later.','Sin conexión — probá más tarde.');draw();});}
@@ -3460,8 +3461,8 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  var BALL_USD=59/12;   /* premium tour ball, US list price per ball */
  var PLANS=[
   {k:'free',balls:0,name:'Free',
-   en:['Log every shot of every round, with predictions','Each round on its own: scorecard, strokes gained and Tiger 5 per round','No trends across rounds','Everything you log is kept — upgrade and your Statistics fill in with your whole history','Share image for WhatsApp'],
-   es:['Cargá cada tiro de cada vuelta, con predicciones','Cada vuelta por separado: scorecard, strokes gained y Tiger 5 por vuelta','Sin tendencias entre vueltas','Todo lo que cargás queda guardado — al pasar a Lite tus estadísticas se completan con toda tu historia','Imagen para compartir por WhatsApp']},
+   en:['Your first month is free and mandatory — no one can buy before 30 days','Log every shot of every round, with predictions','Each round on its own: scorecard, strokes gained and Tiger 5 per round','No trends across rounds','Everything you log is kept — upgrade and your Statistics fill in with your whole history','Share image for WhatsApp'],
+   es:['Tu primer mes es gratis y obligatorio — nadie puede comprar antes de los 30 días','Cargá cada tiro de cada vuelta, con predicciones','Cada vuelta por separado: scorecard, strokes gained y Tiger 5 por vuelta','Sin tendencias entre vueltas','Todo lo que cargás queda guardado — al pasar a Lite tus estadísticas se completan con toda tu historia','Imagen para compartir por WhatsApp']},
   {k:'lite',balls:1,name:'Lite',
    en:['Everything in Free','Statistics across all your rounds: trends, control charts, what drives your score, practice priorities','Friends: follow and compare','Link to your professor'],
    es:['Todo lo de Free','Estadísticas de todas tus vueltas: tendencias, gráficos de control, qué define tu score, prioridades de práctica','Amigos: seguir y comparar','Vincular a tu profesor'],
@@ -3479,6 +3480,9 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  function render(reason){
    var el=document.getElementById('plansBody');if(!el)return;var cur=plan();
    var h=reason&&LOCKMSG[reason]?'<div class="plLock">🔒 '+T(LOCKMSG[reason][0],LOCKMSG[reason][1])+' — '+T('one ball a month.','una pelota por mes.')+'</div>':'';
+   var upf=localStorage.getItem('gs-upfrom'),upD=upf?new Date(upf):null,daysLeft=upD?Math.ceil((upD-Date.now())/864e5):null,trial=(cur==='free'&&daysLeft!=null&&daysLeft>0);
+   var fmtD=function(d){try{return d.toLocaleDateString(ES()?'es-AR':'en-GB',{day:'numeric',month:'long'});}catch(e){return d.toISOString().slice(0,10);}};
+   h+='<div class="plTrial">'+(trial?T('Your free month ends on '+fmtD(upD)+' — '+daysLeft+' day'+(daysLeft===1?'':'s')+' left. Log your rounds; upgrades open then.','Tu mes gratis termina el '+fmtD(upD)+' — faltan '+daysLeft+' día'+(daysLeft===1?'':'s')+'. Cargá tus vueltas; ahí se habilita el cambio de plan.'):T('Every account starts with a free month. Upgrades open after 30 days — time to log a few rounds and see if it works for you.','Toda cuenta empieza con un mes gratis. El cambio de plan se habilita a los 30 días — tiempo para cargar algunas vueltas y ver si te sirve.'))+'</div>';
    h+='<p class="plLead">'+T('Priced in golf balls — the one currency every golfer already counts.','Precios en pelotas de golf — la moneda que todo golfista ya cuenta.')+'</p><div class="plGrid">';
    PLANS.forEach(function(p){var me=cur===p.k,usd=p.balls*BALL_USD;
      h+='<div class="plCard pl-'+p.k+(me?' on':'')+'">'+
@@ -3486,7 +3490,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
        '<div class="plBalls">'+(p.balls?('<span class="plIcons">'+(p.balls<=3?Array(p.balls+1).join(ball(26)):ball(26)+'<b>×'+p.balls+'</b>')+'</span><span class="plQty">'+(p.balls===1?T('1 ball','1 pelota'):(p.balls===6?T('half a dozen balls','media docena de pelotas'):(p.balls===12?T('a dozen balls','una docena de pelotas'):p.balls+T(' balls',' pelotas'))))+'<small>'+T(' / month',' / mes')+'</small></span>'):'<span class="plQty">'+T('Free','Gratis')+'</span>')+'</div>'+
        '<div class="plUsd">'+(p.balls?'≈ US$'+usd.toFixed(usd<10?2:0)+T(' a month · annual: 10 months',' por mes · anual: 10 meses'):'&nbsp;')+'</div>'+
        '<ul>'+(ES()?p.es:p.en).map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+(p.note?'<div class="plNote">“'+(ES()?p.note[1]:p.note[0])+'” <span>— Guido</span></div>':'')+
-       (me?'<div class="plCur">'+T('Your plan','Tu plan')+'</div>':(rank(p.k)>rank(cur)&&cur?'<button class="plBtn" disabled>'+T('Payments coming soon','Pagos próximamente')+'</button>':''))+
+       (me?'<div class="plCur">'+T('Your plan','Tu plan')+'</div>':(rank(p.k)>rank(cur)&&cur?'<button class="plBtn" disabled>'+(trial?T('Available from '+fmtD(upD),'Disponible desde el '+fmtD(upD)):T('Payments coming soon','Pagos próximamente'))+'</button>':''))+
      '</div>';});
    h+='</div>';
    el.innerHTML=h;
@@ -3494,7 +3498,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  function refreshPlan(){
    if(!localStorage.getItem('gs-token'))return;
    fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('gs-token')},body:JSON.stringify({action:'me'})})
-     .then(function(r){return r.json();}).then(function(j){if(j&&j.ok&&j.plan){var was=localStorage.getItem('gs-plan');localStorage.setItem('gs-plan',j.plan);paintNav();
+     .then(function(r){return r.json();}).then(function(j){if(j&&j.ok&&j.plan){var was=localStorage.getItem('gs-plan');localStorage.setItem('gs-plan',j.plan);if(j.upgradeFrom)localStorage.setItem('gs-upfrom',j.upgradeFrom);paintNav();var pb=document.getElementById('plansBody');if(pb&&pb.offsetParent)render('');
        if(was!==j.plan){var v=document.querySelector('#tabnav button.on');if(v&&locked(v.dataset.v)&&window.showView)window.showView(v.dataset.v);}}}).catch(function(){});
  }
  function paintNav(){document.querySelectorAll('#tabnav button[data-v]').forEach(function(b){var l=locked(b.dataset.v);b.classList.toggle('pllocked',l);});}

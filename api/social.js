@@ -33,6 +33,11 @@ module.exports = async (req, res) => {
       let profName = null;
       if (p.professor) { const r = await sql`select display from gs_profiles where username = ${p.professor}`; profName = r.length ? r[0].display : p.professor; }
       const out = { username: me, name: p.display, findable: p.findable, professor: p.professor, professorName: profName, profStatus: p.prof_status, following, followers, students, admin: me === L.ADMIN, plan: myPlan };
+      // every account starts with a free month: upgrades open 30 days after the account was created
+      const cu = await sql`select created from gs_users where username = ${me}`;
+      const created = cu.length && cu[0].created ? new Date(cu[0].created) : new Date();
+      out.created = created.toISOString();
+      out.upgradeFrom = new Date(created.getTime() + 30 * 864e5).toISOString();
       if (me === L.ADMIN) { const inv = await sql`select v from gs_settings where k = 'invite'`; out.invite = inv.length ? inv[0].v : ''; }
       return ok(out);
     }
