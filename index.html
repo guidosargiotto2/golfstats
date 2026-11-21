@@ -738,7 +738,7 @@ function computeRound(dr){
    else if(hs-h.par>=2)db++;
    if(nonPutt+pens<=h.par-2)girN++;
    // fairway hit: 2nd shot from fairway on par4/5
-   if((h.par===4||h.par===5)&&shots.length>1&&shots[1].lie==='fw')fwHit++;
+   if((h.par===4||h.par===5)&&shots.length>1&&(shots[1].lie==='fw'||shots[1].lie==='putt'))fwHit++;
    // near-green struggles
    const near150=shots.filter(s=>s.lie==='putt'||s.dist<=150).length+pens;
    if(near150>3)f150++;
@@ -1668,7 +1668,7 @@ function roundRecord(){
    var recv=sr[hi]||0, npar=h.par+recv;
    pen+=pens;par+=h.par;netpar+=npar;strokes+=hp;var over=hp-h.par;
    if(over<=-1)bir++;else if(over===1)bog++;else if(over>=2)dbl++;
-   if(h.par===4||h.par===5){fwAtt++;if(s.length>1&&s[1].lie==='fw')fw++;}
+   if(h.par===4||h.par===5){fwAtt++;if(s.length>1&&(s[1].lie==='fw'||s[1].lie==='putt'))fw++;}
    if((h.par===4||h.par===5)&&s.length>1&&s[1].lie!=='putt')drives.push(h.yd-s[1].dist);
    if(hasPutt&&(np+pens)<=h.par-2)gir++;
    if(hasPutt&&(np+pens)<=(h.par-2+recv))girNet++;
