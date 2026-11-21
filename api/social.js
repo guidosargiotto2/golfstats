@@ -22,15 +22,17 @@ module.exports = async (req, res) => {
     const bad = (code, err) => res.status(code).json({ error: err });
 
     await sql`insert into gs_profiles (username, display) values (${me}, ${L.LEGACY[me] || me}) on conflict (username) do nothing`;
+    const myPlan = L.planOf(me, ((await sql`select plan from gs_profiles where username = ${me}`)[0] || {}).plan);
+    const needLite = () => L.rank(myPlan) < 1;   // friends, professor link and Statistics are Lite and up
 
     if (action === 'me') {
-      const p = (await sql`select username, display, findable, professor, prof_status from gs_profiles where username = ${me}`)[0];
+      const p = (await sql`select username, display, findable, professor, prof_status, plan from gs_profiles where username = ${me}`)[0];
       const following = await sql`select p.username, p.display from gs_follows f join gs_profiles p on p.username = f.followee where f.follower = ${me}`;
       const followers = await sql`select p.username, p.display from gs_follows f join gs_profiles p on p.username = f.follower where f.followee = ${me}`;
       const students = await sql`select username, display, prof_status from gs_profiles where professor = ${me}`;
       let profName = null;
       if (p.professor) { const r = await sql`select display from gs_profiles where username = ${p.professor}`; profName = r.length ? r[0].display : p.professor; }
-      const out = { username: me, name: p.display, findable: p.findable, professor: p.professor, professorName: profName, profStatus: p.prof_status, following, followers, students, admin: me === L.ADMIN };
+      const out = { username: me, name: p.display, findable: p.findable, professor: p.professor, professorName: profName, profStatus: p.prof_status, following, followers, students, admin: me === L.ADMIN, plan: myPlan };
       if (me === L.ADMIN) { const inv = await sql`select v from gs_settings where k = 'invite'`; out.invite = inv.length ? inv[0].v : ''; }
       return ok(out);
     }
@@ -49,6 +51,7 @@ module.exports = async (req, res) => {
     }
 
     if (action === 'follow') {
+      if (needLite()) return bad(402, 'plan');
       if (!L.validUser(target) || target === me) return bad(400, 'bad-user');
       const t = await sql`select findable from gs_profiles where username = ${target}`;
       if (!t.length || !t[0].findable) return bad(404, 'not-findable');
@@ -65,6 +68,7 @@ module.exports = async (req, res) => {
     }
 
     if (action === 'feed') {
+      if (needLite()) return ok({ friends: [] });
       // per-round summaries of everyone I follow (logged rounds that reached the server)
       const rows = await sql`select r.username, p.display, r.data from gs_rounds r join gs_follows f on f.followee = r.username and f.follower = ${me} join gs_profiles p on p.username = r.username where r.deleted = false`;
       const by = {};
@@ -75,6 +79,7 @@ module.exports = async (req, res) => {
     }
 
     if (action === 'setProfessor') {
+      if (target && needLite()) return bad(402, 'plan');
       if (!target) { await sql`update gs_profiles set professor = null, prof_status = null where username = ${me}`; return ok(); }
       if (!L.validUser(target) || target === me) return bad(400, 'bad-user');
       const t = await sql`select 1 as x from gs_profiles where username = ${target}`;
@@ -96,6 +101,19 @@ module.exports = async (req, res) => {
       if (!s.length) return bad(403, 'not-your-student');
       const rows = await sql`select data from gs_rounds where username = ${target} and deleted = false`;
       return ok({ username: target, name: s[0].display, rounds: rows.map(r => r.data).sort(byDateDesc).slice(0, 200) });
+    }
+
+    if (action === 'members') {
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      const rows = await sql`select username, display, plan from gs_profiles order by display`;
+      return ok({ members: rows.map(r => ({ username: r.username, display: r.display, plan: L.planOf(r.username, r.plan) })) });
+    }
+    if (action === 'setPlan') {
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      const plan = String(b.plan || '');
+      if (!['free', 'lite', 'pro'].includes(plan) || !L.validUser(target)) return bad(400, 'bad-plan');
+      await sql`update gs_profiles set plan = ${plan} where username = ${target}`;
+      return ok();
     }
 
     if (action === 'setInvite') {

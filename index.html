@@ -538,6 +538,34 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .scLegT{font-weight:700;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--pine);min-width:58px;}
 .lgscope .scKey{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:2px 10px 2px 3px;background:var(--paper);}
 .lgscope .scKey b{display:inline-block;min-width:22px;text-align:center;border-radius:999px;padding:1px 6px;background:rgba(194,80,46,.10);color:var(--clay);font-size:11px;letter-spacing:.04em;}
+
+/* plans */
+.lgscope .plLead{font-family:var(--cond);font-size:14px;color:var(--ink-soft);margin:0 0 16px;}
+.lgscope .plLock{font-family:var(--cond);font-weight:700;font-size:14px;color:var(--pine);background:rgba(216,196,140,.22);border:1px solid var(--sand);border-radius:12px;padding:12px 16px;margin:0 0 14px;}
+.lgscope .plGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;align-items:stretch;}
+.lgscope .plCard{position:relative;border:1px solid var(--line);border-radius:16px;background:var(--paper);padding:20px 20px 18px;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s;}
+.lgscope .plCard:hover{transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(15,58,44,.45);}
+.lgscope .plCard.on{border-color:var(--fairway);box-shadow:0 0 0 2px rgba(31,122,77,.18);}
+.lgscope .plCard.pl-pro{background:linear-gradient(170deg,var(--pine),#174c3a);color:#fff;border-color:var(--pine);}
+.lgscope .plCard.pl-pro .plName,.lgscope .plCard.pl-pro .plQty{color:#fff;}
+.lgscope .plCard.pl-pro .plUsd,.lgscope .plCard.pl-pro li{color:rgba(255,255,255,.82);}
+.lgscope .plCard.pl-pro .plIcons{color:var(--sand);}
+.lgscope .plTag{position:absolute;top:-10px;right:16px;background:var(--sand);color:var(--pine);font-family:var(--cond);font-weight:700;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:999px;}
+.lgscope .plName{font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--sand-deep);}
+.lgscope .plBalls{display:flex;align-items:center;gap:10px;margin:10px 0 2px;min-height:34px;}
+.lgscope .plIcons{display:inline-flex;align-items:center;gap:3px;color:var(--pine);}
+.lgscope .plIcons b{font-family:var(--serif);font-size:20px;margin-left:2px;}
+.lgscope .plQty{font-family:var(--serif);font-weight:700;font-size:24px;color:var(--pine);}
+.lgscope .plQty small{font-family:var(--cond);font-weight:500;font-size:13px;color:inherit;opacity:.7;}
+.lgscope .plUsd{font-family:var(--cond);font-size:12.5px;color:var(--ink-soft);margin-bottom:12px;}
+.lgscope .plCard ul{list-style:none;padding:0;margin:0 0 14px;flex:1;}
+.lgscope .plCard li{font-family:var(--cond);font-size:13.5px;line-height:1.45;color:var(--ink);padding:5px 0 5px 20px;position:relative;}
+.lgscope .plCard li::before{content:'';position:absolute;left:2px;top:11px;width:8px;height:8px;border-radius:50%;background:var(--sand);}
+.lgscope .plCur{font-family:var(--cond);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--fairway);}
+.lgscope .plCard.pl-pro .plCur{color:var(--sand);}
+.lgscope .plBtn{border:none;border-radius:10px;padding:10px 14px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;background:var(--cream);color:var(--ink-soft);cursor:not-allowed;}
+.lgscope .plFoot{font-family:var(--cond);font-size:12px;color:var(--ink-soft);margin:14px 0 0;}
+.tabnav button.pllocked::after{content:' 🔒';font-size:10px;}
 </style>
 </head>
 <body>
@@ -565,7 +593,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   </form>
 </div>
 <div class="wrap">
-  <div class="tabnav" id="tabnav"><button data-v="log" data-i18n="Log a round">Log a round</button><button data-v="stats" data-i18n="Statistics">Statistics</button><button data-v="ledger" data-i18n="Round ledger">Round ledger</button><button data-v="friends" data-i18n="Friends">Friends</button><button data-v="profile" data-i18n="Profile">Profile</button><button data-v="ideas" data-i18n="Ideas">Ideas</button><button class="tourbtn" id="tourBtn" type="button" title="How to log a hole">?</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button" data-i18n="Log out">Log out</button></div>
+  <div class="tabnav" id="tabnav"><button data-v="log" data-i18n="Log a round">Log a round</button><button data-v="stats" data-i18n="Statistics">Statistics</button><button data-v="ledger" data-i18n="Round ledger">Round ledger</button><button data-v="friends" data-i18n="Friends">Friends</button><button data-v="plans" data-i18n="Pricing">Pricing</button><button data-v="profile" data-i18n="Profile">Profile</button><button data-v="ideas" data-i18n="Ideas">Ideas</button><button class="tourbtn" id="tourBtn" type="button" title="How to log a hole">?</button><span class="whoami" id="whoami"></span><button class="logoutbtn" id="logoutBtn" type="button" data-i18n="Log out">Log out</button></div>
   <div id="view-log" class="lgscope" style="display:none"><div class="wrap">
  <div class="bar"><div><h1 id="lgTitle">Start a round</h1><div class="meta" id="meta" style="display:none"></div></div>
    <div class="tot" id="totBox"><div class="sc" id="totScore">—</div><div class="sg" id="totSG">—</div></div></div>
@@ -612,6 +640,10 @@ table.rt tbody tr:hover{background:var(--line-soft);}
   <div id="view-friends" class="lgscope" style="display:none"><div style="max-width:900px;margin:0 auto;padding-top:4px">
     <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px" data-i18n="Friends">Friends</h2>
     <div id="friendsBody"></div>
+  </div></div>
+  <div id="view-plans" class="lgscope" style="display:none"><div style="max-width:980px;margin:0 auto;padding-top:4px">
+    <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 6px" data-i18n="Pricing">Pricing</h2>
+    <div id="plansBody"></div>
   </div></div>
   <div id="view-ideas" class="lgscope" style="display:none"><div class="ideaswrap">
     <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 2px" data-i18n="Ideas & feature requests">Ideas &amp; feature requests</h2>
@@ -1851,7 +1883,7 @@ function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage
 let PROF=loadProf();
 function saveProf(){localStorage.setItem(PROFK,JSON.stringify(PROF));}
 /* ===== i18n (Stage 1: on-course flow) ===== */
-var I18N_ES={"Approach":"Approach","Around grn":"Juego corto","Copy for sheet":"Copiar para planilla","pen":"pen","Friends":"Amigos","Share":"Compartir","NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
+var I18N_ES={"Plans":"Planes","Pricing":"Precios","Approach":"Approach","Around grn":"Juego corto","Copy for sheet":"Copiar para planilla","pen":"pen","Friends":"Amigos","Share":"Compartir","NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
  "Log a round":"Cargar vuelta","Statistics":"Estadísticas","Round ledger":"Mis vueltas","Profile":"Perfil","Ideas":"Ideas","Log out":"Salir",
  "Course":"Cancha","Tee":"Tee","Holes":"Hoyos","Score":"Score","Playing HCP":"HCP de juego","Date":"Fecha",
  "18 holes":"18 hoyos","Front 9 (1–9)":"Primeros 9 (1–9)","Back 9 (10–18)":"Segundos 9 (10–18)",
@@ -2618,7 +2650,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
 <script>
 /* tabs + login + collapse run in their own script so a logger error can never disable them */
 (function(){
- var views={log:'view-log',stats:'view-stats',ledger:'view-ledger',friends:'view-friends',profile:'view-profile',ideas:'view-ideas'};
+ var views={log:'view-log',stats:'view-stats',ledger:'view-ledger',friends:'view-friends',profile:'view-profile',ideas:'view-ideas',plans:'view-plans'};
  function show(v){if(v!=='log'&&window.LGR&&window.LGR.pause)window.LGR.pause();
    for(var k in views){document.getElementById(views[k]).style.display=(k===v)?'':'none';}
    var bs=document.querySelectorAll('#tabnav button');for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',bs[i].dataset.v===v);
@@ -2671,7 +2703,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
      .catch(function(){if(reg)err.textContent=ES?'Sin conexión.':'Offline.';else legacy();});
  });
  var lo=document.getElementById('logoutBtn');
- if(lo)lo.addEventListener('click',function(){localStorage.removeItem('app-user');localStorage.removeItem('gs-token');location.reload();});
+ if(lo)lo.addEventListener('click',function(){localStorage.removeItem('app-user');localStorage.removeItem('gs-token');localStorage.removeItem('gs-plan');localStorage.removeItem('gs-mustchange');location.reload();});
 
  /* ---- cloud sync of logged rounds (only where /api exists and a database is connected) ---- */
  var busy=false,again=false,timer=null;
@@ -3027,9 +3059,16 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
      return '<div class="frline"><span><b>'+esc(s.display)+'</b> · '+T('wants you as professor','te pide como profesor')+'</span><span><button class="pf_btn" data-stok="'+esc(s.username)+'">'+T('Accept','Aceptar')+'</button> <button class="pf_btn frgrey" data-stno="'+esc(s.username)+'">'+T('Decline','Rechazar')+'</button></span></div>';}).join('');
    return sec(T('My students','Mis alumnos'),h+'<div id="frStu"></div>');
  }
+ function planHTML(){
+   var p=ME.plan||'free',N={free:'Free',lite:'Lite',pro:'Pro'},B={free:T('free','gratis'),lite:T('1 Pro V1 a month','1 Pro V1 por mes'),pro:T('half a dozen Pro V1 a month','media docena de Pro V1 por mes')};
+   return sec(T('Your plan','Tu plan'),'<div class="frline"><span><b>'+N[p]+'</b> · '+B[p]+'</span><button class="pf_btn" id="frPlans">'+T('See plans','Ver planes')+'</button></div>');
+ }
+ function membersHTML(list){var N=['free','lite','pro'];
+   return list.map(function(m){return '<div class="frline"><span><b>'+esc(m.display)+'</b> <small>@'+esc(m.username)+'</small></span><select data-plan="'+esc(m.username)+'"'+(m.username===ME.username?' disabled':'')+'>'+N.map(function(n){return '<option value="'+n+'"'+(m.plan===n?' selected':'')+'>'+n[0].toUpperCase()+n.slice(1)+'</option>';}).join('')+'</select></div>';}).join('');
+ }
  function adminHTML(){
    if(!ME.admin)return '';
-   return sec(T('Invite code','Código de invitación'),'<div class="frline"><input id="frInv" value="'+esc(ME.invite||'')+'" placeholder="'+T('e.g. CGC2026','ej. CGC2026')+'"><button class="pf_btn" id="frInvSet">'+T('Save','Guardar')+'</button></div>',
+   return sec(T('Members & plans','Miembros y planes'),'<div id="frMembers"><button class="pf_btn" id="frMemLoad">'+T('Show members','Ver miembros')+'</button></div>',T('Set each player\'s plan by hand until payments are connected.','Asigná el plan de cada jugador a mano hasta conectar los pagos.'))+sec(T('Invite code','Código de invitación'),'<div class="frline"><input id="frInv" value="'+esc(ME.invite||'')+'" placeholder="'+T('e.g. CGC2026','ej. CGC2026')+'"><button class="pf_btn" id="frInvSet">'+T('Save','Guardar')+'</button></div>',
      T('New players need this code to create an account. Leave it empty to close sign-ups.','Los jugadores nuevos necesitan este código para crear su cuenta. Dejalo vacío para cerrar los registros.'));
  }
  function holesToHl(r){if(r.hl)return r.hl;if(!r.holes)return null;var LC={tee:'t',fw:'f',rough:'r',sand:'s',rec:'x',putt:'p'};
@@ -3054,10 +3093,10 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    if(!ME){if(el)el.innerHTML='<p class="frsub">'+(MSG||'…')+'</p>';if(ac)ac.innerHTML=MSG?'<p class="frsub">'+esc(MSG)+'</p>':'';return;}
    if(el){el.innerHTML=msg+compareHTML()+feedHTML()+studentsHTML()+findHTML();
      var st=document.getElementById('frStu');if(st)st.innerHTML=studentHTML();wire(el);}
-   if(ac){ac.innerHTML='<h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:26px 0 14px">'+T('Account','Cuenta')+'</h2>'+msg+profHTML()+privacyHTML()+adminHTML();wire(ac);}
+   if(ac){ac.innerHTML='<h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:26px 0 14px">'+T('Account','Cuenta')+'</h2>'+msg+planHTML()+profHTML()+privacyHTML()+adminHTML();wire(ac);}
  }
  function load(msg){MSG=msg||'';if(!tok()){draw();return;}
-   Promise.all([api('me'),api('feed')]).then(function(a){if(a[0]&&a[0].ok){ME=a[0];FEED=(a[1]&&a[1].friends)||[];}else{ME=null;MSG=T('Could not load — sign in again.','No se pudo cargar — volvé a entrar.');}draw();}).catch(function(){ME=null;MSG=T('Offline — try again later.','Sin conexión — probá más tarde.');draw();});}
+   Promise.all([api('me'),api('feed')]).then(function(a){if(a[0]&&a[0].ok){ME=a[0];FEED=(a[1]&&a[1].friends)||[];if(ME.plan){localStorage.setItem('gs-plan',ME.plan);}}else{ME=null;MSG=T('Could not load — sign in again.','No se pudo cargar — volvé a entrar.');}draw();}).catch(function(){ME=null;MSG=T('Offline — try again later.','Sin conexión — probá más tarde.');draw();});}
  var ERR={'not-findable':['That player is not findable.','Ese jugador no es encontrable.'],'no-user':['No player with that username.','No hay un jugador con ese usuario.'],'bad-user':['Check the username.','Revisá el usuario.']};
  function act(action,extra,okMsg){api(action,extra).then(function(j){if(j&&j.ok)load(okMsg||'');else{var e=ERR[j&&j.error];MSG=e?T(e[0],e[1]):T('That did not work.','No funcionó.');draw();}}).catch(function(){MSG=T('Offline — try again later.','Sin conexión — probá más tarde.');draw();});}
  function wire(el){
@@ -3068,6 +3107,9 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    if(go)go.onclick=search;if(q)q.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();search();}});
    el.querySelectorAll('[data-unf]').forEach(function(b){b.onclick=function(){act('unfollow',{user:b.getAttribute('data-unf')});};});
    el.querySelectorAll('[data-rmf]').forEach(function(b){b.onclick=function(){act('removeFollower',{user:b.getAttribute('data-rmf')});};});
+   var fp=el.querySelector('#frPlans');if(fp)fp.onclick=function(){if(window.PLANS)window.PLANS.open();};
+   var ml=el.querySelector('#frMemLoad');if(ml)ml.onclick=function(){api('members').then(function(j){var box=el.querySelector('#frMembers');if(!box)return;if(!j||!j.ok){box.innerHTML='<p class="frsub">'+T('Could not load.','No se pudo cargar.')+'</p>';return;}
+     box.innerHTML=membersHTML(j.members||[]);box.querySelectorAll('select[data-plan]').forEach(function(sel){sel.onchange=function(){api('setPlan',{user:sel.getAttribute('data-plan'),plan:sel.value}).then(function(r){MSG=(r&&r.ok)?T('Plan updated.','Plan actualizado.'):T('That did not work.','No funcionó.');var m=el.querySelector('.frmsgx');sel.style.outline=(r&&r.ok)?'2px solid var(--fairway)':'2px solid var(--clay)';});};});});};
    var pw=el.querySelector('#frPw');if(pw)pw.onclick=function(e){e.preventDefault();if(window.GSPASS)window.GSPASS.open();};
    var ff=el.querySelector('#frFind');if(ff)ff.onchange=function(){act('setFindable',{findable:ff.checked});};
    var ps=el.querySelector('#frProfSet');if(ps)ps.onclick=function(){var v=(el.querySelector('#frProf').value||'').trim().toLowerCase();if(v)act('setProfessor',{user:v},T('Request sent.','Solicitud enviada.'));};
@@ -3146,6 +3188,62 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  window.trProfile=tr;
  function hook(){var el=document.getElementById('pform');if(!el)return;tr(el);try{new MutationObserver(function(){tr(el);}).observe(el,{childList:true,subtree:true});}catch(e){}}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hook);else hook();
+})();
+</script>
+<script>
+
+/* ===== Plans: Free / Lite / Pro, priced in Pro V1 balls (no payments yet) ===== */
+(function(){
+ var ES=function(){return window.__LANG==='es';},T=function(en,es){return ES()?es:en;};
+ var BALL_USD=59/12;   /* Titleist Pro V1 US list price, per ball */
+ var PLANS=[
+  {k:'free',balls:0,name:'Free',
+   en:['Shot-by-shot logging with predictions','Round Ledger and every scorecard (SG + Tiger 5 per round)','Share image for WhatsApp'],
+   es:['Carga tiro a tiro con predicciones','Mis vueltas y cada scorecard (SG + Tiger 5 por vuelta)','Imagen para compartir por WhatsApp']},
+  {k:'lite',balls:1,name:'Lite',
+   en:['Everything in Free','Statistics: trends, control charts, what drives your score, practice priorities','Friends: follow and compare','Link to your professor'],
+   es:['Todo lo de Free','Estadísticas: tendencias, gráficos de control, qué define tu score, prioridades de práctica','Amigos: seguir y comparar','Vincular a tu profesor']},
+  {k:'pro',balls:6,name:'Pro',
+   en:['Everything in Lite','A monthly 30-minute call with Guido, prepared from your numbers','Limited places'],
+   es:['Todo lo de Lite','Una llamada mensual de 30 minutos con Guido, preparada con tus números','Lugares limitados']}
+ ];
+ var rank=function(p){return ({free:0,lite:1,pro:2})[p]||0;};
+ function plan(){return localStorage.getItem('gs-token')?(localStorage.getItem('gs-plan')||''):'';}   /* '' = unknown → never lock */
+ function locked(view){var p=plan();if(!p)return false;return (view==='stats'||view==='friends')&&rank(p)<1;}
+ var ball=function(sz){return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.3"/>'+
+   [[8,8],[12,6.5],[16,8],[7,12],[12,11],[17,12],[8.5,16],[12,15.5],[15.5,16]].map(function(d){return '<circle cx="'+d[0]+'" cy="'+d[1]+'" r="1" fill="currentColor" opacity=".35"/>';}).join('')+'</svg>';};
+ var LOCKMSG={stats:['Statistics are part of Lite','Las estadísticas son parte de Lite'],friends:['Friends are part of Lite','Amigos es parte de Lite']};
+ function render(reason){
+   var el=document.getElementById('plansBody');if(!el)return;var cur=plan();
+   var h=reason&&LOCKMSG[reason]?'<div class="plLock">🔒 '+T(LOCKMSG[reason][0],LOCKMSG[reason][1])+' — '+T('one Pro V1 a month.','una Pro V1 por mes.')+'</div>':'';
+   h+='<p class="plLead">'+T('Priced in Pro V1 balls, like buying someone a coffee — but in golf balls.','Precios en pelotas Pro V1, como invitar un cafecito — pero en pelotas de golf.')+'</p><div class="plGrid">';
+   PLANS.forEach(function(p){var me=cur===p.k,usd=p.balls*BALL_USD;
+     h+='<div class="plCard pl-'+p.k+(me?' on':'')+'">'+(p.k==='pro'?'<div class="plTag">'+T('With Guido','Con Guido')+'</div>':'')+
+       '<div class="plName">'+p.name+'</div>'+
+       '<div class="plBalls">'+(p.balls?('<span class="plIcons">'+(p.balls<=3?Array(p.balls+1).join(ball(26)):ball(26)+'<b>×'+p.balls+'</b>')+'</span><span class="plQty">'+(p.balls===1?T('1 Pro V1','1 Pro V1'):(p.balls===6?T('half a dozen Pro V1','media docena de Pro V1'):(p.balls===12?T('a dozen Pro V1','una docena de Pro V1'):p.balls+' Pro V1')))+'<small>'+T(' / month',' / mes')+'</small></span>'):'<span class="plQty">'+T('Free','Gratis')+'</span>')+'</div>'+
+       '<div class="plUsd">'+(p.balls?'≈ US$'+usd.toFixed(usd<10?2:0)+T(' a month · annual: 10 months',' por mes · anual: 10 meses'):'&nbsp;')+'</div>'+
+       '<ul>'+(ES()?p.es:p.en).map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+
+       (me?'<div class="plCur">'+T('Your plan','Tu plan')+'</div>':(rank(p.k)>rank(cur)&&cur?'<button class="plBtn" disabled>'+T('Payments coming soon','Pagos próximamente')+'</button>':''))+
+     '</div>';});
+   h+='</div><p class="plFoot">'+T('One Pro V1 ≈ US$4.92 (Titleist list price, US$59 a dozen). Founders keep Pro.','Una Pro V1 ≈ US$4,92 (precio de lista de Titleist, US$59 la docena). Los fundadores mantienen Pro.')+'</p>';
+   el.innerHTML=h;
+ }
+ function refreshPlan(){
+   if(!localStorage.getItem('gs-token'))return;
+   fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('gs-token')},body:JSON.stringify({action:'me'})})
+     .then(function(r){return r.json();}).then(function(j){if(j&&j.ok&&j.plan){var was=localStorage.getItem('gs-plan');localStorage.setItem('gs-plan',j.plan);paintNav();
+       if(was!==j.plan){var v=document.querySelector('#tabnav button.on');if(v&&locked(v.dataset.v)&&window.showView)window.showView(v.dataset.v);}}}).catch(function(){});
+ }
+ function paintNav(){document.querySelectorAll('#tabnav button[data-v]').forEach(function(b){var l=locked(b.dataset.v);b.classList.toggle('pllocked',l);});}
+ /* gate the views: a locked tab opens the Plans page instead */
+ var orig=window.showView;
+ if(orig){window.showView=function(v){
+   if(locked(v)){orig('plans');render(v);var bs=document.querySelectorAll('#tabnav button');for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',bs[i].dataset.v===v);return;}
+   orig(v);if(v==='plans')render('');};
+   var nav=document.getElementById('tabnav');
+   if(nav)nav.addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.dataset.v&&locked(b.dataset.v)){e.stopImmediatePropagation();window.showView(b.dataset.v);}},true);}
+ window.PLANS={render:render,refresh:refreshPlan,plan:plan,open:function(){if(window.showView)window.showView('plans');}};
+ paintNav();refreshPlan();
 })();
 </script>
 </body>

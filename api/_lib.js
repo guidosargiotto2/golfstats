@@ -35,6 +35,7 @@ async function init() {
       await s`alter table gs_users add column if not exists must_change boolean not null default false`;
       await s`create table if not exists gs_rounds (username text not null, id text not null, data jsonb not null, upd bigint not null default 0, deleted boolean not null default false, primary key (username, id))`;
       await s`create table if not exists gs_profiles (username text primary key, display text not null, findable boolean not null default true, professor text, prof_status text)`;
+      await s`alter table gs_profiles add column if not exists plan text`;
       await s`create table if not exists gs_follows (follower text not null, followee text not null, primary key (follower, followee))`;
       await s`create table if not exists gs_settings (k text primary key, v text)`;
     })().catch(e => { ready = null; throw e; });
@@ -42,6 +43,9 @@ async function init() {
   return ready;
 }
 
+// Plans: free | lite | pro. The four founders default to pro; everyone else to free until a plan is set.
+const planOf = (user, plan) => user === ADMIN ? 'pro' : (plan === 'free' || plan === 'lite' || plan === 'pro') ? plan : (LEGACY[user] ? 'pro' : 'free');
+const rank = p => ({ free: 0, lite: 1, pro: 2 })[p] || 0;
 const validUser = u => /^[a-z0-9_.]{3,20}$/.test(u);
 
 // Token = base64url("user.expiry.hmac"); the signing key is derived from the database URL, so no extra secret to configure.
@@ -75,4 +79,4 @@ function fail(res, e) {
   return res.status(500).json({ error: 'server' });
 }
 
-module.exports = { dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };
+module.exports = { planOf, rank, dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };
