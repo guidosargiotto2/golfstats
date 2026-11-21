@@ -2021,7 +2021,7 @@ function renderHoleActs(hi){
  var predOn=PROF.predict;
  el.innerHTML=(h.done?'':(predOn?'<span class="predhint">Amber row = predicted next shot. Press <b>Enter</b> to accept it, or type the real lie &amp; distance.</span>':'<span class="predhint">Enter each shot: type the distance under the lie it was played from.</span>'))+
    '<div class="actbtns">'+(h.done?'<button class="ghost" id="btnAdd">+ Add a shot</button>':'<button class="finish" id="btnHoled">Next hole →</button><button class="ghost" id="btnAdd">+ Add a shot</button>')+'</div>'+
-   '<div class="inshint">Tap <b>+</b> on any row to add a shot below it. Keyboard: <b>Tab</b> on the tee = cycle tee · <b>Tab</b> in a row = next category · <b>Enter</b> = next shot · <b>Esc</b> = holed it (finish hole) · <b>Del</b> = remove shot.</div>';
+   '<div class="inshint">Tap <b>+</b> on any row to add a shot below it. Keyboard: <b>Tab</b> on the tee = cycle tee · <b>Tab</b> in a row = next category · <b>Enter</b> = next shot · <b>Esc</b> = holed it (finish hole) · <b>Del</b> or <b>Backspace</b> on an empty cell = remove shot.</div>';
 }
 function renderHoleNav(hi){
  var act=R.holes.slice(R.hStart,R.hEnd),done=act.filter(function(h){return h.done;}).length,count=R.hEnd-R.hStart,allDone=done===count;
@@ -2069,6 +2069,7 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input
    if(e.key==='Delete'){var trr=el.closest('tr');
      if(trr.classList.contains('entry')){e.preventDefault();finishHole(false);return;}
      if(el.dataset.s!=null&&(el.dataset.stage!=='editing'||(el.value||'')==='')){var hh=+el.dataset.h,ss=+el.dataset.s;if(ss>0){e.preventDefault();R.holes[hh].shots.splice(ss,1);render();focusEntry();return;}}}
+   if(e.key==='Backspace'&&(el.value||'')===''&&el.dataset.s!=null){var hb=+el.dataset.h,sb=+el.dataset.s;if(sb>0){e.preventDefault();R.holes[hb].shots.splice(sb,1);render();focusEntry();return;}}
    if(e.key==='Tab'&&el.dataset.ydtee!=null){e.preventDefault();
      var thi=+el.dataset.ydtee,hole=R.holes[thi],tks=Object.keys(COURSES[R.course].tees);
      if(tks.length>1){var cur=hole.teeOv||R.tee,idx=tks.indexOf(cur);idx=e.shiftKey?(idx<=0?tks.length-1:idx-1):(idx+1)%tks.length;
