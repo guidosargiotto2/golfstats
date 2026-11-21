@@ -2195,7 +2195,8 @@ function lgLoad(o){
    holes:o.holes.map(function(h,i){return {par:h.par,yd:h.yd||((h.shots&&h.shots[0])?h.shots[0].dist:0),hcp:(c.hcp?c.hcp[i]:0),done:true,shots:(h.shots||[]).map(function(s){return {lie:s.lie,dist:s.dist,pen:s.pen||0,conf:true};})};})};
  lgEntered=true;save();render();renderSel();
 }
-render();renderSel();window.LGR={card:function(){render();renderSel();},profile:renderProf,load:lgLoad};
+function lgPause(){if(R.phase==='play'){var act=R.holes.slice(R.hStart,R.hEnd),allDone=act.length>0&&act.every(function(x){return x.done;});if(!allDone&&lgEntered){lgEntered=false;render();}}}
+render();renderSel();window.LGR={card:function(){render();renderSel();},profile:renderProf,load:lgLoad,pause:lgPause};
 /* inject a Load/import panel into the Log tab (robust; never throws) */
 try{(function(){
  var parent=document.getElementById('setupPanel')||document.getElementById('view-log');
@@ -2219,7 +2220,8 @@ try{(function(){
 /* tabs + login + collapse run in their own script so a logger error can never disable them */
 (function(){
  var views={log:'view-log',stats:'view-stats',profile:'view-profile',ideas:'view-ideas'};
- function show(v){for(var k in views){document.getElementById(views[k]).style.display=(k===v)?'':'none';}
+ function show(v){if(v!=='log'&&window.LGR&&window.LGR.pause)window.LGR.pause();
+   for(var k in views){document.getElementById(views[k]).style.display=(k===v)?'':'none';}
    var bs=document.querySelectorAll('#tabnav button');for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',bs[i].dataset.v===v);
    if(v==='log'&&window.LGR)window.LGR.card();
    if(v==='profile'&&window.LGR)window.LGR.profile();
