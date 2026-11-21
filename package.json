@@ -1,0 +1,9 @@
+{
+  "name": "golfstats",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Round Ledger — static app plus two small sync functions",
+  "dependencies": {
+    "@neondatabase/serverless": "^1.2.1"
+  }
+}

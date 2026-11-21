@@ -502,6 +502,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
     <input id="lg_pass" name="password" type="password" placeholder="Password" autocomplete="current-password">
     <button type="submit">Enter</button>
     <div class="lgerr" id="lg_err"></div>
+    <div id="lg_hint" style="display:none;font-family:var(--cond);font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.4"></div>
   </form>
 </div>
 <div class="wrap">
@@ -2327,7 +2328,7 @@ document.getElementById('lgSaveBtn').onclick=()=>{
  localStorage.setItem(PKEY,JSON.stringify(PROFILE));
  let t={ott:0,app:0,atg:0,putt:0,tot:0,strokes:0,par:0};R.holes.slice(hS,hE).forEach(h=>{const s=holeSG(h);['ott','app','atg','putt','tot','strokes'].forEach(k=>t[k]+=s[k]);t.par+=h.par;});
  const diff=Math.round(((t.strokes-R.cr)*113/R.slope)*10)/10; // WHS score differential (18-hole)
- var rec=roundRecord();rec.id=editRoundId||('r'+Date.now());rec.holesMode=R.holesMode||'18';
+ var rec=roundRecord();rec.id=editRoundId||('r'+Date.now());rec.upd=Date.now();rec.holesMode=R.holesMode||'18';
  var arr=(window.getLoggedRounds?window.getLoggedRounds():[]);var replaced=false;
  if(editRoundId){for(var qi=0;qi<arr.length;qi++){if(arr[qi].id===editRoundId){arr[qi]=rec;replaced=true;break;}}}
  if(!replaced)arr.push(rec);
@@ -2568,12 +2569,77 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  if(f)f.addEventListener('submit',function(e){e.preventDefault();
    var u=(document.getElementById('lg_user').value||'').trim().toLowerCase();
    var p=(document.getElementById('lg_pass').value||'').trim().toLowerCase();
-   var name=CREDS[u];
-   if(name&&p===u){localStorage.setItem('app-user',name);location.reload();}
-   else{document.getElementById('lg_err').textContent='Wrong username or password.';}
+   var name=CREDS[u],raw=(document.getElementById('lg_pass').value||''),err=document.getElementById('lg_err');
+   var ES=(function(){try{return (navigator.language||'').slice(0,2)==='es'||window.__LANG==='es';}catch(e){return false;}})();
+   function legacy(){ /* no sync server here (e.g. GitHub Pages): device-only sign-in as before */
+     if(name&&p===u){localStorage.setItem('app-user',name);location.reload();}
+     else{err.textContent=ES?'Usuario o contraseña incorrectos.':'Wrong username or password.';}}
+   if(!name){err.textContent=ES?'Usuario o contraseña incorrectos.':'Wrong username or password.';return;}
+   err.textContent='…';
+   fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:u,pass:raw})})
+     .then(function(r){return r.json();})
+     .then(function(j){
+       if(j&&j.ok&&j.token){localStorage.setItem('app-user',j.name);localStorage.setItem('gs-token',j.token);location.reload();}
+       else if(j&&j.error==='bad-login'){err.textContent=ES?'Usuario o contraseña incorrectos.':'Wrong username or password.';}
+       else if(j&&j.error==='short-password'){err.textContent=ES?'Elegí una contraseña de al menos 6 caracteres.':'Choose a password of at least 6 characters.';}
+       else legacy();})
+     .catch(legacy);
  });
  var lo=document.getElementById('logoutBtn');
- if(lo)lo.addEventListener('click',function(){localStorage.removeItem('app-user');location.reload();});
+ if(lo)lo.addEventListener('click',function(){localStorage.removeItem('app-user');localStorage.removeItem('gs-token');location.reload();});
+
+ /* ---- cloud sync of logged rounds (only where /api exists and a database is connected) ---- */
+ var busy=false,again=false,timer=null;
+ function mark(txt){var w=document.getElementById('whoami');if(w&&user)w.textContent=user+(txt?' · '+txt:'');}
+ function rid(r){if(!r.id){var k=(r.date||'')+'|'+(r.score||'')+'|'+(r.course||'');var h=0;for(var i=0;i<k.length;i++){h=(h*31+k.charCodeAt(i))|0;}r.id='x'+Math.abs(h);}return r;}
+ function runSync(){
+   var tok=localStorage.getItem('gs-token');if(!tok||!user)return;
+   if(busy){again=true;return;}busy=true;
+   var key='golf-ledger-custom-'+user,dk='golf-ledger-del-'+user,snap=localStorage.getItem(key)||'[]',local=[],del=[];
+   try{local=(JSON.parse(snap)||[]).map(rid);}catch(e){}try{del=JSON.parse(localStorage.getItem(dk)||'[]')||[];}catch(e){}
+   fetch('/api/sync',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({rounds:local,deleted:del})})
+     .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};});})
+     .then(function(o){
+       if(o.s===401){localStorage.removeItem('gs-token');mark('');return;}
+       if(!o.j||!o.j.ok){mark('⚠');return;}
+       if((localStorage.getItem(key)||'[]')!==snap){again=true;return;}      /* changed while syncing → go again */
+       var merged=(o.j.rounds||[]).slice().sort(function(a,b){return (a.date||'')<(b.date||'')?-1:((a.date||'')>(b.date||'')?1:0);});
+       var out=JSON.stringify(merged);localStorage.removeItem(dk);
+       if(out!==snap){localStorage.setItem(key,out);
+         try{if(typeof PLAYER!=='undefined'&&PLAYER===user){CUSTOM=merged;renderAll();renderTabs();}}catch(e){}
+         try{if(window.LEDGER)window.LEDGER.render();}catch(e){}}
+       mark('☁');})
+     .catch(function(){mark('');})
+     .then(function(){busy=false;if(again){again=false;queue();}});
+ }
+ function queue(){clearTimeout(timer);timer=setTimeout(runSync,600);}
+ window.GSYNC={run:runSync,queue:queue};
+ (function(){ /* every save/delete of a logged round schedules a sync; deletions are remembered until the server has them */
+   var add0=window.addLoggedRound,sv0=window.saveLoggedRounds;
+   if(add0)window.addLoggedRound=function(rec){if(rec&&!rec.upd)rec.upd=Date.now();var n=add0(rec);queue();return n;};
+   if(sv0)window.saveLoggedRounds=function(a){
+     try{var before=(window.getLoggedRounds()||[]).map(function(r){return r.id;}).filter(Boolean),keep={};(a||[]).forEach(function(r){if(r&&r.id)keep[r.id]=1;});
+       var gone=before.filter(function(id){return !keep[id];});
+       if(gone.length&&user){var dk='golf-ledger-del-'+user,d=[];try{d=JSON.parse(localStorage.getItem(dk)||'[]')||[];}catch(e){}localStorage.setItem(dk,JSON.stringify(d.concat(gone)));}}catch(e){}
+     var n=sv0(a);queue();return n;};
+ })();
+ if(user){
+   if(localStorage.getItem('gs-token')){runSync();window.addEventListener('focus',queue);}
+   else{ /* signed in on this device before sync existed → ask once for a password so rounds can follow the user */
+     fetch('/api/login').then(function(r){return r.json();}).then(function(j){
+       if(!j||!j.api||!j.db||!ov)return;
+       var ES=(window.__LANG==='es'),h=document.getElementById('lg_hint'),lu=document.getElementById('lg_user');
+       if(h){h.style.display='';h.textContent=ES?'Para ver tus vueltas en cualquier dispositivo, elegí una contraseña (mínimo 6 caracteres). La primera vez, la que escribas queda como tu contraseña.':'To see your rounds on any device, choose a password (6+ characters). The first time, whatever you type becomes your password.';}
+       if(lu){for(var k in CREDS){if(CREDS[k]===user)lu.value=k;}}
+       ov.style.display='flex';
+     }).catch(function(){});
+   }
+ } else {
+   fetch('/api/login').then(function(r){return r.json();}).then(function(j){
+     if(!j||!j.api||!j.db)return;var h=document.getElementById('lg_hint');
+     if(h){h.style.display='';h.textContent='First time? The password you type (6+ characters) becomes your password. · ¿Primera vez? La contraseña que escribas (mínimo 6) queda como tu contraseña.';}
+   }).catch(function(){});
+ }
 })();
 /* ---- collapsible Statistics sections (all closed by default) ---- */
 (function(){
