@@ -199,6 +199,27 @@ module.exports = async (req, res) => {
       return ok();
     }
 
+    /* ---- My bag from a Garmin export (parsed in the browser; only the summary is stored) — Lite and Pro ---- */
+    if (action === 'bagGet') {
+      const r = await sql`select data, upd from gs_bags where username = ${me}`;
+      if (!r.length) return ok({ bag: null });
+      const upd = Number(r[0].upd);
+      return ok(upd > Number(b.have || 0) ? { bag: r[0].data, upd } : { upd, same: true });
+    }
+    if (action === 'bagSet') {
+      if (needLite()) return bad(403, 'plan');
+      const data = b.bag;
+      if (!data || typeof data !== 'object' || !Array.isArray(data.clubs)) return bad(400, 'bad-bag');
+      if (JSON.stringify(data).length > 3e6) return bad(413, 'too-big');
+      const upd = Date.now();
+      await sql`insert into gs_bags (username, data, upd) values (${me}, ${JSON.stringify(data)}, ${upd}) on conflict (username) do update set data = excluded.data, upd = excluded.upd`;
+      return ok({ upd });
+    }
+    if (action === 'bagClear') {
+      await sql`delete from gs_bags where username = ${me}`;
+      return ok();
+    }
+
     /* ---- your data: download everything / delete the account ---- */
     if (action === 'export') {
       const user = (await sql`select username, created from gs_users where username = ${me}`)[0] || { username: me };
@@ -209,7 +230,8 @@ module.exports = async (req, res) => {
       const team = await sql`select m.code, m.joined, t.owner, t.paid from gs_team_members m join gs_teams t on t.code = m.code where m.username = ${me}`;
       const review = await sql`select contact, note, status, recommendation, requested, done from gs_reviews where username = ${me}`;
       const signIns = await sql`select provider, email, created from gs_identities where username = ${me}`;
-      return ok({ exported: new Date().toISOString(), app: 'Golfimbul', account: user, profile, plan: myPlan, signIns, following, followers, team: team[0] || null, review: review[0] || null, rounds: rounds.map(r => Object.assign({ id: r.id, updated: Number(r.upd) }, { data: r.data })) });
+      const bag = await sql`select data, upd from gs_bags where username = ${me}`;
+      return ok({ exported: new Date().toISOString(), app: 'Golfimbul', account: user, profile, plan: myPlan, signIns, following, followers, team: team[0] || null, review: review[0] || null, garminBag: bag.length ? bag[0].data : null, rounds: rounds.map(r => Object.assign({ id: r.id, updated: Number(r.upd) }, { data: r.data })) });
     }
     if (action === 'deleteAccount') {
       if (String(b.confirm || '') !== 'DELETE') return bad(400, 'confirm');
@@ -221,6 +243,7 @@ module.exports = async (req, res) => {
       for (const t of own) { await sql`delete from gs_team_members where code = ${t.code}`; await sql`delete from gs_teams where code = ${t.code}`; }
       await sql`delete from gs_team_members where username = ${me}`;
       await sql`delete from gs_reviews where username = ${me}`;
+      await sql`delete from gs_bags where username = ${me}`;
       await sql`delete from gs_identities where username = ${me}`;
       await sql`delete from gs_profiles where username = ${me}`;
       if (L.LEGACY[me]) {
