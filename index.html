@@ -2024,7 +2024,7 @@ function saveYover(){localStorage.setItem(YKEY,JSON.stringify(YOVER));}
 function stdYd(course,tee,i){const k=course+'|'+tee+'#'+i;return YOVER[k]!=null?YOVER[k]:COURSES[course].tees[tee].yds[i];}
 /* ===== USER PROFILE ===== */
 const PROFK=LU+'scard-prof-v1';
-const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true,atgYd:50,askedDrive:false,driveFromData:false,tourDone:false};
+const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true,atgYd:50,teeSet:'all',hideRed:false,askedDrive:false,driveFromData:false,tourDone:false};
 function nineIron(){var x=parseInt(PROF.nineIron,10);if(isNaN(x))x=140;return Math.min(200,Math.max(80,x));}
 function bogeyXyd(){var x=parseInt(PROF.bogeyX,10);if(isNaN(x))x=nineIron();return Math.min(150,Math.max(50,x));}
 /* average drive in yards — where the predicted second shot is played from */
@@ -2433,6 +2433,14 @@ function renderSetup(){
  setTimeout(function(){var s=document.getElementById('selScore');if(!s)return;var ae=document.activeElement;if(ae&&ae.closest&&ae.closest('#newRoundForm'))return;s.focus();if(s.select)s.select();},0);
 }
 function holeSGlive(h){var cs=confShots(h),tot=0,strokes=0;for(var i=0;i<cs.length;i++){strokes+=1+(cs[i].pen||0);var hasN=i+1<cs.length;if(hasN||h.done){var En=hasN?Estart(cs[i+1].lie,cs[i+1].dist):0;tot+=Estart(cs[i].lie,cs[i].dist)-En-1-(cs[i].pen||0);}}return {tot:tot,strokes:strokes};}
+/* which tees to offer: all, the two longest, or the two shortest; optionally hide red (usually women's). The tee in use is always kept. */
+function teeList(course,keep){var c=COURSES[course];if(!c)return [];var ks=Object.keys(c.tees);
+ var len=function(k){var y=c.tees[k].yds||[];return y.reduce(function(a,b){return a+b;},0);};
+ ks.sort(function(a,b){return len(b)-len(a);});
+ if(PROF.hideRed)ks=ks.filter(function(k){return !/red|roj/i.test(c.tees[k].label||k);});
+ if(PROF.teeSet==='back2')ks=ks.slice(0,2);else if(PROF.teeSet==='front2')ks=ks.slice(-2);
+ (Array.isArray(keep)?keep:[keep]).forEach(function(k){if(k&&c.tees[k]&&ks.indexOf(k)<0)ks.push(k);});
+ return ks.sort(function(a,b){return len(b)-len(a);});}
 function teeEN(course,tee){var t=COURSES[course]&&COURSES[course].tees[tee];if(t&&t.label&&t.label.indexOf('/')>=0)return t.label.split('/')[1].trim();return tee;}
 function teeColor(course,tee){var en=(teeEN(course,tee)||'').toLowerCase();
  if(/black|negr/.test(en))return{bg:'#1b1b1b',fg:'#fff',bd:'#1b1b1b'};
@@ -2455,7 +2463,7 @@ function renderHoleBar(hi){
  if(hstr){var ES_=(window.__LANG==='es'),scw=function(d,n){if(n===1)return ES_?'Hoyo en uno':'Hole in one';return d<=-3?(ES_?'Albatros':'Albatross'):d===-2?(ES_?'Águila':'Eagle'):d===-1?'Birdie':d===0?'Par':d===1?'Bogey':d===2?(ES_?'Doble bogey':'Double bogey'):d===3?'Triple bogey':('+'+d);};
    var fin=!!(h.done||h._sank),gd=hstr-h.par,nd=hstr-netParOf(hi);
    hdt=fin?(scw(gd,hstr)+((PROF.netPar&&nd!==gd)?' · '+t('Net')+' '+scw(nd,0).toLowerCase():'')):(ES_?'en juego':'in play');}
- var tees=COURSES[R.course]?COURSES[R.course].tees:{},teeKeys=Object.keys(tees),curTee=h.teeOv||R.markers||R.tee,pin=h.pin||'M';
+ var tees=COURSES[R.course]?COURSES[R.course].tees:{},curTee=h.teeOv||R.markers||R.tee,teeKeys=teeList(R.course,[curTee,R.tee]),pin=h.pin||'M';
  var teeSel=teeKeys.length>1?('<span class="ha">'+t('Markers')+' <span class="teechips">'+teeKeys.map(function(k){return '<button type="button" class="teechip'+(k===curTee?' on':'')+'" data-hatee="'+hi+'" data-tk="'+k+'" style="'+teeStyle(R.course,k)+'">'+teeEN(R.course,k)+'</button>';}).join('')+'</span></span>'):'';
  var pinSeg='<span class="ha">'+t('Pin')+' <span class="haseg">'+
    '<button class="hpin'+(pin==='F'?' on':'')+'" style="'+pinBtn(R.course,'F',pin==='F').st+'" data-hpin="'+hi+':F" title="Flag short of middle">'+pinBtn(R.course,'F',pin==='F').dot+t('Front −10')+'</button>'+
@@ -2575,7 +2583,7 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input
      var empty=(el.value||'')==='',dbl=(bkLast.el===el&&(Date.now()-bkLast.t)<600);bkLast={el:el,t:Date.now()};
      if((empty||dbl)&&sb>0){e.preventDefault();delShot(hb,sb);return;}}
    if(e.key==='Tab'&&el.dataset.ydtee!=null){e.preventDefault();
-     var thi=+el.dataset.ydtee,hole=R.holes[thi],tks=Object.keys(COURSES[R.course].tees);
+     var thi=+el.dataset.ydtee,hole=R.holes[thi],tks=teeList(R.course,[hole.teeOv,R.tee]);
      if(tks.length>1){var cur=hole.teeOv||R.tee,idx=tks.indexOf(cur);idx=e.shiftKey?(idx<=0?tks.length-1:idx-1):(idx+1)%tks.length;
        hole.teeOv=tks[idx];recomputeHoleYd(thi);render();
        var ne=document.querySelector('input[data-ydtee="'+thi+'"]');if(ne){ne.focus();if(ne.select)ne.select();}}
@@ -2688,7 +2696,7 @@ function renderSel(){
  const cs=document.getElementById('selCourse');
  cs.innerHTML=Object.keys(COURSES).map(k=>`<option value="${k}" ${k===R.course?'selected':''}>${COURSES[k].name}</option>`).join('');
  const tees=COURSES[R.course].tees,ts=document.getElementById('selTeeChips');
- ts.innerHTML=Object.keys(tees).map(k=>`<button type="button" class="teechip${k===R.tee?' on':''}" data-teechip="${k}" style="${teeStyle(R.course,k)}">${teeEN(R.course,k)}</button>`).join('');
+ ts.innerHTML=teeList(R.course,R.tee).map(k=>`<button type="button" class="teechip${k===R.tee?' on':''}" data-teechip="${k}" style="${teeStyle(R.course,k)}">${teeEN(R.course,k)}</button>`).join('');
  ts.querySelectorAll('[data-teechip]').forEach(b=>{b.onclick=()=>switchTo(R.course,b.getAttribute('data-teechip'));});
  const t=tees[R.tee];const totY=R.holes.reduce((a,h)=>a+(h.yd||0),0);
  document.getElementById('teeEst').textContent=Y2U(totY)+' '+PROF.units+' · CR '+t.cr+' · Slope '+t.slope+(t.est?' · est.':'');
@@ -2713,7 +2721,7 @@ document.getElementById('selChcp').addEventListener('change',e=>{R.chcp=e.target
 function renderProf(){
  const auto=computeHI(),eff=effHI();
  const courseOpts=Object.keys(COURSES).map(k=>`<option value="${k}" ${k===PROF.homeCourse?'selected':''}>${COURSES[k].name}</option>`).join('');
- const tkeys=Object.keys((COURSES[PROF.homeCourse]||COURSES.CGC).tees);
+ const tkeys=teeList(COURSES[PROF.homeCourse]?PROF.homeCourse:'CGC',PROF.defaultTee);
  const teeOpts=tkeys.map(k=>`<option value="${k}" ${k===PROF.defaultTee?'selected':''}>${k}</option>`).join('');
  document.getElementById('pform').innerHTML=`
   <label>Name<input id="pf_name" value="${PROF.name||''}" placeholder="${localStorage.getItem('app-user')||''}"></label>
@@ -2721,6 +2729,11 @@ function renderProf(){
   <label>Units<select id="pf_units"><option value="yd" ${PROF.units==='yd'?'selected':''}>Yards</option><option value="m" ${PROF.units==='m'?'selected':''}>Meters</option></select></label>
   <label>Home course<select id="pf_course">${courseOpts}</select></label>
   <label>Default tee<select id="pf_tee">${teeOpts}</select></label>
+  <label>${window.__LANG==='es'?'Tees a mostrar':'Tees to show'}<select id="pf_teeset">
+    <option value="all" ${PROF.teeSet!=='back2'&&PROF.teeSet!=='front2'?'selected':''}>${window.__LANG==='es'?'Todos':'All'}</option>
+    <option value="back2" ${PROF.teeSet==='back2'?'selected':''}>${window.__LANG==='es'?'Los dos más largos':'The two longest'}</option>
+    <option value="front2" ${PROF.teeSet==='front2'?'selected':''}>${window.__LANG==='es'?'Los dos más cortos':'The two shortest'}</option></select></label>
+  <label class="chkrow" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="pf_hidered" ${PROF.hideRed?'checked':''} style="width:auto"> ${window.__LANG==='es'?'Ocultar los tees rojos (en general, de damas)':'Hide red tees (usually the women\'s tees)'}</label>
   <label>Average drive (yards)<input id="pf_drive" type="number" min="100" max="400" step="5" value="${driveYd()}"></label>
   <div class="hiblock">
     <div class="hirow"><span>${t("Tiger\'s 5")}</span></div>
@@ -2803,6 +2816,8 @@ function renderProf(){
  document.getElementById('pf_predict').addEventListener('change',e=>{PROF.predict=(e.target.value!=='off');saveProf();try{render();}catch(_){}} );
  var ppc=document.getElementById('pf_pincourse');if(ppc)ppc.addEventListener('change',e=>{window.__pinCfg=e.target.value;renderProf();});
  document.querySelectorAll('#pform [data-pinpos]').forEach(s=>s.addEventListener('change',e=>{var c=pinCfgCourse();PROF.pinCol=PROF.pinCol||{};PROF.pinCol[c]=PROF.pinCol[c]||{};PROF.pinCol[c][s.dataset.pinpos]=e.target.value;saveProf();try{render();}catch(_){}}));
+ var pts=document.getElementById('pf_teeset');if(pts)pts.addEventListener('change',e=>{PROF.teeSet=e.target.value;saveProf();try{renderProf();}catch(_){}try{render();renderSel();}catch(_){}});
+ var phr=document.getElementById('pf_hidered');if(phr)phr.addEventListener('change',e=>{PROF.hideRed=!!e.target.checked;saveProf();try{renderProf();}catch(_){}try{render();renderSel();}catch(_){}});
  var pag=document.getElementById('pf_atg');if(pag)pag.addEventListener('change',e=>{var v=Math.round(+e.target.value);if(!(v>=10&&v<=100)){e.target.value=atgYd();return;}PROF.atgYd=v;saveProf();try{if(typeof renderAll==='function')renderAll();}catch(_){}try{render();}catch(_){}});
  var psb=document.getElementById('pf_sgbase');if(psb)psb.addEventListener('change',e=>{PROF.sgBase=e.target.value;saveProf();try{if(typeof renderAll==='function')renderAll();}catch(_){}});
  var pnp=document.getElementById('pf_netpar');if(pnp)pnp.addEventListener('change',e=>{PROF.netPar=(e.target.value!=='off');saveProf();try{render();}catch(_){}try{if(typeof draw==='function')draw();}catch(_){}} );
