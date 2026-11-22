@@ -675,6 +675,8 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 #landing .tier .tn{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--sand-deep);}
 #landing .tier .tp{font-family:var(--serif);font-weight:700;font-size:26px;color:var(--pine);margin:8px 0 10px;}
 #landing .tier.pro .tp{color:#fff;} #landing .tier.pro .tn{color:var(--sand);}
+#landing .tier .tu{font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--ink-soft);margin:-4px 0 12px;}
+#landing .tier.pro .tu{color:rgba(255,255,255,.75);}
 #landing .tier p{font-size:14px;line-height:1.5;margin:0;color:inherit;opacity:.88;}
 #landing .final{text-align:center;padding:90px 0;}
 #landing .final h2{margin-bottom:22px;}
@@ -789,9 +791,9 @@ table.rt tbody tr:hover{background:var(--line-soft);}
  <h2 data-l="Pricing|Precios">Pricing</h2>
  <p class="sub" data-l="Priced in golf balls. Everyone starts with a free month — log your rounds, see it work, then decide.|Precios en pelotas de golf. Todos empiezan con un mes gratis — cargá tus vueltas, mirá cómo funciona y después decidí.">Priced in golf balls. Everyone starts with a free month — log your rounds, see it work, then decide.</p>
  <div class="tiers">
-  <div class="tier"><div class="tn">Free</div><div class="tp" data-l="Free|Gratis">Free</div><p data-l="Log every shot. Every round's scorecard and analysis, one round at a time.|Cargá cada tiro. La tarjeta y el análisis de cada vuelta, de a una vuelta.">Log every shot. Every round's scorecard and analysis, one round at a time.</p></div>
-  <div class="tier"><div class="tn">Lite</div><div class="tp" data-l="1 ball / month|1 pelota / mes">1 ball / month</div><p data-l="The control charts across all your rounds, your priorities, friends and your coach. If it saves you one ball a month, it's free.|Los gráficos de control de todas tus vueltas, tus prioridades, amigos y tu profesor. Si te ahorra una pelota por mes, te sale gratis.">The control charts across all your rounds, your priorities, friends and your coach. If it saves you one ball a month, it's free.</p></div>
-  <div class="tier pro"><div class="tn">Pro</div><div class="tp" data-l="Half a dozen / month|Media docena / mes">Half a dozen / month</div><p data-l="Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers — and import from Garmin and other sources.|Todo lo de Lite, más una llamada mensual de 30 minutos conmigo, preparada con tus números — e importación desde Garmin y otras fuentes.">Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers — and import from Garmin and other sources.</p></div>
+  <div class="tier"><div class="tn">Free</div><div class="tp" data-l="Free|Gratis">Free</div><div class="tu">US$0</div><p data-l="Log every shot. Every round's scorecard and analysis, one round at a time.|Cargá cada tiro. La tarjeta y el análisis de cada vuelta, de a una vuelta.">Log every shot. Every round's scorecard and analysis, one round at a time.</p></div>
+  <div class="tier"><div class="tn">Lite</div><div class="tp" data-l="1 ball / month|1 pelota / mes">1 ball / month</div><div class="tu" data-l="≈ US$4.92 a month|≈ US$4,92 por mes">≈ US$4.92 a month</div><p data-l="The control charts across all your rounds, your priorities, friends and your coach. If it saves you one ball a month, it's free.|Los gráficos de control de todas tus vueltas, tus prioridades, amigos y tu profesor. Si te ahorra una pelota por mes, te sale gratis.">The control charts across all your rounds, your priorities, friends and your coach. If it saves you one ball a month, it's free.</p></div>
+  <div class="tier pro"><div class="tn">Pro</div><div class="tp" data-l="Half a dozen / month|Media docena / mes">Half a dozen / month</div><div class="tu" data-l="≈ US$29.50 a month|≈ US$29,50 por mes">≈ US$29.50 a month</div><p data-l="Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers — and import from Garmin and other sources.|Todo lo de Lite, más una llamada mensual de 30 minutos conmigo, preparada con tus números — e importación desde Garmin y otras fuentes.">Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers — and import from Garmin and other sources.</p></div>
  </div>
 </div></section>
 
@@ -3580,7 +3582,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
      h+='<div class="plCard pl-'+p.k+(me?' on':'')+'">'+
        '<div class="plName">'+p.name+'</div>'+
        '<div class="plBalls">'+(p.balls?('<span class="plIcons">'+(p.balls<=3?Array(p.balls+1).join(ball(26)):ball(26)+'<b>×'+p.balls+'</b>')+'</span><span class="plQty">'+(p.balls===1?T('1 ball','1 pelota'):(p.balls===6?T('half a dozen balls','media docena de pelotas'):(p.balls===12?T('a dozen balls','una docena de pelotas'):p.balls+T(' balls',' pelotas'))))+'<small>'+T(' / month',' / mes')+'</small></span>'):'<span class="plQty">'+T('Free','Gratis')+'</span>')+'</div>'+
-       '<div class="plUsd">'+(p.balls?'≈ US$'+usd.toFixed(usd<10?2:0)+T(' a month · annual: 10 months',' por mes · anual: 10 meses'):'&nbsp;')+'</div>'+
+       '<div class="plUsd">'+(p.balls?'≈ US$'+usd.toFixed(2)+T(' a month · annual: 10 months',' por mes · anual: 10 meses'):'&nbsp;')+'</div>'+
        '<ul>'+(ES()?p.es:p.en).map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+(p.note?'<div class="plNote">“'+(ES()?p.note[1]:p.note[0])+'” <span>— Guido</span></div>':'')+
        (me?'<div class="plCur">'+T('Your plan','Tu plan')+'</div>':(rank(p.k)>rank(cur)&&cur?'<button class="plBtn" disabled>'+(trial?T('Available from '+fmtD(upD),'Disponible desde el '+fmtD(upD)):T('Payments coming soon','Pagos próximamente'))+'</button>':''))+
      '</div>';});
