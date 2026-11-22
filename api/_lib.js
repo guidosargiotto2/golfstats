@@ -33,6 +33,7 @@ async function init() {
     ready = (async () => {
       await s`create table if not exists gs_users (username text primary key, salt text not null, hash text not null, created timestamptz default now())`;
       await s`alter table gs_users add column if not exists must_change boolean not null default false`;
+      await s`alter table gs_users add column if not exists gone boolean not null default false`;
       await s`create table if not exists gs_rounds (username text not null, id text not null, data jsonb not null, upd bigint not null default 0, deleted boolean not null default false, primary key (username, id))`;
       await s`create table if not exists gs_profiles (username text primary key, display text not null, findable boolean not null default true, professor text, prof_status text)`;
       await s`alter table gs_profiles add column if not exists plan text`;
@@ -98,6 +99,8 @@ const PROVIDERS = {
     auth: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize', token: 'https://login.microsoftonline.com/common/oauth2/v2.0/token', scope: 'openid email profile' }
 };
 const providersOn = () => Object.keys(PROVIDERS).filter(k => PROVIDERS[k].id() && PROVIDERS[k].secret());
+// a valid token is not enough once the account was deleted
+async function alive(sql, user) { const r = await sql`select gone from gs_users where username = ${user}`; return !!(r.length && !r[0].gone); }
 function auth(req) { return verify(String((req.headers && req.headers.authorization) || '').replace(/^Bearer\s+/i, '')); }
 function hashPass(pass, salt) { return crypto.scryptSync(String(pass), salt, 32).toString('hex'); }
 function safeEq(a, b) { return a.length === b.length && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b)); }
@@ -111,4 +114,4 @@ function fail(res, e) {
   return res.status(500).json({ error: 'server' });
 }
 
-module.exports = { effectivePlan, signBlob, verifyBlob, PROVIDERS, providersOn, planOf, rank, dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };
+module.exports = { alive, effectivePlan, signBlob, verifyBlob, PROVIDERS, providersOn, planOf, rank, dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };

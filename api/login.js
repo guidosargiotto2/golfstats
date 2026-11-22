@@ -40,11 +40,12 @@ module.exports = async (req, res) => {
     const user = String(b.user || '').trim().toLowerCase();
     const pass = String(b.pass || '');
     if (!L.validUser(user)) return res.status(b.register ? 400 : 401).json({ error: b.register ? 'bad-username' : 'bad-login' });
-    const rows = await sql`select salt, hash, must_change from gs_users where username = ${user}`;
+    const rows = await sql`select salt, hash, must_change, gone from gs_users where username = ${user}`;
     let created = false, mustChange = false, display = L.LEGACY[user] || null;
 
     if (rows.length) {
       if (b.register) return res.status(409).json({ error: 'user-taken' });
+      if (rows[0].gone) return res.status(401).json({ error: 'bad-login' });
       if (!L.safeEq(L.hashPass(pass, rows[0].salt), rows[0].hash)) return res.status(401).json({ error: 'bad-login' });
       mustChange = !!rows[0].must_change;
     } else if (L.LEGACY[user] && !b.register) {

@@ -3633,6 +3633,27 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    STU._rounds=rounds;
    return h;
  }
+ function dataHTML(){
+   return sec(T('Your data','Tus datos'),
+     '<button class="pf_btn" id="dtDl">'+T('Download all my data','Descargar todos mis datos')+'</button>'+
+     '<p class="frsub" style="margin-top:6px">'+T('One file with everything Golfimbul holds about you: account, profile, every round and shot, sign-in methods, friends, team, review and the settings on this device.','Un archivo con todo lo que Golfimbul guarda de vos: cuenta, perfil, cada vuelta y tiro, métodos de ingreso, amigos, equipo, revisión y la configuración de este dispositivo.')+'</p>'+
+     (ME.admin?'<p class="frsub" style="margin-top:12px">'+T('The admin account cannot be deleted.','La cuenta de administrador no se puede eliminar.')+'</p>':
+     '<div class="frline" style="margin-top:14px;flex-wrap:wrap;gap:8px"><span>'+T('Type','Escribí')+' <b>DELETE</b> '+T('to delete your account','para eliminar tu cuenta')+'</span><input id="dtConf" autocomplete="off" autocapitalize="characters" style="width:120px"><button class="pf_btn frgrey" id="dtDel" disabled style="color:var(--clay);border-color:var(--clay);opacity:.5">'+T('Delete my account','Eliminar mi cuenta')+'</button></div>'+
+     '<p class="frsub" style="margin-top:6px">'+T('Deleting your account erases all your rounds and data, removes you from friends, teams and professors, and signs you out. It cannot be undone — download your data first if you might want it back.','Eliminar tu cuenta borra todas tus vueltas y datos, te quita de amigos, equipos y profesores, y cierra tu sesión. No se puede deshacer — descargá tus datos antes si podrías quererlos.')+'</p>'));
+ }
+ function wireData(el){
+   var dl=el.querySelector('#dtDl');if(dl)dl.onclick=function(){dl.disabled=true;dl.textContent='…';
+     api('export').then(function(j){if(!j||!j.ok)throw 0;var dev={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k!=='gs-token'){var v=localStorage.getItem(k);try{v=JSON.parse(v);}catch(e){}dev[k]=v;}}
+       delete j.ok;j.thisDevice=dev;var blob=new Blob([JSON.stringify(j,null,2)],{type:'application/json'}),a=document.createElement('a');
+       a.href=URL.createObjectURL(blob);a.download='golfimbul-'+(ME.username||'data')+'-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1500);
+       dl.textContent='✓ '+T('Downloaded','Descargado');setTimeout(function(){dl.disabled=false;dl.textContent=T('Download all my data','Descargar todos mis datos');},3000);})
+     .catch(function(){dl.disabled=false;dl.textContent=T('Download all my data','Descargar todos mis datos');MSG=T('Could not prepare your data — try again.','No se pudieron preparar tus datos — probá de nuevo.');draw();});};
+   var cf=el.querySelector('#dtConf'),del=el.querySelector('#dtDel');
+   if(cf&&del){cf.oninput=function(){var okk=cf.value.trim()==='DELETE';del.disabled=!okk;del.style.opacity=okk?'1':'.5';};
+     del.onclick=function(){if(cf.value.trim()!=='DELETE')return;del.disabled=true;del.textContent='…';
+       api('deleteAccount',{confirm:'DELETE'}).then(function(j){if(j&&j.ok){try{localStorage.clear();}catch(e){}alert(T('Your account and all your data were deleted.','Tu cuenta y todos tus datos fueron eliminados.'));location.reload();}
+         else{MSG=T('Could not delete the account.','No se pudo eliminar la cuenta.');draw();}}).catch(function(){MSG=T('Offline — try again later.','Sin conexión — probá más tarde.');draw();});};}
+ }
  function draw(){
    var el=document.getElementById('friendsBody'),ac=document.getElementById('acctBody');
    var msg=(MSG?'<p class="frmsg">'+esc(MSG)+'</p>':'');
@@ -3640,7 +3661,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    if(!ME){if(el)el.innerHTML='<p class="frsub">'+(MSG||'…')+'</p>';if(ac)ac.innerHTML=MSG?'<p class="frsub">'+esc(MSG)+'</p>':'';return;}
    if(el){el.innerHTML=msg+compareHTML()+feedHTML()+studentsHTML()+allPlayersHTML()+findHTML();
      var st=document.getElementById('frStu'),sa=document.getElementById('frStuA'),tgt=(st&&STU&&(ME.students||[]).some(function(x){return x.username===STU.username&&x.prof_status==='accepted';}))?st:(sa||st);if(tgt)tgt.innerHTML=studentHTML();wire(el);}
-   if(ac){ac.innerHTML=msg+planHTML()+profHTML()+privacyHTML()+adminHTML();wire(ac);
+   if(ac){ac.innerHTML=msg+planHTML()+profHTML()+privacyHTML()+dataHTML()+adminHTML();wire(ac);wireData(ac);
      var pc=document.getElementById('plChooser');if(pc&&window.PLANS&&window.PLANS.chooser)window.PLANS.chooser(pc);}
  }
  function load(msg){MSG=msg||'';if(!tok()){draw();return;}

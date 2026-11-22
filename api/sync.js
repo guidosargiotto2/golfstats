@@ -11,6 +11,7 @@ module.exports = async (req, res) => {
     if (!user) return res.status(401).json({ error: 'auth' });
     await L.init();
     const sql = L.db();
+    if (!(await L.alive(sql, user))) return res.status(401).json({ error: 'auth' });
     const b = L.body(req);
     const rounds = (Array.isArray(b.rounds) ? b.rounds : []).filter(r => r && typeof r === 'object' && r.id).slice(0, 2000);
     const deleted = (Array.isArray(b.deleted) ? b.deleted : []).map(String).slice(0, 2000);

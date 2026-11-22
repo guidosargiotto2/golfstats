@@ -15,6 +15,7 @@ module.exports = async (req, res) => {
     if (!me) return res.status(401).json({ error: 'auth' });
     await L.init();
     const sql = L.db();
+    if (!(await L.alive(sql, me))) return res.status(401).json({ error: 'auth' });
     const b = L.body(req);
     const action = String(b.action || '');
     const target = String(b.user || '').trim().toLowerCase();
@@ -196,6 +197,38 @@ module.exports = async (req, res) => {
       if (!['free', 'lite', 'pro'].includes(plan) || !L.validUser(target)) return bad(400, 'bad-plan');
       await sql`update gs_profiles set plan = ${plan} where username = ${target}`;
       return ok();
+    }
+
+    /* ---- your data: download everything / delete the account ---- */
+    if (action === 'export') {
+      const user = (await sql`select username, created from gs_users where username = ${me}`)[0] || { username: me };
+      const profile = (await sql`select display, findable, professor, prof_status, plan from gs_profiles where username = ${me}`)[0] || null;
+      const rounds = await sql`select id, data, upd from gs_rounds where username = ${me} and deleted = false order by id`;
+      const following = await sql`select followee as username from gs_follows where follower = ${me}`;
+      const followers = await sql`select follower as username from gs_follows where followee = ${me}`;
+      const team = await sql`select m.code, m.joined, t.owner, t.paid from gs_team_members m join gs_teams t on t.code = m.code where m.username = ${me}`;
+      const review = await sql`select contact, note, status, recommendation, requested, done from gs_reviews where username = ${me}`;
+      const signIns = await sql`select provider, email, created from gs_identities where username = ${me}`;
+      return ok({ exported: new Date().toISOString(), app: 'Golfimbul', account: user, profile, plan: myPlan, signIns, following, followers, team: team[0] || null, review: review[0] || null, rounds: rounds.map(r => Object.assign({ id: r.id, updated: Number(r.upd) }, { data: r.data })) });
+    }
+    if (action === 'deleteAccount') {
+      if (String(b.confirm || '') !== 'DELETE') return bad(400, 'confirm');
+      if (me === L.ADMIN) return bad(403, 'admin-account');
+      await sql`delete from gs_rounds where username = ${me}`;
+      await sql`delete from gs_follows where follower = ${me} or followee = ${me}`;
+      await sql`update gs_profiles set professor = null, prof_status = null where professor = ${me}`;
+      const own = await sql`select code from gs_teams where owner = ${me}`;
+      for (const t of own) { await sql`delete from gs_team_members where code = ${t.code}`; await sql`delete from gs_teams where code = ${t.code}`; }
+      await sql`delete from gs_team_members where username = ${me}`;
+      await sql`delete from gs_reviews where username = ${me}`;
+      await sql`delete from gs_identities where username = ${me}`;
+      await sql`delete from gs_profiles where username = ${me}`;
+      if (L.LEGACY[me]) {
+        // an original player's username would otherwise be claimable again with the old password: lock it instead
+        const salt = L.crypto.randomBytes(16).toString('hex');
+        await sql`update gs_users set salt = ${salt}, hash = ${L.hashPass(L.crypto.randomBytes(24).toString('hex'), salt)}, must_change = false, gone = true where username = ${me}`;
+      } else await sql`delete from gs_users where username = ${me}`;
+      return ok({ deleted: true });
     }
 
     if (action === 'setInvite') {
