@@ -907,7 +907,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
      <label><span data-i18n="Tee">Tee</span><div id="selTeeChips" class="teechips"></div></label>
      <label><span data-i18n="Holes">Holes</span><select id="selHoles"><option value="18" data-i18n="18 holes">18 holes</option><option value="front" data-i18n="Front 9 (1–9)">Front 9 (1–9)</option><option value="back" data-i18n="Back 9 (10–18)">Back 9 (10–18)</option></select></label>
      <label><span data-i18n="Score">Score</span><input type="number" inputmode="numeric" id="selScore" min="59" max="200" placeholder="e.g. 76" required><span class="fielderr" id="err_score"></span></label>
-     <label><span data-i18n="Playing HCP">Playing HCP</span><input type="number" inputmode="numeric" id="selChcp" min="-10" max="54" placeholder="e.g. 2"><span class="fielderr" id="err_chcp"></span></label>
+     <label><span data-i18n="Playing HCP">Playing HCP</span><input type="number" inputmode="numeric" id="selChcp" min="-10" max="54" placeholder="e.g. 2" required aria-required="true"><span class="fielderr" id="err_chcp"></span></label>
      <label><span data-i18n="Date">Date</span><input type="date" id="selDate"></label>
    </div>
    <div class="teeline"><span class="est" id="teeEst" style="display:none"></span><button class="star" id="starBtn">★ default</button></div>
@@ -2458,7 +2458,9 @@ function startRound(){var sc=document.getElementById('selScore'),ch=document.get
  if(es)es.textContent='';if(ec)ec.textContent='';if(sc)sc.classList.remove('bad');if(ch)ch.classList.remove('bad');
  if(sv===''){if(es)es.textContent='Enter your score to start the round.';if(sc){sc.classList.add('bad');sc.focus();}return;}
  if(+sv<minSc||+sv>maxSc){if(es)es.textContent='Enter '+minSc+'–'+maxSc+'.';if(sc){sc.classList.add('bad');sc.focus();}return;}
- if(cv!==''&&(+cv<-10||+cv>54)){if(ec)ec.textContent='Enter −10 to 54, or leave blank.';if(ch){ch.classList.add('bad');ch.focus();}return;}
+ var ES0=(window.__LANG==='es');
+ if(cv===''||isNaN(+cv)){if(ec)ec.textContent=ES0?'Ingresá tu hándicap de juego para empezar la vuelta.':'Enter your playing handicap to start the round.';if(ch){ch.classList.add('bad');ch.focus();}return;}
+ if(+cv<-10||+cv>54){if(ec)ec.textContent=ES0?'Ingresá entre −10 y 54.':'Enter −10 to 54.';if(ch){ch.classList.add('bad');ch.focus();}return;}
  R.score=sv;R.chcp=cv;R.phase='play';lgEntered=true;gotoHole(R.hStart);}
 var scMode=false;
 function render(){
