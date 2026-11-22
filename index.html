@@ -635,6 +635,10 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .loginbox .lgor::before,.loginbox .lgor::after{content:'';flex:1;height:1px;background:var(--line);}
 .loginbox .lgsoc{display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:11px 12px;font-family:var(--cond);font-weight:700;font-size:12.5px;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
 .loginbox .lgsoc:hover{border-color:var(--pine);box-shadow:0 4px 12px -6px rgba(15,58,44,.4);}
+.lgscope .plTeam{display:flex;align-items:center;gap:16px;margin-top:14px;border:1px dashed var(--sand-deep);border-radius:14px;padding:14px 18px;background:rgba(216,196,140,.14);font-family:var(--cond);}
+.lgscope .plTeam b{display:block;font-family:var(--serif);font-size:17px;color:var(--pine);margin-bottom:2px;}
+.lgscope .plTeam span{font-size:13.5px;line-height:1.5;color:var(--ink-soft);}
+.lgscope .plTeamB{flex:none;width:56px;height:56px;border-radius:50%;background:var(--pine);color:var(--sand);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:19px;}
 </style>
 </head>
 <body>
@@ -714,6 +718,10 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #landing .tier.pro .tp{color:#fff;} #landing .tier.pro .tn{color:var(--sand);}
 #landing .tier .tu{font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--ink-soft);margin:-4px 0 12px;}
 #landing .tier.pro .tu{color:rgba(255,255,255,.75);}
+#landing .lteam{display:flex;align-items:center;gap:18px;margin-top:16px;border:1px dashed var(--sand-deep);border-radius:16px;padding:16px 20px;background:rgba(216,196,140,.14);}
+#landing .lteam b{display:block;font-family:var(--serif);font-size:19px;color:var(--pine);margin-bottom:3px;}
+#landing .lteam span{font-size:14.5px;line-height:1.5;color:var(--ink-soft);}
+#landing .lteamB{flex:none;width:64px;height:64px;border-radius:50%;background:var(--pine);color:var(--sand);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:22px;}
 #landing .tier p{font-size:14px;line-height:1.5;margin:0;color:inherit;opacity:.88;}
 #landing .final{text-align:center;padding:52px 0;}
 #landing .final h2{margin-bottom:22px;}
@@ -818,6 +826,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
   <div class="tier"><div class="tn">Free</div><div class="tp" data-l="Free|Gratis">Free</div><div class="tu">US$0</div><p data-l="Log every shot. Every round's scorecard and analysis, one round at a time.|Cargá cada tiro. La tarjeta y el análisis de cada vuelta, de a una vuelta.">Log every shot. Every round's scorecard and analysis, one round at a time.</p></div>
   <div class="tier"><div class="tn">Lite</div><div class="tp" data-l="1 ball / month|1 pelota / mes">1 ball / month</div><div class="tu" data-l="≈ US$4.92 a month|≈ US$4,92 por mes">≈ US$4.92 a month</div><p data-l="The control charts across all your rounds, your priorities, friends and your coach. If it saves you one ball a month, it's free.|Los gráficos de control de todas tus vueltas, tus prioridades, amigos y tu profesor. Si te ahorra una pelota por mes, te sale gratis.">The control charts across all your rounds, your priorities, friends and your coach. If it saves you one ball a month, it's free.</p></div>
   <div class="tier pro"><div class="tn">Pro</div><div class="tp" data-l="Half a dozen / month|Media docena / mes">Half a dozen / month</div><div class="tu" data-l="≈ US$29.50 a month|≈ US$29,50 por mes">≈ US$29.50 a month</div><p data-l="Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers — and import from Garmin and other sources.|Todo lo de Lite, más una llamada mensual de 30 minutos conmigo, preparada con tus números — e importación desde Garmin y otras fuentes.">Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers — and import from Garmin and other sources.</p></div>
+ <div class="lteam"><div class="lteamB">4×3</div><div><b data-l="Team offer — four players, pay for three.|Oferta para equipos — cuatro jugadores, pagan tres.">Team offer — four players, pay for three.</b><span data-l="Your foursome on Lite for 3 balls a month (≈ US$14.75) instead of 4. Follow each other, compare where each of you gains and loses, and push each other to improve.|Tu grupo de cuatro en Lite por 3 pelotas al mes (≈ US$14,75) en lugar de 4. Se siguen, comparan dónde gana y pierde cada uno, y se empujan a mejorar.">Your foursome on Lite for 3 balls a month (≈ US$14.75) instead of 4. Follow each other, compare where each of you gains and loses, and push each other to improve.</span></div></div>
  </div>
 </div></section>
 
@@ -3641,7 +3650,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
        '<ul>'+(ES()?p.es:p.en).map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+(p.note?'<div class="plNote">“'+(ES()?p.note[1]:p.note[0])+'” <span>— Guido</span></div>':'')+
        (me?'<div class="plCur">'+T('Your plan','Tu plan')+'</div>':(rank(p.k)>rank(cur)&&cur?'<button class="plBtn" disabled>'+(trial?T('Available from '+fmtD(upD),'Disponible desde el '+fmtD(upD)):T('Payments coming soon','Pagos próximamente'))+'</button>':''))+
      '</div>';});
-   h+='</div>';
+   h+='</div><div class="plTeam"><div class="plTeamB">4×3</div><div><b>'+T('Team offer — four players, pay for three','Oferta para equipos — cuatro jugadores, pagan tres')+'</b><span>'+T('Your foursome on Lite for 3 balls a month (≈ US$14.75) instead of 4. Ask Guido to set up your group.','Tu grupo de cuatro en Lite por 3 pelotas al mes (≈ US$14,75) en lugar de 4. Pedile a Guido que arme tu grupo.')+'</span></div></div>';
    el.innerHTML=h;
  }
  function refreshPlan(){
