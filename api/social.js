@@ -274,6 +274,16 @@ module.exports = async (req, res) => {
       return ok({ deleted: true });
     }
 
+    if (action === 'adminResetPass') {   // forgotten password: back to "password = username", forced change on next sign-in
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      if (!L.validUser(target) || target === L.ADMIN) return bad(400, 'bad-user');
+      const u = await sql`select gone from gs_users where username = ${target}`;
+      if (!u.length || u[0].gone) return bad(404, 'no-user');
+      const salt = L.crypto.randomBytes(16).toString('hex');
+      await sql`update gs_users set salt = ${salt}, hash = ${L.hashPass(target, salt)}, must_change = true where username = ${target}`;
+      return ok();
+    }
+
     if (action === 'setInvite') {
       if (me !== L.ADMIN) return bad(403, 'admin');
       const code = String(b.code || '').trim().slice(0, 40);
