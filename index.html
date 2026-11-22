@@ -676,6 +676,8 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope .pglink .pgS{display:block;font-family:var(--cond);font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
 .lgscope .pglink .pgGo{font-family:var(--cond);font-weight:700;font-size:18px;color:var(--fairway);transition:transform .15s;}
 .lgscope .pglink:hover .pgGo{transform:translateX(3px);}
+.lgscope table.noclub thead th:nth-child(10),.lgscope table.noclub td.clubc,.lgscope table.noclub tr.totalrow td.t5c{display:none;}
+.lgscope .t5inl{font-size:11px;letter-spacing:.04em;margin-left:6px;}
 </style>
 </head>
 <body>
@@ -938,7 +940,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
    <div class="holebar" id="holebar"></div>
    <div class="holenav" id="holenav"></div>
    <div class="warn" id="warn"></div>
-   <div class="lgtablewrap"><table><thead><tr><th class="lh">#</th><th data-i18n="Tee">Tee</th><th data-i18n="Fairway">Fairway</th><th data-i18n="Rough">Rough</th><th data-i18n="Sand">Sand</th><th data-i18n="Recovery">Recovery</th><th data-i18n="Green·ft">Green·ft</th><th data-i18n="Pen">Pen</th><th>SG</th><th data-i18n="Club" title="Club used — predicted from your bag and past rounds">Club</th><th></th></tr></thead>
+   <div class="lgtablewrap"><table id="lgTable"><thead><tr><th class="lh">#</th><th data-i18n="Tee">Tee</th><th data-i18n="Fairway">Fairway</th><th data-i18n="Rough">Rough</th><th data-i18n="Sand">Sand</th><th data-i18n="Recovery">Recovery</th><th data-i18n="Green·ft">Green·ft</th><th data-i18n="Pen">Pen</th><th>SG</th><th data-i18n="Club" title="Club used — predicted from your bag and past rounds">Club</th><th></th></tr></thead>
    <tbody id="lgBody"></tbody></table></div>
    <div class="holeacts" id="holeacts"></div>
    </div>
@@ -2183,7 +2185,7 @@ function saveYover(){localStorage.setItem(YKEY,JSON.stringify(YOVER));}
 function stdYd(course,tee,i){const k=course+'|'+tee+'#'+i;return YOVER[k]!=null?YOVER[k]:COURSES[course].tees[tee].yds[i];}
 /* ===== USER PROFILE ===== */
 const PROFK=LU+'scard-prof-v1';
-const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true,atgYd:50,teeSet:'all',hideRed:false,askedDrive:false,driveFromData:false,tourDone:false};
+const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true,atgYd:50,trackClubs:false,teeSet:'all',hideRed:false,askedDrive:false,driveFromData:false,tourDone:false};
 function nineIron(){var x=parseInt(PROF.nineIron,10);if(isNaN(x))x=140;return Math.min(200,Math.max(80,x));}
 function bogeyXyd(){var x=parseInt(PROF.bogeyX,10);if(isNaN(x))x=nineIron();return Math.min(150,Math.max(50,x));}
 /* average drive in yards — where the predicted second shot is played from */
@@ -2465,7 +2467,8 @@ function delShot(hb,sb){var h=R.holes[hb];if(sb==null||sb<=0||sb>=h.shots.length
  var cur=h.shots[sb],priorPutt=(cur.lie==='putt'&&sb>0&&h.shots[sb-1]&&h.shots[sb-1].lie==='putt');
  h.shots.splice(sb,1);h.done=false;scMode=false;h._sank=!!priorPutt;render();focusEntry();}
 function gotoHole(i){R.cur=Math.max(R.hStart,Math.min(R.hEnd-1,i));var h=R.holes[R.cur];if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];h._sank=false;teeArmed=confShots(h).length>1;render();focusTee();}
-function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert('Enter at least the tee shot before finishing the hole.');return;}h.shots=confShots(h);h.done=true;
+function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert('Enter at least the tee shot before finishing the hole.');return;}
+ if(PROF.trackClubs){var miss=confShots(h).filter(function(s,i){if(!s.club)s.club=predictClub(R.cur,i,s);return !s.club;});if(miss.length){alert(window.__LANG==='es'?'Elegí el palo de cada tiro antes de pasar al siguiente hoyo.':'Choose the club for every shot before moving to the next hole.');return;}}h.shots=confShots(h);h.done=true;
  if(R.holes.slice(R.hStart,R.hEnd).every(function(x){return x.done;})){scMode=true;render();return;}
  if(adv&&R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
 function startRound(){var sc=document.getElementById('selScore'),ch=document.getElementById('selChcp'),hm=document.getElementById('selHoles');
@@ -2679,6 +2682,7 @@ function clubSel(hi,si,s){
  return '<select class="clubsel'+(s.clubSet?' set':'')+'" data-club="'+hi+':'+si+'" title="'+(s.clubSet?'':'predicted — change if needed')+'">'+opts.map(function(c){return '<option'+(c===cur?' selected':'')+'>'+c+'</option>';}).join('')+'</select>';}
 function renderShots(hi){
  var h=R.holes[hi],body=document.getElementById('lgBody'),html='';
+ var CLB=!!PROF.trackClubs,tb=document.getElementById('lgTable');if(tb)tb.classList.toggle('noclub',!CLB);
  var hm5=holeMistakes({par:h.par,yd:h.yd,hcp:h.hcp,shots:confShots(h)},hi);
  var t5tags=[hm5.p3?'3-putt':'',hm5.db?'double':'',hm5.bp5?'bogey P5':'',hm5.f150?'bogey w/ 9i or less':'',hm5.short?shortLabel():''].filter(Boolean);
  var t5ac=[hm5.p3?'3P':'',hm5.db?'D':'',hm5.bp5?'P5':'',hm5.f150?'B':'',hm5.short?'S':''].filter(Boolean);
@@ -2695,7 +2699,7 @@ function renderShots(hi){
    html+='<tr class="shot conf'+(locked?' teerow':'')+'"><td class="sidx">'+(si+1)+'</td>'+cells+
      '<td><input class="p" type="number" inputmode="numeric" min="0" data-h="'+hi+'" data-s="'+si+'" value="'+(s.pen||'')+'" placeholder="0"></td>'+
      '<td class="sgc '+(sgv==null?'':(sgv<0?'sg-neg':'sg-pos'))+'">'+(sgv==null?'·':fmt(sgv))+'</td>'+
-     '<td class="clubc">'+clubSel(hi,si,s)+'</td>'+
+     '<td class="clubc">'+(CLB?clubSel(hi,si,s):'')+'</td>'+
      '<td class="rm"><button class="insbtn" data-ins="'+hi+':'+si+'" title="insert a shot below this one">+</button>'+(locked?'':'<button data-del="'+hi+':'+si+'" title="delete">×</button>')+'</td></tr>';
  });
  /* add-a-shot row only while the hole is unfinished; a done hole uses the "+ Add a shot" button so there's no stray empty row */
@@ -2709,11 +2713,11 @@ function renderShots(hi){
      var cells=LIECOLS.map(function(lc){var on=pr.lie===lc;var val=on?(lc==='putt'?pr.dist:Y2U(pr.dist)):'';
        return '<td class="liec"><input class="lc'+(on?' on':'')+'" type="text" inputmode="numeric" data-entry="'+hi+'" data-lie="'+lc+'" value="'+val+'" placeholder="·"></td>';}).join('');
      html+='<tr class="shot entry'+(isPred?' pred':'')+'"><td class="sidx">'+(confShots(h).length+1)+'</td>'+cells+
-       '<td></td><td class="sgc"></td><td class="clubc"><span class="clubpred">'+(isPred?(predictClub(hi,confShots(h).length,pr)||'·'):'·')+'</span></td><td class="rm"><button data-entryfin="1" title="Holed it — no more shots on this hole (or press Delete). Stays here so you can review.">×</button></td></tr>';
+       '<td></td><td class="sgc"></td><td class="clubc"><span class="clubpred">'+(!CLB?'':isPred?(predictClub(hi,confShots(h).length,pr)||'·'):'·')+'</span></td><td class="rm"><button data-entryfin="1" title="Holed it — no more shots on this hole (or press Delete). Stays here so you can review.">×</button></td></tr>';
    }
  }
  if(nshot>=1){var sgTot=holeSGlive(h).tot,penTot=confShots(h).reduce(function(a,s){return a+(s.pen||0);},0);
-   html+='<tr class="totalrow"><td class="sidx"></td><td colspan="6" class="totlbl">Hole total</td>'+
+   html+='<tr class="totalrow"><td class="sidx"></td><td colspan="6" class="totlbl">'+t('Hole total')+(CLB?'':' <span class="t5inl" title="'+(t5n?t5tags.join(', '):'no Tiger’s-5 mistakes')+'">· T5 '+(t5n?'<span class="t5bad">'+t5ac.join(' ')+'</span>':'<span class="t5ok">0</span>')+'</span>')+'</td>'+
      '<td class="totpen">'+(penTot||0)+'</td>'+
      '<td class="sgc '+(sgTot<0?'sg-neg':'sg-pos')+'">'+fmt(sgTot)+'</td>'+
      '<td class="t5c" title="'+(t5n?t5tags.join(', '):'no Tiger’s-5 mistakes')+'">T5 '+(t5n?'<span class="t5bad">'+t5ac.join(' ')+'</span>':'<span class="t5ok">0</span>')+'</td>'+
@@ -2953,6 +2957,13 @@ function renderProf(){
     <div class="hisub">Predictions improve as you log more rounds; each one is based on your prior shots and learned patterns for that hole.</div>
   </div>
   <div class="hiblock">
+    <div class="hirow"><span>${window.__LANG==='es'?'Palo por tiro':'Club per shot'}</span></div>
+    <label>${window.__LANG==='es'?'Registrar el palo de cada tiro':'Track the club for every shot'}<select id="pf_clubs">
+      <option value="off" ${PROF.trackClubs?'':'selected'}>${window.__LANG==='es'?'No':'Off'}</option>
+      <option value="on" ${PROF.trackClubs?'selected':''}>${window.__LANG==='es'?'Sí — obligatorio en cada tiro (se sugiere solo)':'On — required on every shot (pre-filled for you)'}</option></select></label>
+    <div class="hisub">${window.__LANG==='es'?'El palo se predice con tu bolsa y tus vueltas anteriores; solo lo corregís si cambia. Con más vueltas, Mi bolsa se arma con tus propios tiros.':'The club is predicted from your bag and past rounds; you only change it when it differs. Over time, My bag builds itself from your own shots.'}</div>
+  </div>
+  <div class="hiblock">
     <div class="hirow"><span>Pin flag colours</span></div>
     <label>Course<select id="pf_pincourse">${Object.keys(COURSES).map(k=>`<option value="${k}" ${k===pinCfgCourse()?'selected':''}>${COURSES[k].name}</option>`).join('')}</select></label>
     <label>Front<select data-pinpos="F">${['red','white','blue','yellow','none'].map(c=>`<option value="${c}" ${pinColName(pinCfgCourse(),'F')===c?'selected':''}>${c[0].toUpperCase()+c.slice(1)}</option>`).join('')}</select></label>
@@ -3011,6 +3022,7 @@ function renderProf(){
  document.getElementById('pf_nine').addEventListener('change',e=>{var n=Math.min(200,Math.max(80,parseInt(e.target.value||'140',10)||140));PROF.nineIron=n;if(!PROF.bogeyX||PROF.bogeyX==='')PROF.bogeyX=Math.min(150,n);saveProf();renderProf();});
  document.getElementById('pf_bogeyx').addEventListener('change',e=>{PROF.bogeyX=Math.min(150,Math.max(50,parseInt(e.target.value||'140',10)||140));saveProf();renderProf();});
  document.getElementById('pf_predict').addEventListener('change',e=>{PROF.predict=(e.target.value!=='off');saveProf();try{render();}catch(_){}} );
+ var pcl=document.getElementById('pf_clubs');if(pcl)pcl.addEventListener('change',e=>{PROF.trackClubs=(e.target.value==='on');saveProf();try{render();}catch(_){}});
  var ppc=document.getElementById('pf_pincourse');if(ppc)ppc.addEventListener('change',e=>{window.__pinCfg=e.target.value;renderProf();});
  document.querySelectorAll('#pform [data-pinpos]').forEach(s=>s.addEventListener('change',e=>{var c=pinCfgCourse();PROF.pinCol=PROF.pinCol||{};PROF.pinCol[c]=PROF.pinCol[c]||{};PROF.pinCol[c][s.dataset.pinpos]=e.target.value;saveProf();try{render();}catch(_){}}));
  var pts=document.getElementById('pf_teeset');if(pts)pts.addEventListener('change',e=>{PROF.teeSet=e.target.value;saveProf();try{renderProf();}catch(_){}try{render();renderSel();}catch(_){}});
