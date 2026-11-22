@@ -40,6 +40,7 @@ async function init() {
       await s`create table if not exists gs_settings (k text primary key, v text)`;
       await s`create table if not exists gs_teams (code text primary key, owner text not null, seats int not null default 4, paid boolean not null default false, created timestamptz default now())`;
       await s`create table if not exists gs_team_members (username text primary key, code text not null, joined timestamptz default now())`;
+      await s`create table if not exists gs_reviews (username text primary key, contact text, note text, status text not null default 'requested', recommendation text, requested timestamptz default now(), done timestamptz)`;
       await s`create table if not exists gs_identities (provider text not null, sub text not null, username text not null, email text, created timestamptz default now(), primary key (provider, sub))`;
     })().catch(e => { ready = null; throw e; });
   }

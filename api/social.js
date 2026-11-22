@@ -44,6 +44,10 @@ module.exports = async (req, res) => {
         out.team = { code: tm[0].code, owner: tm[0].owner, paid: tm[0].paid, seats: tm[0].seats, members: mem, isOwner: tm[0].owner === me };
       }
       out.upgradeFrom = new Date(created.getTime() + 30 * 864e5).toISOString();
+      const rc = await sql`select count(*)::int as n from gs_rounds where username = ${me} and deleted = false`;
+      out.roundsLogged = rc[0].n || 0;
+      const rv = await sql`select status, recommendation, requested, done from gs_reviews where username = ${me}`;
+      if (rv.length) out.review = rv[0];
       if (me === L.ADMIN) { const inv = await sql`select v from gs_settings where k = 'invite'`; out.invite = inv.length ? inv[0].v : ''; }
       return ok(out);
     }
@@ -118,6 +122,30 @@ module.exports = async (req, res) => {
     }
 
     /* ---- teams (4×3 offer): the owner buys, shares a code, up to 4 players join ---- */
+    /* ---- free review call after the first month ---- */
+    if (action === 'reviewRequest') {
+      const cu = await sql`select created from gs_users where username = ${me}`;
+      const created = cu.length && cu[0].created ? new Date(cu[0].created) : new Date();
+      if (Date.now() < created.getTime() + 30 * 864e5 && !L.LEGACY[me]) return bad(409, 'too-early');
+      const rc = await sql`select count(*)::int as n from gs_rounds where username = ${me} and deleted = false`;
+      if ((rc[0].n || 0) < 5) return bad(409, 'few-rounds');
+      const contact = String(b.contact || '').trim().slice(0, 120), note = String(b.note || '').trim().slice(0, 500);
+      if (contact.length < 5) return bad(400, 'contact');
+      await sql`insert into gs_reviews (username, contact, note) values (${me}, ${contact}, ${note}) on conflict (username) do update set contact = excluded.contact, note = excluded.note, status = 'requested', requested = now()`;
+      return ok();
+    }
+    if (action === 'reviewList') {
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      const rows = await sql`select r.username, p.display, r.contact, r.note, r.status, r.recommendation, r.requested from gs_reviews r join gs_profiles p on p.username = r.username order by r.requested desc`;
+      return ok({ reviews: rows });
+    }
+    if (action === 'reviewDone') {
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      const rec = ['free', 'lite', 'pro'].includes(b.recommendation) ? b.recommendation : null;
+      await sql`update gs_reviews set status = 'done', recommendation = ${rec}, done = now() where username = ${target}`;
+      if (rec) await sql`update gs_profiles set plan = ${rec} where username = ${target}`;
+      return ok();
+    }
     if (action === 'teamCreate') {
       const inT = await sql`select 1 as x from gs_team_members where username = ${me}`;
       if (inT.length) return bad(409, 'in-team');
