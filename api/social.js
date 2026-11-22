@@ -115,11 +115,11 @@ module.exports = async (req, res) => {
       // full rounds of one accepted student
       // full rounds of one accepted student — or of anyone, for the admin (Guido prepares Pro calls)
       const s = me === L.ADMIN
-        ? await sql`select display from gs_profiles where username = ${target}`
-        : await sql`select display from gs_profiles where username = ${target} and professor = ${me} and prof_status = 'accepted'`;
+        ? await sql`select display, about from gs_profiles where username = ${target}`
+        : await sql`select display, about from gs_profiles where username = ${target} and professor = ${me} and prof_status = 'accepted'`;
       if (!s.length) return bad(403, 'not-your-student');
       const rows = await sql`select data from gs_rounds where username = ${target} and deleted = false`;
-      return ok({ username: target, name: s[0].display, rounds: rows.map(r => r.data).sort(byDateDesc).slice(0, 200) });
+      return ok({ username: target, name: s[0].display, about: s[0].about || null, rounds: rows.map(r => r.data).sort(byDateDesc).slice(0, 200) });
     }
 
     /* ---- teams (4×3 offer): the owner buys, shares a code, up to 4 players join ---- */
@@ -135,9 +135,17 @@ module.exports = async (req, res) => {
       await sql`insert into gs_reviews (username, contact, note) values (${me}, ${contact}, ${note}) on conflict (username) do update set contact = excluded.contact, note = excluded.note, status = 'requested', requested = now()`;
       return ok();
     }
+    if (action === 'setAbout') {   // first-login answers: why they play, experience, practice habits, course, index, distances
+      const a = b.about && typeof b.about === 'object' ? b.about : null;
+      if (!a) return bad(400, 'bad-about');
+      const s = JSON.stringify(a);
+      if (s.length > 4000) return bad(413, 'too-big');
+      await sql`update gs_profiles set about = ${s} where username = ${me}`;
+      return ok();
+    }
     if (action === 'reviewList') {
       if (me !== L.ADMIN) return bad(403, 'admin');
-      const rows = await sql`select r.username, p.display, r.contact, r.note, r.status, r.recommendation, r.requested from gs_reviews r join gs_profiles p on p.username = r.username order by r.requested desc`;
+      const rows = await sql`select r.username, p.display, p.about, r.contact, r.note, r.status, r.recommendation, r.requested from gs_reviews r join gs_profiles p on p.username = r.username order by r.requested desc`;
       return ok({ reviews: rows });
     }
     if (action === 'reviewDone') {
@@ -244,7 +252,7 @@ module.exports = async (req, res) => {
     /* ---- your data: download everything / delete the account ---- */
     if (action === 'export') {
       const user = (await sql`select username, created from gs_users where username = ${me}`)[0] || { username: me };
-      const profile = (await sql`select display, findable, professor, prof_status, plan from gs_profiles where username = ${me}`)[0] || null;
+      const profile = (await sql`select display, findable, professor, prof_status, plan, about from gs_profiles where username = ${me}`)[0] || null;
       const rounds = await sql`select id, data, upd from gs_rounds where username = ${me} and deleted = false order by id`;
       const following = await sql`select followee as username from gs_follows where follower = ${me}`;
       const followers = await sql`select follower as username from gs_follows where followee = ${me}`;
