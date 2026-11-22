@@ -27,6 +27,11 @@ Disallow: /
 User-agent: *
 Allow: /$
 Allow: /golfimbul-icon.svg
+Allow: /privacy
+Allow: /terms
+Allow: /help
+Allow: /legal.css
+Allow: /legal.js
 Disallow: /api/
 Disallow: /logo-concepts.html
 Disallow: /*?

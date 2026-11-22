@@ -199,6 +199,25 @@ module.exports = async (req, res) => {
       return ok();
     }
 
+    /* ---- AI assistant over MCP: personal read-only keys (Lite and Pro) ---- */
+    if (action === 'mcpKeys') {
+      const k = await sql`select id, label, created, last_used from gs_keys where username = ${me} order by created`;
+      return ok({ keys: k });
+    }
+    if (action === 'mcpCreate') {
+      if (needLite()) return bad(403, 'plan');
+      const n = await sql`select count(*)::int as n from gs_keys where username = ${me}`;
+      if (n[0].n >= 5) return bad(400, 'too-many-keys');
+      const key = 'gk_' + L.crypto.randomBytes(16).toString('hex'), id = L.crypto.randomBytes(6).toString('hex');
+      const label = String(b.label || 'AI assistant').replace(/[<>&"']/g, '').slice(0, 40);
+      await sql`insert into gs_keys (id, username, hash, label) values (${id}, ${me}, ${L.crypto.createHash('sha256').update(key).digest('hex')}, ${label})`;
+      return ok({ id, key, label });
+    }
+    if (action === 'mcpRevoke') {
+      await sql`delete from gs_keys where username = ${me} and id = ${String(b.id || '')}`;
+      return ok();
+    }
+
     /* ---- My bag from a Garmin export (parsed in the browser; only the summary is stored) — Lite and Pro ---- */
     if (action === 'bagGet') {
       const r = await sql`select data, upd from gs_bags where username = ${me}`;
@@ -217,6 +236,7 @@ module.exports = async (req, res) => {
     }
     if (action === 'bagClear') {
       await sql`delete from gs_bags where username = ${me}`;
+      await sql`delete from gs_keys where username = ${me}`;
       return ok();
     }
 

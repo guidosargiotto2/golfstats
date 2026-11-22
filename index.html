@@ -695,6 +695,9 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .gimT5{width:100%;min-width:560px;height:auto;display:block}.gimVerdict{font-family:var(--serif);color:var(--pine);font-size:16px;margin:8px 0 4px}
 .gimH4{font-family:var(--serif);color:var(--pine);margin:14px 0 6px;font-weight:600}
 .gimCat{display:grid;grid-template-columns:190px 1fr 42px 40px;align-items:center;gap:8px;font-size:13px;margin:4px 0}.gimCat i{display:block;height:12px;border-radius:6px;background:#c9a95a;animation:gimGrow .7s ease-out both}.gimCat.top i{background:var(--clay)}.gimCat b{text-align:right}.gimCat small{color:var(--ink-soft,#5c6357)}
+
+.aiNew{background:rgba(31,122,77,.08);border:1px solid var(--fairway);border-radius:10px;padding:10px 12px;margin:6px 0 10px;font-size:13px}
+.aiHow{margin-top:10px;font-size:13px}.aiHow summary{cursor:pointer;font-weight:700;color:var(--pine)}.aiHow ol{margin:8px 0 6px 18px;padding:0;line-height:1.55}
 @keyframes gimGrow{from{transform:scaleX(0);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}
 @media(max-width:560px){.gimCat{grid-template-columns:120px 1fr 34px 34px;font-size:12px}}
 </style>
@@ -919,7 +922,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
  <div class="ctas" style="justify-content:center"><button class="btn1" data-go="up" data-l="Start your free month|Empezá tu mes gratis">Start your free month</button></div>
  <div class="meanline"><svg width="54" height="54" viewBox="0 0 116 116" aria-hidden="true" class="gmark"><defs><clipPath id="gmk3"><circle cx="58" cy="58" r="50"/></clipPath></defs><circle cx="58" cy="58" r="50" fill="#fbf6e6"/><g clip-path="url(#gmk3)"><rect x="0" y="30" width="116" height="30" fill="#c2502e" opacity=".07"/><path d="M0 30 H 116 M0 60 H 116" stroke="#c2502e" stroke-width="2.4" stroke-dasharray="4 4"/><polyline points="10,46 20,36 30,52 40,38 50,50 60,40 66,46" fill="none" stroke="#0f3a2c" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M66 46 C 74 56 78 72 82 84" fill="none" stroke="#0f3a2c" stroke-width="4.4" stroke-linecap="round"/><path d="M0 116 V 98 C 30 98 46 80 76 80 C 98 80 110 90 116 96 V 116 Z" fill="#7aa36a"/><path d="M0 98 C 30 98 46 80 76 80 C 98 80 110 90 116 96" fill="none" stroke="#0f3a2c" stroke-width="2.4"/><path d="M72 100 a 10 10 0 0 1 20 0 Z" fill="#3b2614"/><circle cx="82" cy="90" r="6.4" fill="#fff" stroke="#0f3a2c" stroke-width="2.4"/></g><circle cx="58" cy="58" r="50" fill="none" stroke="#0f3a2c" stroke-width="5"/><circle cx="58" cy="58" r="55" fill="none" stroke="#b89a52" stroke-width="2"/></svg><span data-l="The logo represents Golfimbul's core goal: telling real change from noise — until the ball drops.|El logo representa el objetivo central de Golfimbul: distinguir el cambio real del ruido — hasta que la pelota cae.">The logo represents Golfimbul's core goal: telling real change from noise — until the ball drops.</span></div>
 </div></section>
-<footer><div class="lw">© 2025–2026 Guido Sargiotto · Golfimbul</div></footer>
+<footer><div class="lw">© 2025–2026 Guido Sargiotto · Golfimbul · <a href="/help" style="color:inherit" data-l="Help|Ayuda">Help</a> · <a href="/privacy" style="color:inherit" data-l="Privacy|Privacidad">Privacy</a> · <a href="/terms" style="color:inherit" data-l="Terms|Términos">Terms</a></div></footer>
 
 </div>
 
@@ -3652,7 +3655,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
      '<p class="frsub" style="margin-top:6px">'+T('One file with everything Golfimbul holds about you: account, profile, every round and shot, sign-in methods, friends, team, review and the settings on this device.','Un archivo con todo lo que Golfimbul guarda de vos: cuenta, perfil, cada vuelta y tiro, métodos de ingreso, amigos, equipo, revisión y la configuración de este dispositivo.')+'</p>'+
      (ME.admin?'<p class="frsub" style="margin-top:12px">'+T('The admin account cannot be deleted.','La cuenta de administrador no se puede eliminar.')+'</p>':
      '<div class="frline" style="margin-top:14px;flex-wrap:wrap;gap:8px"><span>'+T('Type','Escribí')+' <b>DELETE</b> '+T('to delete your account','para eliminar tu cuenta')+'</span><input id="dtConf" autocomplete="off" autocapitalize="characters" style="width:120px"><button class="pf_btn frgrey" id="dtDel" disabled style="color:var(--clay);border-color:var(--clay);opacity:.5">'+T('Delete my account','Eliminar mi cuenta')+'</button></div>'+
-     '<p class="frsub" style="margin-top:6px">'+T('Deleting your account erases all your rounds and data, removes you from friends, teams and professors, and signs you out. It cannot be undone — download your data first if you might want it back.','Eliminar tu cuenta borra todas tus vueltas y datos, te quita de amigos, equipos y profesores, y cierra tu sesión. No se puede deshacer — descargá tus datos antes si podrías quererlos.')+'</p>'));
+     '<p class="frsub" style="margin-top:6px">'+T('Deleting your account erases all your rounds and data, removes you from friends, teams and professors, and signs you out. It cannot be undone — download your data first if you might want it back.','Eliminar tu cuenta borra todas tus vueltas y datos, te quita de amigos, equipos y profesores, y cierra tu sesión. No se puede deshacer — descargá tus datos antes si podrías quererlos.')+'</p>')+'<p class="frsub" style="margin-top:10px">'+T('What we keep and why: ','Qué guardamos y por qué: ')+'<a href="/privacy" target="_blank" style="color:var(--fairway)">'+T('privacy','privacidad')+'</a> · '+T('What you agreed to: ','Lo que aceptaste: ')+'<a href="/terms" target="_blank" style="color:var(--fairway)">'+T('terms of use','términos de uso')+'</a> · <a href="/help" target="_blank" style="color:var(--fairway)">'+T('Help','Ayuda')+'</a></p>');
  }
  function wireData(el){
    var dl=el.querySelector('#dtDl');if(dl)dl.onclick=function(){dl.disabled=true;dl.textContent='…';
@@ -3667,6 +3670,29 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
        api('deleteAccount',{confirm:'DELETE'}).then(function(j){if(j&&j.ok){try{localStorage.clear();}catch(e){}alert(T('Your account and all your data were deleted.','Tu cuenta y todos tus datos fueron eliminados.'));location.reload();}
          else{MSG=T('Could not delete the account.','No se pudo eliminar la cuenta.');draw();}}).catch(function(){MSG=T('Offline — try again later.','Sin conexión — probá más tarde.');draw();});};}
  }
+ var AIK=null,AINEW=null;
+ function aiHTML(){
+   var p=ME.plan||'free',okp=(p==='lite'||p==='pro'),url=location.origin+'/api/mcp?key=';
+   var head=T('Ask your own AI assistant about your game — Claude, ChatGPT or any app that supports MCP. It can read your rounds, strokes gained, Tiger 5, control-chart limits and your Garmin bag. It can only read: nothing can be changed or deleted with your key.','Preguntale a tu propio asistente de IA sobre tu juego — Claude, ChatGPT o cualquier app compatible con MCP. Puede leer tus vueltas, strokes gained, Tiger 5, límites de los gráficos de control y tu bolsa de Garmin. Solo puede leer: con tu clave no se puede cambiar ni borrar nada.');
+   if(!okp)return sec(T('AI assistant (MCP)','Asistente de IA (MCP)')+' <span class="gimTag">Lite · Pro</span>','<button class="pf_btn" id="aiPlans">'+T('See plans','Ver planes')+'</button>',head);
+   if(AIK===null){api('mcpKeys').then(function(j){AIK=(j&&j.keys)||[];draw();}).catch(function(){AIK=[];});}
+   var h='';
+   if(AINEW){h+='<div class="aiNew"><b>'+T('Your connector URL — copy it now, it will not be shown again:','Tu URL de conector — copiala ahora, no se vuelve a mostrar:')+'</b><div class="frline" style="gap:6px"><input id="aiUrl" readonly value="'+esc(url+AINEW)+'" style="flex:1;font-family:monospace;font-size:12px"><button class="pf_btn" id="aiCopy">'+T('Copy','Copiar')+'</button></div></div>';}
+   h+=(AIK||[]).map(function(k){return '<div class="frline"><span><b>'+esc(k.label||'Key')+'</b> <small>'+T('created ','creada ')+String(k.created||'').slice(0,10)+(k.last_used?' · '+T('last used ','último uso ')+String(k.last_used).slice(0,10):' · '+T('never used','sin usar'))+'</small></span><button class="pf_btn frgrey" data-airev="'+esc(k.id)+'">'+T('Revoke','Revocar')+'</button></div>';}).join('');
+   if(!AIK||AIK.length<5)h+='<div class="frline" style="margin-top:8px"><input id="aiLabel" placeholder="'+T('Name it (e.g. Claude)','Ponele nombre (ej. Claude)')+'" maxlength="40"><button class="pf_btn" id="aiNewBtn">'+T('Create key','Crear clave')+'</button></div>';
+   h+='<details class="aiHow"><summary>'+T('How to connect','Cómo conectarlo')+'</summary><ol>'+
+     '<li><b>Claude</b> — '+T('Settings → Connectors → Add custom connector. Name it Golfimbul and paste your URL.','Configuración → Conectores → Agregar conector personalizado. Llamalo Golfimbul y pegá tu URL.')+'</li>'+
+     '<li><b>ChatGPT</b> — '+T('Settings → Apps & Connectors → Advanced → Developer mode, then Create: paste your URL, no authentication.','Configuración → Apps y conectores → Avanzado → Modo desarrollador, después Crear: pegá tu URL, sin autenticación.')+'</li>'+
+     '<li>'+T('Other MCP apps — add a remote (Streamable HTTP) server with your URL.','Otras apps MCP — agregá un servidor remoto (Streamable HTTP) con tu URL.')+'</li></ol>'+
+     '<p class="frsub">'+T('Then ask things like: "Is my putting really getting better?", "Where do my Tiger 5s come from?", "Which club should I hit from 150?" Treat the URL like a password: anyone with it can read your stats. Revoke it here at any time and it stops working at once.','Después preguntá cosas como: "¿Mi putt está mejorando de verdad?", "¿De dónde salen mis Tiger 5?", "¿Qué palo pego desde 150?" Tratá la URL como una contraseña: quien la tenga puede leer tus estadísticas. Revocala acá cuando quieras y deja de funcionar al instante.')+'</p></details>';
+   return sec(T('AI assistant (MCP)','Asistente de IA (MCP)'),h,head);
+ }
+ function wireAI(el){
+   var pl=el.querySelector('#aiPlans');if(pl)pl.onclick=function(){if(window.PLANS)window.PLANS.open();};
+   var nb=el.querySelector('#aiNewBtn');if(nb)nb.onclick=function(){nb.disabled=true;api('mcpCreate',{label:(el.querySelector('#aiLabel').value||'').trim()||'AI assistant'}).then(function(j){if(j&&j.ok){AINEW=j.key;AIK=null;}else{MSG=j&&j.error==='plan'?T('The AI assistant is part of Lite and Pro.','El asistente de IA es parte de Lite y Pro.'):T('Could not create the key.','No se pudo crear la clave.');}draw();}).catch(function(){nb.disabled=false;});};
+   var cp=el.querySelector('#aiCopy');if(cp)cp.onclick=function(){var i=el.querySelector('#aiUrl');try{navigator.clipboard.writeText(i.value);}catch(e){i.select();document.execCommand('copy');}cp.textContent='✓';};
+   el.querySelectorAll('[data-airev]').forEach(function(b){b.onclick=function(){if(!confirm(T('Revoke this key? Any assistant using it loses access at once.','¿Revocar esta clave? El asistente que la use pierde el acceso al instante.')))return;api('mcpRevoke',{id:b.getAttribute('data-airev')}).then(function(){AIK=null;AINEW=null;draw();});};});
+ }
  function draw(){
    var el=document.getElementById('friendsBody'),ac=document.getElementById('acctBody');
    var msg=(MSG?'<p class="frmsg">'+esc(MSG)+'</p>':'');
@@ -3674,7 +3700,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    if(!ME){if(el)el.innerHTML='<p class="frsub">'+(MSG||'…')+'</p>';if(ac)ac.innerHTML=MSG?'<p class="frsub">'+esc(MSG)+'</p>':'';return;}
    if(el){el.innerHTML=msg+compareHTML()+feedHTML()+studentsHTML()+allPlayersHTML()+findHTML();
      var st=document.getElementById('frStu'),sa=document.getElementById('frStuA'),tgt=(st&&STU&&(ME.students||[]).some(function(x){return x.username===STU.username&&x.prof_status==='accepted';}))?st:(sa||st);if(tgt)tgt.innerHTML=studentHTML();wire(el);}
-   if(ac){ac.innerHTML=msg+planHTML()+profHTML()+privacyHTML()+dataHTML()+adminHTML();wire(ac);wireData(ac);
+   if(ac){ac.innerHTML=msg+planHTML()+profHTML()+privacyHTML()+aiHTML()+dataHTML()+adminHTML();wire(ac);wireData(ac);wireAI(ac);
      var pc=document.getElementById('plChooser');if(pc&&window.PLANS&&window.PLANS.chooser)window.PLANS.chooser(pc);}
  }
  function load(msg){MSG=msg||'';if(!tok()){draw();return;}
@@ -3794,8 +3820,8 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    en:['Your first month is free and mandatory — no one can buy before 30 days','Log every shot of every round, with predictions','Each round on its own: scorecard, strokes gained and Tiger 5 per round','No trends across rounds','Everything you log is kept — upgrade and your Statistics fill in with your whole history','Share image for WhatsApp'],
    es:['Tu primer mes es gratis y obligatorio — nadie puede comprar antes de los 30 días','Cargá cada tiro de cada vuelta, con predicciones','Cada vuelta por separado: scorecard, strokes gained y Tiger 5 por vuelta','Sin tendencias entre vueltas','Todo lo que cargás queda guardado — al pasar a Lite tus estadísticas se completan con toda tu historia','Imagen para compartir por WhatsApp']},
   {k:'lite',balls:1,name:'Lite',
-   en:['Everything in Free','Statistics across all your rounds: trends, control charts, what drives your score, practice priorities','Friends: follow and compare','Link to your professor','<b>Import from Garmin Golf</b> — club distances, dispersion, Tiger 5 and smarter predictions'],
-   es:['Todo lo de Free','Estadísticas de todas tus vueltas: tendencias, gráficos de control, qué define tu score, prioridades de práctica','Amigos: seguir y comparar','Vincular a tu profesor','<b>Importá desde Garmin Golf</b> — distancias por palo, dispersión, Tiger 5 y predicciones más precisas'],
+   en:['Everything in Free','Statistics across all your rounds: trends, control charts, what drives your score, practice priorities','Friends: follow and compare','Link to your professor','<b>Import from Garmin Golf</b> — club distances, dispersion, Tiger 5 and smarter predictions','<b>Ask your own AI assistant</b> (Claude, ChatGPT…) about your game, read-only'],
+   es:['Todo lo de Free','Estadísticas de todas tus vueltas: tendencias, gráficos de control, qué define tu score, prioridades de práctica','Amigos: seguir y comparar','Vincular a tu profesor','<b>Importá desde Garmin Golf</b> — distancias por palo, dispersión, Tiger 5 y predicciones más precisas','<b>Preguntale a tu propio asistente de IA</b> (Claude, ChatGPT…) sobre tu juego, solo lectura'],
    note:['Save one ball a month with better strategy and it pays for itself.','Ahorrá una pelota por mes con mejor estrategia y se paga sola.']},
   {k:'pro',balls:6,name:'Pro',
    en:['Everything in Lite','<b>A monthly 30-minute call with Guido</b>, prepared from your numbers','Early access to new features','Priority support','By invitation — after your free review with Guido'],

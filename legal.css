@@ -1,0 +1,22 @@
+:root{--pine:#0f3a2c;--fair:#1f7a4d;--sand:#d8c48c;--sandd:#b89a52;--cream:#f6f2e7;--paper:#fffdf7;--ink:#20261f;--soft:#5c6357;--line:#e2ddcc;--clay:#c2502e;
+ --serif:'Iowan Old Style','Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;--sans:'Trebuchet MS','Gill Sans','Optima',sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--cream);color:var(--ink);font:16px/1.65 var(--sans)}
+header.lg{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 22px;background:rgba(246,242,231,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font:600 22px var(--serif);color:var(--pine);text-decoration:none}.brand img{width:30px;height:30px}
+header nav{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+header nav a{color:var(--soft);text-decoration:none;padding:6px 10px;border-radius:20px;font-size:14px;transition:background .2s,color .2s}
+header nav a:hover{background:rgba(31,122,77,.08);color:var(--pine)}header nav a.on{color:var(--pine);font-weight:700;background:rgba(216,196,140,.35)}
+#lang{margin-left:6px;border:1px solid var(--sandd);background:transparent;color:var(--pine);border-radius:20px;padding:5px 11px;font:700 12px var(--sans);cursor:pointer}
+main{max-width:760px;margin:0 auto;padding:34px 22px 60px;animation:rise .5s ease-out both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+h1{font:600 42px/1.1 var(--serif);color:var(--pine);margin:0 0 6px}
+h2{font:600 23px var(--serif);color:var(--pine);margin:34px 0 8px;padding-top:6px;border-top:1px solid var(--line);scroll-margin-top:70px}
+.upd{color:var(--soft);font-size:13px;margin:0 0 18px}
+.lead{font:italic 20px/1.5 var(--serif);color:var(--pine);border-left:3px solid var(--sandd);padding:2px 0 2px 16px;margin:10px 0 24px}
+a{color:var(--fair)}ul,ol{padding-left:22px}li{margin:4px 0}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}.toc a{font-size:13px;text-decoration:none;border:1px solid var(--line);background:var(--paper);border-radius:20px;padding:4px 11px;color:var(--pine);transition:border-color .2s,transform .2s}
+.toc a:hover{border-color:var(--sandd);transform:translateY(-1px)}
+footer.lg{text-align:center;color:var(--soft);font-size:12.5px;padding:20px;border-top:1px solid var(--line)}
+html[data-lang="en"] [lang="es"],html[data-lang="es"] [lang="en"]{display:none}
+@media(max-width:560px){h1{font-size:34px}header.lg{padding:10px 14px}header nav a{padding:5px 7px;font-size:13px}}
