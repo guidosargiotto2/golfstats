@@ -642,6 +642,19 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope .plTeam span{font-size:13.5px;line-height:1.5;color:var(--ink-soft);}
 .lgscope .plTeamB{flex:none;width:56px;height:56px;border-radius:50%;background:var(--pine);color:var(--sand);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:19px;}
 .lgscope .tmCode{font-family:var(--serif);font-weight:700;font-size:24px;letter-spacing:.06em;color:var(--pine);margin:4px 0 6px;}
+
+/* profile groups */
+#pform:empty{display:none;}
+.lgscope .pgrp{border:1px solid var(--line);border-radius:14px;background:var(--paper);margin:0 0 10px;overflow:hidden;}
+.lgscope .pgrp>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;font-family:var(--serif);font-weight:600;font-size:18px;color:var(--pine);user-select:none;}
+.lgscope .pgrp>summary::-webkit-details-marker{display:none;}
+.lgscope .pgrp>summary:hover{background:rgba(15,58,44,.035);}
+.lgscope .pgrp .pgC{font-family:var(--cond);font-size:13px;color:var(--sand-deep);transition:transform .2s;}
+.lgscope .pgrp[open] .pgC{transform:rotate(180deg);}
+.lgscope .pgrp .pgB{padding:4px 18px 16px;border-top:1px solid var(--line-soft,#eee9da);}
+.lgscope .pgrp .pgB .bagEntry{margin:10px 0 0;}
+.lgscope .pgrp .pgB .frsec{border:none;padding:10px 0 6px;margin:0;border-bottom:1px solid var(--line-soft,#eee9da);border-radius:0;background:transparent;}
+.lgscope .pgrp .pgB .frsec:last-child{border-bottom:none;}
 </style>
 </head>
 <body>
@@ -913,7 +926,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
  </div>
  <div id="lgToast" class="lgtoast" role="status" aria-live="polite"></div>
 </div></div>
-  <div id="view-profile" class="lgscope" style="display:none"><div style="max-width:460px;margin:0 auto;padding-top:4px"><h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px" data-i18n="Player profile">Player profile</h2><div id="bagEntry"></div><div class="pform" id="pform"></div><div id="acctBody"></div></div></div>
+  <div id="view-profile" class="lgscope" style="display:none"><div style="max-width:620px;margin:0 auto;padding-top:4px"><h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px" data-i18n="Player profile">Player profile</h2><div id="bagEntry"></div><div class="pform" id="pform"></div><div id="acctBody"></div></div></div>
   <div id="view-ledger" style="display:none"><div class="lgscope" style="max-width:1280px;margin:0 auto;padding-top:4px">
     <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 2px" data-i18n="Round ledger">Round ledger</h2>
     <p style="font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:0 0 14px" data-i18n="Every round — imported and logged here. Open any one for its scorecard and details.">Every round — imported and logged here. Open any one for its scorecard and details.</p>
@@ -2915,7 +2928,6 @@ function renderProf(){
   <div class="hiblock">
     <div class="hirow"><span>${t('Language')}</span></div>
     <label>App language<select id="pf_lang"><option value="en" ${PROF.lang!=='es'?'selected':''}>English</option><option value="es" ${PROF.lang==='es'?'selected':''}>Español</option><option value="fr" disabled>Français (soon)</option><option value="ja" disabled>日本語 (soon)</option></select></label>
-    <div class="hisub">These settings drive the logger. Historical Statistics rounds keep your sheet's original definitions.</div>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>Handicap Index</span><b>${eff!=null?eff:'—'}</b></div>
@@ -3543,7 +3555,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    if(!ME){if(el)el.innerHTML='<p class="frsub">'+(MSG||'…')+'</p>';if(ac)ac.innerHTML=MSG?'<p class="frsub">'+esc(MSG)+'</p>':'';return;}
    if(el){el.innerHTML=msg+compareHTML()+feedHTML()+studentsHTML()+allPlayersHTML()+findHTML();
      var st=document.getElementById('frStu'),sa=document.getElementById('frStuA'),tgt=(st&&STU&&(ME.students||[]).some(function(x){return x.username===STU.username&&x.prof_status==='accepted';}))?st:(sa||st);if(tgt)tgt.innerHTML=studentHTML();wire(el);}
-   if(ac){ac.innerHTML='<h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:26px 0 14px">'+T('Account','Cuenta')+'</h2>'+msg+planHTML()+profHTML()+privacyHTML()+adminHTML();wire(ac);
+   if(ac){ac.innerHTML=msg+planHTML()+profHTML()+privacyHTML()+adminHTML();wire(ac);
      var pc=document.getElementById('plChooser');if(pc&&window.PLANS&&window.PLANS.chooser)window.PLANS.chooser(pc);}
  }
  function load(msg){MSG=msg||'';if(!tok()){draw();return;}
@@ -3708,7 +3720,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    orig(v);};
    var nav=document.getElementById('tabnav');
    if(nav)nav.addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.dataset.v&&locked(b.dataset.v)){e.stopImmediatePropagation();window.showView(b.dataset.v);}},true);}
- window.PLANS={render:render,refresh:refreshPlan,plan:plan,chooser:function(el){render('',el);},open:function(){if(window.showView)window.showView('profile');setTimeout(function(){var c=document.getElementById('plChooser');if(c&&c.scrollIntoView)c.scrollIntoView({behavior:'smooth',block:'start'});},400);}};
+ window.PLANS={render:render,refresh:refreshPlan,plan:plan,chooser:function(el){render('',el);},open:function(){if(window.showView)window.showView('profile');setTimeout(function(){if(window.PGRP)window.PGRP.open('account');var c=document.getElementById('plChooser');if(c&&c.scrollIntoView)c.scrollIntoView({behavior:'smooth',block:'start'});},450);}};
  paintNav();refreshPlan();
 })();
 </script>
@@ -3880,6 +3892,46 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
    m.onclick=function(e){if(e.target===m||e.target.classList.contains('tgX'))m.remove();};}
  window.TWOGOLF={modal:modal,mount:mountLanding};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountLanding);else mountLanding();
+})();
+</script>
+<script>
+/* ===== Profile grouped into collapsible sections ===== */
+(function(){
+ var ES=function(){return window.__LANG==='es';};
+ var G=[
+  {k:'personal',t:['Personal','Personal'],ids:['pf_name','pf_nick','pf_units','pf_lang']},
+  {k:'course',t:['Course & tees','Cancha y tees'],ids:['pf_course','pf_tee','pf_teeset','pf_hidered','pf_pincourse']},
+  {k:'game',t:['My game & handicap','Mi juego y hándicap'],ids:['pf_drive','pf_himode','pf_impbtn','pf_imphbtn']},
+  {k:'bag',t:['My bag','Mi bolsa'],ext:'bagEntry'},
+  {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_predict']},
+  {k:'analysis',t:['Scoring & analysis','Score y análisis'],ids:['pf_netpar','pf_sgbase','pf_atg']},
+  {k:'t5',t:["Tiger's 5",'Tiger 5'],ids:['pf_t5mode','pf_t5x','pf_nine','pf_bogeyx']},
+  {k:'account',t:['Account, plan & privacy','Cuenta, plan y privacidad'],ext:'acctBody'},
+  {k:'other',t:['Other','Otros'],ids:[]}
+ ];
+ var openSet={};try{openSet=JSON.parse(localStorage.getItem('gs-pgrp')||'{"personal":1}');}catch(e){openSet={personal:1};}
+ var busy=false;
+ function build(){
+   var pf=document.getElementById('pform');if(!pf||busy)return;busy=true;
+   var box=document.getElementById('profGroups');
+   if(!box){box=document.createElement('div');box.id='profGroups';pf.parentNode.insertBefore(box,pf);
+     G.forEach(function(g){var d=document.createElement('details');d.className='pgrp';d.dataset.k=g.k;if(openSet[g.k])d.open=true;
+       d.innerHTML='<summary><span class="pgT"></span><span class="pgC">▾</span></summary><div class="pgB'+(g.ext?'':' pform')+'"></div>';
+       d.addEventListener('toggle',function(){openSet[g.k]=d.open?1:0;try{localStorage.setItem('gs-pgrp',JSON.stringify(openSet));}catch(e){}});
+       box.appendChild(d);
+       if(g.ext){var ex=document.getElementById(g.ext);if(ex)d.querySelector('.pgB').appendChild(ex);}});}
+   box.querySelectorAll('.pgrp').forEach(function(d){var g=G.filter(function(x){return x.k===d.dataset.k;})[0];d.querySelector('.pgT').textContent=g.t[ES()?1:0];});
+   if(pf.children.length){
+     G.forEach(function(g){if(!g.ext){var b=box.querySelector('.pgrp[data-k="'+g.k+'"] .pgB');while(b.firstChild)b.removeChild(b.firstChild);}});
+     G.forEach(function(g){if(g.ext||!g.ids)return;var b=box.querySelector('.pgrp[data-k="'+g.k+'"] .pgB');
+       g.ids.forEach(function(id){var el=document.getElementById(id);if(!el||!pf.contains(el))return;var u=el.closest('.hiblock')||el.closest('label')||el;if(u.parentNode===pf)b.appendChild(u);});});
+     var other=box.querySelector('.pgrp[data-k="other"] .pgB');while(pf.firstChild)other.appendChild(pf.firstChild);
+   }
+   var od=box.querySelector('.pgrp[data-k="other"]');if(od)od.style.display=od.querySelector('.pgB').children.length?'':'none';
+   busy=false;}
+ function hook(){var pf=document.getElementById('pform');if(!pf)return;build();try{new MutationObserver(function(){if(!busy&&pf.children.length)setTimeout(build,0);}).observe(pf,{childList:true});}catch(e){}}
+ window.PGRP={build:build,open:function(k){var d=document.querySelector('.pgrp[data-k="'+k+'"]');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}}};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hook);else hook();
 })();
 </script>
 </body>
