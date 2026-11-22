@@ -292,6 +292,14 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 #view-log .bar{position:sticky;top:0;z-index:12;}
 .lgscope .lgtablewrap{max-height:calc(100vh - 230px);overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:2px;}
 .lgscope .lgtablewrap table{min-width:720px;}
+/* fixed column widths: the grid must not reflow when a shot row is added or the prediction appears */
+.lgscope .lgtablewrap table{table-layout:fixed;width:100%;}
+.lgscope .lgtablewrap thead th:nth-child(1){width:34px;}
+.lgscope .lgtablewrap thead th:nth-child(8){width:62px;}
+.lgscope .lgtablewrap thead th:nth-child(9){width:64px;}
+.lgscope .lgtablewrap thead th:nth-child(10){width:54px;}
+.lgscope .lgtablewrap thead th:nth-child(11){width:58px;}
+.lgscope .lgtablewrap td input{max-width:100%;box-sizing:border-box;}
 .lgscope .lgtablewrap thead th{position:sticky;top:0;z-index:6;background:var(--pine);color:#fff;box-shadow:0 2px 0 rgba(0,0,0,.08);}
 .lgscope td.liec{padding:3px 3px;}
 .lgscope input.lc{width:100%;min-width:52px;font-family:var(--cond);font-size:13px;border:1px solid transparent;border-radius:6px;padding:7px 4px;background:transparent;color:var(--ink-soft);text-align:center;}
