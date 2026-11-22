@@ -791,7 +791,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
  <div class="tiers">
   <div class="tier"><div class="tn">Free</div><div class="tp" data-l="Free|Gratis">Free</div><p data-l="Log every shot. Every round's scorecard and analysis, one round at a time.|Cargá cada tiro. La tarjeta y el análisis de cada vuelta, de a una vuelta.">Log every shot. Every round's scorecard and analysis, one round at a time.</p></div>
   <div class="tier"><div class="tn">Lite</div><div class="tp" data-l="1 ball / month|1 pelota / mes">1 ball / month</div><p data-l="The control charts across all your rounds, your priorities, friends and your coach. If it saves you one ball a month, it's free.|Los gráficos de control de todas tus vueltas, tus prioridades, amigos y tu profesor. Si te ahorra una pelota por mes, te sale gratis.">The control charts across all your rounds, your priorities, friends and your coach. If it saves you one ball a month, it's free.</p></div>
-  <div class="tier pro"><div class="tn">Pro</div><div class="tp" data-l="Half a dozen / month|Media docena / mes">Half a dozen / month</div><p data-l="Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers.|Todo lo de Lite, más una llamada mensual de 30 minutos conmigo, preparada con tus números.">Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers.</p></div>
+  <div class="tier pro"><div class="tn">Pro</div><div class="tp" data-l="Half a dozen / month|Media docena / mes">Half a dozen / month</div><p data-l="Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers — and import from Garmin and other sources.|Todo lo de Lite, más una llamada mensual de 30 minutos conmigo, preparada con tus números — e importación desde Garmin y otras fuentes.">Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers — and import from Garmin and other sources.</p></div>
  </div>
 </div></section>
 
@@ -2314,7 +2314,7 @@ function holeView(h){return {par:h.par,yd:h.yd,hcp:h.hcp,shots:confShots(h)};}
 /* historical average distance for a given shot position + lie on this hole */
 function histDist(hi,idx,lie){var p=PROFILE[pkey(R.course,R.tee,hi)];if(p&&p.pos&&p.pos[idx]&&p.pos[idx][lie]&&p.pos[idx][lie].n>0)return p.pos[idx][lie].dist;return null;}
 /* Garmin-trained predictions (per player): tee-shot leave per hole, approach outcome by distance & lie, hole scoring averages */
-function gPred(){try{var u=localStorage.getItem('app-user')||'';return (typeof BAG!=='undefined'&&BAG[u]&&BAG[u].pred)||null;}catch(e){return null;}}
+function gPred(){try{var u=localStorage.getItem('app-user')||'',pl=localStorage.getItem('gs-token')?localStorage.getItem('gs-plan'):'';if(pl&&pl!=='pro')return null;return (typeof BAG!=='undefined'&&BAG[u]&&BAG[u].pred)||null;}catch(e){return null;}}   /* imported data is a Pro feature */
 function gTee(hi){var g=gPred();if(!g)return null;var o=g.tee[R.course+'|'+(R.markers||R.tee)+'#'+hi]||g.tee[R.course+'|'+R.tee+'#'+hi];return (o&&o.n>=8)?o:null;}
 function gBest(o,excl){var b=null;Object.keys(o.o).forEach(function(l){if(excl&&excl.indexOf(l)>=0)return;var v=o.o[l];if(!b||v[0]>b.n)b={lie:l,n:v[0],dist:v[1]};});return b;}
 function gApproach(D,lie){var g=gPred();if(!g)return null;var L=lie==='sand'?'sand':(lie==='fw'?'fw':'rough');var o=g.prox[(Math.floor(D/25)*25)+'|'+L];if(!o||o.n<12)return null;
@@ -3560,8 +3560,8 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    es:['Todo lo de Free','Estadísticas de todas tus vueltas: tendencias, gráficos de control, qué define tu score, prioridades de práctica','Amigos: seguir y comparar','Vincular a tu profesor'],
    note:['I\'m confident it pays for itself: if it saves you one ball a month, it\'s free.','Estoy seguro de que se paga sola: si te ahorra una pelota por mes, te sale gratis.']},
   {k:'pro',balls:6,name:'Pro',
-   en:['Everything in Lite','<b>A monthly 30-minute call with Guido</b>, prepared from your numbers','Early access to new features','Priority support'],
-   es:['Todo lo de Lite','<b>Una llamada mensual de 30 minutos con Guido</b>, preparada con tus números','Acceso anticipado a las funciones nuevas','Soporte prioritario']}
+   en:['Everything in Lite','<b>A monthly 30-minute call with Guido</b>, prepared from your numbers','<b>Import from Garmin and other sources</b> — your history, club distances, dispersion and smarter predictions','Early access to new features','Priority support'],
+   es:['Todo lo de Lite','<b>Una llamada mensual de 30 minutos con Guido</b>, preparada con tus números','<b>Importá desde Garmin y otras fuentes</b> — tu historia, distancias por palo, dispersión y predicciones más precisas','Acceso anticipado a las funciones nuevas','Soporte prioritario']}
  ];
  var rank=function(p){return ({free:0,lite:1,pro:2})[p]||0;};
  function plan(){return localStorage.getItem('gs-token')?(localStorage.getItem('gs-plan')||''):'';}   /* '' = unknown → never lock */
@@ -3614,7 +3614,8 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
  var NAME_ES={'Driver':'Driver','3 Wood':'Madera 3','5 Wood':'Madera 5','2 Hybrid':'Híbrido 2','3 Hybrid':'Híbrido 3','4 Hybrid':'Híbrido 4','4 Iron':'Hierro 4','5 Iron':'Hierro 5','6 Iron':'Hierro 6','7 Iron':'Hierro 7','8 Iron':'Hierro 8','9 Iron':'Hierro 9','Pitching Wedge':'Pitching wedge','Gap Wedge':'Gap wedge','Sand Wedge':'Sand wedge','Lob Wedge':'Lob wedge'};
  var cn=function(c){return ES()?(NAME_ES[c.name]||c.name):c.name;};
  var me=function(){return localStorage.getItem('app-user')||'';};
- var data=function(){try{return (typeof BAG!=='undefined'&&BAG[me()])||null;}catch(e){return null;}};
+ var isPro=function(){var p=localStorage.getItem('gs-token')?localStorage.getItem('gs-plan'):'';return !p||p==='pro';};   /* unknown plan (offline / old site) = not locked */
+ var data=function(){try{return (isPro()&&typeof BAG!=='undefined'&&BAG[me()])||null;}catch(e){return null;}};
  var PERIOD='all',SEL=null;
  var q=function(a,p){if(!a.length)return null;var s=a.slice().sort(function(x,y){return x-y;}),i=(s.length-1)*p,lo=Math.floor(i),hi=Math.ceil(i);return s[lo]+(s[hi]-s[lo])*(i-lo);};
  var inP=function(yr){return PERIOD==='all'||(PERIOD==='2y'?yr>=25:yr>=26);};
@@ -3680,7 +3681,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
    return h;}
  function render(){
    var el=document.getElementById('bagBody');if(!el)return;var d=data();
-   if(!d){el.innerHTML='<div class="frsec"><p class="frsub" style="font-size:14px;margin:0">'+T('No club data yet. Club distances come from a Garmin golf export — send yours to Guido and it will appear here.','Todavía no hay datos de palos. Las distancias salen de una exportación de golf de Garmin — mandale la tuya a Guido y aparece acá.')+'</p></div>';return;}
+   if(!d){el.innerHTML='<div class="frsec"><h3>'+T('Import your Garmin data','Importá tus datos de Garmin')+'</h3><p class="frsub" style="font-size:14px">'+(isPro()?T('Club distances and dispersion come from a Garmin golf export. Send yours to Guido and your bag appears here — with your history and smarter shot predictions.','Las distancias y la dispersión salen de una exportación de golf de Garmin. Mandale la tuya a Guido y tu bolsa aparece acá — con tu historia y predicciones más precisas.'):T('Importing from Garmin and other sources is part of Pro: how far each club really goes, where it misses, your past rounds and shot predictions trained on them.','Importar desde Garmin y otras fuentes es parte de Pro: cuánto va de verdad cada palo, hacia dónde falla, tus vueltas anteriores y predicciones entrenadas con ellas.'))+'</p>'+(isPro()?'':'<button class="pf_btn" onclick="window.PLANS&&window.PLANS.open()">'+T('See Pro','Ver Pro')+'</button>')+'</div>';return;}
    var L=clubs();if(!SEL||!L.some(function(o){return o.c.name===SEL;}))SEL=(L.find(function(o){return /7 Iron/.test(o.c.name);})||L[0]||{c:{}}).c.name;
    var tot=L.reduce(function(a,o){return a+o.n;},0);
    el.innerHTML='<div class="controls" id="bagPeriod" style="margin:0 0 12px">'+[['all',T('All','Todo')],['2y','2025–26'],['1y','2026']].map(function(b){return '<button data-p="'+b[0]+'"'+(PERIOD===b[0]?' class="on"':'')+'>'+b[1]+'</button>';}).join('')+'</div>'+
@@ -3691,7 +3692,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
    el.querySelectorAll('[data-club]').forEach(function(g){g.style.cursor='pointer';g.onclick=function(){SEL=g.getAttribute('data-club');render();var bx=document.getElementById('bagDispBox');if(bx&&bx.scrollIntoView&&window.innerWidth<820)bx.scrollIntoView({behavior:'smooth',block:'start'});};});
  }
  function entry(){var el=document.getElementById('bagEntry');if(!el)return;var d=data(),L=d?clubs():[];
-   el.innerHTML='<div class="bagEntry"><div><div class="bagEntryT">'+T('My bag','Mi bolsa')+'</div><div class="frsub" style="margin:2px 0 0">'+(d?(L.length+' '+T('clubs','palos')+' · '+T('distance and dispersion from your Garmin','distancia y dispersión de tu Garmin')):T('Club distances and dispersion','Distancias y dispersión por palo'))+'</div></div><button class="pf_btn" id="bagOpen">'+T('Open','Abrir')+' →</button></div>';
+   el.innerHTML='<div class="bagEntry"><div><div class="bagEntryT">'+T('My bag','Mi bolsa')+'</div><div class="frsub" style="margin:2px 0 0">'+(d?(L.length+' '+T('clubs','palos')+' · '+T('distance and dispersion from your Garmin','distancia y dispersión de tu Garmin')):(isPro()?T('Club distances and dispersion','Distancias y dispersión por palo'):T('Club distances and dispersion · Pro','Distancias y dispersión por palo · Pro')))+'</div></div><button class="pf_btn" id="bagOpen">'+T('Open','Abrir')+' →</button></div>';
    var b=document.getElementById('bagOpen');if(b)b.onclick=function(){if(window.showView)window.showView('bag');};}
  window.BAGVIEW={render:render,entry:entry};
 })();
