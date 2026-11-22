@@ -643,6 +643,8 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope .plTeamB{flex:none;width:56px;height:56px;border-radius:50%;background:var(--pine);color:var(--sand);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:19px;}
 .lgscope .tmCode{font-family:var(--serif);font-weight:700;font-size:24px;letter-spacing:.06em;color:var(--pine);margin:4px 0 6px;}
 
+/* tables outside the logger: no sticky header (it was overlapping the first row) */
+.lgscope table.bagTbl thead th,.lgscope table.frtbl thead th{position:static;top:auto;}
 /* profile groups */
 #pform:empty{display:none;}
 .lgscope .pgrp{border:1px solid var(--line);border-radius:14px;background:var(--paper);margin:0 0 10px;overflow:hidden;}
