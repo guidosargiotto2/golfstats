@@ -670,6 +670,12 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope select.clubsel{width:100%;max-width:62px;border:1px solid var(--line);border-radius:7px;background:transparent;font-family:var(--cond);font-weight:700;font-size:12.5px;color:var(--ink-soft);padding:4px 2px;text-align:center;}
 .lgscope select.clubsel.set{color:var(--pine);border-color:var(--pine);background:#fff;}
 .lgscope .clubpred{font-family:var(--cond);font-weight:700;font-size:12px;color:#b08a3a;}
+.lgscope .pgrp.pglink{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;transition:background .15s,border-color .15s;}
+.lgscope .pgrp.pglink:hover,.lgscope .pgrp.pglink:focus{background:rgba(15,58,44,.035);border-color:var(--pine);outline:none;}
+.lgscope .pglink .pgT{display:block;font-family:var(--serif);font-weight:600;font-size:18px;color:var(--pine);}
+.lgscope .pglink .pgS{display:block;font-family:var(--cond);font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+.lgscope .pglink .pgGo{font-family:var(--cond);font-weight:700;font-size:18px;color:var(--fairway);transition:transform .15s;}
+.lgscope .pglink:hover .pgGo{transform:translateX(3px);}
 </style>
 </head>
 <body>
@@ -3945,7 +3951,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
   {k:'personal',t:['Personal','Personal'],ids:['pf_name','pf_nick','pf_units','pf_lang']},
   {k:'course',t:['Course & tees','Cancha y tees'],ids:['pf_course','pf_tee','pf_teeset','pf_hidered','pf_pincourse']},
   {k:'game',t:['My game & handicap','Mi juego y hándicap'],ids:['pf_drive','pf_himode','pf_impbtn','pf_imphbtn']},
-  {k:'bag',t:['My bag','Mi bolsa'],ext:'bagEntry'},
+  {k:'bag',t:['My bag','Mi bolsa'],link:'bag',sub:['Distance and dispersion for every club','Distancia y dispersión de cada palo']},
   {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_predict']},
   {k:'analysis',t:['Scoring & analysis','Score y análisis'],ids:['pf_netpar','pf_sgbase','pf_atg']},
   {k:'t5',t:["Tiger's 5",'Tiger 5'],ids:['pf_t5mode','pf_t5x','pf_nine','pf_bogeyx']},
@@ -3958,15 +3964,20 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
    var pf=document.getElementById('pform');if(!pf||busy)return;busy=true;
    var box=document.getElementById('profGroups');
    if(!box){box=document.createElement('div');box.id='profGroups';pf.parentNode.insertBefore(box,pf);
-     G.forEach(function(g){var d=document.createElement('details');d.className='pgrp';d.dataset.k=g.k;if(openSet[g.k])d.open=true;
+     G.forEach(function(g){
+       if(g.link){var a=document.createElement('div');a.className='pgrp pglink';a.dataset.k=g.k;a.setAttribute('role','button');a.tabIndex=0;
+         a.innerHTML='<div class="pgL"><span class="pgT"></span><span class="pgS"></span></div><span class="pgGo">→</span>';
+         var go=function(){if(window.showView)window.showView(g.link);};a.onclick=go;a.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};
+         box.appendChild(a);var be=document.getElementById('bagEntry');if(be)be.style.display='none';return;}
+       var d=document.createElement('details');d.className='pgrp';d.dataset.k=g.k;if(openSet[g.k])d.open=true;
        d.innerHTML='<summary><span class="pgT"></span><span class="pgC">▾</span></summary><div class="pgB'+(g.ext?'':' pform')+'"></div>';
        d.addEventListener('toggle',function(){openSet[g.k]=d.open?1:0;try{localStorage.setItem('gs-pgrp',JSON.stringify(openSet));}catch(e){}});
        box.appendChild(d);
        if(g.ext){var ex=document.getElementById(g.ext);if(ex)d.querySelector('.pgB').appendChild(ex);}});}
-   box.querySelectorAll('.pgrp').forEach(function(d){var g=G.filter(function(x){return x.k===d.dataset.k;})[0];d.querySelector('.pgT').textContent=g.t[ES()?1:0];});
+   box.querySelectorAll('.pgrp').forEach(function(d){var g=G.filter(function(x){return x.k===d.dataset.k;})[0];d.querySelector('.pgT').textContent=g.t[ES()?1:0];var ps=d.querySelector('.pgS');if(ps&&g.sub)ps.textContent=g.sub[ES()?1:0];});
    if(pf.children.length){
-     G.forEach(function(g){if(!g.ext){var b=box.querySelector('.pgrp[data-k="'+g.k+'"] .pgB');while(b.firstChild)b.removeChild(b.firstChild);}});
-     G.forEach(function(g){if(g.ext||!g.ids)return;var b=box.querySelector('.pgrp[data-k="'+g.k+'"] .pgB');
+     G.forEach(function(g){if(!g.ext&&!g.link){var b=box.querySelector('.pgrp[data-k="'+g.k+'"] .pgB');while(b.firstChild)b.removeChild(b.firstChild);}});
+     G.forEach(function(g){if(g.ext||g.link||!g.ids)return;var b=box.querySelector('.pgrp[data-k="'+g.k+'"] .pgB');
        g.ids.forEach(function(id){var el=document.getElementById(id);if(!el||!pf.contains(el))return;var u=el.closest('.hiblock')||el.closest('label')||el;if(u.parentNode===pf)b.appendChild(u);});});
      var other=box.querySelector('.pgrp[data-k="other"] .pgB');while(pf.firstChild)other.appendChild(pf.firstChild);
    }
