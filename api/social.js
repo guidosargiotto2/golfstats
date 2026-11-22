@@ -39,10 +39,10 @@ module.exports = async (req, res) => {
       const cu = await sql`select created from gs_users where username = ${me}`;
       const created = cu.length && cu[0].created ? new Date(cu[0].created) : new Date();
       out.created = created.toISOString();
-      const tm = await sql`select m.code, t.owner, t.paid, t.seats from gs_team_members m join gs_teams t on t.code = m.code where m.username = ${me}`;
+      const tm = await sql`select m.code, t.owner, t.paid, t.seats, t.plan from gs_team_members m join gs_teams t on t.code = m.code where m.username = ${me}`;
       if (tm.length) {
         const mem = await sql`select m.username, p.display from gs_team_members m join gs_profiles p on p.username = m.username where m.code = ${tm[0].code} order by m.joined`;
-        out.team = { code: tm[0].code, owner: tm[0].owner, paid: tm[0].paid, seats: tm[0].seats, members: mem, isOwner: tm[0].owner === me };
+        out.team = { code: tm[0].code, owner: tm[0].owner, paid: tm[0].paid, plan: tm[0].plan || 'lite', seats: tm[0].seats, members: mem, isOwner: tm[0].owner === me };
       }
       out.upgradeFrom = new Date(created.getTime() + 30 * 864e5).toISOString();
       const rc = await sql`select count(*)::int as n from gs_rounds where username = ${me} and deleted = false`;
@@ -181,12 +181,13 @@ module.exports = async (req, res) => {
     if (action === 'teamSetPaid') {   // until payments are connected, the admin confirms a team was paid
       if (me !== L.ADMIN) return bad(403, 'admin');
       await sql`update gs_teams set paid = ${!!b.paid} where code = ${String(b.code || '').toUpperCase()}`;
+      if (b.plan === 'lite' || b.plan === 'pro') await sql`update gs_teams set plan = ${b.plan} where code = ${String(b.code || '').toUpperCase()}`;
       return ok();
     }
     if (action === 'members') {
       if (me !== L.ADMIN) return bad(403, 'admin');
       const rows = await sql`select p.username, p.display, p.plan, m.code from gs_profiles p left join gs_team_members m on m.username = p.username order by p.display`;
-      const teams = await sql`select t.code, t.owner, t.paid, count(m.username)::int as n from gs_teams t left join gs_team_members m on m.code = t.code group by t.code, t.owner, t.paid, t.created order by t.created`;
+      const teams = await sql`select t.code, t.owner, t.paid, t.plan, count(m.username)::int as n from gs_teams t left join gs_team_members m on m.code = t.code group by t.code, t.owner, t.paid, t.plan, t.created order by t.created`;
       const out = [];
       for (const r of rows) out.push({ username: r.username, display: r.display, plan: L.planOf(r.username, r.plan), team: r.code || null });
       return ok({ members: out, teams });

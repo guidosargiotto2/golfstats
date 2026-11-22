@@ -40,6 +40,7 @@ async function init() {
       await s`create table if not exists gs_follows (follower text not null, followee text not null, primary key (follower, followee))`;
       await s`create table if not exists gs_settings (k text primary key, v text)`;
       await s`create table if not exists gs_teams (code text primary key, owner text not null, seats int not null default 4, paid boolean not null default false, created timestamptz default now())`;
+      await s`alter table gs_teams add column if not exists plan text not null default 'lite'`;
       await s`create table if not exists gs_team_members (username text primary key, code text not null, joined timestamptz default now())`;
       await s`create table if not exists gs_reviews (username text primary key, contact text, note text, status text not null default 'requested', recommendation text, requested timestamptz default now(), done timestamptz)`;
       await s`create table if not exists gs_bags (username text primary key, data jsonb not null, upd bigint not null default 0)`;
@@ -52,12 +53,13 @@ async function init() {
 
 // Plans: free | lite | pro. The four founders default to pro; everyone else to free until a plan is set.
 const planOf = (user, plan) => user === ADMIN ? 'pro' : (plan === 'free' || plan === 'lite' || plan === 'pro') ? plan : (LEGACY[user] ? 'pro' : 'free');
-// a member of a paid team gets at least Lite
+// a member of a paid team gets the team's plan (Lite or Pro), if it is higher than their own
 async function effectivePlan(sql, user, plan) {
   const p = planOf(user, plan);
-  if (rank(p) >= 1) return p;
-  const t = await sql`select t.paid from gs_team_members m join gs_teams t on t.code = m.code where m.username = ${user}`;
-  return (t.length && t[0].paid) ? 'lite' : p;
+  if (rank(p) >= 2) return p;
+  const t = await sql`select t.paid, t.plan from gs_team_members m join gs_teams t on t.code = m.code where m.username = ${user}`;
+  const tp = (t.length && t[0].paid) ? (t[0].plan === 'pro' ? 'pro' : 'lite') : 'free';
+  return rank(tp) > rank(p) ? tp : p;
 }
 const rank = p => ({ free: 0, lite: 1, pro: 2 })[p] || 0;
 const validUser = u => /^[a-z0-9_.]{3,20}$/.test(u);
