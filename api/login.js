@@ -15,7 +15,7 @@ async function profileName(sql, user, fallback) {
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
-  if (req.method === 'GET') return res.status(200).json(L.hasDb() ? { api: true, db: true, signup: true } : { api: true, db: false, signup: true, vars: L.dbVarNames() });
+  if (req.method === 'GET') return res.status(200).json(L.hasDb() ? { api: true, db: true, signup: true, providers: L.providersOn() } : { api: true, db: false, signup: true, vars: L.dbVarNames() });
   if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
   try {
     const b = L.body(req);

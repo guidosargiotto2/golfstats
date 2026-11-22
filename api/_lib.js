@@ -38,6 +38,7 @@ async function init() {
       await s`alter table gs_profiles add column if not exists plan text`;
       await s`create table if not exists gs_follows (follower text not null, followee text not null, primary key (follower, followee))`;
       await s`create table if not exists gs_settings (k text primary key, v text)`;
+      await s`create table if not exists gs_identities (provider text not null, sub text not null, username text not null, email text, created timestamptz default now(), primary key (provider, sub))`;
     })().catch(e => { ready = null; throw e; });
   }
   return ready;
@@ -66,6 +67,27 @@ function verify(token) {
     return user;
   } catch (e) { return null; }
 }
+// short-lived signed blobs (OAuth state)
+function signBlob(obj, minutes) {
+  const body = Buffer.from(JSON.stringify(Object.assign({}, obj, { exp: Date.now() + (minutes || 10) * 6e4 }))).toString('base64url');
+  return body + '.' + crypto.createHmac('sha256', secret()).update('blob|' + body).digest('base64url');
+}
+function verifyBlob(str) {
+  try {
+    const [body, mac] = String(str || '').split('.');
+    const want = crypto.createHmac('sha256', secret()).update('blob|' + body).digest('base64url');
+    if (!mac || mac.length !== want.length || !crypto.timingSafeEqual(Buffer.from(mac), Buffer.from(want))) return null;
+    const o = JSON.parse(Buffer.from(body, 'base64url').toString());
+    return o.exp > Date.now() ? o : null;
+  } catch (e) { return null; }
+}
+const PROVIDERS = {
+  google: { id: () => process.env.GOOGLE_CLIENT_ID, secret: () => process.env.GOOGLE_CLIENT_SECRET,
+    auth: 'https://accounts.google.com/o/oauth2/v2/auth', token: 'https://oauth2.googleapis.com/token', scope: 'openid email profile' },
+  microsoft: { id: () => process.env.MS_CLIENT_ID || process.env.MICROSOFT_CLIENT_ID, secret: () => process.env.MS_CLIENT_SECRET || process.env.MICROSOFT_CLIENT_SECRET,
+    auth: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize', token: 'https://login.microsoftonline.com/common/oauth2/v2.0/token', scope: 'openid email profile' }
+};
+const providersOn = () => Object.keys(PROVIDERS).filter(k => PROVIDERS[k].id() && PROVIDERS[k].secret());
 function auth(req) { return verify(String((req.headers && req.headers.authorization) || '').replace(/^Bearer\s+/i, '')); }
 function hashPass(pass, salt) { return crypto.scryptSync(String(pass), salt, 32).toString('hex'); }
 function safeEq(a, b) { return a.length === b.length && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b)); }
@@ -79,4 +101,4 @@ function fail(res, e) {
   return res.status(500).json({ error: 'server' });
 }
 
-module.exports = { planOf, rank, dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };
+module.exports = { signBlob, verifyBlob, PROVIDERS, providersOn, planOf, rank, dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };

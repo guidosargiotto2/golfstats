@@ -32,7 +32,8 @@ module.exports = async (req, res) => {
       const students = await sql`select username, display, prof_status from gs_profiles where professor = ${me}`;
       let profName = null;
       if (p.professor) { const r = await sql`select display from gs_profiles where username = ${p.professor}`; profName = r.length ? r[0].display : p.professor; }
-      const out = { username: me, name: p.display, findable: p.findable, professor: p.professor, professorName: profName, profStatus: p.prof_status, following, followers, students, admin: me === L.ADMIN, plan: myPlan };
+      const ids = await sql`select provider, email from gs_identities where username = ${me}`;
+      const out = { identities: ids, providers: L.providersOn(), username: me, name: p.display, findable: p.findable, professor: p.professor, professorName: profName, profStatus: p.prof_status, following, followers, students, admin: me === L.ADMIN, plan: myPlan };
       // every account starts with a free month: upgrades open 30 days after the account was created
       const cu = await sql`select created from gs_users where username = ${me}`;
       const created = cu.length && cu[0].created ? new Date(cu[0].created) : new Date();

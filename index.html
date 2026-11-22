@@ -630,6 +630,11 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .tgModal .tgBox{position:relative;background:var(--paper);border-radius:18px;max-width:900px;width:100%;max-height:92vh;overflow:auto;padding:24px;box-shadow:0 40px 80px -30px rgba(0,0,0,.6);}
 .tgModal .tgX{position:absolute;top:12px;right:14px;border:none;background:none;font-size:18px;color:var(--ink-soft);cursor:pointer;}
 @media(max-width:720px){.tgGrid{grid-template-columns:1fr}}
+
+.loginbox .lgor{display:flex;align-items:center;gap:10px;font-family:var(--cond);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:2px 0;}
+.loginbox .lgor::before,.loginbox .lgor::after{content:'';flex:1;height:1px;background:var(--line);}
+.loginbox .lgsoc{display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:11px 12px;font-family:var(--cond);font-weight:700;font-size:12.5px;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
+.loginbox .lgsoc:hover{border-color:var(--pine);box-shadow:0 4px 12px -6px rgba(15,58,44,.4);}
 </style>
 </head>
 <body>
@@ -843,6 +848,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
     <input id="lg_pass" name="password" type="password" placeholder="Password · Contraseña" autocomplete="current-password">
     <div id="lg_reg" style="display:none;flex-direction:column;gap:12px"><input id="lg_name" placeholder="Your name · Tu nombre" autocomplete="name"><input id="lg_code" placeholder="Invite code · Código de invitación" autocapitalize="none" autocomplete="off"></div>
     <button type="submit" id="lg_btn">Enter · Entrar</button>
+    <div id="lg_social" style="display:none;flex-direction:column;gap:8px"><div class="lgor"><span>or · o</span></div></div>
     <a href="#" id="lg_toggle" style="display:none;font-family:var(--cond);font-size:12.5px;color:var(--fairway);margin-top:10px;text-align:center">Create account · Crear cuenta</a>
     <div class="lgerr" id="lg_err"></div>
     <div id="lg_hint" style="display:none;font-family:var(--cond);font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.4"></div>
@@ -3031,6 +3037,12 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
 /* ---- soft login / per-user namespace (client-side only; see note) ---- */
 (function(){
  var CREDS={guido:'Guido',manuel:'Manuel',nicolas:'Nicolas',diego:'Diego'};
+ var OAERR=null,OAP='';
+ (function(){var h=location.hash||'';if(!/^#gs(auth|autherr|linked)=/.test(h))return;var q={};h.slice(1).split('&').forEach(function(kv){var i=kv.indexOf('=');q[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1));});
+   try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+   if(q.gsauth){var parts=q.gsauth.split('~');localStorage.setItem('gs-token',parts[0]);localStorage.setItem('app-user',parts[1]||'');localStorage.removeItem('gs-mustchange');localStorage.removeItem('gs-plan');}
+   if(q.gsautherr){OAERR=q.gsautherr;OAP=q.p||'';}
+   if(q.gslinked){try{sessionStorage.setItem('gs-linked',q.gslinked);}catch(e){}}})();
  var ov=document.getElementById('loginOverlay'), user=localStorage.getItem('app-user');
  function enter(name){
    try{if(typeof PLAYERS!=='undefined'&&!PLAYERS[name]){PLAYERS[name]=[];PLAYERNAMES.push(name);}}catch(e){}   /* account created with an invite: no imported rounds */
@@ -3056,7 +3068,11 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    try{var io=new IntersectionObserver(function(es2){es2.forEach(function(x){if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target);}});},{root:L,threshold:.12});L.querySelectorAll('.rv').forEach(function(el){io.observe(el);});}
    catch(e){L.querySelectorAll('.rv').forEach(function(el){el.classList.add('in');});}
    L.style.display='';return true;}
- if(user){enter(user);}
+ if(user){enter(user);
+   var ESx=(function(){try{var P=JSON.parse(localStorage.getItem(user+'::scard-prof-v1')||'{}');return P.lang==='es';}catch(e){return false;}})();
+   if(OAERR)setTimeout(function(){alert(OAERR==='taken'?(ESx?'Esa cuenta ya está vinculada a otro jugador.':'That account is already linked to another player.'):(ESx?'No se pudo vincular. Probá de nuevo.':'Linking did not work. Please try again.'));},500);
+   var lk0=null;try{lk0=sessionStorage.getItem('gs-linked');sessionStorage.removeItem('gs-linked');}catch(e){}
+   if(lk0)setTimeout(function(){var nm={google:'Google',microsoft:'Microsoft'}[lk0]||lk0;alert(ESx?(nm+' vinculado. La próxima vez podés entrar con '+nm+'.'):(nm+' linked. Next time you can sign in with '+nm+'.'));if(window.showView)window.showView('profile');},700);}
  else if(!((location.hash||'').indexOf('#gsimport=')===0||/[?&]login\b/.test(location.search))&&landing()){}
  else if(ov){ov.style.display='flex';}
  var f=document.getElementById('loginForm');
@@ -3202,6 +3218,12 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  } else {
    fetch('/api/login').then(function(r){return r.json();}).then(function(j){
      if(!j||!j.api||!j.db)return;
+     var soc=document.getElementById('lg_social'),PN={google:'Google',microsoft:'Microsoft'},IC={google:'<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.8-2.1 5.1-4.4 6.7v5.5h7.1c4.2-3.8 6.5-9.5 6.5-16.2z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.3l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7C8.1 41.1 15.5 46 24 46z"/><path fill="#FBBC05" d="M11.8 28.3c-.4-1.3-.7-2.8-.7-4.3s.3-3 .7-4.3V14H4.5C3 17 2 20.4 2 24s1 7 2.5 10l7.3-5.7z"/><path fill="#EA4335" d="M24 10.7c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3C34.9 4.1 29.9 2 24 2 15.5 2 8.1 6.9 4.5 14l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg>',microsoft:'<svg width="16" height="16" viewBox="0 0 22 22"><rect width="10" height="10" fill="#F25022"/><rect x="12" width="10" height="10" fill="#7FBA00"/><rect y="12" width="10" height="10" fill="#00A4EF"/><rect x="12" y="12" width="10" height="10" fill="#FFB900"/></svg>'};
+     if(soc&&j.providers&&j.providers.length){soc.style.display='flex';j.providers.forEach(function(pv){var b=document.createElement('button');b.type='button';b.className='lgsoc';b.innerHTML=IC[pv]+'<span>Continue with '+PN[pv]+' · Continuar con '+PN[pv]+'</span>';
+       b.onclick=function(){var rb=document.getElementById('lg_reg'),code=(rb&&rb.style.display!=='none')?((document.getElementById('lg_code')||{}).value||'').trim():'';location.href='/api/oauth?provider='+pv+'&mode=login'+(code?'&invite='+encodeURIComponent(code):'');};soc.appendChild(b);});}
+     if(OAERR){var ER={needinvite:'New here? Type your invite code above, then press Continue with '+(PN[OAP]||'Google')+' again. · ¿Nuevo? Escribí tu código de invitación arriba y volvé a tocar Continuar con '+(PN[OAP]||'Google')+'.',taken:'That account is already linked to another player. · Esa cuenta ya está vinculada a otro jugador.',denied:'Sign-in was cancelled. · Se canceló el ingreso.',off:'That sign-in option is not available yet. · Esa opción de ingreso todavía no está disponible.',failed:'Sign-in did not work — please try again. · No se pudo ingresar — probá de nuevo.'};
+       var L0=document.getElementById('landing');if(L0)L0.style.display='none';if(ov)ov.style.display='flex';var e0=document.getElementById('lg_err');if(e0)e0.textContent=ER[OAERR]||ER.failed;
+       if(OAERR==='needinvite'){setTimeout(function(){var rb=document.getElementById('lg_reg'),tg0=document.getElementById('lg_toggle');if(rb&&rb.style.display==='none'&&tg0)tg0.click();if(e0)e0.textContent=ER.needinvite;var c0=document.getElementById('lg_code');if(c0)c0.focus();},50);}}
      var tg=document.getElementById('lg_toggle'),rb=document.getElementById('lg_reg'),bt=document.getElementById('lg_btn');
      if(tg&&rb){tg.style.display='block';tg.onclick=function(e){e.preventDefault();var on=rb.style.display==='none';rb.style.display=on?'flex':'none';if(bt)bt.textContent=on?'Create account · Crear cuenta':'Enter · Entrar';tg.textContent=on?'I already have an account · Ya tengo cuenta':'Create account · Crear cuenta';document.getElementById('lg_err').textContent='';};}
    }).catch(function(){});
@@ -3424,7 +3446,9 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    return sec(T('Privacy','Privacidad'),'<label class="frchk"><input type="checkbox" id="frFind"'+(ME.findable?' checked':'')+'> '+T('Let other players find and follow me','Permitir que otros jugadores me encuentren y me sigan')+'</label>'+
      '<p class="frsub" style="margin-top:8px">'+T('Followers see a summary of each round (date, course, score, strokes gained, Tiger 5) — never your shots, notes or lessons.','Tus seguidores ven un resumen de cada vuelta (fecha, cancha, score, strokes gained, Tiger 5) — nunca tus tiros, notas ni aprendizajes.')+'</p>'+
      '<div style="margin-top:6px"><span class="frlbl">'+T('Followers','Seguidores')+' ('+(ME.followers||[]).length+')</span> '+(fl||'<span class="frsub">'+T('none yet','ninguno todavía')+'</span>')+'</div>'+
-     '<p class="frsub" style="margin-top:8px">'+T('Your username: ','Tu usuario: ')+'<b>'+esc(ME.username)+'</b> · <a href="#" id="frPw" style="color:var(--fairway)">'+T('Change password','Cambiar contraseña')+'</a></p>');
+     '<p class="frsub" style="margin-top:8px">'+T('Your username: ','Tu usuario: ')+'<b>'+esc(ME.username)+'</b> · <a href="#" id="frPw" style="color:var(--fairway)">'+T('Change password','Cambiar contraseña')+'</a></p>'+
+     ((ME.providers&&ME.providers.length)?('<div style="margin-top:8px"><span class="frlbl">'+T('Sign in with','Ingresar con')+'</span> '+ME.providers.map(function(pv){var nm={google:'Google',microsoft:'Microsoft'}[pv]||pv,lk=(ME.identities||[]).filter(function(x){return x.provider===pv;})[0];
+       return lk?'<span class="frchip">✓ '+nm+(lk.email?' <small>'+esc(lk.email)+'</small>':'')+'</span>':'<a class="pf_btn" style="padding:6px 12px;font-size:11px" href="/api/oauth?provider='+pv+'&mode=link&t='+encodeURIComponent(localStorage.getItem('gs-token')||'')+'">'+T('Link ','Vincular ')+nm+'</a>';}).join(' ')+'</div>'):''));
  }
  function profHTML(){
    var b;
