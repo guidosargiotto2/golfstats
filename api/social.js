@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
     const bad = (code, err) => res.status(code).json({ error: err });
 
     await sql`insert into gs_profiles (username, display) values (${me}, ${L.LEGACY[me] || me}) on conflict (username) do nothing`;
-    const myPlan = L.planOf(me, ((await sql`select plan from gs_profiles where username = ${me}`)[0] || {}).plan);
+    const myPlan = await L.effectivePlan(sql, me, ((await sql`select plan from gs_profiles where username = ${me}`)[0] || {}).plan);
     const needLite = () => L.rank(myPlan) < 1;   // friends, professor link and Statistics are Lite and up
 
     if (action === 'me') {
@@ -38,6 +38,11 @@ module.exports = async (req, res) => {
       const cu = await sql`select created from gs_users where username = ${me}`;
       const created = cu.length && cu[0].created ? new Date(cu[0].created) : new Date();
       out.created = created.toISOString();
+      const tm = await sql`select m.code, t.owner, t.paid, t.seats from gs_team_members m join gs_teams t on t.code = m.code where m.username = ${me}`;
+      if (tm.length) {
+        const mem = await sql`select m.username, p.display from gs_team_members m join gs_profiles p on p.username = m.username where m.code = ${tm[0].code} order by m.joined`;
+        out.team = { code: tm[0].code, owner: tm[0].owner, paid: tm[0].paid, seats: tm[0].seats, members: mem, isOwner: tm[0].owner === me };
+      }
       out.upgradeFrom = new Date(created.getTime() + 30 * 864e5).toISOString();
       if (me === L.ADMIN) { const inv = await sql`select v from gs_settings where k = 'invite'`; out.invite = inv.length ? inv[0].v : ''; }
       return ok(out);
@@ -112,10 +117,50 @@ module.exports = async (req, res) => {
       return ok({ username: target, name: s[0].display, rounds: rows.map(r => r.data).sort(byDateDesc).slice(0, 200) });
     }
 
+    /* ---- teams (4×3 offer): the owner buys, shares a code, up to 4 players join ---- */
+    if (action === 'teamCreate') {
+      const inT = await sql`select 1 as x from gs_team_members where username = ${me}`;
+      if (inT.length) return bad(409, 'in-team');
+      let code = '';
+      for (let i = 0; i < 20 && !code; i++) {
+        const c = 'GOLF-' + L.crypto.randomBytes(3).toString('hex').toUpperCase();
+        const ex = await sql`select 1 as x from gs_teams where code = ${c}`;
+        if (!ex.length) code = c;
+      }
+      await sql`insert into gs_teams (code, owner) values (${code}, ${me})`;
+      await sql`insert into gs_team_members (username, code) values (${me}, ${code})`;
+      return ok({ code });
+    }
+    if (action === 'teamJoin') {
+      const code = String(b.code || '').trim().toUpperCase();
+      const t = await sql`select code, seats from gs_teams where code = ${code}`;
+      if (!t.length) return bad(404, 'no-team');
+      const inT = await sql`select code from gs_team_members where username = ${me}`;
+      if (inT.length) return bad(409, inT[0].code === code ? 'already' : 'in-team');
+      const n = await sql`select count(*)::int as n from gs_team_members where code = ${code}`;
+      if ((n[0].n || 0) >= t[0].seats) return bad(409, 'full');
+      await sql`insert into gs_team_members (username, code) values (${me}, ${code})`;
+      return ok({ code });
+    }
+    if (action === 'teamLeave') {
+      const tm = await sql`select m.code, t.owner from gs_team_members m join gs_teams t on t.code = m.code where m.username = ${me}`;
+      if (!tm.length) return ok();
+      if (tm[0].owner === me) { await sql`delete from gs_team_members where code = ${tm[0].code}`; await sql`delete from gs_teams where code = ${tm[0].code}`; }
+      else await sql`delete from gs_team_members where username = ${me}`;
+      return ok();
+    }
+    if (action === 'teamSetPaid') {   // until payments are connected, the admin confirms a team was paid
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      await sql`update gs_teams set paid = ${!!b.paid} where code = ${String(b.code || '').toUpperCase()}`;
+      return ok();
+    }
     if (action === 'members') {
       if (me !== L.ADMIN) return bad(403, 'admin');
-      const rows = await sql`select username, display, plan from gs_profiles order by display`;
-      return ok({ members: rows.map(r => ({ username: r.username, display: r.display, plan: L.planOf(r.username, r.plan) })) });
+      const rows = await sql`select p.username, p.display, p.plan, m.code from gs_profiles p left join gs_team_members m on m.username = p.username order by p.display`;
+      const teams = await sql`select t.code, t.owner, t.paid, count(m.username)::int as n from gs_teams t left join gs_team_members m on m.code = t.code group by t.code, t.owner, t.paid, t.created order by t.created`;
+      const out = [];
+      for (const r of rows) out.push({ username: r.username, display: r.display, plan: L.planOf(r.username, r.plan), team: r.code || null });
+      return ok({ members: out, teams });
     }
     if (action === 'setPlan') {
       if (me !== L.ADMIN) return bad(403, 'admin');

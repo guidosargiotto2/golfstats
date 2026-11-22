@@ -641,6 +641,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope .plTeam b{display:block;font-family:var(--serif);font-size:17px;color:var(--pine);margin-bottom:2px;}
 .lgscope .plTeam span{font-size:13.5px;line-height:1.5;color:var(--ink-soft);}
 .lgscope .plTeamB{flex:none;width:56px;height:56px;border-radius:50%;background:var(--pine);color:var(--sand);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:19px;}
+.lgscope .tmCode{font-family:var(--serif);font-weight:700;font-size:24px;letter-spacing:.06em;color:var(--pine);margin:4px 0 6px;}
 </style>
 </head>
 <body>
@@ -828,7 +829,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
   <div class="tier"><div class="tn">Free</div><div class="tp" data-l="Free|Gratis">Free</div><div class="tu">US$0</div><p data-l="Log every shot. Every round's scorecard and analysis, one round at a time.|Cargá cada tiro. La tarjeta y el análisis de cada vuelta, de a una vuelta.">Log every shot. Every round's scorecard and analysis, one round at a time.</p></div>
   <div class="tier"><div class="tn">Lite</div><div class="tp" data-l="1 ball / month|1 pelota / mes">1 ball / month</div><div class="tu" data-l="≈ US$4.92 a month|≈ US$4,92 por mes">≈ US$4.92 a month</div><p data-l="The control charts across all your rounds, your priorities, friends and your coach. If it saves you one ball a month, it's free.|Los gráficos de control de todas tus vueltas, tus prioridades, amigos y tu profesor. Si te ahorra una pelota por mes, te sale gratis.">The control charts across all your rounds, your priorities, friends and your coach. If it saves you one ball a month, it's free.</p></div>
   <div class="tier pro"><div class="tn">Pro</div><div class="tp" data-l="Half a dozen / month|Media docena / mes">Half a dozen / month</div><div class="tu" data-l="≈ US$29.50 a month|≈ US$29,50 por mes">≈ US$29.50 a month</div><p data-l="Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers — and import from Garmin and other sources.|Todo lo de Lite, más una llamada mensual de 30 minutos conmigo, preparada con tus números — e importación desde Garmin y otras fuentes.">Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers — and import from Garmin and other sources.</p></div>
- <div class="lteam"><div class="lteamB">4×3</div><div><b data-l="Team offer — four players, pay for three.|Oferta para equipos — cuatro jugadores, pagan tres.">Team offer — four players, pay for three.</b><span data-l="Your foursome on Lite for 3 balls a month (≈ US$14.75) instead of 4. Follow each other, compare where each of you gains and loses, and push each other to improve.|Tu grupo de cuatro en Lite por 3 pelotas al mes (≈ US$14,75) en lugar de 4. Se siguen, comparan dónde gana y pierde cada uno, y se empujan a mejorar.">Your foursome on Lite for 3 balls a month (≈ US$14.75) instead of 4. Follow each other, compare where each of you gains and loses, and push each other to improve.</span></div></div>
+ <div class="lteam"><div class="lteamB">4×3</div><div><b data-l="Team offer — four players, pay for three.|Oferta para equipos — cuatro jugadores, pagan tres.">Team offer — four players, pay for three.</b><span data-l="Your foursome on Lite for 3 balls a month (≈ US$14.75) instead of 4. One of you creates the team and shares a code — the others join on their own.|Tu grupo de cuatro en Lite por 3 pelotas al mes (≈ US$14,75) en lugar de 4. Uno crea el equipo y comparte un código — los demás se suman solos.">Your foursome on Lite for 3 balls a month (≈ US$14.75) instead of 4. One of you creates the team and shares a code — the others join on their own.</span></div></div>
  </div>
 </div></section>
 
@@ -3483,7 +3484,23 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  }
  function planHTML(){
    var p=ME.plan||'free',N={free:'Free',lite:'Lite',pro:'Pro'};
-   return sec(T('Your plan','Tu plan')+': '+N[p],'<div id="plChooser"></div>');
+   return sec(T('Your plan','Tu plan')+': '+N[p],'<div id="plChooser"></div>'+teamHTML());
+ }
+ function teamHTML(){
+   var t=ME.team,h='<div class="plTeam" style="align-items:flex-start"><div class="plTeamB">4×3</div><div style="flex:1">';
+   if(!t){
+     h+='<b>'+T('Team offer — four players, pay for three','Oferta para equipos — cuatro jugadores, pagan tres')+'</b><span>'+T('Your foursome on Lite for 3 balls a month (≈ US$14.75). Create the team, pay once, and share the code — your friends join on their own.','Tu grupo de cuatro en Lite por 3 pelotas al mes (≈ US$14,75). Creá el equipo, pagás una vez y compartís el código — tus amigos se suman solos.')+'</span>'+
+       '<div class="frline" style="margin-top:8px"><button class="pf_btn" id="tmNew">'+T('Create a team','Crear un equipo')+'</button></div>'+
+       '<div class="frline"><input id="tmCode" placeholder="'+T('Have a team code? e.g. GOLF-1A2B3C','¿Tenés un código de equipo? ej. GOLF-1A2B3C')+'" autocapitalize="characters"><button class="pf_btn frgrey" id="tmJoin">'+T('Join','Unirme')+'</button></div>';
+   } else {
+     var n=(t.members||[]).length;
+     h+='<b>'+T('Your team','Tu equipo')+' · '+n+' / '+t.seats+'</b>'+
+       '<div class="tmCode">'+esc(t.code)+' <button class="frx" id="tmCopy" title="'+T('Copy','Copiar')+'">⧉</button></div>'+
+       '<span>'+(t.paid?T('Active — everyone in the team is on Lite.','Activo — todos en el equipo están en Lite.'):(t.isOwner?T('Waiting for payment. Share the code now; as soon as the team is paid, all four move to Lite.','Esperando el pago. Compartí el código ya; apenas se pague el equipo, los cuatro pasan a Lite.'):T('Waiting for the team owner to pay. You will move to Lite automatically.','Esperando que el dueño del equipo pague. Vas a pasar a Lite automáticamente.')))+'</span>'+
+       '<div style="margin:8px 0 4px">'+(t.members||[]).map(function(m){return '<span class="frchip">'+esc(m.display)+(m.username===t.owner?' ★':'')+'</span>';}).join('')+'</div>'+
+       '<div class="frline">'+(t.isOwner&&!t.paid?'<button class="pf_btn" id="tmPay">'+T('Pay for the team · 3 balls/month','Pagar el equipo · 3 pelotas/mes')+'</button>':'')+'<button class="pf_btn frgrey" id="tmLeave">'+(t.isOwner?T('Delete team','Eliminar equipo'):T('Leave team','Salir del equipo'))+'</button></div>';
+   }
+   return h+'</div></div>';
  }
  function membersHTML(list){var N=['free','lite','pro'];
    return list.map(function(m){return '<div class="frline"><span><b>'+esc(m.display)+'</b> <small>@'+esc(m.username)+'</small></span><select data-plan="'+esc(m.username)+'"'+(m.username===ME.username?' disabled':'')+'>'+N.map(function(n){return '<option value="'+n+'"'+(m.plan===n?' selected':'')+'>'+n[0].toUpperCase()+n.slice(1)+'</option>';}).join('')+'</select></div>';}).join('');
@@ -3521,7 +3538,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
  function load(msg){MSG=msg||'';if(!tok()){draw();return;}
    Promise.all([api('me'),api('feed')]).then(function(a){if(a[0]&&a[0].ok){ME=a[0];FEED=(a[1]&&a[1].friends)||[];if(ME.plan){localStorage.setItem('gs-plan',ME.plan);}if(ME.upgradeFrom)localStorage.setItem('gs-upfrom',ME.upgradeFrom);
        if(ME.admin){api('members').then(function(m){MEMBERS=(m&&m.members)||[];draw();}).catch(function(){});}}else{ME=null;MSG=T('Could not load — sign in again.','No se pudo cargar — volvé a entrar.');}draw();}).catch(function(){ME=null;MSG=T('Offline — try again later.','Sin conexión — probá más tarde.');draw();});}
- var ERR={'not-findable':['That player is not findable.','Ese jugador no es encontrable.'],'no-user':['No player with that username.','No hay un jugador con ese usuario.'],'bad-user':['Check the username.','Revisá el usuario.']};
+ var ERR={'in-team':['You are already in a team.','Ya estás en un equipo.'],'full':['That team is full (4 players).','Ese equipo está completo (4 jugadores).'],'no-team':['No team with that code.','No hay un equipo con ese código.'],'already':['You are already in this team.','Ya estás en este equipo.'],'not-findable':['That player is not findable.','Ese jugador no es encontrable.'],'no-user':['No player with that username.','No hay un jugador con ese usuario.'],'bad-user':['Check the username.','Revisá el usuario.']};
  function act(action,extra,okMsg){api(action,extra).then(function(j){if(j&&j.ok)load(okMsg||'');else{var e=ERR[j&&j.error];MSG=e?T(e[0],e[1]):T('That did not work.','No funcionó.');draw();}}).catch(function(){MSG=T('Offline — try again later.','Sin conexión — probá más tarde.');draw();});}
  function wire(el){
    var q=el.querySelector('#frQ'),go=el.querySelector('#frGo');
@@ -3531,9 +3548,15 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
    if(go)go.onclick=search;if(q)q.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();search();}});
    el.querySelectorAll('[data-unf]').forEach(function(b){b.onclick=function(){act('unfollow',{user:b.getAttribute('data-unf')});};});
    el.querySelectorAll('[data-rmf]').forEach(function(b){b.onclick=function(){act('removeFollower',{user:b.getAttribute('data-rmf')});};});
+   var tn=el.querySelector('#tmNew');if(tn)tn.onclick=function(){act('teamCreate',{},T('Team created — share the code with your friends.','Equipo creado — compartí el código con tus amigos.'));};
+   var tj=el.querySelector('#tmJoin');if(tj)tj.onclick=function(){var v=(el.querySelector('#tmCode').value||'').trim();if(v)act('teamJoin',{code:v},T('You joined the team.','Te uniste al equipo.'));};
+   var tl=el.querySelector('#tmLeave');if(tl)tl.onclick=function(){if(confirm(ME.team&&ME.team.isOwner?T('Delete the team? Everyone leaves it.','¿Eliminar el equipo? Todos salen de él.'):T('Leave the team?','¿Salir del equipo?')))act('teamLeave',{});};
+   var tp=el.querySelector('#tmPay');if(tp)tp.onclick=function(){alert(T('Online payments are coming soon. Your team is ready: share the code, and it activates as soon as the payment goes through.','Los pagos online llegan pronto. Tu equipo está listo: compartí el código y se activa apenas se acredite el pago.'));};
+   var tc=el.querySelector('#tmCopy');if(tc)tc.onclick=function(){try{navigator.clipboard.writeText(ME.team.code);tc.textContent='✓';}catch(e){}};
    var fp=el.querySelector('#frPlans');if(fp)fp.onclick=function(){if(window.PLANS)window.PLANS.open();};
    var ml=el.querySelector('#frMemLoad');if(ml)ml.onclick=function(){api('members').then(function(j){var box=el.querySelector('#frMembers');if(!box)return;if(!j||!j.ok){box.innerHTML='<p class="frsub">'+T('Could not load.','No se pudo cargar.')+'</p>';return;}
-     box.innerHTML=membersHTML(j.members||[]);box.querySelectorAll('select[data-plan]').forEach(function(sel){sel.onchange=function(){api('setPlan',{user:sel.getAttribute('data-plan'),plan:sel.value}).then(function(r){MSG=(r&&r.ok)?T('Plan updated.','Plan actualizado.'):T('That did not work.','No funcionó.');var m=el.querySelector('.frmsgx');sel.style.outline=(r&&r.ok)?'2px solid var(--fairway)':'2px solid var(--clay)';});};});});};
+     box.innerHTML=membersHTML(j.members||[])+((j.teams&&j.teams.length)?'<h4 style="font-family:var(--serif);color:var(--pine);margin:14px 0 4px">'+T('Teams','Equipos')+'</h4>'+j.teams.map(function(tm){return '<div class="frline"><span><b>'+esc(tm.code)+'</b> · @'+esc(tm.owner)+' · '+tm.n+'/4</span><label class="frchk"><input type="checkbox" data-tpaid="'+esc(tm.code)+'"'+(tm.paid?' checked':'')+'> '+T('paid','pagado')+'</label></div>';}).join(''):'');
+     box.querySelectorAll('[data-tpaid]').forEach(function(cb){cb.onchange=function(){api('teamSetPaid',{code:cb.getAttribute('data-tpaid'),paid:cb.checked}).then(function(r){cb.parentNode.style.color=(r&&r.ok)?'var(--fairway)':'var(--clay)';});};});box.querySelectorAll('select[data-plan]').forEach(function(sel){sel.onchange=function(){api('setPlan',{user:sel.getAttribute('data-plan'),plan:sel.value}).then(function(r){MSG=(r&&r.ok)?T('Plan updated.','Plan actualizado.'):T('That did not work.','No funcionó.');var m=el.querySelector('.frmsgx');sel.style.outline=(r&&r.ok)?'2px solid var(--fairway)':'2px solid var(--clay)';});};});});};
    var pw=el.querySelector('#frPw');if(pw)pw.onclick=function(e){e.preventDefault();if(window.GSPASS)window.GSPASS.open();};
    var ff=el.querySelector('#frFind');if(ff)ff.onchange=function(){act('setFindable',{findable:ff.checked});};
    var ps=el.querySelector('#frProfSet');if(ps)ps.onclick=function(){var v=(el.querySelector('#frProf').value||'').trim().toLowerCase();if(v)act('setProfessor',{user:v},T('Request sent.','Solicitud enviada.'));};
@@ -3656,7 +3679,7 @@ render();renderSel();applyI18n();window.LGR={card:function(){render();renderSel(
        '<ul>'+(ES()?p.es:p.en).map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+(p.note?'<div class="plNote">“'+(ES()?p.note[1]:p.note[0])+'” <span>— Guido</span></div>':'')+
        (me?'<div class="plCur">'+T('Your plan','Tu plan')+'</div>':(!cur?'':((trial&&rank(p.k)>rank(cur))?'<button class="plBtn" disabled>'+T('Available from '+fmtD(upD),'Disponible desde el '+fmtD(upD))+'</button>':'<button class="plBtn plGo" data-to="'+p.k+'">'+T('Switch to ','Cambiar a ')+p.name+'</button>')))+
      '</div>';});
-   h+='</div><div class="plTeam"><div class="plTeamB">4×3</div><div><b>'+T('Team offer — four players, pay for three','Oferta para equipos — cuatro jugadores, pagan tres')+'</b><span>'+T('Your foursome on Lite for 3 balls a month (≈ US$14.75) instead of 4. Ask Guido to set up your group.','Tu grupo de cuatro en Lite por 3 pelotas al mes (≈ US$14,75) en lugar de 4. Pedile a Guido que arme tu grupo.')+'</span></div></div>';
+   h+='</div>';
    el.innerHTML=h;
    el.querySelectorAll('.plGo').forEach(function(bt){bt.onclick=function(){alert(T('Online payments are coming soon. For now, tell Guido you want '+bt.getAttribute('data-to').toUpperCase()+' and he will switch your plan.','Los pagos online llegan pronto. Por ahora, avisale a Guido que querés '+bt.getAttribute('data-to').toUpperCase()+' y él te cambia el plan.'));};});
  }

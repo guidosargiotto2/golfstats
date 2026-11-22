@@ -38,6 +38,8 @@ async function init() {
       await s`alter table gs_profiles add column if not exists plan text`;
       await s`create table if not exists gs_follows (follower text not null, followee text not null, primary key (follower, followee))`;
       await s`create table if not exists gs_settings (k text primary key, v text)`;
+      await s`create table if not exists gs_teams (code text primary key, owner text not null, seats int not null default 4, paid boolean not null default false, created timestamptz default now())`;
+      await s`create table if not exists gs_team_members (username text primary key, code text not null, joined timestamptz default now())`;
       await s`create table if not exists gs_identities (provider text not null, sub text not null, username text not null, email text, created timestamptz default now(), primary key (provider, sub))`;
     })().catch(e => { ready = null; throw e; });
   }
@@ -46,6 +48,13 @@ async function init() {
 
 // Plans: free | lite | pro. The four founders default to pro; everyone else to free until a plan is set.
 const planOf = (user, plan) => user === ADMIN ? 'pro' : (plan === 'free' || plan === 'lite' || plan === 'pro') ? plan : (LEGACY[user] ? 'pro' : 'free');
+// a member of a paid team gets at least Lite
+async function effectivePlan(sql, user, plan) {
+  const p = planOf(user, plan);
+  if (rank(p) >= 1) return p;
+  const t = await sql`select t.paid from gs_team_members m join gs_teams t on t.code = m.code where m.username = ${user}`;
+  return (t.length && t[0].paid) ? 'lite' : p;
+}
 const rank = p => ({ free: 0, lite: 1, pro: 2 })[p] || 0;
 const validUser = u => /^[a-z0-9_.]{3,20}$/.test(u);
 
@@ -101,4 +110,4 @@ function fail(res, e) {
   return res.status(500).json({ error: 'server' });
 }
 
-module.exports = { signBlob, verifyBlob, PROVIDERS, providersOn, planOf, rank, dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };
+module.exports = { effectivePlan, signBlob, verifyBlob, PROVIDERS, providersOn, planOf, rank, dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };
