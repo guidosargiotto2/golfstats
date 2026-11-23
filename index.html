@@ -3641,7 +3641,7 @@ render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoO
 .crEd{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;background:var(--paper,#fffdf7)}.crEd h4{font-family:var(--serif);color:var(--pine);margin:0 0 8px}
 .crEdTop{display:flex;gap:10px;flex-wrap:wrap}.crEdTop label{font-size:12px}.crEdTop input{display:block;border:1px solid var(--line);border-radius:8px;padding:7px 9px}
 .crLbl{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:10px 0 4px}
-.crGrid{display:grid;grid-template-columns:repeat(18,minmax(34px,1fr));gap:3px;overflow-x:auto}.crGrid input{width:100%;min-width:34px;box-sizing:border-box;text-align:center;border:1px solid var(--line);border-radius:6px;padding:5px 2px;font-size:12px}
+.crGrid{display:grid;grid-template-columns:repeat(18,minmax(0,1fr));gap:4px}@media(max-width:900px){.crGrid{grid-template-columns:repeat(9,minmax(0,1fr));row-gap:6px}}.crGrid input{width:100%;min-width:0;box-sizing:border-box;text-align:center;border:1px solid var(--line);border-radius:6px;padding:5px 2px;font-size:12px}
 .crGca{background:rgba(31,122,77,.06);border-radius:10px;padding:8px 10px;margin:8px 0}.crRes{font-size:12.5px;margin-top:6px}
 .crBad{border-color:var(--clay)!important;background:rgba(194,80,46,.10)!important}
 .crEd .crMsg{margin:8px 0 0;line-height:1.5}
@@ -4744,8 +4744,11 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
      '<div class="hwBtns"><button class="pf_btn" id="ceSave">'+T('Save course','Guardar cancha')+'</button><span class="crMsg"></span></div><p class="frsub">'+T('Check the totals against the scorecard before saving. It appears for every player right away.','Revisá los totales contra la tarjeta antes de guardar. Aparece para todos los jugadores al instante.')+'</p></div>';
    var wireDel=function(){box.querySelectorAll('.tDel').forEach(function(b){b.onclick=function(){if(box.querySelectorAll('.crTee').length>1)b.closest('.crTee').remove();};});};wireDel();
    box.querySelector('#ceAddTee').onclick=function(){box.querySelector('.crTees').insertAdjacentHTML('beforeend',teeBlock());wireDel();};
+   var autoCode=function(){var ce=box.querySelector('#ceCode');if(ce.value.trim())return;var base=box.querySelector('#ceName').value.split(/[^A-Za-zÀ-ÿ]+/).filter(function(w){return w.length>2||/^[A-Z]/.test(w);}).map(function(w){return w[0];}).join('').normalize('NFD').replace(/[^A-Za-z]/g,'').toUpperCase().slice(0,4)||'GC';var k=base,n=2;while(window.COURSES&&window.COURSES[k]){k=base+(n++);}ce.value=k;};
+   box.querySelector('#ceName').addEventListener('blur',autoCode);
    var fillFrom=function(c){var t0=c.tees.filter(function(t){return (t.holes||[]).length===18;});if(!t0.length){box.querySelector('.crRes').textContent=T('This course has no full 18-hole tee data — enter it by hand.','Esta cancha no tiene datos completos de 18 hoyos — cargala a mano.');return;}
      box.querySelector('#ceName').value=(c.club&&c.course&&c.club!==c.course)?(c.club+' — '+c.course):(c.club||c.course||'');
+     box.querySelector('#ceCode').value='';autoCode();
      var h=t0[0].holes;box.querySelectorAll('.cP').forEach(function(i,k){i.value=h[k].par;});box.querySelectorAll('.cH').forEach(function(i,k){i.value=h[k].si||'';});
      var tw=box.querySelector('.crTees');tw.innerHTML='';var seen={};t0.forEach(function(t){var nm=String(t.name||'Tee');if(seen[nm])return;seen[nm]=1;tw.insertAdjacentHTML('beforeend',teeBlock());var el=tw.lastElementChild;
        el.querySelector('.tKey').value=nm;el.querySelector('.tEn').value=nm;el.querySelector('.tCr').value=t.cr||'';el.querySelector('.tSl').value=t.slope||'';el.querySelectorAll('.tY').forEach(function(i,k){i.value=t.holes[k].yds||'';});});wireDel();
@@ -4755,7 +4758,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
        var L=j.results||[];rs.innerHTML=L.length?L.map(function(r){return '<div class="frline"><span><b>'+esc(r.club)+'</b>'+(r.course&&r.course!==r.club?' — '+esc(r.course):'')+' <small>'+esc(r.where)+'</small></span><button type="button" class="pf_btn" data-gca="'+esc(r.id)+'">'+T('Use','Usar')+'</button></div>';}).join(''):T('No match — try the club name only, or enter it by hand.','Sin resultados — probá solo con el nombre del club, o cargala a mano.');
        rs.querySelectorAll('[data-gca]').forEach(function(b){b.onclick=function(){rs.textContent='…';api('gcaCourse',{id:b.getAttribute('data-gca')}).then(function(k){if(k&&k.ok)fillFrom(k.course);else rs.textContent=T('Could not load that course.','No se pudo cargar esa cancha.');});};});});};
    box.querySelector('#ceSearch').onclick=doSearch;box.querySelector('#ceQ').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();doSearch();}});
-   box.querySelector('#ceSave').onclick=function(){var msg=box.querySelector('.crMsg'),vals=function(scope,cls){return [].slice.call(scope.querySelectorAll('.'+cls)).map(function(i){return +i.value;});};
+   box.querySelector('#ceSave').onclick=function(){autoCode();var msg=box.querySelector('.crMsg'),vals=function(scope,cls){return [].slice.call(scope.querySelectorAll('.'+cls)).map(function(i){return +i.value;});};
      var tees={};box.querySelectorAll('.crTee').forEach(function(t){var k=t.querySelector('.tKey').value.trim();if(!k)return;var en=t.querySelector('.tEn').value.trim();tees[k]={label:en?(k+' / '+en):k,cr:+String(t.querySelector('.tCr').value).replace(',','.'),slope:+t.querySelector('.tSl').value,yds:vals(t,'tY')};});
      var course={name:box.querySelector('#ceName').value.trim(),par:vals(box,'cP'),hcp:vals(box,'cH'),tees:tees};
      var par=course.par.reduce(function(a,b){return a+b;},0);
