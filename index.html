@@ -3643,6 +3643,8 @@ render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoO
 .crLbl{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:10px 0 4px}
 .crGrid{display:grid;grid-template-columns:repeat(18,minmax(34px,1fr));gap:3px;overflow-x:auto}.crGrid input{width:100%;min-width:34px;box-sizing:border-box;text-align:center;border:1px solid var(--line);border-radius:6px;padding:5px 2px;font-size:12px}
 .crGca{background:rgba(31,122,77,.06);border-radius:10px;padding:8px 10px;margin:8px 0}.crRes{font-size:12.5px;margin-top:6px}
+.crBad{border-color:var(--clay)!important;background:rgba(194,80,46,.10)!important}
+.crEd .crMsg{margin:8px 0 0;line-height:1.5}
 .crTee{border-top:1px dashed var(--line);padding-top:8px;margin-top:8px}.crTeeH{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}.crTeeH input{border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px;width:130px}
 .hwWrap{margin:0 0 14px}.hwTitle{font-family:var(--serif);color:var(--pine);font-size:18px;font-weight:600;margin:0 0 8px}.hwTitle small{font-family:var(--cond);font-size:11px;color:var(--ink-soft);letter-spacing:.06em;text-transform:uppercase;margin-left:6px}
 .hwCard{background:var(--paper,#fffdf7);border:1px solid var(--line);border-left:4px solid var(--fairway);border-radius:12px;padding:12px 14px;margin:0 0 10px;animation:hwIn .35s ease-out}.hwCard.hwClosed{opacity:.65;border-left-color:var(--line)}
@@ -4757,6 +4759,19 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
      var tees={};box.querySelectorAll('.crTee').forEach(function(t){var k=t.querySelector('.tKey').value.trim();if(!k)return;var en=t.querySelector('.tEn').value.trim();tees[k]={label:en?(k+' / '+en):k,cr:+String(t.querySelector('.tCr').value).replace(',','.'),slope:+t.querySelector('.tSl').value,yds:vals(t,'tY')};});
      var course={name:box.querySelector('#ceName').value.trim(),par:vals(box,'cP'),hcp:vals(box,'cH'),tees:tees};
      var par=course.par.reduce(function(a,b){return a+b;},0);
+     /* say exactly what is wrong, and mark the cells */
+     box.querySelectorAll('.crBad').forEach(function(x){x.classList.remove('crBad');});
+     var errs=[],mark=function(cls,idx,scope){var c=(scope||box).querySelectorAll('.'+cls);idx.forEach(function(i){if(c[i])c[i].classList.add('crBad');});},hl=function(a){return a.map(function(i){return i+1;}).join(', ');};
+     if(course.name.length<3)errs.push(T('Add the course name.','Agregá el nombre de la cancha.'));
+     if(String(box.querySelector('#ceCode').value).replace(/[^A-Za-z0-9]/g,'').length<2)errs.push(T('Add a short code (2–8 letters).','Agregá un código corto (2–8 letras).'));
+     var bp=[];course.par.forEach(function(v,i){if(!(v>=3&&v<=6))bp.push(i);});if(bp.length){mark('cP',bp);errs.push(T('Par missing or not 3–6 on hole(s) ','Par faltante o fuera de 3–6 en hoyo(s) ')+hl(bp)+'.');}
+     var bh=[],seen={};course.hcp.forEach(function(v,i){if(!(v>=1&&v<=18)||seen[v]!=null){bh.push(i);if(seen[v]!=null&&bh.indexOf(seen[v])<0)bh.push(seen[v]);}else seen[v]=i;});
+     if(bh.length){bh.sort(function(a,b){return a-b;});mark('cH',bh);errs.push(T('Stroke index must use 1–18 once each — missing or repeated on hole(s) ','El hándicap por hoyo debe usar del 1 al 18 sin repetir — falta o se repite en hoyo(s) ')+hl(bh)+'. '+T('(Many cards number each nine 1–9, or odd/even: copy it from the scorecard.)','(Muchas tarjetas numeran cada nueve del 1 al 9, o impares/pares: copialo de la tarjeta.)'));}
+     var nt=0;box.querySelectorAll('.crTee').forEach(function(t){var k=t.querySelector('.tKey').value.trim();if(!k)return;nt++;var by=[];[].forEach.call(t.querySelectorAll('.tY'),function(i,n){if(!(+i.value>=40&&+i.value<=800))by.push(n);});
+       if(by.length){mark('tY',by,t);errs.push(k+': '+T('yardage missing on hole(s) ','faltan yardas en hoyo(s) ')+hl(by)+'.');}
+       var cr=+String(t.querySelector('.tCr').value).replace(',','.'),sl=+t.querySelector('.tSl').value;if(!(cr>50&&cr<90)){t.querySelector('.tCr').classList.add('crBad');errs.push(k+': '+T('course rating missing.','falta el course rating.'));}if(!(sl>=55&&sl<=155)){t.querySelector('.tSl').classList.add('crBad');errs.push(k+': '+T('slope missing (55–155).','falta el slope (55–155).'));}});
+     if(!nt)errs.push(T('Add at least one tee with a name.','Agregá al menos un tee con nombre.'));
+     if(errs.length){msg.innerHTML=errs.map(function(e){return '<div>• '+e+'</div>';}).join('');msg.style.display='block';return;}
      api('courseSave',{code:box.querySelector('#ceCode').value,course:course}).then(function(j){if(j&&j.ok){msg.textContent='✓ '+T('Saved','Guardada')+' — par '+par;try{localStorage.removeItem('gs-courses');}catch(e){}refreshCourses();if(onDone)setTimeout(onDone,600);}
        else msg.textContent=j&&j.error==='no-tees'?T('Add at least one tee with 18 yardages, CR and slope.','Agregá al menos un tee con 18 yardas, CR y slope.'):T('Check: name, code, 18 pars (3–6), stroke index 1–18 each once.','Revisá: nombre, código, 18 pares (3–6), hándicap del 1 al 18 sin repetir.');});};}
  window.COURSEREQ={open:openRequest,admin:adminPanel,refresh:refreshCourses};
