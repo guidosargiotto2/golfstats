@@ -292,6 +292,12 @@ module.exports = async (req, res) => {
       return ok({ log });
     }
 
+    if (action === 'courseDelete') {   // admin removes a course added to the shared database (a built-in course with the same code comes back)
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      await sql`delete from gs_courses where code = ${String(b.code || '').toUpperCase().slice(0, 8)}`;
+      return ok();
+    }
+
     /* ---- GolfCourseAPI lookup (admin only; key stays on the server; one course at a time, never bulk) ---- */
     if (action === 'gcaSearch' || action === 'gcaCourse') {
       if (me !== L.ADMIN) return bad(403, 'admin');
