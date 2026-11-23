@@ -298,6 +298,42 @@ module.exports = async (req, res) => {
       return ok();
     }
 
+    /* ---- players help complete and verify courses: stroke index, "matches my scorecard", corrections ---- */
+    const okSI = a => Array.isArray(a) && a.length === 18 && a.every(x => Number.isInteger(+x) && +x >= 1 && +x <= 18) && new Set(a.map(Number)).size === 18;
+    const loadCourse = async code => { const r = await sql`select data from gs_courses where code = ${code}`; return r.length ? (typeof r[0].data === 'string' ? JSON.parse(r[0].data) : r[0].data) : null; };
+    const saveCourse = async (code, d) => { await sql`update gs_courses set data = ${JSON.stringify(d)}, upd = ${Date.now()} where code = ${code}`; };
+    if (action === 'courseFix') {
+      const code = String(b.code || '').toUpperCase().slice(0, 8);
+      const d = await loadCourse(code);
+      if (!d) return bad(404, 'no-course');
+      const hcp = okSI(b.hcp) ? b.hcp.map(Number) : null;
+      const confirms = !!b.confirms, note = String(b.note || '').trim().slice(0, 600);
+      if (!hcp && !confirms && !note) return bad(400, 'empty');
+      const photos = (Array.isArray(b.photos) ? b.photos : []).filter(x => typeof x === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(x) && x.length < 900000).slice(0, 2);
+      await sql`delete from gs_course_fixes where code = ${code} and username = ${me} and status = 'pending'`;   // one open contribution per player per course
+      const id = 'f' + L.crypto.randomBytes(6).toString('hex');
+      await sql`insert into gs_course_fixes (id, code, username, hcp, confirms, note, photos) values (${id}, ${code}, ${me}, ${hcp ? JSON.stringify(hcp) : null}, ${confirms}, ${note}, ${JSON.stringify(photos)})`;
+      // a request only: nothing changes for players until the admin accepts it
+      return ok({ pending: true });
+    }
+    if (action === 'courseFixes') {
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      const rows = await sql`select f.id, f.code, f.username, p.display, f.hcp, f.confirms, f.note, f.photos, f.status, f.created from gs_course_fixes f left join gs_profiles p on p.username = f.username where f.status = 'pending' order by f.created desc`;
+      const pj = x => typeof x === 'string' ? JSON.parse(x) : x;
+      return ok({ fixes: rows.map(r => Object.assign({}, r, { hcp: pj(r.hcp), photos: pj(r.photos) || [] })) });
+    }
+    if (action === 'courseFixDecide') {   // admin: accept (apply the stroke index and mark the course verified) or dismiss
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      const r = await sql`select code, hcp from gs_course_fixes where id = ${String(b.id || '')}`;
+      if (!r.length) return bad(404, 'no-fix');
+      if (b.accept) {
+        const d = await loadCourse(r[0].code), h = typeof r[0].hcp === 'string' ? JSON.parse(r[0].hcp) : r[0].hcp;
+        if (d) { if (okSI(h)) { d.hcp = h; delete d.noSI; } if (!d.noSI && b.verify !== false) { delete d.unverified; d.verifiedBy = 'admin'; } await saveCourse(r[0].code, d); }
+      }
+      await sql`update gs_course_fixes set status = ${b.accept ? 'applied' : 'dismissed'} where id = ${String(b.id)}`;
+      return ok();
+    }
+
     /* ---- GolfCourseAPI lookup (admin only; key stays on the server; one course at a time, never bulk) ---- */
     if (action === 'gcaSearch' || action === 'gcaCourse') {
       if (me !== L.ADMIN) return bad(403, 'admin');
@@ -389,6 +425,7 @@ module.exports = async (req, res) => {
       await sql`delete from gs_keys where username = ${me}`;
       await sql`delete from gs_tasks where username = ${me}`;
       await sql`delete from gs_course_requests where username = ${me}`;
+      await sql`delete from gs_course_fixes where username = ${me}`;
       return ok();
     }
 
