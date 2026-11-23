@@ -353,6 +353,13 @@ module.exports = async (req, res) => {
       Object.keys(c.tees || {}).slice(0, 8).forEach(k => { const t = c.tees[k] || {}; const key = String(k).replace(/[^A-Za-zÀ-ÿ0-9 ]/g, '').slice(0, 20);
         if (key && okArr(t.yds, 40, 800) && Number.isFinite(+t.cr) && Number.isFinite(+t.slope)) tees[key] = { label: String(t.label || key).slice(0, 40), cr: +t.cr, slope: +t.slope, est: false, yds: t.yds.map(Number) }; });
       if (!Object.keys(tees).length) return bad(400, 'no-tees');
+      // never create a second copy: a new course may not reuse a code, or the name of a course already added
+      const nk = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w && !['golf', 'club', 'de', 'del', 'el', 'la', 'los', 'las', 'country', 'the', 'gc', 'cc', 'course', 'y', 'and'].includes(w)).sort().join(' ');
+      if (!b.edit) {
+        const all = await sql`select code, data from gs_courses`;
+        const hit = all.find(r => r.code === code || nk((typeof r.data === 'string' ? JSON.parse(r.data) : r.data).name) === nk(c.name));
+        if (hit && !b.force) return res.status(409).json({ error: 'exists', code: hit.code });
+      }
       const data = { name: String(c.name).trim().slice(0, 60), abbr: code, pins: c.pins || { F: 'red', M: 'white', B: 'blue' }, par: c.par.map(Number), hcp: c.hcp.map(Number), tees };
       await sql`insert into gs_courses (code, data, upd) values (${code}, ${JSON.stringify(data)}, ${Date.now()}) on conflict (code) do update set data = excluded.data, upd = excluded.upd`;
       return ok({ code });
