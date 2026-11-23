@@ -2356,6 +2356,32 @@ function courseGroups(keys){var g={};(keys||Object.keys(COURSES)).forEach(functi
 function courseOptsHTML(sel){var E=function(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
  return courseGroups().map(function(g){return '<optgroup label="'+E(g.country+' — '+g.state)+'">'+g.keys.map(function(k){return '<option value="'+k+'"'+(k===sel?' selected':'')+'>'+E(COURSES[k].name)+'</option>';}).join('')+'</optgroup>';}).join('');}
 window.courseLoc=courseLoc;window.courseGroups=courseGroups;window.courseOptsHTML=courseOptsHTML;
+/* favourites: the short list shown when logging a round = starred courses + home course + courses you have already played */
+function favCourses(extra){var set={},add=function(k){if(k&&COURSES[k])set[k]=1;};
+ (PROF.favCourses||[]).forEach(add);add(PROF.homeCourse);(Array.isArray(extra)?extra:[extra]).forEach(add);
+ try{(window.getLoggedRounds?window.getLoggedRounds():[]).forEach(function(r){add(r.courseCode);});}catch(e){}
+ return Object.keys(set).sort(function(a,b){return COURSES[a].name.localeCompare(COURSES[b].name);});}
+function isFav(k){return (PROF.favCourses||[]).indexOf(k)>=0;}
+function toggleFav(k){var a=(PROF.favCourses||[]).slice(),i=a.indexOf(k);if(i>=0)a.splice(i,1);else a.push(k);PROF.favCourses=a;saveProf();}
+function favOptsHTML(sel){var E=function(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});},es=window.__LANG==='es';
+ return favCourses(sel).map(function(k){return '<option value="'+k+'"'+(k===sel?' selected':'')+'>'+(isFav(k)?'★ ':'')+E(COURSES[k].name)+'</option>';}).join('')+'<option value="__more">🔍 '+(es?'Buscar otra cancha…':'Search another course…')+'</option>';}
+/* course finder: search by name or city, filter by province, star favourites, pick one */
+function coursePicker(onPick){var es=window.__LANG==='es',T=function(a,b){return es?b:a;},E=function(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+ var nk=function(x){return String(x||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();};
+ var m=document.createElement('div');m.className='crModal';var F={q:'',st:'',fav:false};
+ m.innerHTML='<div class="crBox cpBox"><button class="crX" aria-label="close">✕</button><h3>'+T('Find a course','Buscar una cancha')+'</h3><p class="crSub">'+T('Tap ☆ to keep a course in your short list. Tap its name to use it now.','Tocá ☆ para dejar una cancha en tu lista corta. Tocá el nombre para usarla ahora.')+'</p><div class="crFilt"><input id="cpQ" placeholder="'+T('Name or city','Nombre o ciudad')+'" autocomplete="off"><select id="cpS"></select><label class="cpOnly"><input type="checkbox" id="cpF"> '+T('favourites','favoritas')+'</label></div><div id="cpList"></div><p class="crSub" style="margin-top:10px">'+T('Not here? ','¿No está? ')+'<a href="#" id="cpReq" style="color:var(--fairway);font-weight:700">'+T('Request your course','Pedí tu cancha')+'</a></p></div>';
+ document.body.appendChild(m);var close=function(){m.remove();};m.querySelector('.crX').onclick=close;m.onclick=function(e){if(e.target===m)close();};
+ m.querySelector('#cpReq').onclick=function(e){e.preventDefault();close();if(window.COURSEREQ)window.COURSEREQ.open();};
+ var sts={};Object.keys(COURSES).forEach(function(k){var l=courseLoc(k);sts[l.country+' — '+l.state]=1;});
+ m.querySelector('#cpS').innerHTML='<option value="">'+T('All provinces','Todas las provincias')+'</option>'+Object.keys(sts).sort().map(function(x){return '<option>'+E(x)+'</option>';}).join('');
+ function draw(){var q=nk(F.q),groups=courseGroups(Object.keys(COURSES).filter(function(k){var l=courseLoc(k);return (!F.st||(l.country+' — '+l.state)===F.st)&&(!F.fav||isFav(k))&&(!q||nk(COURSES[k].name+' '+l.city).indexOf(q)>=0);}));
+   var n=0,h=groups.map(function(g){return '<div class="crGrpC">'+E(g.country+' — '+g.state)+'</div>'+g.keys.map(function(k){n++;var l=courseLoc(k);return '<div class="cpRow"><button type="button" class="cpStar'+(isFav(k)?' on':'')+'" data-fav="'+k+'" title="'+T('Favourite','Favorita')+'">'+(isFav(k)?'★':'☆')+'</button><button type="button" class="cpName" data-pick="'+k+'"><b>'+E(COURSES[k].name)+'</b>'+(l.city?' <small>'+E(l.city)+'</small>':'')+'</button></div>';}).join('');}).join('');
+   m.querySelector('#cpList').innerHTML=n?h:'<p class="frsub">'+T('No course matches.','Ninguna cancha coincide.')+'</p>';
+   m.querySelectorAll('[data-fav]').forEach(function(b){b.onclick=function(){toggleFav(b.getAttribute('data-fav'));draw();try{renderSel();}catch(e){}};});
+   m.querySelectorAll('[data-pick]').forEach(function(b){b.onclick=function(){var k=b.getAttribute('data-pick');close();if(onPick)onPick(k);};});}
+ var qi=m.querySelector('#cpQ');qi.oninput=function(){F.q=qi.value;draw();};m.querySelector('#cpS').onchange=function(e){F.st=e.target.value;draw();};m.querySelector('#cpF').onchange=function(e){F.fav=e.target.checked;draw();};
+ draw();setTimeout(function(){qi.focus();},60);}
+window.coursePicker=coursePicker;window.favCourses=favCourses;
 const LU=(localStorage.getItem('app-user')||'Guido')+'::';  // per-user namespace
 const PKEY=LU+'scard-profile-v4',RKEY=LU+'scard-round-v4',DKEY=LU+'scard-default-v1';
 function loadDefault(){return {course:PROF.homeCourse||'CGC',tee:PROF.defaultTee||'Negras'};}
@@ -3086,7 +3112,7 @@ function switchTo(course,tee){
 }
 function renderSel(){
  const cs=document.getElementById('selCourse');
- cs.innerHTML=courseOptsHTML(R.course);
+ cs.innerHTML=favOptsHTML(R.course);
  const tees=COURSES[R.course].tees,ts=document.getElementById('selTeeChips');
  ts.innerHTML=teeList(R.course,R.tee).map(k=>`<button type="button" class="teechip${k===R.tee?' on':''}" data-teechip="${k}" style="${teeStyle(R.course,k)}">${teeEN(R.course,k)}</button>`).join('');
  ts.querySelectorAll('[data-teechip]').forEach(b=>{b.onclick=()=>switchTo(R.course,b.getAttribute('data-teechip'));});
@@ -3098,7 +3124,8 @@ function renderSel(){
  const d=loadDefault(),isd=d.course===R.course&&d.tee===R.tee,sb=document.getElementById('starBtn');
  sb.classList.toggle('isdef',isd);sb.textContent=isd?'★ default':'☆ set default';
 }
-document.getElementById('selCourse').onchange=e=>{const c=e.target.value,tee=COURSES[c].tees[R.tee]?R.tee:Object.keys(COURSES[c].tees)[0];switchTo(c,tee);};
+document.getElementById('selCourse').onchange=e=>{let c=e.target.value;const go=k=>{const tee=COURSES[k].tees[R.tee]?R.tee:Object.keys(COURSES[k].tees)[0];switchTo(k,tee);};
+ if(c==='__more'){e.target.value=R.course;coursePicker(function(k){go(k);try{renderSel();}catch(_){}});return;}go(c);};
 document.getElementById('starBtn').onclick=()=>{setDefault(R.course,R.tee);renderSel();};
 document.getElementById('startBtn').onclick=()=>startRound();
 document.getElementById('lgCancelBtn').onclick=()=>{if(!confirm('Cancel this round? Everything entered will be discarded.'))return;editRoundId=null;localStorage.removeItem(RKEY);(function(){var d=loadDefault();R=newRound(d.course,d.tee);})();render();renderLogged();};
@@ -3120,6 +3147,7 @@ function renderProf(){
   <label>Nickname<input id="pf_nick" value="${PROF.nick||localStorage.getItem('app-user')||''}" placeholder="${localStorage.getItem('app-user')||''}"></label>
   <label>Units<select id="pf_units"><option value="yd" ${PROF.units==='yd'?'selected':''}>Yards</option><option value="m" ${PROF.units==='m'?'selected':''}>Meters</option></select></label>
   <label>Home course<select id="pf_course">${courseOpts}</select></label>
+  <div class="hiblock" id="pf_favbox"><div class="hirow"><span>${window.__LANG==='es'?'Canchas favoritas':'Favourite courses'}</span></div><div class="hisub" style="margin:4px 0 8px">${favCourses().map(k=>(isFav(k)?'★ ':'')+COURSES[k].name).join(' · ')}</div><button type="button" class="pf_btn" id="pf_favbtn">${window.__LANG==='es'?'Elegir favoritas':'Choose favourites'}</button><div class="hisub" style="margin-top:8px">${window.__LANG==='es'?'Al cargar una vuelta solo ves tus favoritas, tu cancha principal y las canchas donde ya jugaste. Las demás se buscan.':'When you log a round you only see your favourites, your home course and courses you have already played. The rest are one search away.'}</div></div>
   <label>Default tee<select id="pf_tee">${teeOpts}</select></label>
   <label>${window.__LANG==='es'?'Tees a mostrar':'Tees to show'}<select id="pf_teeset">
     <option value="all" ${PROF.teeSet!=='back2'&&PROF.teeSet!=='front2'?'selected':''}>${window.__LANG==='es'?'Todos':'All'}</option>
@@ -3198,6 +3226,7 @@ function renderProf(){
  document.getElementById('pf_units').addEventListener('change',e=>{PROF.units=e.target.value;saveProf();render();renderProf();});
  document.getElementById('pf_course').addEventListener('change',e=>{PROF.homeCourse=e.target.value;PROF.defaultTee=Object.keys(COURSES[PROF.homeCourse].tees)[0];saveProf();renderProf();});
  document.getElementById('pf_tee').addEventListener('change',e=>{PROF.defaultTee=e.target.value;saveProf();});
+ var pfb=document.getElementById('pf_favbtn');if(pfb)pfb.onclick=function(){coursePicker(function(k){if(!isFav(k))toggleFav(k);try{renderProf();renderSel();}catch(_){}});var mo=new MutationObserver(function(){if(!document.querySelector('.cpBox')){mo.disconnect();try{renderProf();renderSel();}catch(_){}}});mo.observe(document.body,{childList:true});};
  document.getElementById('pf_drive').addEventListener('change',e=>{PROF.driveYd=Math.min(400,Math.max(100,parseInt(e.target.value||'250',10)||250));saveProf();reseedPredicted();render();});
  document.getElementById('pf_t5mode').addEventListener('change',e=>{PROF.t5mode=e.target.value;saveProf();});
  document.getElementById('pf_t5x').addEventListener('change',e=>{PROF.t5x=Math.min(50,Math.max(10,parseInt(e.target.value||'30',10)||30));saveProf();renderProf();});
@@ -3660,6 +3689,7 @@ render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoO
 .crFilt{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px}.crFilt input,.crFilt select{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:var(--cream,#f6f2e7);max-width:100%}.crFilt input{flex:1;min-width:170px}.crCnt{font-family:var(--cond);font-size:12px;color:var(--ink-soft)}
 .crGrpC{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sand-deep);margin:16px 0 6px}
 .crGrp{margin:0 0 8px}.crGrp>summary{cursor:pointer;font-family:var(--serif);font-weight:600;font-size:16px;color:var(--pine);padding:6px 0}.crGrp>summary small{font-family:var(--cond);font-weight:400;font-size:12px;color:var(--ink-soft)}
+.cpBox{width:min(560px,100%)}#cpList{max-height:52vh;overflow:auto;border-top:1px solid var(--line);margin-top:4px}.cpRow{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line-soft,#eee9da)}.cpStar{border:none;background:none;font-size:20px;line-height:1;color:var(--sand-deep);cursor:pointer;padding:8px 6px;transition:transform .15s}.cpStar:hover{transform:scale(1.2)}.cpStar.on{color:#d9a400}.cpName{flex:1;text-align:left;border:none;background:none;padding:10px 4px;font:14px var(--sans,inherit);color:var(--ink);cursor:pointer}.cpName:hover{color:var(--fairway)}.cpName small{color:var(--ink-soft)}.cpOnly{display:flex!important;align-items:center;gap:5px;margin:0!important;font-size:12px!important;text-transform:none!important;letter-spacing:0!important}.cpOnly input{width:auto!important;margin:0!important;display:inline!important;flex:none!important;min-width:0!important}
 .crTee{border-top:1px dashed var(--line);padding-top:8px;margin-top:8px}.crTeeH{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}.crTeeH input{border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px;width:130px}
 .hwWrap{margin:0 0 14px}.hwTitle{font-family:var(--serif);color:var(--pine);font-size:18px;font-weight:600;margin:0 0 8px}.hwTitle small{font-family:var(--cond);font-size:11px;color:var(--ink-soft);letter-spacing:.06em;text-transform:uppercase;margin-left:6px}
 .hwCard{background:var(--paper,#fffdf7);border:1px solid var(--line);border-left:4px solid var(--fairway);border-radius:12px;padding:12px 14px;margin:0 0 10px;animation:hwIn .35s ease-out}.hwCard.hwClosed{opacity:.65;border-left-color:var(--line)}
@@ -4517,7 +4547,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
  var G=[
   {head:['Settings','Configuración']},
   {k:'personal',t:['Personal','Personal'],ids:['pf_name','pf_nick','pf_units','pf_lang']},
-  {k:'course',t:['Course & tees','Cancha y tees'],ids:['pf_course','pf_tee','pf_teeset','pf_hidered']},
+  {k:'course',t:['Course & tees','Cancha y tees'],ids:['pf_course','pf_favbtn','pf_tee','pf_teeset','pf_hidered']},
   {k:'game',t:['My game & handicap','Mi juego y hándicap'],ids:['pf_drive','pf_himode','pf_impbtn','pf_imphbtn']},
   {k:'bag',t:['My bag','Mi bolsa'],link:'bag',sub:['Distance and dispersion for every club · Garmin import','Distancia y dispersión de cada palo · importación de Garmin']},
   {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_predict','pf_clubs']},
