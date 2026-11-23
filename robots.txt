@@ -1,4 +1,4 @@
-# Golfimbul — the landing page is public; the API, drafts and players' data are not. (rev 3)
+# Golfimbul — the landing page is public; the API, drafts and players' data are not. (rev 4)
 
 # AI crawlers and scrapers: no access at all
 User-agent: GPTBot
