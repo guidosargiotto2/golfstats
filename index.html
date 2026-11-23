@@ -659,6 +659,13 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope .pgrp{border:1px solid var(--line);border-radius:14px;background:var(--paper);margin:0 0 10px;overflow:hidden;}
 .lgscope .pgrp>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;font-family:var(--serif);font-weight:600;font-size:18px;color:var(--pine);user-select:none;}
 .lgscope .pgrp>summary::-webkit-details-marker{display:none;}
+.lgscope .pgrp>summary .pgL{display:flex;flex-direction:column;min-width:0}
+.lgscope .pgrp>summary .pgS{font-family:var(--cond);font-size:12.5px;font-weight:400;color:var(--ink-soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lgscope .pgrp[open]>summary .pgS{display:none}
+.lgscope .pgrp[open]{border-color:var(--pine);box-shadow:0 8px 24px rgba(15,58,44,.08)}
+.lgscope .pgHead{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sand-deep);margin:20px 2px 8px}
+.lgscope #profGroups>.pgHead:first-child{margin-top:4px}
+.lgscope .pgrp .pgB>.frsub:first-child{margin-top:10px}
 .lgscope .pgrp>summary:hover{background:rgba(15,58,44,.035);}
 .lgscope .pgrp .pgC{font-family:var(--cond);font-size:13px;color:var(--sand-deep);transition:transform .2s;}
 .lgscope .pgrp[open] .pgC{transform:rotate(180deg);}
@@ -3274,6 +3281,8 @@ function demoBanner(){var v=document.getElementById('view-log');if(!v)return;var
  document.getElementById('demoExit').onclick=lgDemoEnd;}
 function demoCardHTML(){if(!demoAvailable())return '';var es=window.__LANG==='es';
  return '<div class="demoCard"><div><b>'+(es?'¿Primera vez?':'New here?')+'</b> '+(es?'Mirá una vuelta completa cargada tiro por tiro — 18 hoyos, en el mismo formato que vas a usar.':'See a complete round logged shot by shot — 18 holes, in the same format you will use.')+'</div><button type="button" class="pf_btn" id="demoOpen">'+(es?'Abrir la vuelta de demostración':'Open the demo round')+' →</button></div>';}
+/* shared with the other modules (setup wizard, Garmin import, course requests, profile cards) */
+window.COURSES=COURSES;window.PROF=PROF;window.saveProf=saveProf;window.teeEN=teeEN;window.applyI18n=applyI18n;
 render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoOn:function(){return DEMO_ON;},card:function(){render();renderSel();},importCard:importCard,profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause,practice:lgPractice,practiceEnd:lgPracticeEnd,tourCard:function(){try{if(!R._tour)return;for(var i=R.hStart;i<R.hEnd;i++){var h=R.holes[i],y=h.yd;
    h.shots=h.par===3?[{lie:'tee',dist:y,pen:0,conf:true},{lie:'putt',dist:22,pen:0,conf:true},{lie:'putt',dist:2,pen:0,conf:true}]
     :h.par===5?[{lie:'tee',dist:y,pen:0,conf:true},{lie:'fw',dist:Math.max(150,y-280),pen:0,conf:true},{lie:(i%3?'fw':'rough'),dist:70,pen:0,conf:true},{lie:'putt',dist:14,pen:0,conf:true},{lie:'putt',dist:2,pen:0,conf:true}]
@@ -3888,7 +3897,7 @@ render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoO
    if(!ME){if(el)el.innerHTML='<p class="frsub">'+(MSG||'…')+'</p>';if(ac)ac.innerHTML=MSG?'<p class="frsub">'+esc(MSG)+'</p>':'';return;}
    if(el){el.innerHTML=msg+compareHTML()+feedHTML()+studentsHTML()+allPlayersHTML()+findHTML();
      var st=document.getElementById('frStu'),sa=document.getElementById('frStuA'),tgt=(st&&STU&&(ME.students||[]).some(function(x){return x.username===STU.username&&x.prof_status==='accepted';}))?st:(sa||st);if(tgt)tgt.innerHTML=studentHTML();wire(el);var hc=document.getElementById('hwCoach');if(hc&&STU&&window.HW)window.HW.mountCoach(hc,STU.username,STU._all||[]);}
-   if(ac){ac.innerHTML=msg+planHTML()+profHTML()+privacyHTML()+aiHTML()+dataHTML()+adminHTML();wire(ac);wireData(ac);wireAI(ac);
+   if(ac){ac.innerHTML=msg+planHTML()+profHTML()+privacyHTML()+aiHTML()+dataHTML()+(ME.admin?'<div class="pgHead">Admin</div>':'')+adminHTML();if(window.PGRP&&window.PGRP.fold)window.PGRP.fold(ac);wire(ac);wireData(ac);wireAI(ac);
      var pc=document.getElementById('plChooser');if(pc&&window.PLANS&&window.PLANS.chooser)window.PLANS.chooser(pc);}
  }
  function load(msg){MSG=msg||'';if(!tok()){draw();return;}
@@ -4473,47 +4482,72 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
 })();
 </script>
 <script>
-/* ===== Profile grouped into collapsible sections ===== */
+/* ===== Profile: short page of collapsed cards under three headings (Settings / Account / Admin); one card open at a time ===== */
 (function(){
  var ES=function(){return window.__LANG==='es';};
  var G=[
+  {head:['Settings','Configuración']},
   {k:'personal',t:['Personal','Personal'],ids:['pf_name','pf_nick','pf_units','pf_lang']},
   {k:'course',t:['Course & tees','Cancha y tees'],ids:['pf_course','pf_tee','pf_teeset','pf_hidered']},
   {k:'game',t:['My game & handicap','Mi juego y hándicap'],ids:['pf_drive','pf_himode','pf_impbtn','pf_imphbtn']},
-  {k:'bag',t:['My bag','Mi bolsa'],link:'bag',sub:['Distance and dispersion for every club','Distancia y dispersión de cada palo']},
-  {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_predict']},
+  {k:'bag',t:['My bag','Mi bolsa'],link:'bag',sub:['Distance and dispersion for every club · Garmin import','Distancia y dispersión de cada palo · importación de Garmin']},
+  {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_predict','pf_clubs']},
   {k:'analysis',t:['Scoring & analysis','Score y análisis'],ids:['pf_netpar','pf_sgbase','pf_atg']},
   {k:'t5',t:["Tiger's 5",'Tiger 5'],ids:['pf_t5mode','pf_t5x','pf_nine','pf_bogeyx']},
-  {k:'account',t:['Account, plan & privacy','Cuenta, plan y privacidad'],ext:'acctBody'},
-  {k:'other',t:['Other','Otros'],ids:[]}
+  {k:'other',t:['Other','Otros'],ids:[]},
+  {head:['Account','Cuenta'],forExt:'acctBody'},
+  {flat:'acctBody'}
  ];
- var openSet={};try{openSet=JSON.parse(localStorage.getItem('gs-pgrp')||'{"personal":1}');}catch(e){openSet={personal:1};}
+ var openKey='';try{openKey=localStorage.getItem('gs-popen')||'';}catch(e){}
+ function setKey(k){openKey=k;try{localStorage.setItem('gs-popen',k);}catch(e){}}
+ function onToggle(d,key){if(d.open){setKey(key);document.querySelectorAll('#view-profile details.pgrp').forEach(function(x){if(x!==d&&x.open)x.open=false;});}else if(openKey===key)setKey('');}
+ function hint(k){try{var P=PROF,es=ES(),oo=function(v){return v?(es?'sí':'on'):(es?'no':'off');};
+   if(k==='personal')return [(P.name||localStorage.getItem('app-user')||''),(P.lang==='es'?'Español':'English'),(P.units==='m'?(es?'metros':'metres'):(es?'yardas':'yards'))].filter(Boolean).join(' · ');
+   if(k==='course'){var c=COURSES[P.homeCourse];return (c?c.name:'')+' · '+teeEN(P.homeCourse,P.defaultTee);}
+   if(k==='game')return 'Drive '+P.driveYd+' yd'+(P.hiManual!==''&&P.hiManual!=null?' · HI '+(+P.hiManual<0?'+'+(-P.hiManual):P.hiManual):'');
+   if(k==='logging')return (es?'Predicción ':'Prediction ')+oo(P.predict)+' · '+(es?'Palo por tiro ':'Club per shot ')+oo(P.trackClubs);
+   if(k==='analysis')return (es?'Par neto ':'Net par ')+oo(P.netPar)+' · '+(es?'Juego corto ≤ ':'Around the green ≤ ')+(P.atgYd||50)+' yd';
+   if(k==='t5')return (P.t5mode==='dchip'?(es?'Doble chip':'Double chip'):(es?'3+ golpes':'3+ shots'))+' ≤ '+(P.t5x||30)+' yd · 9i '+(P.nineIron||140)+' yd';
+ }catch(e){}return '';}
+ /* account / admin sections arrive as plain blocks: fold each into a collapsed card */
+ function fold(ac){if(!ac)return;
+   [].slice.call(ac.children).forEach(function(sx){if(!sx.classList||!sx.classList.contains('frsec'))return;var h=sx.querySelector('h3');if(!h||h.parentNode!==sx)return;
+     var key='s:'+h.textContent.trim().toLowerCase().replace(/[^a-z0-9áéíóúñ]+/g,'-').slice(0,32);
+     var d=document.createElement('details');d.className='pgrp';d.dataset.sk=key;if(openKey===key)d.open=true;
+     var sm=document.createElement('summary');sm.innerHTML='<span class="pgL"><span class="pgT"></span></span><span class="pgC">▾</span>';sm.querySelector('.pgT').innerHTML=h.innerHTML;h.remove();
+     var b=document.createElement('div');b.className='pgB';while(sx.firstChild)b.appendChild(sx.firstChild);d.appendChild(sm);d.appendChild(b);
+     d.addEventListener('toggle',function(){onToggle(d,key);});sx.parentNode.replaceChild(d,sx);});
+   var hd=document.querySelector('#profGroups .pgHead[data-for="acctBody"]');if(hd)hd.style.display=ac.children.length?'':'none';}
  var busy=false;
  function build(){
    var pf=document.getElementById('pform');if(!pf||busy)return;busy=true;
    var box=document.getElementById('profGroups');
    if(!box){box=document.createElement('div');box.id='profGroups';pf.parentNode.insertBefore(box,pf);
      G.forEach(function(g){
+       if(g.head){var hd=document.createElement('div');hd.className='pgHead';hd._t=g.head;if(g.forExt)hd.dataset.for=g.forExt;box.appendChild(hd);return;}
+       if(g.flat){var fx=document.getElementById(g.flat);if(fx)box.appendChild(fx);return;}
        if(g.link){var a=document.createElement('div');a.className='pgrp pglink';a.dataset.k=g.k;a.setAttribute('role','button');a.tabIndex=0;
          a.innerHTML='<div class="pgL"><span class="pgT"></span><span class="pgS"></span></div><span class="pgGo">→</span>';
          var go=function(){if(window.showView)window.showView(g.link);};a.onclick=go;a.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};
          box.appendChild(a);var be=document.getElementById('bagEntry');if(be)be.style.display='none';return;}
-       var d=document.createElement('details');d.className='pgrp';d.dataset.k=g.k;if(openSet[g.k])d.open=true;
-       d.innerHTML='<summary><span class="pgT"></span><span class="pgC">▾</span></summary><div class="pgB'+(g.ext?'':' pform')+'"></div>';
-       d.addEventListener('toggle',function(){openSet[g.k]=d.open?1:0;try{localStorage.setItem('gs-pgrp',JSON.stringify(openSet));}catch(e){}});
-       box.appendChild(d);
-       if(g.ext){var ex=document.getElementById(g.ext);if(ex)d.querySelector('.pgB').appendChild(ex);}});}
-   box.querySelectorAll('.pgrp').forEach(function(d){var g=G.filter(function(x){return x.k===d.dataset.k;})[0];d.querySelector('.pgT').textContent=g.t[ES()?1:0];var ps=d.querySelector('.pgS');if(ps&&g.sub)ps.textContent=g.sub[ES()?1:0];});
+       var d=document.createElement('details');d.className='pgrp';d.dataset.k=g.k;if(openKey==='g:'+g.k)d.open=true;
+       d.innerHTML='<summary><span class="pgL"><span class="pgT"></span><span class="pgS"></span></span><span class="pgC">▾</span></summary><div class="pgB pform"></div>';
+       d.addEventListener('toggle',function(){onToggle(d,'g:'+g.k);});
+       box.appendChild(d);});}
+   box.querySelectorAll('.pgHead').forEach(function(h){if(h._t)h.textContent=h._t[ES()?1:0];});
+   box.querySelectorAll('.pgrp[data-k]').forEach(function(d){var g=G.filter(function(x){return x.k===d.dataset.k;})[0];if(!g)return;d.querySelector('.pgT').textContent=g.t[ES()?1:0];var ps=d.querySelector('.pgS');if(ps)ps.textContent=g.sub?g.sub[ES()?1:0]:hint(g.k);});
    if(pf.children.length){
-     G.forEach(function(g){if(!g.ext&&!g.link){var b=box.querySelector('.pgrp[data-k="'+g.k+'"] .pgB');while(b.firstChild)b.removeChild(b.firstChild);}});
-     G.forEach(function(g){if(g.ext||g.link||!g.ids)return;var b=box.querySelector('.pgrp[data-k="'+g.k+'"] .pgB');
+     G.forEach(function(g){if(g.k&&!g.link){var b=box.querySelector('.pgrp[data-k="'+g.k+'"] .pgB');while(b.firstChild)b.removeChild(b.firstChild);}});
+     G.forEach(function(g){if(!g.k||g.link||!g.ids)return;var b=box.querySelector('.pgrp[data-k="'+g.k+'"] .pgB');
        g.ids.forEach(function(id){var el=document.getElementById(id);if(!el||!pf.contains(el))return;var u=el.closest('.hiblock')||el.closest('label')||el;if(u.parentNode===pf)b.appendChild(u);});});
      var other=box.querySelector('.pgrp[data-k="other"] .pgB');while(pf.firstChild)other.appendChild(pf.firstChild);
    }
    var od=box.querySelector('.pgrp[data-k="other"]');if(od)od.style.display=od.querySelector('.pgB').children.length?'':'none';
+   fold(document.getElementById('acctBody'));
    busy=false;}
- function hook(){var pf=document.getElementById('pform');if(!pf)return;build();try{new MutationObserver(function(){if(!busy&&pf.children.length)setTimeout(build,0);}).observe(pf,{childList:true});}catch(e){}}
- window.PGRP={build:build,open:function(k){var d=document.querySelector('.pgrp[data-k="'+k+'"]');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}}};
+ function hook(){var pf=document.getElementById('pform');if(!pf)return;build();try{new MutationObserver(function(){if(!busy&&pf.children.length)setTimeout(build,0);}).observe(pf,{childList:true});}catch(e){}
+   pf.parentNode.addEventListener('change',function(){setTimeout(function(){var box=document.getElementById('profGroups');if(box)box.querySelectorAll('.pgrp[data-k]').forEach(function(d){var g=G.filter(function(x){return x.k===d.dataset.k;})[0],ps=d.querySelector('.pgS');if(g&&ps&&!g.sub)ps.textContent=hint(g.k);});},60);});}
+ window.PGRP={build:build,fold:fold,open:function(k){var d=document.querySelector('.pgrp[data-k="'+k+'"]');if(!d&&k==='account'){var pc=document.getElementById('plChooser');d=pc&&pc.closest?pc.closest('details'):null;}if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}}};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hook);else hook();
 })();
 </script>
