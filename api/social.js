@@ -227,6 +227,130 @@ module.exports = async (req, res) => {
       return ok();
     }
 
+    /* ---- homework & challenges: a coach (admin, or the player's accepted professor) assigns; the player logs progress ---- */
+    const isCoachOf = async (u) => {
+      if (!L.validUser(u)) return false;
+      if (me === L.ADMIN) return true;
+      const r = await sql`select 1 as x from gs_profiles where username = ${u} and professor = ${me} and prof_status = 'accepted'`;
+      return r.length > 0;
+    };
+    const cleanTask = t => ({ id: t.id, username: t.username, coach: t.coach, coachName: t.coach_name || t.coach, kind: t.kind, title: t.title, detail: t.detail || '', due: t.due || '', target: typeof t.target === 'string' ? JSON.parse(t.target) : (t.target || null), log: typeof t.log === 'string' ? JSON.parse(t.log) : (t.log || []), status: t.status, created: t.created, upd: Number(t.upd) });
+    if (action === 'taskList') {
+      const u = target || me;
+      if (u !== me && !(await isCoachOf(u))) return bad(403, 'not-your-student');
+      const rows = await sql`select t.*, p.display as coach_name from gs_tasks t left join gs_profiles p on p.username = t.coach where t.username = ${u} order by t.created desc`;
+      return ok({ tasks: rows.map(cleanTask) });
+    }
+    if (action === 'taskSave') {   // create or edit (coach)
+      const u = target;
+      if (!(await isCoachOf(u))) return bad(403, 'not-your-student');
+      const kind = b.kind === 'challenge' ? 'challenge' : 'practice';
+      const title = String(b.title || '').trim().slice(0, 120);
+      if (title.length < 3) return bad(400, 'title');
+      const detail = String(b.detail || '').trim().slice(0, 1000);
+      const due = /^\d{4}-\d{2}-\d{2}$/.test(String(b.due || '')) ? String(b.due) : '';
+      let tg = null;
+      if (kind === 'challenge') {
+        const t = b.target || {};
+        const metrics = ['p3', 'pen', 'db', 'mtot', 'putts', 'stp', 'sgtot', 'ott', 'app', 'atg', 'putt', 'gir', 'fw'];
+        if (!metrics.includes(t.metric) || isNaN(+t.value)) return bad(400, 'target');
+        tg = { metric: t.metric, op: t.op === 'ge' ? 'ge' : 'le', value: +t.value, rounds: Math.min(20, Math.max(1, parseInt(t.rounds, 10) || 5)), from: /^\d{4}-\d{2}-\d{2}$/.test(String(t.from || '')) ? t.from : new Date().toISOString().slice(0, 10) };
+      } else {
+        const pw = parseInt((b.target || {}).perWeek, 10);
+        tg = { perWeek: isNaN(pw) ? 0 : Math.min(14, Math.max(0, pw)) };
+      }
+      const upd = Date.now();
+      if (b.id) {
+        const r = await sql`select username from gs_tasks where id = ${String(b.id)}`;
+        if (!r.length || r[0].username !== u) return bad(404, 'no-task');
+        await sql`update gs_tasks set kind = ${kind}, title = ${title}, detail = ${detail}, due = ${due}, target = ${JSON.stringify(tg)}, upd = ${upd} where id = ${String(b.id)}`;
+        return ok({ id: String(b.id) });
+      }
+      const id = 'k' + L.crypto.randomBytes(6).toString('hex');
+      await sql`insert into gs_tasks (id, username, coach, kind, title, detail, due, target, upd) values (${id}, ${u}, ${me}, ${kind}, ${title}, ${detail}, ${due}, ${JSON.stringify(tg)}, ${upd})`;
+      return ok({ id });
+    }
+    if (action === 'taskStatus' || action === 'taskLog') {
+      const r = await sql`select username, log from gs_tasks where id = ${String(b.id || '')}`;
+      if (!r.length) return bad(404, 'no-task');
+      const owner = r[0].username, coach = await isCoachOf(owner);
+      if (owner !== me && !coach) return bad(403, 'forbidden');
+      if (action === 'taskStatus') {
+        const st = String(b.status || '');
+        if (!['open', 'done', 'dropped', 'deleted'].includes(st)) return bad(400, 'status');
+        if ((st === 'dropped' || st === 'deleted') && !coach) return bad(403, 'coach-only');
+        if (st === 'deleted') { await sql`delete from gs_tasks where id = ${String(b.id)}`; return ok(); }
+        await sql`update gs_tasks set status = ${st}, upd = ${Date.now()} where id = ${String(b.id)}`;
+        return ok();
+      }
+      if (owner !== me) return bad(403, 'player-only');   // only the player logs practice sessions
+      let log = typeof r[0].log === 'string' ? JSON.parse(r[0].log) : (Array.isArray(r[0].log) ? r[0].log : []);
+      const day = /^\d{4}-\d{2}-\d{2}$/.test(String(b.day || '')) ? String(b.day) : new Date().toISOString().slice(0, 10);
+      if (b.undo) { const i = log.lastIndexOf(day); if (i >= 0) log.splice(i, 1); } else log.push(day);
+      log = log.slice(-400);
+      await sql`update gs_tasks set log = ${JSON.stringify(log)}, upd = ${Date.now()} where id = ${String(b.id)}`;
+      return ok({ log });
+    }
+
+    /* ---- GolfCourseAPI lookup (admin only; key stays on the server; one course at a time, never bulk) ---- */
+    if (action === 'gcaSearch' || action === 'gcaCourse') {
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      const key = process.env.GOLFCOURSEAPI_KEY || process.env.GOLF_COURSE_API_KEY;
+      if (!key) return bad(503, 'no-gca-key');
+      const url = action === 'gcaSearch'
+        ? 'https://api.golfcourseapi.com/v1/search?search_query=' + encodeURIComponent(String(b.q || '').slice(0, 80))
+        : 'https://api.golfcourseapi.com/v1/courses/' + encodeURIComponent(String(b.id || '').replace(/[^0-9a-zA-Z_-]/g, ''));
+      const r = await fetch(url, { headers: { Authorization: 'Key ' + key } });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) return res.status(502).json({ error: 'gca', status: r.status, message: (j && (j.message || j.error)) || '' });
+      const loc = c => [c.location && c.location.city, c.location && c.location.state, c.location && c.location.country].filter(Boolean).join(', ');
+      if (action === 'gcaSearch') return ok({ results: (j.courses || []).slice(0, 20).map(c => ({ id: c.id, club: c.club_name, course: c.course_name, where: loc(c) })) });
+      const c = j.course || j;
+      const teeList = [].concat((c.tees && c.tees.male) || [], (c.tees && c.tees.female) || []);
+      return ok({ course: { id: c.id, club: c.club_name, course: c.course_name, where: loc(c), tees: teeList.map(t => ({ name: t.tee_name, cr: t.course_rating, slope: t.slope_rating, par: t.par_total, holes: (t.holes || []).map(h => ({ par: h.par, yds: h.yardage, si: h.handicap })) })) } });
+    }
+
+    /* ---- course requests: players ask for their course; the admin checks the scorecard and adds it ---- */
+    if (action === 'courseRequest') {
+      const name = String(b.name || '').trim().slice(0, 120), city = String(b.city || '').trim().slice(0, 80);
+      if (name.length < 3) return bad(400, 'name');
+      const photos = (Array.isArray(b.photos) ? b.photos : []).filter(x => typeof x === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(x) && x.length < 900000).slice(0, 3);
+      const open = await sql`select count(*)::int as n from gs_course_requests where username = ${me} and status = 'requested'`;
+      if (open[0].n >= 5) return bad(400, 'too-many');
+      const id = 'c' + L.crypto.randomBytes(6).toString('hex');
+      await sql`insert into gs_course_requests (id, username, name, city, tees, note, photos) values (${id}, ${me}, ${name}, ${city}, ${String(b.tees || '').slice(0, 120)}, ${String(b.note || '').slice(0, 600)}, ${JSON.stringify(photos)})`;
+      return ok({ id });
+    }
+    if (action === 'myCourseRequests') {
+      const rows = await sql`select id, name, city, status, created from gs_course_requests where username = ${me} order by created desc`;
+      return ok({ requests: rows });
+    }
+    if (action === 'courseRequests') {
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      const rows = await sql`select r.id, r.username, p.display, r.name, r.city, r.tees, r.note, r.photos, r.status, r.created from gs_course_requests r left join gs_profiles p on p.username = r.username order by (r.status = 'requested') desc, r.created desc`;
+      return ok({ requests: rows.map(r => Object.assign({}, r, { photos: typeof r.photos === 'string' ? JSON.parse(r.photos) : (r.photos || []) })) });
+    }
+    if (action === 'courseRequestStatus') {
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      const st = ['requested', 'added', 'rejected'].includes(b.status) ? b.status : 'requested';
+      await sql`update gs_course_requests set status = ${st}, done = ${st === 'requested' ? null : new Date().toISOString()} where id = ${String(b.id || '')}`;
+      return ok();
+    }
+    if (action === 'courseSave') {   // admin adds or edits a course in the shared database
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      const code = String(b.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+      const c = b.course || {};
+      const okArr = (a, lo, hi) => Array.isArray(a) && a.length === 18 && a.every(x => Number.isFinite(+x) && +x >= lo && +x <= hi);
+      if (code.length < 2 || String(c.name || '').trim().length < 3 || !okArr(c.par, 3, 6) || !okArr(c.hcp, 1, 18) || new Set(c.hcp.map(Number)).size !== 18) return bad(400, 'bad-course');
+      const tees = {};
+      Object.keys(c.tees || {}).slice(0, 8).forEach(k => { const t = c.tees[k] || {}; const key = String(k).replace(/[^A-Za-zÀ-ÿ0-9 ]/g, '').slice(0, 20);
+        if (key && okArr(t.yds, 40, 800) && Number.isFinite(+t.cr) && Number.isFinite(+t.slope)) tees[key] = { label: String(t.label || key).slice(0, 40), cr: +t.cr, slope: +t.slope, est: false, yds: t.yds.map(Number) }; });
+      if (!Object.keys(tees).length) return bad(400, 'no-tees');
+      const data = { name: String(c.name).trim().slice(0, 60), abbr: code, pins: c.pins || { F: 'red', M: 'white', B: 'blue' }, par: c.par.map(Number), hcp: c.hcp.map(Number), tees };
+      await sql`insert into gs_courses (code, data, upd) values (${code}, ${JSON.stringify(data)}, ${Date.now()}) on conflict (code) do update set data = excluded.data, upd = excluded.upd`;
+      return ok({ code });
+    }
+
     /* ---- My bag from a Garmin export (parsed in the browser; only the summary is stored) — Lite and Pro ---- */
     if (action === 'bagGet') {
       const r = await sql`select data, upd from gs_bags where username = ${me}`;
@@ -246,6 +370,8 @@ module.exports = async (req, res) => {
     if (action === 'bagClear') {
       await sql`delete from gs_bags where username = ${me}`;
       await sql`delete from gs_keys where username = ${me}`;
+      await sql`delete from gs_tasks where username = ${me}`;
+      await sql`delete from gs_course_requests where username = ${me}`;
       return ok();
     }
 
@@ -260,7 +386,8 @@ module.exports = async (req, res) => {
       const review = await sql`select contact, note, status, recommendation, requested, done from gs_reviews where username = ${me}`;
       const signIns = await sql`select provider, email, created from gs_identities where username = ${me}`;
       const bag = await sql`select data, upd from gs_bags where username = ${me}`;
-      return ok({ exported: new Date().toISOString(), app: 'Golfimbul', account: user, profile, plan: myPlan, signIns, following, followers, team: team[0] || null, review: review[0] || null, garminBag: bag.length ? bag[0].data : null, rounds: rounds.map(r => Object.assign({ id: r.id, updated: Number(r.upd) }, { data: r.data })) });
+      const tasks = await sql`select id, coach, kind, title, detail, due, target, log, status, created from gs_tasks where username = ${me}`;
+      return ok({ exported: new Date().toISOString(), app: 'Golfimbul', account: user, profile, plan: myPlan, signIns, following, followers, team: team[0] || null, review: review[0] || null, garminBag: bag.length ? bag[0].data : null, homework: tasks, rounds: rounds.map(r => Object.assign({ id: r.id, updated: Number(r.upd) }, { data: r.data })) });
     }
     if (action === 'deleteAccount') {
       if (String(b.confirm || '') !== 'DELETE') return bad(400, 'confirm');

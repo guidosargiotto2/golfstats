@@ -755,7 +755,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
   {id:'course',ok:function(){return !!A.home&&!!A.tee;},h:function(){var cs=C(),ks=Object.keys(cs);if(!A.home&&ks.length)A.home=ks[0];var tees=A.home&&cs[A.home]?Object.keys(cs[A.home].tees):[];if(A.tee&&tees.indexOf(A.tee)<0)A.tee='';if(!A.tee&&tees.length)A.tee=tees[0];
     return '<h2>'+T('Where do you play?','¿Dónde jugás?')+'</h2><p class="obSub">'+T('Your home course opens by default when you log a round.','Tu cancha principal se abre por defecto al cargar una vuelta.')+'</p><div class="obRow"><div><label class="obL">'+T('Home course','Cancha principal')+'</label><select data-f="home">'+ks.map(function(k){return '<option value="'+k+'"'+(A.home===k?' selected':'')+'>'+esc(cs[k].name)+'</option>';}).join('')+'</select></div><div><label class="obL">'+T('Your usual tees','Tus tees habituales')+'</label><select data-f="tee">'+tees.map(function(t){var lb0=(cs[A.home].tees[t].label||t),lb=lb0.indexOf('/')>=0?lb0.split('/')[lang==='es'?0:1].trim():lb0;return '<option value="'+t+'"'+(A.tee===t?' selected':'')+'>'+esc(lb)+'</option>';}).join('')+'</select></div></div>'+
       '<label class="obL">'+T('Other courses you play','Otras canchas donde jugás')+'</label>'+chips('others',ks.filter(function(k){return k!==A.home;}).map(function(k){return [k,cs[k].name,cs[k].name];}),true)+
-      '<input type="text" data-f="othersText" style="margin-top:10px" maxlength="120" value="'+esc(A.othersText)+'" placeholder="'+T('Any others? Separate with commas','¿Otras? Separadas por comas')+'"><div class="obHint">'+T('Courses not in Golfimbul yet are added on request.','Las canchas que todavía no están en Golfimbul se agregan a pedido.')+'</div>';}},
+      '<input type="text" data-f="othersText" style="margin-top:10px" maxlength="120" value="'+esc(A.othersText)+'" placeholder="'+T('Any others? Separate with commas','¿Otras? Separadas por comas')+'"><div class="obHint">'+T('Your course is not in the list? ','¿Tu cancha no está en la lista? ')+'<a href="#" onclick="event.preventDefault();window.COURSEREQ&&window.COURSEREQ.open()" style="color:#1f7a4d;font-weight:700">'+T('Request it','Pedila')+'</a> '+T('— send the scorecard and it is added for you.','— mandá la tarjeta y se agrega.')+'</div>';}},
   {id:'index',ok:function(){return A.hi===''||A.hi==null||!isNaN(parseHI(A.hi));},h:function(){return '<h2>'+T('What is your current index?','¿Cuál es tu hándicap index actual?')+'</h2><p class="obSub">'+T('Your official handicap index. Golfimbul uses it for net par and strokes gained against your level.','Tu hándicap index oficial. Golfimbul lo usa para el par neto y los strokes gained contra tu nivel.')+'</p><label class="obL">'+T('Handicap index','Hándicap index')+'</label><input type="text" inputmode="decimal" data-f="hi" value="'+esc(A.hi)+'" placeholder="'+T('e.g. 12.4 — plus handicaps: +2.6','ej. 12,4 — hándicaps plus: +2,6')+'"><div class="obHint">'+T('No index yet? Leave it empty — it will be calculated from your rounds.','¿Todavía no tenés? Dejalo vacío — se calcula con tus vueltas.')+'</div>';}},
   {id:'dist',ok:function(){var d=+A.drive,n=+A.nine;return d>=100&&d<=400&&n>=60&&n<=220;},h:function(){return '<h2>'+T('How far do you hit it?','¿Cuánto le pegás?')+'</h2><p class="obSub">'+T('Your typical shot on a normal day, in yards — not your best one. This seeds your shot predictions until your own rounds take over.','Tu tiro típico en un día normal, en yardas — no el mejor. Con esto arrancan las predicciones hasta que tus vueltas tomen el control.')+'</p><div class="obRow"><div><label class="obL">'+T('Driver (total)','Driver (total)')+'</label><input type="number" inputmode="numeric" data-f="drive" min="100" max="400" value="'+esc(A.drive)+'" placeholder="230"></div><div><label class="obL">'+T('9 iron','Hierro 9')+'</label><input type="number" inputmode="numeric" data-f="nine" min="60" max="220" value="'+esc(A.nine)+'" placeholder="135"></div></div><div class="obHint">'+T('Be realistic. Over-estimating is the most common mistake — and it makes every prediction too long.','Sé realista. Sobreestimar es el error más común — y hace que todas las predicciones queden largas.')+'</div>';}},
   {id:'done',ok:function(){return true;},h:function(){var nm=(A.name||'').trim().split(' ')[0];return '<div class="obDone"><div class="obBall"></div><h2>'+T('You\'re set, ','Listo, ')+esc(nm)+'.</h2><p class="obSub">'+T('Your profile is ready. Next, a 60-second tour of how to log a round — then go play.','Tu perfil está listo. Ahora, un recorrido de 60 segundos para cargar una vuelta — y después a jugar.')+'</p></div>';}}
@@ -1023,7 +1023,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
  <div class="tiers">
   <div class="tier"><div class="tn">Free</div><div class="tp" data-l="Free|Gratis">Free</div><div class="tu">US$0</div><p data-l="Log every shot. Every round's scorecard and analysis, one round at a time.|Cargá cada tiro. La tarjeta y el análisis de cada vuelta, de a una vuelta.">Log every shot. Every round's scorecard and analysis, one round at a time.</p></div>
   <div class="tier"><div class="tn">Lite</div><div class="tp" data-l="1 ball / month|1 pelota / mes">1 ball / month</div><div class="tu" data-l="≈ US$4.92 a month|≈ US$4,92 por mes">≈ US$4.92 a month</div><p data-l="The control charts across all your rounds, your priorities, friends, your coach — and your Garmin rounds imported in a minute. Save one ball a month with better strategy and it pays for itself.|Los gráficos de control de todas tus vueltas, tus prioridades, amigos, tu profesor — y tus vueltas de Garmin importadas en un minuto. Ahorrá una pelota por mes con mejor estrategia y se paga sola.">The control charts across all your rounds, your priorities, friends, your coach — and your Garmin rounds imported in a minute. Save one ball a month with better strategy and it pays for itself.</p></div>
-  <div class="tier pro"><div class="tn">Pro</div><div class="tp" data-l="Half a dozen / month|Media docena / mes">Half a dozen / month</div><div class="tinv" data-l="By invitation|Por invitación">By invitation</div><div class="tu" data-l="≈ US$29.50 a month|≈ US$29,50 por mes">≈ US$29.50 a month</div><p data-l="Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers.|Todo lo de Lite, más una llamada mensual de 30 minutos conmigo, preparada con tus números.">Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers.</p></div>
+  <div class="tier pro"><div class="tn">Pro</div><div class="tp" data-l="6 balls / month|6 pelotas / mes">6 balls / month</div><div class="tinv" data-l="By invitation|Por invitación">By invitation</div><div class="tu" data-l="≈ US$29.50 a month|≈ US$29,50 por mes">≈ US$29.50 a month</div><p data-l="Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers.|Todo lo de Lite, más una llamada mensual de 30 minutos conmigo, preparada con tus números.">Everything in Lite, plus a monthly 30-minute call with me, prepared from your numbers.</p></div>
  <div class="lteam"><div class="lteamB">4×3</div><div><b data-l="Team offer — four players, pay for three. On Lite or Pro.|Oferta para equipos — cuatro jugadores, pagan tres. En Lite o Pro.">Team offer — four players, pay for three. On Lite or Pro.</b><span data-l="Lite: ¾ of a ball each (≈ US$3.69 a month) instead of 1. Pro: 4½ balls each (≈ US$22.13 a month) instead of 6 — each player still by invitation. One of you creates the team and shares a code; the others join on their own.|Lite: ¾ de pelota cada uno (≈ US$3,69 por mes) en lugar de 1. Pro: 4½ pelotas cada uno (≈ US$22,13 por mes) en lugar de 6 — cada jugador igual por invitación. Uno crea el equipo y comparte un código; los demás se suman solos.">Lite: ¾ of a ball each (≈ US$3.69 a month) instead of 1. Pro: 4½ balls each (≈ US$22.13 a month) instead of 6 — each player still by invitation. One of you creates the team and shares a code; the others join on their own.</span></div></div>
  </div>
 </div></section>
@@ -2304,7 +2304,7 @@ function holeSG(h){const o={ott:0,app:0,atg:0,putt:0,tot:0,strokes:0};const s=h.
 
 /* ===== COURSE DATABASE ===== par & stroke index are shared across tees; yards + rating/slope per tee ===== */
 const COURSES={
- CGC:{name:'Córdoba Golf Club',abbr:'CGC',
+ CGC:{name:'Córdoba Golf Club',abbr:'CGC',pins:{F:'red',M:'white',B:'blue'},
    par:[4,5,4,3,4,4,4,3,4, 3,4,5,4,3,5,5,4,4],
    hcp:[17,7,1,9,3,5,15,13,11, 16,2,4,10,14,6,8,12,18],
    tees:{
@@ -2313,7 +2313,7 @@ const COURSES={
      Blancas:{label:'Blancas / White', cr:70.2, slope:123, est:false, yds:[348,491,373,149,359,392,305,153,340, 141,353,450,362,166,417,527,381,346]},
      Rojas:{label:'Rojas / Red', cr:73.4, slope:127, est:false,   yds:[332,448,354,139,310,360,292,136,274, 124,322,427,347,152,386,467,336,322]}
    }},
- TER:{name:'El Terrón Golf Club',abbr:'TER',
+ TER:{name:'El Terrón Golf Club',abbr:'TER',pins:{F:'red',M:'white',B:'blue'},
    par:[4,3,5,4,3,4,4,4,5, 4,5,4,4,4,3,5,3,4],
    hcp:[7,15,13,5,11,3,1,9,17, 8,12,2,6,14,18,4,16,10],
    tees:{
@@ -2321,13 +2321,14 @@ const COURSES={
      Negro:{label:'Negro / Black', cr:72.4, slope:132, est:false, yds:[381,145,510,422,190,450,428,301,500, 440,510,453,417,342,148,572,177,413]},
      Azul:{label:'Azul / Blue', cr:70.5, slope:128, est:false, yds:[359,128,495,402,180,415,390,290,485, 420,488,426,363,321,140,551,165,388]}
    }},
- SIG:{name:'San Isidro Golf Club',abbr:'SIG',
+ SIG:{name:'San Isidro Golf Club',abbr:'SIG',pins:{F:'red',M:'white',B:'blue'},
    par:[5,4,3,5,4,4,3,4,4,3,4,4,4,5,4,3,4,5],
    hcp:[13,9,17,11,7,3,15,1,5,14,18,10,6,8,2,12,4,16],
    tees:{
      Negro:{label:'Negro / Black', cr:71.9, slope:127, est:false, yds:[516,363,160,545,347,417,158,409,403,142,350,391,387,491,421,196,424,501]}
    }}
 };
+try{var _cx=JSON.parse(localStorage.getItem('gs-courses')||'{}');Object.keys(_cx).forEach(function(k){if(_cx[k]&&_cx[k].tees&&_cx[k].par)COURSES[k]=_cx[k];});}catch(e){}   /* courses added from players' requests */
 const LU=(localStorage.getItem('app-user')||'Guido')+'::';  // per-user namespace
 const PKEY=LU+'scard-profile-v4',RKEY=LU+'scard-round-v4',DKEY=LU+'scard-default-v1';
 function loadDefault(){return {course:PROF.homeCourse||'CGC',tee:PROF.defaultTee||'Negras'};}
@@ -2787,7 +2788,8 @@ function teeColor(course,tee){var en=(teeColorKey(course,tee)||'').toLowerCase()
 var PINHEX={red:['#b23a2e','#fff'],white:['#ffffff','#1b1b1b'],blue:['#1f4e8c','#fff'],yellow:['#e0b21f','#1b1b1b'],none:null};
 var PINDEF={F:'red',M:'white',B:'blue'};
 function pinCfgCourse(){var c=window.__pinCfg||PROF.homeCourse||'CGC';return COURSES[c]?c:Object.keys(COURSES)[0];}
-function pinColName(course,pos){var pc=(PROF.pinCol&&PROF.pinCol[course])||{};return pc[pos]||PINDEF[pos];}
+/* pin flag colours live in the course database (COURSES[x].pins) — not a player setting */
+function pinColName(course,pos){var pc=(COURSES[course]&&COURSES[course].pins)||{};return pc[pos]||PINDEF[pos];}
 function pinBtn(course,pos,on){var hx=PINHEX[pinColName(course,pos)];if(!hx)return {st:'',dot:''};
  return on?{st:'background:'+hx[0]+';color:'+hx[1]+';',dot:''}:{st:'',dot:'<i class="pindot" style="background:'+hx[0]+'"></i>'};}
 function teeStyle(course,tee){var c=teeColor(course,tee);return 'background:'+c.bg+';color:'+c.fg+';border-color:'+c.bd+';';}
@@ -3124,14 +3126,6 @@ function renderProf(){
     <div class="hisub">${window.__LANG==='es'?'El palo se predice con tu bolsa y tus vueltas anteriores; solo lo corregís si cambia. Con más vueltas, Mi bolsa se arma con tus propios tiros.':'The club is predicted from your bag and past rounds; you only change it when it differs. Over time, My bag builds itself from your own shots.'}</div>
   </div>
   <div class="hiblock">
-    <div class="hirow"><span>Pin flag colours</span></div>
-    <label>Course<select id="pf_pincourse">${Object.keys(COURSES).map(k=>`<option value="${k}" ${k===pinCfgCourse()?'selected':''}>${COURSES[k].name}</option>`).join('')}</select></label>
-    <label>Front<select data-pinpos="F">${['red','white','blue','yellow','none'].map(c=>`<option value="${c}" ${pinColName(pinCfgCourse(),'F')===c?'selected':''}>${c[0].toUpperCase()+c.slice(1)}</option>`).join('')}</select></label>
-    <label>Middle<select data-pinpos="M">${['red','white','blue','yellow','none'].map(c=>`<option value="${c}" ${pinColName(pinCfgCourse(),'M')===c?'selected':''}>${c[0].toUpperCase()+c.slice(1)}</option>`).join('')}</select></label>
-    <label>Back<select data-pinpos="B">${['red','white','blue','yellow','none'].map(c=>`<option value="${c}" ${pinColName(pinCfgCourse(),'B')===c?'selected':''}>${c[0].toUpperCase()+c.slice(1)}</option>`).join('')}</select></label>
-    <div class="hisub">Flag colours differ by club — set them per course. Shown on the Pin selector while logging.</div>
-  </div>
-  <div class="hiblock">
     <div class="hirow"><span>${t('Net par')}</span></div>
     <label>Score against your handicap<select id="pf_netpar">
       <option value="on" ${PROF.netPar!==false?'selected':''}>On — judge to-par, GIR &amp; Tiger's 5 against your net par</option>
@@ -3183,8 +3177,6 @@ function renderProf(){
  document.getElementById('pf_bogeyx').addEventListener('change',e=>{PROF.bogeyX=Math.min(150,Math.max(50,parseInt(e.target.value||'140',10)||140));saveProf();renderProf();});
  document.getElementById('pf_predict').addEventListener('change',e=>{PROF.predict=(e.target.value!=='off');saveProf();try{render();}catch(_){}} );
  var pcl=document.getElementById('pf_clubs');if(pcl)pcl.addEventListener('change',e=>{PROF.trackClubs=(e.target.value==='on');saveProf();try{render();}catch(_){}});
- var ppc=document.getElementById('pf_pincourse');if(ppc)ppc.addEventListener('change',e=>{window.__pinCfg=e.target.value;renderProf();});
- document.querySelectorAll('#pform [data-pinpos]').forEach(s=>s.addEventListener('change',e=>{var c=pinCfgCourse();PROF.pinCol=PROF.pinCol||{};PROF.pinCol[c]=PROF.pinCol[c]||{};PROF.pinCol[c][s.dataset.pinpos]=e.target.value;saveProf();try{render();}catch(_){}}));
  var pts=document.getElementById('pf_teeset');if(pts)pts.addEventListener('change',e=>{PROF.teeSet=e.target.value;saveProf();try{renderProf();}catch(_){}try{render();renderSel();}catch(_){}});
  var phr=document.getElementById('pf_hidered');if(phr)phr.addEventListener('change',e=>{PROF.hideRed=!!e.target.checked;saveProf();try{renderProf();}catch(_){}try{render();renderSel();}catch(_){}});
  var pag=document.getElementById('pf_atg');if(pag)pag.addEventListener('change',e=>{var v=Math.round(+e.target.value);if(!(v>=10&&v<=100)){e.target.value=atgYd();return;}PROF.atgYd=v;saveProf();try{if(typeof renderAll==='function')renderAll();}catch(_){}try{render();}catch(_){}});
@@ -3615,6 +3607,35 @@ render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoO
 .tourrow .tbtns button{font-family:var(--cond,sans-serif);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:12px;border:none;border-radius:8px;padding:7px 13px;cursor:pointer;margin-left:6px;}
 .tourrow .tnext{background:linear-gradient(160deg,#2e8650,#1c3d2e);color:#fff;}
 .tourrow .tback{background:transparent;color:#8a8471;}
+.crLink{display:inline-block;margin-top:6px;font-size:12px;color:var(--fairway);font-weight:700;text-decoration:none}.crLink:hover{text-decoration:underline}
+.crModal{position:fixed;inset:0;z-index:9600;background:rgba(15,58,44,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px}
+.crBox{position:relative;width:min(520px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#fffdf7;border-radius:18px;padding:22px 22px 18px;box-shadow:0 24px 60px rgba(8,30,22,.35);animation:hwIn .3s ease-out}
+.crBox h3{font-family:var(--serif);color:var(--pine);margin:0 0 6px;font-size:22px}.crSub{font-size:13.5px;color:var(--ink-soft);line-height:1.5;margin:0 0 12px}
+.crBox label{display:block;font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:10px 0 0}
+.crBox input,.crBox textarea{display:block;width:100%;box-sizing:border-box;margin-top:5px;font:15px var(--sans,inherit);text-transform:none;letter-spacing:0;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--cream,#f6f2e7)}
+.crBox .pf_btn{margin-top:14px}.crX{position:absolute;top:12px;right:14px;border:none;background:none;font-size:18px;cursor:pointer;color:var(--ink-soft)}.crMsg{font-size:12px;color:var(--clay);margin-left:8px}
+.crThumbs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.crThumbs img{height:84px;border-radius:8px;border:1px solid var(--line);cursor:zoom-in;object-fit:cover}
+.crMine{margin-top:14px;font-size:13px}.crMineT{font-weight:700;color:var(--pine);margin-bottom:4px}
+.crReq{border-top:1px solid var(--line);padding:10px 0}.crReq.done{opacity:.6}
+.crEd{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;background:var(--paper,#fffdf7)}.crEd h4{font-family:var(--serif);color:var(--pine);margin:0 0 8px}
+.crEdTop{display:flex;gap:10px;flex-wrap:wrap}.crEdTop label{font-size:12px}.crEdTop input{display:block;border:1px solid var(--line);border-radius:8px;padding:7px 9px}
+.crLbl{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:10px 0 4px}
+.crGrid{display:grid;grid-template-columns:repeat(18,minmax(34px,1fr));gap:3px;overflow-x:auto}.crGrid input{width:100%;min-width:34px;box-sizing:border-box;text-align:center;border:1px solid var(--line);border-radius:6px;padding:5px 2px;font-size:12px}
+.crGca{background:rgba(31,122,77,.06);border-radius:10px;padding:8px 10px;margin:8px 0}.crRes{font-size:12.5px;margin-top:6px}
+.crTee{border-top:1px dashed var(--line);padding-top:8px;margin-top:8px}.crTeeH{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}.crTeeH input{border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px;width:130px}
+.hwWrap{margin:0 0 14px}.hwTitle{font-family:var(--serif);color:var(--pine);font-size:18px;font-weight:600;margin:0 0 8px}.hwTitle small{font-family:var(--cond);font-size:11px;color:var(--ink-soft);letter-spacing:.06em;text-transform:uppercase;margin-left:6px}
+.hwCard{background:var(--paper,#fffdf7);border:1px solid var(--line);border-left:4px solid var(--fairway);border-radius:12px;padding:12px 14px;margin:0 0 10px;animation:hwIn .35s ease-out}.hwCard.hwClosed{opacity:.65;border-left-color:var(--line)}
+@keyframes hwIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.hwHead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.hwKind{font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:rgba(216,196,140,.35);color:var(--pine);border-radius:20px;padding:3px 8px}
+.hwSt{font-size:11px;color:var(--ink-soft);margin-left:auto}.hwSt.ok{color:var(--fairway);font-weight:700}
+.hwDet{font-size:13.5px;line-height:1.5;margin:6px 0;color:var(--ink);white-space:pre-wrap}.hwGoal{font-size:13px;color:var(--pine);font-weight:600;margin:6px 0}
+.hwDots{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.hwDot{min-width:34px;height:26px;border-radius:13px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;padding:0 6px}
+.hwDot.y{background:rgba(31,122,77,.15);color:var(--fairway)}.hwDot.n{background:rgba(194,80,46,.14);color:var(--clay)}.hwDot.e{border:1.5px dashed var(--line)}
+.hwFoot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft);margin-top:4px}.hwBar{flex:1;min-width:80px;height:6px;background:var(--line);border-radius:6px;overflow:hidden}.hwBar i{display:block;height:100%;background:var(--fairway);border-radius:6px;transition:width .4s}
+.hwPass{color:var(--fairway)}.hwFail{color:var(--clay)}.hwBtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.hwBtns .pf_btn{padding:6px 12px;font-size:11px}.hwBy{font-size:11px;color:#8a8f84;margin-top:8px}
+.hwOld summary,.hwNew summary{cursor:pointer;font-weight:700;color:var(--pine);font-size:13px;margin:4px 0 8px}
+.hwForm{display:grid;gap:8px}.hwForm input,.hwForm textarea,.hwForm select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--cream,#f6f2e7);box-sizing:border-box;max-width:100%}
+.hwSeg{display:flex;gap:14px;flex-wrap:wrap;font-size:13px}.hwP,.hwC{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px}.hwP input,.hwC input{width:80px}.hwMsg{font-size:12px;color:var(--clay)}
 .demoCard{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between;background:linear-gradient(120deg,rgba(216,196,140,.22),rgba(31,122,77,.08));border:1px dashed var(--sand-deep,#b89a52);border-radius:14px;padding:14px 16px;margin:0 0 14px;font-size:14px;line-height:1.5}
 #demoBar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#0f3a2c;color:#f6f2e7;border-radius:12px;padding:10px 14px;margin:0 0 12px;font-size:13px;box-shadow:0 8px 20px rgba(15,58,44,.25)}
 #demoBar b{color:#d8c48c;letter-spacing:.08em}#demoBar button{background:#d8c48c;color:#0f3a2c;border:none;border-radius:8px;padding:7px 12px;font-weight:700;cursor:pointer}
@@ -3796,7 +3817,7 @@ render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoO
  }
  function adminHTML(){
    if(!ME.admin)return '';
-   return sec(T('Review requests','Pedidos de revisión'),'<div id="rvAdmin"><button class="pf_btn" id="rvLoad">'+T('Show requests','Ver pedidos')+'</button></div>',T('Players who finished their free month and logged 5+ rounds. After the call, record your recommendation — it sets their plan.','Jugadores que terminaron su mes gratis y cargaron 5+ vueltas. Después de la llamada, registrá tu recomendación — define su plan.'))+sec(T('Members & plans','Miembros y planes'),'<div id="frMembers"><button class="pf_btn" id="frMemLoad">'+T('Show members','Ver miembros')+'</button></div>',T('Set each player\'s plan by hand until payments are connected.','Asigná el plan de cada jugador a mano hasta conectar los pagos.'))+sec(T('Invite code','Código de invitación'),'<div class="frline"><input id="frInv" value="'+esc(ME.invite||'')+'" placeholder="'+T('e.g. CGC2026','ej. CGC2026')+'"><button class="pf_btn" id="frInvSet">'+T('Save','Guardar')+'</button></div>',
+   return sec(T('Course requests','Pedidos de canchas'),'<div id="crAdmin"><button class="pf_btn" id="crLoad">'+T('Show requests','Ver pedidos')+'</button></div>',T('Players ask for their course with scorecard photos. Check the card, enter it once, and it appears for everyone.','Los jugadores piden su cancha con fotos de la tarjeta. Revisá la tarjeta, cargala una vez y aparece para todos.'))+sec(T('Review requests','Pedidos de revisión'),'<div id="rvAdmin"><button class="pf_btn" id="rvLoad">'+T('Show requests','Ver pedidos')+'</button></div>',T('Players who finished their free month and logged 5+ rounds. After the call, record your recommendation — it sets their plan.','Jugadores que terminaron su mes gratis y cargaron 5+ vueltas. Después de la llamada, registrá tu recomendación — define su plan.'))+sec(T('Members & plans','Miembros y planes'),'<div id="frMembers"><button class="pf_btn" id="frMemLoad">'+T('Show members','Ver miembros')+'</button></div>',T('Set each player\'s plan by hand until payments are connected.','Asigná el plan de cada jugador a mano hasta conectar los pagos.'))+sec(T('Invite code','Código de invitación'),'<div class="frline"><input id="frInv" value="'+esc(ME.invite||'')+'" placeholder="'+T('e.g. CGC2026','ej. CGC2026')+'"><button class="pf_btn" id="frInvSet">'+T('Save','Guardar')+'</button></div>',
      T('New players need this code to create an account. Leave it empty to close sign-ups.','Los jugadores nuevos necesitan este código para crear su cuenta. Dejalo vacío para cerrar los registros.'));
  }
  function holesToHl(r){if(r.hl)return r.hl;if(!r.holes)return null;var LC={tee:'t',fw:'f',rough:'r',sand:'s',rec:'x',putt:'p'};
@@ -3809,7 +3830,7 @@ render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoO
    var kp=function(a){return k(T('Rounds','Vueltas'),a.n)+k(T('To par','Al par'),sgn(a.stp,1))+k('SG',sgn(a.sg,1))+k(T('Off tee','Salida'),sgn(a.ott,1))+k('Approach',sgn(a.app,1))+k(T('Around grn','Juego corto'),sgn(a.atg,1))+k('Putt',sgn(a.putt,1))+k('Tiger 5',a.t5==null?'·':a.t5.toFixed(1));};
    var AB=STU.about,LBL={lt1:T('<1 yr','<1 año'),'1-3':T('1–3 yrs','1–3 años'),'3-10':T('3–10 yrs','3–10 años'),'10+':T('10+ yrs','10+ años'),never:T('never','nunca'),year:T('few/yr','pocas/año'),month:T('monthly','mensual'),week:T('weekly','semanal'),week2:T('several/wk','varias/sem'),'0':'0','0-4':'≤4h','4-8':'4–8h','8-16':'8–16h','16+':'16h+','1-3h':'1–3h','3-6':'3–6h','6+':'6h+'},lb=function(v){return LBL[v]||v||'·';};
    var abH=AB?('<div class="frnote" style="margin:6px 0 10px"><b>'+T('Why they play:','Por qué juega:')+'</b> “'+esc(AB.why||'')+'”<br><small>'+T('Playing ','Juega ')+lb(AB.years)+' · '+T('lessons ','clases ')+lb(AB.lessons)+' · '+T('range ','range ')+lb(AB.range)+' · '+T('golf ','golf ')+lb(AB.golfHrs)+'/'+T('wk','sem')+' · '+T('practice ','práctica ')+(AB.practiceHrs==='1-3'?'1–3h':lb(AB.practiceHrs))+'/'+T('wk','sem')+(AB.hi!=null?' · HI '+(AB.hi<0?'+'+(-AB.hi):AB.hi):'')+(AB.drive?' · '+T('drive ','drive ')+AB.drive+'y':'')+(AB.nine?' · 9i '+AB.nine+'y':'')+((AB.otherCourses||[]).length?'<br>'+T('Also plays: ','También juega: ')+esc(AB.otherCourses.join(', ')):'')+'</small></div>'):'';
-   var h='<h4>'+esc(STU.name)+'</h4>'+abH+'<p class="frsub">'+T('Last 10 rounds','Últimas 10 vueltas')+'</p><div class="frks">'+kp(a10)+'</div><p class="frsub">'+T('All rounds','Todas las vueltas')+'</p><div class="frks">'+kp(aAll)+'</div>';
+   var h='<h4>'+esc(STU.name)+'</h4>'+abH+'<p class="frsub">'+T('Last 10 rounds','Últimas 10 vueltas')+'</p><div class="frks">'+kp(a10)+'</div><p class="frsub">'+T('All rounds','Todas las vueltas')+'</p><div class="frks">'+kp(aAll)+'</div><div id="hwCoach"></div>';STU._all=rounds;
    h+=rounds.slice(0,40).map(function(r,i){
      return '<div class="frround"><div class="frrow"><span class="frd">'+esc(r.date||'')+'</span><span class="frc">'+esc(r.course||'')+'</span><span class="frs">'+(r.score!=null?r.score:'·')+(r.stp!=null?' <small>('+(r.stp>0?'+':'')+r.stp+')</small>':'')+'</span><span class="'+((r.sgtot!=null&&r.sgtot<0)?'sg-neg':'sg-pos')+'">SG '+sgn(num(r.sgtot),2)+'</span><span class="frt5">T5 '+(r.mtot!=null?r.mtot:'·')+'</span>'+((r.holes||r.hl)?'<button class="frlink" data-card="'+i+'">'+T('Scorecard','Scorecard')+' ▾</button>':'')+'</div>'+
        (r.lesson?'<div class="frnote"><b>'+T('Learnt:','Aprendió:')+'</b> '+esc(r.lesson)+'</div>':'')+(r.notes?'<div class="frnote"><b>'+T('Notes:','Notas:')+'</b> '+esc(r.notes)+'</div>':'')+'<div class="frcard" id="frcard_'+i+'" style="display:none"></div></div>';}).join('');
@@ -3866,7 +3887,7 @@ render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoO
    if(!tok()){if(el)el.innerHTML='<p class="frsub" style="font-size:14px">'+T('Friends and professors work on the synced site, after signing in with a password.','Amigos y profesores funcionan en el sitio sincronizado, después de entrar con contraseña.')+'</p>';if(ac)ac.innerHTML='';return;}
    if(!ME){if(el)el.innerHTML='<p class="frsub">'+(MSG||'…')+'</p>';if(ac)ac.innerHTML=MSG?'<p class="frsub">'+esc(MSG)+'</p>':'';return;}
    if(el){el.innerHTML=msg+compareHTML()+feedHTML()+studentsHTML()+allPlayersHTML()+findHTML();
-     var st=document.getElementById('frStu'),sa=document.getElementById('frStuA'),tgt=(st&&STU&&(ME.students||[]).some(function(x){return x.username===STU.username&&x.prof_status==='accepted';}))?st:(sa||st);if(tgt)tgt.innerHTML=studentHTML();wire(el);}
+     var st=document.getElementById('frStu'),sa=document.getElementById('frStuA'),tgt=(st&&STU&&(ME.students||[]).some(function(x){return x.username===STU.username&&x.prof_status==='accepted';}))?st:(sa||st);if(tgt)tgt.innerHTML=studentHTML();wire(el);var hc=document.getElementById('hwCoach');if(hc&&STU&&window.HW)window.HW.mountCoach(hc,STU.username,STU._all||[]);}
    if(ac){ac.innerHTML=msg+planHTML()+profHTML()+privacyHTML()+aiHTML()+dataHTML()+adminHTML();wire(ac);wireData(ac);wireAI(ac);
      var pc=document.getElementById('plChooser');if(pc&&window.PLANS&&window.PLANS.chooser)window.PLANS.chooser(pc);}
  }
@@ -3893,6 +3914,7 @@ render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoO
    var rl=el.querySelector('#rvLoad');if(rl)rl.onclick=function(){api('reviewList').then(function(j){var box=el.querySelector('#rvAdmin');if(!box)return;var L=(j&&j.reviews)||[];
      box.innerHTML=L.length?L.map(function(r){return '<div class="frline" style="align-items:flex-start;border-top:1px solid var(--line);padding-top:8px"><span><b>'+esc(r.display)+'</b> <small>@'+esc(r.username)+'</small><br><small>'+esc(r.contact||'')+(r.note?' · “'+esc(r.note)+'”':'')+'</small><br><small>'+(r.status==='done'?T('done · ','hecha · ')+(r.recommendation||''):T('requested','pedida'))+'</small></span>'+(r.status==='done'?'':'<span><select data-rvrec="'+esc(r.username)+'"><option value="free">Free</option><option value="lite">Lite</option><option value="pro">Pro</option></select> <button class="pf_btn" data-rvdone="'+esc(r.username)+'">'+T('Done','Hecha')+'</button></span>')+'</div>';}).join(''):'<p class="frsub">'+T('No requests yet.','Todavía no hay pedidos.')+'</p>';
      box.querySelectorAll('[data-rvdone]').forEach(function(b){b.onclick=function(){var u=b.getAttribute('data-rvdone'),sel=box.querySelector('[data-rvrec="'+u+'"]');api('reviewDone',{user:u,recommendation:sel?sel.value:''}).then(function(){rl.onclick();});};});});};
+   var crl=el.querySelector('#crLoad');if(crl)crl.onclick=function(){if(window.COURSEREQ)window.COURSEREQ.admin(document.getElementById('crAdmin'));};
    var ml=el.querySelector('#frMemLoad');if(ml)ml.onclick=function(){api('members').then(function(j){var box=el.querySelector('#frMembers');if(!box)return;if(!j||!j.ok){box.innerHTML='<p class="frsub">'+T('Could not load.','No se pudo cargar.')+'</p>';return;}
      box.innerHTML=membersHTML(j.members||[])+((j.teams&&j.teams.length)?'<h4 style="font-family:var(--serif);color:var(--pine);margin:14px 0 4px">'+T('Teams','Equipos')+'</h4>'+j.teams.map(function(tm){return '<div class="frline"><span><b>'+esc(tm.code)+'</b> · @'+esc(tm.owner)+' · '+tm.n+'/4</span><span><select data-tplan="'+esc(tm.code)+'"><option value="lite"'+(tm.plan!=='pro'?' selected':'')+'>Lite</option><option value="pro"'+(tm.plan==='pro'?' selected':'')+'>Pro</option></select> <label class="frchk"><input type="checkbox" data-tpaid="'+esc(tm.code)+'"'+(tm.paid?' checked':'')+'> '+T('paid','pagado')+'</label></span></div>';}).join(''):'');
      box.querySelectorAll('[data-tplan]').forEach(function(se){se.onchange=function(){var cb=box.querySelector('[data-tpaid="'+se.getAttribute('data-tplan')+'"]');api('teamSetPaid',{code:se.getAttribute('data-tplan'),paid:!!(cb&&cb.checked),plan:se.value});};});box.querySelectorAll('[data-tpaid]').forEach(function(cb){cb.onchange=function(){api('teamSetPaid',{code:cb.getAttribute('data-tpaid'),paid:cb.checked,plan:(box.querySelector('[data-tplan="'+cb.getAttribute('data-tpaid')+'"]')||{}).value}).then(function(r){cb.parentNode.style.color=(r&&r.ok)?'var(--fairway)':'var(--clay)';});};});box.querySelectorAll('[data-rpw]').forEach(function(b){b.onclick=function(){var u=b.getAttribute('data-rpw');if(!confirm(T('Reset the password of @','¿Resetear la contraseña de @')+u+T('? They will sign in with their username as password and must choose a new one.','? Va a entrar con su usuario como contraseña y tendrá que elegir una nueva.')))return;api('adminResetPass',{user:u}).then(function(r){alert((r&&r.ok)?T('Done. Tell @','Listo. Decile a @')+u+T(' to sign in with password: ',' que entre con la contraseña: ')+u:T('That did not work.','No funcionó.'));});};});box.querySelectorAll('select[data-plan]').forEach(function(sel){sel.onchange=function(){api('setPlan',{user:sel.getAttribute('data-plan'),plan:sel.value}).then(function(r){MSG=(r&&r.ok)?T('Plan updated.','Plan actualizado.'):T('That did not work.','No funcionó.');var m=el.querySelector('.frmsgx');sel.style.outline=(r&&r.ok)?'2px solid var(--fairway)':'2px solid var(--clay)';});};});});};
@@ -4013,7 +4035,7 @@ render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoO
    PLANS.forEach(function(p){var me=cur===p.k,usd=p.balls*BALL_USD;
      h+='<div class="plCard pl-'+p.k+(me?' on':'')+'">'+
        '<div class="plName">'+p.name+'</div>'+
-       '<div class="plBalls">'+(p.balls?('<span class="plIcons">'+(p.balls<=3?Array(p.balls+1).join(ball(26)):ball(26)+'<b>×'+p.balls+'</b>')+'</span><span class="plQty">'+(p.balls===1?T('1 ball','1 pelota'):(p.balls===6?T('half a dozen balls','media docena de pelotas'):(p.balls===12?T('a dozen balls','una docena de pelotas'):p.balls+T(' balls',' pelotas'))))+'<small>'+T(' / month',' / mes')+'</small></span>'):'<span class="plQty">'+T('Free','Gratis')+'</span>')+'</div>'+
+       '<div class="plBalls">'+(p.balls?('<span class="plIcons">'+(p.balls<=3?Array(p.balls+1).join(ball(26)):ball(26)+'<b>×'+p.balls+'</b>')+'</span><span class="plQty">'+(p.balls===1?T('1 ball','1 pelota'):(p.balls===6?T('6 balls','6 pelotas'):(p.balls===12?T('12 balls','12 pelotas'):p.balls+T(' balls',' pelotas'))))+'<small>'+T(' / month',' / mes')+'</small></span>'):'<span class="plQty">'+T('Free','Gratis')+'</span>')+'</div>'+
        '<div class="plUsd">'+(p.balls?'≈ US$'+usd.toFixed(2)+T(' a month · annual: 10 months',' por mes · anual: 10 meses'):'&nbsp;')+'</div>'+
        '<ul>'+(ES()?p.es:p.en).map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+(p.note?'<div class="plNote">'+(ES()?p.note[1]:p.note[0])+'</div>':'')+
        (me?'<div class="plCur">'+T('Your plan','Tu plan')+'</div>':(!cur?'':(p.k==='pro'?'<button class="plBtn" disabled>'+T('By invitation, after your review','Por invitación, después de tu revisión')+'</button>':(trial&&rank(p.k)>rank(cur))?'<button class="plBtn" disabled>'+T('Available from '+fmtD(upD),'Disponible desde el '+fmtD(upD))+'</button>':'<button class="plBtn plGo" data-to="'+p.k+'">'+T('Switch to ','Cambiar a ')+p.name+'</button>')))+
@@ -4456,7 +4478,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
  var ES=function(){return window.__LANG==='es';};
  var G=[
   {k:'personal',t:['Personal','Personal'],ids:['pf_name','pf_nick','pf_units','pf_lang']},
-  {k:'course',t:['Course & tees','Cancha y tees'],ids:['pf_course','pf_tee','pf_teeset','pf_hidered','pf_pincourse']},
+  {k:'course',t:['Course & tees','Cancha y tees'],ids:['pf_course','pf_tee','pf_teeset','pf_hidered']},
   {k:'game',t:['My game & handicap','Mi juego y hándicap'],ids:['pf_drive','pf_himode','pf_impbtn','pf_imphbtn']},
   {k:'bag',t:['My bag','Mi bolsa'],link:'bag',sub:['Distance and dispersion for every club','Distancia y dispersión de cada palo']},
   {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_predict']},
@@ -4517,6 +4539,172 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
      b.textContent=window.__LANG==='es'?'Repetir preguntas iniciales':'Redo setup questions';b.onclick=function(){window.OBOARD.open({name:localStorage.getItem('app-user')||''});};
      var h2=pv.querySelector('h2');if(h2)h2.parentNode.insertBefore(b,h2);}
  }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+</script>
+<script>
+/* ===== Homework & challenges: assigned by the coach after a call; practice sessions logged by the player, challenges checked from the rounds ===== */
+(function(){
+ var ES=function(){return window.__LANG==='es';},T=function(en,es){return ES()?es:en;};
+ var esc=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+ var tok=function(){return localStorage.getItem('gs-token')||'';};
+ function api(action,extra){var b={action:action};if(extra)for(var k in extra)b[k]=extra[k];
+   return fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:JSON.stringify(b)}).then(function(r){return r.json();});}
+ /* metric, label EN, label ES, better direction, decimals */
+ var M={p3:['3-putts per round','3 putts por vuelta','le',0],pen:['Penalties per round','Penales por vuelta','le',0],db:['Double bogeys or worse','Dobles bogeys o peor','le',0],mtot:['Tiger 5 mistakes','Errores Tiger 5','le',0],
+   putts:['Putts per round','Putts por vuelta','le',0],stp:['Score to par','Score al par','le',0],sgtot:['Strokes gained, total','Strokes gained total','ge',1],ott:['SG off the tee','SG salida','ge',1],app:['SG approach','SG approach','ge',1],
+   atg:['SG around the green','SG juego corto','ge',1],putt:['SG putting','SG putt','ge',1],gir:['Greens in regulation','Greens en regulación','ge',0],fw:['Fairways hit','Fairways acertados','ge',0]};
+ var mName=function(k){return M[k]?T(M[k][0],M[k][1]):k;};
+ var num=function(v){return (v===null||v===undefined||v===''||isNaN(+v))?null:+v;};
+ var fmtV=function(k,v){if(v==null)return '·';var d=M[k]?M[k][3]:1;return (k!=='p3'&&k!=='pen'&&k!=='db'&&k!=='mtot'&&k!=='putts'&&k!=='gir'&&k!=='fw'&&v>0?'+':'')+v.toFixed(d);};
+ function evalChallenge(t,rounds){
+   var g=t.target||{},from=g.from||String(t.created||'').slice(0,10),N=g.rounds||5;
+   var rs=(rounds||[]).filter(function(r){return r&&r.date&&r.date>=from&&(r.holesPlayed==null||r.holesPlayed>=18)&&num(r[g.metric])!=null;}).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;}).slice(0,N);
+   var vals=rs.map(function(r){return {d:r.date,v:num(r[g.metric])};});
+   var meet=function(v){return g.op==='ge'?v>=g.value:v<=g.value;};
+   var avg=vals.length?vals.reduce(function(a,x){return a+x.v;},0)/vals.length:null;
+   var state=vals.length<N?'progress':(meet(avg)?'passed':'failed');
+   return {N:N,vals:vals,avg:avg,state:state,meet:meet};}
+ function weekCount(t){var now=new Date(),d=(now.getDay()+6)%7,mon=new Date(now.getFullYear(),now.getMonth(),now.getDate()-d).toISOString().slice(0,10);return (t.log||[]).filter(function(x){return x>=mon;}).length;}
+ var today=function(){var d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);};
+ function card(t,rounds,role){
+   var st=t.status,isC=t.kind==='challenge',h='<div class="hwCard'+(st!=='open'?' hwClosed':'')+'" data-tid="'+esc(t.id)+'"><div class="hwHead"><span class="hwKind">'+(isC?T('Challenge','Desafío'):T('Practice','Práctica'))+'</span><b>'+esc(t.title)+'</b>'+
+     (st==='done'?'<span class="hwSt ok">✓ '+T('done','hecho')+'</span>':st==='dropped'?'<span class="hwSt">'+T('dropped','descartado')+'</span>':'')+'</div>';
+   if(t.detail)h+='<p class="hwDet">'+esc(t.detail)+'</p>';
+   if(isC){var e=evalChallenge(t,rounds),g=t.target;
+     h+='<div class="hwGoal">'+mName(g.metric)+' '+(g.op==='ge'?'≥':'≤')+' '+fmtV(g.metric,g.value)+' '+T('on average over your next','de promedio en tus próximas')+' '+e.N+' '+T('rounds','vueltas')+'</div>';
+     h+='<div class="hwDots">';for(var i=0;i<e.N;i++){var x=e.vals[i];h+=x?'<span class="hwDot '+(e.meet(x.v)?'y':'n')+'" title="'+x.d+'">'+fmtV(g.metric,x.v)+'</span>':'<span class="hwDot e"></span>';}h+='</div>';
+     h+='<div class="hwFoot">'+(e.state==='passed'?'<b class="hwPass">'+T('Challenge passed','Desafío superado')+' — '+T('average','promedio')+' '+fmtV(g.metric,e.avg)+'</b>':e.state==='failed'?'<b class="hwFail">'+T('Not yet','Todavía no')+' — '+T('average','promedio')+' '+fmtV(g.metric,e.avg)+'. '+T('Talk it through at your next call.','Charlalo en tu próxima llamada.')+'</b>':
+       (e.vals.length?e.vals.length+' / '+e.N+' '+T('rounds','vueltas')+' · '+T('average so far','promedio hasta ahora')+' '+fmtV(g.metric,e.avg):T('Counts every 18-hole round you log from ','Cuenta cada vuelta de 18 hoyos que cargues desde el ')+esc(g.from)+'.'))+'</div>';}
+   else{var pw=(t.target||{}).perWeek||0,wk=weekCount(t),tot=(t.log||[]).length,did=(t.log||[]).indexOf(today())>=0;
+     h+='<div class="hwFoot">'+(pw?'<span class="hwWeek">'+T('This week','Esta semana')+': <b>'+wk+' / '+pw+'</b></span>'+'<span class="hwBar"><i style="width:'+Math.min(100,Math.round(100*wk/pw))+'%"></i></span>':'')+'<span class="hwTot">'+tot+' '+(tot===1?T('session logged','sesión registrada'):T('sessions logged','sesiones registradas'))+'</span>'+(t.due?'<span class="hwDue">'+T('Due','Vence')+' '+esc(t.due)+'</span>':'')+'</div>';
+     if(role==='player'&&st==='open')h+='<div class="hwBtns"><button class="pf_btn" data-hwlog="'+esc(t.id)+'">+ '+T('I did a session today','Hice una sesión hoy')+'</button>'+(did?'<button class="pf_btn frgrey" data-hwundo="'+esc(t.id)+'">'+T('Undo today','Deshacer hoy')+'</button>':'')+'<button class="pf_btn frgrey" data-hwdone="'+esc(t.id)+'">'+T('Mark completed','Marcar completada')+'</button></div>';}
+   if(role==='coach')h+='<div class="hwBtns">'+(st==='open'?'<button class="pf_btn frgrey" data-hwst="done:'+esc(t.id)+'">'+T('Mark done','Marcar hecha')+'</button><button class="pf_btn frgrey" data-hwst="dropped:'+esc(t.id)+'">'+T('Drop','Descartar')+'</button>':'<button class="pf_btn frgrey" data-hwst="open:'+esc(t.id)+'">'+T('Reopen','Reabrir')+'</button>')+'<button class="pf_btn frgrey" data-hwst="deleted:'+esc(t.id)+'" style="color:var(--clay)">'+T('Delete','Borrar')+'</button></div>';
+   h+='<div class="hwBy">'+T('From ','De ')+esc(t.coachName||t.coach)+' · '+esc(String(t.created||'').slice(0,10))+'</div></div>';
+   return h;}
+ /* ---------- player: shown at the top of "Log a round" ---------- */
+ var MINE=null;
+ function myRounds(){try{return (window.getLoggedRounds&&window.getLoggedRounds())||[];}catch(e){return [];}}
+ function paintPlayer(){var v=document.getElementById('view-log');if(!v)return;var slot=document.getElementById('hwSlot');
+   var open=(MINE||[]).filter(function(t){return t.status==='open';}),closed=(MINE||[]).filter(function(t){return t.status!=='open';}).slice(0,3);
+   if(!open.length&&!closed.length){if(slot)slot.remove();return;}
+   if(!slot){slot=document.createElement('div');slot.id='hwSlot';var bar=document.getElementById('demoBar');v.insertBefore(slot,bar?bar.nextSibling:v.firstChild);}
+   slot.innerHTML='<div class="hwWrap"><div class="hwTitle">'+T('Your homework','Tu tarea')+' <small>'+open.length+' '+T('open','abiertas')+'</small></div>'+open.map(function(t){return card(t,myRounds(),'player');}).join('')+
+     (closed.length?'<details class="hwOld"><summary>'+T('Recently closed','Cerradas recientemente')+'</summary>'+closed.map(function(t){return card(t,myRounds(),'player');}).join('')+'</details>':'')+'</div>';
+   slot.querySelectorAll('[data-hwlog]').forEach(function(b){b.onclick=function(){b.disabled=true;api('taskLog',{id:b.getAttribute('data-hwlog'),day:today()}).then(loadMine);};});
+   slot.querySelectorAll('[data-hwundo]').forEach(function(b){b.onclick=function(){api('taskLog',{id:b.getAttribute('data-hwundo'),day:today(),undo:true}).then(loadMine);};});
+   slot.querySelectorAll('[data-hwdone]').forEach(function(b){b.onclick=function(){api('taskStatus',{id:b.getAttribute('data-hwdone'),status:'done'}).then(loadMine);};});}
+ function loadMine(){if(!tok())return;api('taskList',{}).then(function(j){if(j&&j.ok){MINE=j.tasks||[];paintPlayer();}}).catch(function(){});}
+ /* ---------- coach: inside the student panel (admin / professor) ---------- */
+ function mountCoach(el,username,rounds){if(!el||!username)return;el.innerHTML='<p class="frsub">…</p>';
+   api('taskList',{user:username}).then(function(j){var L=(j&&j.tasks)||[];
+     var mOpts=Object.keys(M).map(function(k){return '<option value="'+k+'">'+mName(k)+'</option>';}).join('');
+     el.innerHTML='<div class="hwWrap"><div class="hwTitle">'+T('Homework & challenges','Tareas y desafíos')+' <small>'+L.filter(function(t){return t.status==='open';}).length+' '+T('open','abiertas')+'</small></div>'+
+       L.map(function(t){return card(t,rounds,'coach');}).join('')+
+       '<details class="hwNew"'+(L.length?'':' open')+'><summary>+ '+T('Assign new','Asignar nueva')+'</summary>'+
+       '<div class="hwForm"><div class="hwSeg"><label><input type="radio" name="hwk" value="practice" checked> '+T('Practice','Práctica')+'</label><label><input type="radio" name="hwk" value="challenge"> '+T('Challenge (checked from rounds)','Desafío (se mide con las vueltas)')+'</label></div>'+
+       '<input id="hwT" maxlength="120" placeholder="'+T('Title — e.g. Putting ladder 3–6–9 ft','Título — ej. Escalera de putt 1–2–3 m')+'">'+
+       '<textarea id="hwD" rows="3" maxlength="1000" placeholder="'+T('How to do it, what to focus on','Cómo hacerlo, en qué enfocarse')+'"></textarea>'+
+       '<div class="hwP"><label>'+T('Sessions per week','Sesiones por semana')+' <input id="hwPW" type="number" min="0" max="14" value="3"></label><label>'+T('Due','Vence')+' <input id="hwDue" type="date"></label></div>'+
+       '<div class="hwC" style="display:none"><label>'+T('Stat','Estadística')+' <select id="hwM">'+mOpts+'</select></label><label><select id="hwOp"><option value="le">≤</option><option value="ge">≥</option></select></label><label>'+T('Target','Objetivo')+' <input id="hwV" type="number" step="0.1" value="1"></label><label>'+T('over next','en las próximas')+' <input id="hwN" type="number" min="1" max="20" value="5"> '+T('rounds','vueltas')+'</label></div>'+
+       '<button class="pf_btn" id="hwSave">'+T('Assign','Asignar')+'</button><span class="hwMsg"></span></div></details></div>';
+     var form=el.querySelector('.hwForm');
+     el.querySelectorAll('input[name=hwk]').forEach(function(r){r.onchange=function(){var c=el.querySelector('input[name=hwk]:checked').value==='challenge';form.querySelector('.hwP').style.display=c?'none':'';form.querySelector('.hwC').style.display=c?'':'none';};});
+     var ms=el.querySelector('#hwM');if(ms)ms.onchange=function(){el.querySelector('#hwOp').value=(M[ms.value]||[])[2]||'le';};
+     el.querySelector('#hwSave').onclick=function(){var c=el.querySelector('input[name=hwk]:checked').value==='challenge',msg=el.querySelector('.hwMsg');
+       var body={user:username,kind:c?'challenge':'practice',title:el.querySelector('#hwT').value,detail:el.querySelector('#hwD').value,due:el.querySelector('#hwDue').value,
+         target:c?{metric:el.querySelector('#hwM').value,op:el.querySelector('#hwOp').value,value:el.querySelector('#hwV').value,rounds:el.querySelector('#hwN').value}:{perWeek:el.querySelector('#hwPW').value}};
+       if((body.title||'').trim().length<3){msg.textContent=T('Add a title.','Agregá un título.');return;}
+       api('taskSave',body).then(function(r){if(r&&r.ok)mountCoach(el,username,rounds);else msg.textContent=T('Could not save.','No se pudo guardar.');});};
+     el.querySelectorAll('[data-hwst]').forEach(function(b){b.onclick=function(){var a=b.getAttribute('data-hwst').split(':');if(a[0]==='deleted'&&!confirm(T('Delete this homework?','¿Borrar esta tarea?')))return;api('taskStatus',{id:a[1],status:a[0]}).then(function(){mountCoach(el,username,rounds);});};});
+   }).catch(function(){el.innerHTML='';});}
+ window.HW={loadMine:loadMine,mountCoach:mountCoach,evalChallenge:evalChallenge};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(loadMine,1200);});else setTimeout(loadMine,1200);
+ window.addEventListener('focus',function(){if(MINE)loadMine();});
+})();
+</script>
+<script>(function(){var o=window.showView;if(o&&!o._hw){var w=function(v){o(v);if(v==='log'&&window.HW)window.HW.loadMine();};w._hw=1;window.showView=w;}})();</script>
+<script>
+/* ===== Course requests: players ask for their course (with scorecard photos); the admin checks and adds it to the shared course database ===== */
+(function(){
+ var ES=function(){return window.__LANG==='es';},T=function(en,es){return ES()?es:en;};
+ var esc=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+ var tok=function(){return localStorage.getItem('gs-token')||'';};
+ function api(action,extra){var b={action:action};if(extra)for(var k in extra)b[k]=extra[k];
+   return fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:JSON.stringify(b)}).then(function(r){return r.json();});}
+ /* ---- shared course list: refresh from the server, cache for offline, re-render the selectors when something new arrives ---- */
+ function refreshCourses(){fetch('/api/login').then(function(r){return r.json();}).then(function(j){if(!j||!j.courses)return;var raw=JSON.stringify(j.courses);
+   var had=localStorage.getItem('gs-courses');if(had===raw)return;try{localStorage.setItem('gs-courses',raw);}catch(e){}
+   if(typeof COURSES!=='undefined'){Object.keys(j.courses).forEach(function(k){COURSES[k]=j.courses[k];});try{if(window.LGR&&window.LGR.card)window.LGR.card();}catch(e){}}}).catch(function(){});}
+ /* ---- photos: shrink on the device before sending ---- */
+ function shrink(file){return new Promise(function(res){var fr=new FileReader();fr.onload=function(){var im=new Image();im.onload=function(){var m=1600,w=im.width,h=im.height,s=Math.min(1,m/Math.max(w,h));var c=document.createElement('canvas');c.width=Math.round(w*s);c.height=Math.round(h*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+   var q=.78,d=c.toDataURL('image/jpeg',q);while(d.length>850000&&q>.4){q-=.1;d=c.toDataURL('image/jpeg',q);}res(d);};im.onerror=function(){res(null);};im.src=fr.result;};fr.onerror=function(){res(null);};fr.readAsDataURL(file);});}
+ /* ---- player: request form ---- */
+ function openRequest(){
+   if(!tok()){alert(T('Sign in first to request a course.','Primero iniciá sesión para pedir una cancha.'));return;}
+   var m=document.createElement('div');m.className='crModal';var photos=[];
+   m.innerHTML='<div class="crBox"><button class="crX" aria-label="close">✕</button><h3>'+T('Request your course','Pedí tu cancha')+'</h3><p class="crSub">'+T('Send us the scorecard and we add the course — checked by hand, usually within a few days. You get every tee, par, stroke index and course rating right.','Mandanos la tarjeta y agregamos la cancha — revisada a mano, en general en pocos días. Así tenés bien cada tee, par, hándicap y course rating.')+'</p>'+
+     '<label>'+T('Course name','Nombre de la cancha')+'<input id="crName" maxlength="120" placeholder="'+T('e.g. Jockey Club Córdoba','ej. Jockey Club Córdoba')+'"></label>'+
+     '<label>'+T('City','Ciudad')+'<input id="crCity" maxlength="80"></label>'+
+     '<label>'+T('Tees you play','Tees que jugás')+'<input id="crTees" maxlength="120" placeholder="'+T('e.g. Blue, White','ej. Azules, Blancas')+'"></label>'+
+     '<label>'+T('Scorecard photos (front and back)','Fotos de la tarjeta (frente y dorso)')+'<input id="crPh" type="file" accept="image/*" multiple></label><div class="crThumbs"></div>'+
+     '<label>'+T('Anything else?','¿Algo más?')+'<textarea id="crNote" rows="2" maxlength="600" placeholder="'+T('Course rating / slope if you know them, link to the club…','Course rating / slope si los sabés, link del club…')+'"></textarea></label>'+
+     '<button class="pf_btn" id="crSend">'+T('Send request','Enviar pedido')+'</button><span class="crMsg"></span><div class="crMine"></div></div>';
+   document.body.appendChild(m);
+   var close=function(){m.remove();};m.querySelector('.crX').onclick=close;m.onclick=function(e){if(e.target===m)close();};
+   var th=m.querySelector('.crThumbs');
+   m.querySelector('#crPh').onchange=function(e){var fs=[].slice.call(e.target.files||[]).slice(0,3);th.textContent=T('Preparing photos…','Preparando fotos…');
+     Promise.all(fs.map(shrink)).then(function(ds){photos=ds.filter(Boolean);th.innerHTML=photos.map(function(d){return '<img src="'+d+'" alt="">';}).join('');});};
+   m.querySelector('#crSend').onclick=function(){var nm=m.querySelector('#crName').value.trim(),msg=m.querySelector('.crMsg');if(nm.length<3){msg.textContent=T('Add the course name.','Agregá el nombre de la cancha.');return;}
+     var b=m.querySelector('#crSend');b.disabled=true;msg.textContent=T('Sending…','Enviando…');
+     api('courseRequest',{name:nm,city:m.querySelector('#crCity').value,tees:m.querySelector('#crTees').value,note:m.querySelector('#crNote').value,photos:photos}).then(function(j){
+       if(j&&j.ok){m.querySelector('.crBox').innerHTML='<button class="crX">✕</button><h3>'+T('Request sent','Pedido enviado')+'</h3><p class="crSub">'+T('Thanks! We\'ll check the scorecard and add ','¡Gracias! Vamos a revisar la tarjeta y agregar ')+'<b>'+esc(nm)+'</b>. '+T('It will appear in the course list automatically.','Va a aparecer en la lista de canchas automáticamente.')+'</p>';m.querySelector('.crX').onclick=close;}
+       else{b.disabled=false;msg.textContent=(j&&j.error==='too-many')?T('You already have 5 requests waiting.','Ya tenés 5 pedidos pendientes.'):T('Could not send — try again.','No se pudo enviar — probá de nuevo.');}}).catch(function(){b.disabled=false;msg.textContent=T('Offline — try again later.','Sin conexión — probá más tarde.');});};
+   api('myCourseRequests',{}).then(function(j){var L=(j&&j.requests)||[];if(!L.length)return;var box=m.querySelector('.crMine');if(!box)return;
+     box.innerHTML='<div class="crMineT">'+T('Your requests','Tus pedidos')+'</div>'+L.map(function(r){return '<div>'+esc(r.name)+' · <i>'+(r.status==='added'?T('added ✓','agregada ✓'):r.status==='rejected'?T('not added','no agregada'):T('waiting','pendiente'))+'</i></div>';}).join('');}).catch(function(){});
+ }
+ /* the link under the course selector when starting a round */
+ function addLink(){var sc=document.getElementById('selCourse');if(!sc||document.getElementById('crLink'))return;var a=document.createElement('a');a.id='crLink';a.href='#';a.className='crLink';a.textContent=T('Course not listed? Request it','¿No está tu cancha? Pedila');a.onclick=function(e){e.preventDefault();openRequest();};sc.parentNode.appendChild(a);}
+ /* ---- admin: requests + course editor ---- */
+ function adminPanel(el){if(!el)return;el.innerHTML='<p class="frsub">…</p>';
+   api('courseRequests',{}).then(function(j){var L=(j&&j.requests)||[];
+     el.innerHTML=(L.length?L.map(function(r){return '<div class="crReq'+(r.status!=='requested'?' done':'')+'"><div><b>'+esc(r.name)+'</b>'+(r.city?' · '+esc(r.city):'')+' <small>— '+esc(r.display||r.username)+' · '+String(r.created||'').slice(0,10)+' · '+esc(r.status)+'</small></div>'+
+       (r.tees?'<div class="frsub">'+T('Tees: ','Tees: ')+esc(r.tees)+'</div>':'')+(r.note?'<div class="frsub">'+esc(r.note)+'</div>':'')+
+       '<div class="crThumbs">'+(r.photos||[]).map(function(d,i){return '<img src="'+d+'" data-big="'+r.id+':'+i+'" alt="">';}).join('')+'</div>'+
+       '<div class="hwBtns"><button class="pf_btn" data-crnew="'+esc(r.id)+'">'+T('Add this course','Agregar esta cancha')+'</button>'+(r.status==='requested'?'<button class="pf_btn frgrey" data-crst="rejected:'+esc(r.id)+'">'+T('Reject','Rechazar')+'</button>':'<button class="pf_btn frgrey" data-crst="requested:'+esc(r.id)+'">'+T('Reopen','Reabrir')+'</button>')+'</div></div>';}).join(''):'<p class="frsub">'+T('No requests yet.','Todavía no hay pedidos.')+'</p>')+
+       '<button class="pf_btn frgrey" data-crnew="">+ '+T('Add a course by hand','Agregar una cancha a mano')+'</button><div id="crEditor"></div>';
+     el.querySelectorAll('[data-big]').forEach(function(im){im.onclick=function(){var w=window.open('');if(w)w.document.write('<img src="'+im.src+'" style="max-width:100%">');};});
+     el.querySelectorAll('[data-crst]').forEach(function(b){b.onclick=function(){var a=b.getAttribute('data-crst').split(':');api('courseRequestStatus',{id:a[1],status:a[0]}).then(function(){adminPanel(el);});};});
+     el.querySelectorAll('[data-crnew]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-crnew'),r=L.filter(function(x){return x.id===id;})[0];editor(el.querySelector('#crEditor'),r,function(){if(r)api('courseRequestStatus',{id:r.id,status:'added'}).then(function(){adminPanel(el);});else adminPanel(el);});};});
+   }).catch(function(){el.innerHTML='';});}
+ function row(cls,vals){var h='';for(var i=0;i<18;i++)h+='<input class="'+cls+'" data-i="'+i+'" inputmode="numeric" value="'+(vals&&vals[i]!=null?vals[i]:'')+'">';return h;}
+ function teeBlock(n){return '<div class="crTee"><div class="crTeeH"><input class="tKey" placeholder="'+T('Name (Spanish), e.g. Azules','Nombre (español), ej. Azules')+'"><input class="tEn" placeholder="'+T('English, e.g. Blue','Inglés, ej. Blue')+'"><input class="tCr" placeholder="CR 71.4" inputmode="decimal"><input class="tSl" placeholder="Slope 126" inputmode="numeric"><button type="button" class="frx tDel">✕</button></div><div class="crGrid">'+row('tY')+'</div></div>';}
+ function editor(box,req,onDone){if(!box)return;var guess=req?String(req.name||''):'';var code=guess.split(/\s+/).filter(Boolean).map(function(w){return w[0];}).join('').toUpperCase().replace(/[^A-Z]/g,'').slice(0,4);
+   box.innerHTML='<div class="crEd"><h4>'+T('New course','Nueva cancha')+'</h4><div class="crEdTop"><label>'+T('Name','Nombre')+'<input id="ceName" value="'+esc(guess)+'"></label><label>'+T('Short code','Código')+'<input id="ceCode" maxlength="8" value="'+esc(code)+'"></label></div>'+
+     '<div class="crGca"><div class="crLbl">'+T('Fill from GolfCourseAPI','Completar desde GolfCourseAPI')+'</div><div class="crEdTop"><input id="ceQ" placeholder="'+T('Search club or course','Buscar club o cancha')+'" value="'+esc(guess)+'" style="flex:1;min-width:180px"><button type="button" class="pf_btn frgrey" id="ceSearch">'+T('Search','Buscar')+'</button></div><div class="crRes"></div></div>'+'<div class="crLbl">'+T('Par, holes 1–18','Par, hoyos 1–18')+'</div><div class="crGrid">'+row('cP')+'</div><div class="crLbl">'+T('Stroke index (handicap), holes 1–18','Hándicap por hoyo, 1–18')+'</div><div class="crGrid">'+row('cH')+'</div>'+
+     '<div class="crLbl">'+T('Tees — yards per hole','Tees — yardas por hoyo')+'</div><div class="crTees">'+teeBlock()+'</div><button type="button" class="pf_btn frgrey" id="ceAddTee">+ '+T('Another tee','Otro tee')+'</button>'+
+     '<div class="hwBtns"><button class="pf_btn" id="ceSave">'+T('Save course','Guardar cancha')+'</button><span class="crMsg"></span></div><p class="frsub">'+T('Check the totals against the scorecard before saving. It appears for every player right away.','Revisá los totales contra la tarjeta antes de guardar. Aparece para todos los jugadores al instante.')+'</p></div>';
+   var wireDel=function(){box.querySelectorAll('.tDel').forEach(function(b){b.onclick=function(){if(box.querySelectorAll('.crTee').length>1)b.closest('.crTee').remove();};});};wireDel();
+   box.querySelector('#ceAddTee').onclick=function(){box.querySelector('.crTees').insertAdjacentHTML('beforeend',teeBlock());wireDel();};
+   var fillFrom=function(c){var t0=c.tees.filter(function(t){return (t.holes||[]).length===18;});if(!t0.length){box.querySelector('.crRes').textContent=T('This course has no full 18-hole tee data — enter it by hand.','Esta cancha no tiene datos completos de 18 hoyos — cargala a mano.');return;}
+     box.querySelector('#ceName').value=(c.club&&c.course&&c.club!==c.course)?(c.club+' — '+c.course):(c.club||c.course||'');
+     var h=t0[0].holes;box.querySelectorAll('.cP').forEach(function(i,k){i.value=h[k].par;});box.querySelectorAll('.cH').forEach(function(i,k){i.value=h[k].si||'';});
+     var tw=box.querySelector('.crTees');tw.innerHTML='';var seen={};t0.forEach(function(t){var nm=String(t.name||'Tee');if(seen[nm])return;seen[nm]=1;tw.insertAdjacentHTML('beforeend',teeBlock());var el=tw.lastElementChild;
+       el.querySelector('.tKey').value=nm;el.querySelector('.tEn').value=nm;el.querySelector('.tCr').value=t.cr||'';el.querySelector('.tSl').value=t.slope||'';el.querySelectorAll('.tY').forEach(function(i,k){i.value=t.holes[k].yds||'';});});wireDel();
+     box.querySelector('.crRes').innerHTML='<span style="color:var(--fairway);font-weight:700">✓ '+T('Filled from GolfCourseAPI — now check every number against the scorecard photo, and write the tee names in Spanish / English.','Completado desde GolfCourseAPI — ahora revisá cada número contra la foto de la tarjeta, y escribí los nombres de los tees en español / inglés.')+'</span>';};
+   var doSearch=function(){var q=box.querySelector('#ceQ').value.trim(),rs=box.querySelector('.crRes');if(q.length<3)return;rs.textContent='…';
+     api('gcaSearch',{q:q}).then(function(j){if(!j||!j.ok){rs.textContent=j&&j.error==='no-gca-key'?T('GolfCourseAPI key not set in Vercel yet (GOLFCOURSEAPI_KEY).','Falta la clave de GolfCourseAPI en Vercel (GOLFCOURSEAPI_KEY).'):T('Search failed','La búsqueda falló')+(j&&j.status?' ('+j.status+(j.message?': '+j.message:'')+')':'');return;}
+       var L=j.results||[];rs.innerHTML=L.length?L.map(function(r){return '<div class="frline"><span><b>'+esc(r.club)+'</b>'+(r.course&&r.course!==r.club?' — '+esc(r.course):'')+' <small>'+esc(r.where)+'</small></span><button type="button" class="pf_btn" data-gca="'+esc(r.id)+'">'+T('Use','Usar')+'</button></div>';}).join(''):T('No match — try the club name only, or enter it by hand.','Sin resultados — probá solo con el nombre del club, o cargala a mano.');
+       rs.querySelectorAll('[data-gca]').forEach(function(b){b.onclick=function(){rs.textContent='…';api('gcaCourse',{id:b.getAttribute('data-gca')}).then(function(k){if(k&&k.ok)fillFrom(k.course);else rs.textContent=T('Could not load that course.','No se pudo cargar esa cancha.');});};});});};
+   box.querySelector('#ceSearch').onclick=doSearch;box.querySelector('#ceQ').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();doSearch();}});
+   box.querySelector('#ceSave').onclick=function(){var msg=box.querySelector('.crMsg'),vals=function(scope,cls){return [].slice.call(scope.querySelectorAll('.'+cls)).map(function(i){return +i.value;});};
+     var tees={};box.querySelectorAll('.crTee').forEach(function(t){var k=t.querySelector('.tKey').value.trim();if(!k)return;var en=t.querySelector('.tEn').value.trim();tees[k]={label:en?(k+' / '+en):k,cr:+String(t.querySelector('.tCr').value).replace(',','.'),slope:+t.querySelector('.tSl').value,yds:vals(t,'tY')};});
+     var course={name:box.querySelector('#ceName').value.trim(),par:vals(box,'cP'),hcp:vals(box,'cH'),tees:tees};
+     var par=course.par.reduce(function(a,b){return a+b;},0);
+     api('courseSave',{code:box.querySelector('#ceCode').value,course:course}).then(function(j){if(j&&j.ok){msg.textContent='✓ '+T('Saved','Guardada')+' — par '+par;try{localStorage.removeItem('gs-courses');}catch(e){}refreshCourses();if(onDone)setTimeout(onDone,600);}
+       else msg.textContent=j&&j.error==='no-tees'?T('Add at least one tee with 18 yardages, CR and slope.','Agregá al menos un tee con 18 yardas, CR y slope.'):T('Check: name, code, 18 pars (3–6), stroke index 1–18 each once.','Revisá: nombre, código, 18 pares (3–6), hándicap del 1 al 18 sin repetir.');});};}
+ window.COURSEREQ={open:openRequest,admin:adminPanel,refresh:refreshCourses};
+ function boot(){refreshCourses();addLink();setInterval(addLink,2000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>

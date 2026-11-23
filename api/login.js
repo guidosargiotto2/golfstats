@@ -15,7 +15,12 @@ async function profileName(sql, user, fallback) {
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
-  if (req.method === 'GET') return res.status(200).json(L.hasDb() ? { api: true, db: true, signup: true, providers: L.providersOn() } : { api: true, db: false, signup: true, vars: L.dbVarNames() });
+  if (req.method === 'GET') {
+    if (!L.hasDb()) return res.status(200).json({ api: true, db: false, signup: true, vars: L.dbVarNames() });
+    let courses = {};   // courses added by the admin from players' requests (merged into the built-in list by the app)
+    try { await L.init(); const rows = await L.db()`select code, data from gs_courses`; rows.forEach(r => { courses[r.code] = typeof r.data === 'string' ? JSON.parse(r.data) : r.data; }); } catch (e) { courses = {}; }
+    return res.status(200).json({ api: true, db: true, signup: true, providers: L.providersOn(), courses });
+  }
   if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
   try {
     const b = L.body(req);
