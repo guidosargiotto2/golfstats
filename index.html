@@ -663,6 +663,18 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope .pgrp>summary .pgS{font-family:var(--cond);font-size:12.5px;font-weight:400;color:var(--ink-soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lgscope .pgrp[open]>summary .pgS{display:none}
 .lgscope .pgrp[open]{border-color:var(--pine);box-shadow:0 8px 24px rgba(15,58,44,.08)}
+.lgscope .pgrp .pgC{font-size:20px;transform:none!important}
+.lgscope .pgrp>summary .pgS{display:block!important}
+#view-profile.pgFocus>div{max-width:1040px!important}
+#view-profile.pgFocus .pgHead,#view-profile.pgFocus .pgrp:not(.pgCur),#view-profile.pgFocus h2,#view-profile.pgFocus #obRedo,#view-profile.pgFocus .pgCur>summary{display:none!important}
+#view-profile.pgFocus .pgrp.pgCur{border:none;background:transparent;box-shadow:none;overflow:visible;margin:0;animation:pgIn .28s ease-out}
+#view-profile.pgFocus .pgCur>.pgB{border-top:none;padding:6px 2px 30px}
+#view-profile.pgFocus .pgCur>.pgB.pform{max-width:620px}
+@keyframes pgIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+#pgBack:empty{display:none}#pgBack{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:2px 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+#pgBackBtn{border:1px solid var(--line);background:var(--paper);color:var(--pine);border-radius:20px;padding:7px 14px;font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.05em;cursor:pointer;transition:border-color .15s,transform .15s}
+#pgBackBtn:hover{border-color:var(--pine);transform:translateX(-2px)}
+.pgBackT{font-family:var(--serif);font-weight:600;font-size:22px;color:var(--pine)}
 .lgscope .pgHead{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sand-deep);margin:20px 2px 8px}
 .lgscope #profGroups>.pgHead:first-child{margin-top:4px}
 .lgscope .pgrp .pgB>.frsub:first-child{margin-top:10px}
@@ -4498,9 +4510,17 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
   {head:['Account','Cuenta'],forExt:'acctBody'},
   {flat:'acctBody'}
  ];
- var openKey='';try{openKey=localStorage.getItem('gs-popen')||'';}catch(e){}
- function setKey(k){openKey=k;try{localStorage.setItem('gs-popen',k);}catch(e){}}
- function onToggle(d,key){if(d.open){setKey(key);document.querySelectorAll('#view-profile details.pgrp').forEach(function(x){if(x!==d&&x.open)x.open=false;});}else if(openKey===key)setKey('');}
+ /* each card opens as its own screen: the menu hides, the section takes the page, "← Profile" goes back */
+ var openKey='';
+ function setKey(k){openKey=k;}
+ function view(){return document.getElementById('view-profile');}
+ function focusOn(d){var v=view();if(!v)return;v.querySelectorAll('.pgCur').forEach(function(x){if(x!==d)x.classList.remove('pgCur');});d.classList.add('pgCur');v.classList.add('pgFocus');
+   var bar=document.getElementById('pgBack');if(!bar){bar=document.createElement('div');bar.id='pgBack';var w=v.firstElementChild||v;w.insertBefore(bar,w.firstChild);}
+   var t=d.querySelector('summary .pgT');bar.innerHTML='<button type="button" id="pgBackBtn">← '+(ES()?'Perfil':'Profile')+'</button><span class="pgBackT"></span>';bar.querySelector('.pgBackT').innerHTML=t?t.innerHTML:'';
+   document.getElementById('pgBackBtn').onclick=function(){back();};}
+ function back(){var v=view();if(!v)return;setKey('');v.querySelectorAll('details.pgrp').forEach(function(x){if(x.open)x.open=false;x.classList.remove('pgCur');});v.classList.remove('pgFocus');var bar=document.getElementById('pgBack');if(bar)bar.innerHTML='';}
+ function onToggle(d,key){if(d.open){var first=openKey!==key;setKey(key);document.querySelectorAll('#view-profile details.pgrp').forEach(function(x){if(x!==d&&x.open)x.open=false;});focusOn(d);if(first)try{window.scrollTo({top:0,behavior:'smooth'});}catch(e){}}
+   else if(openKey===key){back();}}
  function hint(k){try{var P=PROF,es=ES(),oo=function(v){return v?(es?'sí':'on'):(es?'no':'off');};
    if(k==='personal')return [(P.name||localStorage.getItem('app-user')||''),(P.lang==='es'?'Español':'English'),(P.units==='m'?(es?'metros':'metres'):(es?'yardas':'yards'))].filter(Boolean).join(' · ');
    if(k==='course'){var c=COURSES[P.homeCourse];return (c?c.name:'')+' · '+teeEN(P.homeCourse,P.defaultTee);}
@@ -4513,11 +4533,12 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
  function fold(ac){if(!ac)return;
    [].slice.call(ac.children).forEach(function(sx){if(!sx.classList||!sx.classList.contains('frsec'))return;var h=sx.querySelector('h3');if(!h||h.parentNode!==sx)return;
      var key='s:'+h.textContent.trim().toLowerCase().replace(/[^a-z0-9áéíóúñ]+/g,'-').slice(0,32);
-     var d=document.createElement('details');d.className='pgrp';d.dataset.sk=key;if(openKey===key)d.open=true;
-     var sm=document.createElement('summary');sm.innerHTML='<span class="pgL"><span class="pgT"></span></span><span class="pgC">▾</span>';sm.querySelector('.pgT').innerHTML=h.innerHTML;h.remove();
+     var d=document.createElement('details');d.className='pgrp';d.dataset.sk=key;if(openKey===key){d.open=true;d.classList.add('pgCur');}
+     var sm=document.createElement('summary');sm.innerHTML='<span class="pgL"><span class="pgT"></span></span><span class="pgC">›</span>';sm.querySelector('.pgT').innerHTML=h.innerHTML;h.remove();
      var b=document.createElement('div');b.className='pgB';while(sx.firstChild)b.appendChild(sx.firstChild);d.appendChild(sm);d.appendChild(b);
      d.addEventListener('toggle',function(){onToggle(d,key);});sx.parentNode.replaceChild(d,sx);});
-   var hd=document.querySelector('#profGroups .pgHead[data-for="acctBody"]');if(hd)hd.style.display=ac.children.length?'':'none';}
+   var hd=document.querySelector('#profGroups .pgHead[data-for="acctBody"]');if(hd)hd.style.display=ac.children.length?'':'none';
+   var v=view();if(v&&v.classList.contains('pgFocus')&&!v.querySelector('.pgCur'))back();}
  var busy=false;
  function build(){
    var pf=document.getElementById('pform');if(!pf||busy)return;busy=true;
@@ -4530,8 +4551,8 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
          a.innerHTML='<div class="pgL"><span class="pgT"></span><span class="pgS"></span></div><span class="pgGo">→</span>';
          var go=function(){if(window.showView)window.showView(g.link);};a.onclick=go;a.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};
          box.appendChild(a);var be=document.getElementById('bagEntry');if(be)be.style.display='none';return;}
-       var d=document.createElement('details');d.className='pgrp';d.dataset.k=g.k;if(openKey==='g:'+g.k)d.open=true;
-       d.innerHTML='<summary><span class="pgL"><span class="pgT"></span><span class="pgS"></span></span><span class="pgC">▾</span></summary><div class="pgB pform"></div>';
+       var d=document.createElement('details');d.className='pgrp';d.dataset.k=g.k;
+       d.innerHTML='<summary><span class="pgL"><span class="pgT"></span><span class="pgS"></span></span><span class="pgC">›</span></summary><div class="pgB pform"></div>';
        d.addEventListener('toggle',function(){onToggle(d,'g:'+g.k);});
        box.appendChild(d);});}
    box.querySelectorAll('.pgHead').forEach(function(h){if(h._t)h.textContent=h._t[ES()?1:0];});
@@ -4547,8 +4568,9 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
    busy=false;}
  function hook(){var pf=document.getElementById('pform');if(!pf)return;build();try{new MutationObserver(function(){if(!busy&&pf.children.length)setTimeout(build,0);}).observe(pf,{childList:true});}catch(e){}
    pf.parentNode.addEventListener('change',function(){setTimeout(function(){var box=document.getElementById('profGroups');if(box)box.querySelectorAll('.pgrp[data-k]').forEach(function(d){var g=G.filter(function(x){return x.k===d.dataset.k;})[0],ps=d.querySelector('.pgS');if(g&&ps&&!g.sub)ps.textContent=hint(g.k);});},60);});}
- window.PGRP={build:build,fold:fold,open:function(k){var d=document.querySelector('.pgrp[data-k="'+k+'"]');if(!d&&k==='account'){var pc=document.getElementById('plChooser');d=pc&&pc.closest?pc.closest('details'):null;}if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}}};
+ window.PGRP={build:build,fold:fold,back:back,open:function(k){var d=document.querySelector('.pgrp[data-k="'+k+'"]');if(!d&&k==='account'){var pc=document.getElementById('plChooser');d=pc&&pc.closest?pc.closest('details'):null;}if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}}};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hook);else hook();
+ var nav=document.getElementById('tabnav');if(nav)nav.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('button');if(b&&b.dataset.v==='profile')back();});
 })();
 </script>
 
