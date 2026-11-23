@@ -360,7 +360,7 @@ module.exports = async (req, res) => {
         const hit = all.find(r => r.code === code || nk((typeof r.data === 'string' ? JSON.parse(r.data) : r.data).name) === nk(c.name));
         if (hit && !b.force) return res.status(409).json({ error: 'exists', code: hit.code });
       }
-      const data = { name: String(c.name).trim().slice(0, 60), abbr: code, pins: c.pins || { F: 'red', M: 'white', B: 'blue' }, par: c.par.map(Number), hcp: c.hcp.map(Number), tees };
+      const data = { name: String(c.name).trim().slice(0, 60), unverified: !!c.unverified, abbr: code, pins: c.pins || { F: 'red', M: 'white', B: 'blue' }, par: c.par.map(Number), hcp: c.hcp.map(Number), tees };
       await sql`insert into gs_courses (code, data, upd) values (${code}, ${JSON.stringify(data)}, ${Date.now()}) on conflict (code) do update set data = excluded.data, upd = excluded.upd`;
       return ok({ code });
     }
