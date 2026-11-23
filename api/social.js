@@ -295,14 +295,14 @@ module.exports = async (req, res) => {
     /* ---- GolfCourseAPI lookup (admin only; key stays on the server; one course at a time, never bulk) ---- */
     if (action === 'gcaSearch' || action === 'gcaCourse') {
       if (me !== L.ADMIN) return bad(403, 'admin');
-      const key = process.env.GOLFCOURSEAPI_KEY || process.env.GOLF_COURSE_API_KEY;
+      const key = String(process.env.GOLFCOURSEAPI_KEY || process.env.GOLF_COURSE_API_KEY || '').trim().replace(/^["']|["']$/g, '').replace(/^(Bearer|Key)\s+/i, '').trim();   // tolerate a pasted prefix, quotes or spaces
       if (!key) return bad(503, 'no-gca-key');
       const url = action === 'gcaSearch'
         ? 'https://api.golfcourseapi.com/v1/search?search_query=' + encodeURIComponent(String(b.q || '').slice(0, 80))
         : 'https://api.golfcourseapi.com/v1/courses/' + encodeURIComponent(String(b.id || '').replace(/[^0-9a-zA-Z_-]/g, ''));
-      const r = await fetch(url, { headers: { Authorization: 'Key ' + key } });
+      const r = await fetch(url, { headers: { Authorization: 'Bearer ' + key } });
       const j = await r.json().catch(() => ({}));
-      if (!r.ok) return res.status(502).json({ error: 'gca', status: r.status, message: (j && (j.message || j.error)) || '' });
+      if (!r.ok) return res.status(502).json({ error: 'gca', status: r.status, message: ((j && (j.message || j.error)) || '') + (r.status === 401 ? ' [key length ' + key.length + ']' : '') });
       const loc = c => [c.location && c.location.city, c.location && c.location.state, c.location && c.location.country].filter(Boolean).join(', ');
       if (action === 'gcaSearch') return ok({ results: (j.courses || []).slice(0, 20).map(c => ({ id: c.id, club: c.club_name, course: c.course_name, where: loc(c) })) });
       const c = j.course || j;
