@@ -300,9 +300,10 @@ module.exports = async (req, res) => {
       const url = action === 'gcaSearch'
         ? 'https://api.golfcourseapi.com/v1/search?search_query=' + encodeURIComponent(String(b.q || '').slice(0, 80))
         : 'https://api.golfcourseapi.com/v1/courses/' + encodeURIComponent(String(b.id || '').replace(/[^0-9a-zA-Z_-]/g, ''));
-      const r = await fetch(url, { headers: { Authorization: 'Bearer ' + key } });
+      let r = await fetch(url, { headers: { Authorization: 'Bearer ' + key, Accept: 'application/json' } });
+      if (r.status === 401) r = await fetch(url, { headers: { Authorization: 'Key ' + key, Accept: 'application/json' } });   // legacy format, in case
       const j = await r.json().catch(() => ({}));
-      if (!r.ok) return res.status(502).json({ error: 'gca', status: r.status, message: ((j && (j.message || j.error)) || '') + (r.status === 401 ? ' [key length ' + key.length + ']' : '') });
+      if (!r.ok) return res.status(502).json({ error: 'gca', status: r.status, message: ((j && (j.message || j.error)) || '') + (r.status === 401 ? ' [key in Vercel: ' + key.length + ' characters, starts "' + key.slice(0, 2) + '", ends "' + key.slice(-2) + '"' + (/[^A-Za-z0-9]/.test(key) ? ', contains a space or symbol' : '') + ']' : '') });
       const loc = c => [c.location && c.location.city, c.location && c.location.state, c.location && c.location.country].filter(Boolean).join(', ');
       if (action === 'gcaSearch') return ok({ results: (j.courses || []).slice(0, 20).map(c => ({ id: c.id, club: c.club_name, course: c.course_name, where: loc(c) })) });
       const c = j.course || j;
