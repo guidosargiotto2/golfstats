@@ -384,6 +384,15 @@ module.exports = async (req, res) => {
       const code = String(b.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
       const c = b.course || {};
       const okArr = (a, lo, hi) => Array.isArray(a) && a.length === 18 && a.every(x => Number.isFinite(+x) && +x >= lo && +x <= hi);
+      const cl0 = x => String(x || '').replace(/[<>"]/g, '').trim().slice(0, 40);
+      if (c.empty) {   // placeholder: a club we know exists but have no card data for; players send the scorecard
+        if (code.length < 2 || String(c.name || '').trim().length < 3) return bad(400, 'bad-course');
+        const ex0 = await sql`select code from gs_courses where code = ${code}`;
+        if (ex0.length && !b.edit) return res.status(409).json({ error: 'exists', code });
+        const stub = { name: String(c.name).trim().slice(0, 60), empty: true, unverified: true, loc: c.loc && typeof c.loc === 'object' ? { country: cl0(c.loc.country), state: cl0(c.loc.state), city: cl0(c.loc.city) } : undefined };
+        await sql`insert into gs_courses (code, data, upd) values (${code}, ${JSON.stringify(stub)}, ${Date.now()}) on conflict (code) do update set data = excluded.data, upd = excluded.upd`;
+        return ok({ code });
+      }
       const noSI = !!c.noSI;   // imported without a stroke index: net par stays off for this course until it is entered
       if (code.length < 2 || String(c.name || '').trim().length < 3 || !okArr(c.par, 3, 6) || (!noSI && (!okArr(c.hcp, 1, 18) || new Set(c.hcp.map(Number)).size !== 18))) return bad(400, 'bad-course');
       const tees = {};
@@ -394,7 +403,10 @@ module.exports = async (req, res) => {
       const nk = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w && !['golf', 'club', 'de', 'del', 'el', 'la', 'los', 'las', 'country', 'the', 'gc', 'cc', 'course', 'y', 'and'].includes(w)).sort().join(' ');
       if (!b.edit) {
         const all = await sql`select code, data from gs_courses`;
-        const hit = all.find(r => r.code === code || nk((typeof r.data === 'string' ? JSON.parse(r.data) : r.data).name) === nk(c.name));
+        const pd = r => (typeof r.data === 'string' ? JSON.parse(r.data) : r.data);
+        const stubs = all.filter(r => pd(r).empty && nk(pd(r).name) === nk(c.name));
+        for (const st of stubs) await sql`delete from gs_courses where code = ${st.code}`;   // real data replaces the placeholder
+        const hit = all.find(r => !pd(r).empty && (r.code === code || nk(pd(r).name) === nk(c.name)));
         if (hit && !b.force) return res.status(409).json({ error: 'exists', code: hit.code });
       }
       const cl = x => String(x || '').replace(/[<>"]/g, '').trim().slice(0, 40);
