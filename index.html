@@ -4795,6 +4795,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
    var seen={},okH=hcp.every(function(v){if(!(v>=1&&v<=18)||seen[v])return false;seen[v]=1;return true;});if(!okH)iss.push(T('stroke index','hándicap por hoyo'));
    var T2={};tees.forEach(function(t){var nm=String(t.name||'Tee').replace(/[^A-Za-zÀ-ÿ0-9 ]/g,'').trim().slice(0,20)||'Tee';if(T2[nm])return;var y=t.holes.map(function(x){return +x.yds;});
      if(!y.every(function(v){return v>=40&&v<=800;})||!(+t.cr>50)||!(+t.slope>=55))return;T2[nm]={label:teeLabel(nm),cr:+t.cr,slope:+t.slope,yds:y};});
+   T2=normTees(T2);
    if(!Object.keys(T2).length)iss.push(T('yardage / rating','yardas / rating'));
    var name=(c.club&&c.course&&nameKey(c.club)!==nameKey(c.course))?(c.club+' — '+c.course):(c.club||c.course||'');
    return {course:{name:name.slice(0,60),par:par,hcp:hcp,tees:T2,unverified:true},issues:iss};}
@@ -4810,7 +4811,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
        (done.length?'<div class="frscroll" style="max-height:420px;overflow:auto"><table class="crDbTbl"><tr><th>AAG</th><th>GolfCourseAPI</th><th>'+T('Data','Datos')+'</th><th></th></tr>'+done.map(function(n,ix){var r=store[n],ex=r.c&&findCourse(tidy(r.c.name));
          return '<tr><td>'+esc(n)+'</td><td style="text-align:left">'+(r.c?esc(tidy(r.c.name))+' <small>'+esc(r.where||'')+'</small>':'—')+'</td><td style="text-align:left">'+(r.st==='ok'?'<span style="color:var(--fairway);font-weight:700">✓ '+Object.keys(r.c.tees).length+' tees</span>':r.st==='partial'?(usable(n)?'<span style="color:var(--fairway);font-weight:700">✓ '+Object.keys(r.c.tees).length+' tees</span> · ':'')+'<span style="color:var(--clay)">⚠ '+T('missing: ','falta: ')+esc((r.iss||[]).join(', '))+'</span>':T('not found','no encontrada'))+'</td><td>'+
            (r.imp||ex?'<small>'+T('in the list','en la lista')+'</small>':(r.st==='ok'||usable(n))?'<button class="pf_btn" data-gti="'+ix+'" style="padding:4px 9px;font-size:11px">'+T('Import','Importar')+'</button>':(r.st==='partial'&&r.c?'<button class="pf_btn frgrey" data-gte="'+ix+'" style="padding:4px 9px;font-size:11px">'+T('Fix by hand','Completar a mano')+'</button>':''))+'</td></tr>';}).join('')+'</table></div>':'');
-     var imp1=function(n,used){var r=store[n],c=JSON.parse(JSON.stringify(r.c));c.name=tidy(c.name).slice(0,60);c.unverified=true;if(r.where)c.loc=whereLoc(r.where);var sn={},okH=(c.hcp||[]).length===18&&c.hcp.every(function(v){if(!(v>=1&&v<=18)||sn[v])return false;sn[v]=1;return true;});if(!okH){c.noSI=true;c.hcp=c.par.map(function(){return 0;});}
+     var imp1=function(n,used){var r=store[n],c=JSON.parse(JSON.stringify(r.c));c.name=tidy(c.name).slice(0,60);c.unverified=true;if(r.where)c.loc=whereLoc(r.where);var sn={},okH=(c.hcp||[]).length===18&&c.hcp.every(function(v){if(!(v>=1&&v<=18)||sn[v])return false;sn[v]=1;return true;});if(!okH){c.noSI=true;c.hcp=c.par.map(function(){return 0;});}c.tees=normTees(c.tees);
        if(findCourse(c.name)){r.imp=1;save();return Promise.resolve();}return api('courseSave',{code:newCode(c.name,used),course:c}).then(function(j){if(j&&(j.ok||j.error==='exists')){r.imp=1;save();}});};
      var after=function(){try{localStorage.removeItem('gs-courses');}catch(e){}refreshCourses();setTimeout(function(){render();dbList(panel);},1200);};
      box.querySelector('#gtRun').onclick=function(){if(running){stop=true;return;}running=true;stop=false;note='';step(0);};
@@ -4826,7 +4827,17 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
    render();}
  /* one tee name is enough: known colours are stored in both languages so each player sees their own */
  var TEECOL=[['Negras','Black',/^(black|negr[oa]s?)$/i],['Azules','Blue',/^(blue|azul(es)?)$/i],['Blancas','White',/^(white|blanc[oa]s?)$/i],['Rojas','Red',/^(red|roj[oa]s?)$/i],['Doradas','Gold',/^(gold|dorad[oa]s?|oro)$/i],['Amarillas','Yellow',/^(yellow|amarill[oa]s?)$/i],['Verdes','Green',/^(green|verdes?)$/i],['Plateadas','Silver',/^(silver|platead[oa]s?|plata)$/i],['Naranjas','Orange',/^(orange|naranjas?)$/i]];
- function teeLabel(k){k=String(k||'').trim();for(var i=0;i<TEECOL.length;i++)if(TEECOL[i][2].test(k))return TEECOL[i][0]+' / '+TEECOL[i][1];return k;}
+ var GEN=/\b(damas?|ladies|lady|women|mujeres|femenin[oa]s?|caballeros?|men|mens|hombres|masculin[oa]s?)\b/ig;
+ function teeBase(n){n=String(n||'');var g=/\b(damas?|ladies|lady|women|mujeres|femenin[oa]s?)\b/i.test(n)?'D':(/\b(caballeros?|men|mens|hombres|masculin[oa]s?)\b/i.test(n)?'C':'');
+   return {base:n.replace(GEN,' ').replace(/[()\-–]/g,' ').replace(/\s+/g,' ').trim()||n.trim(),g:g};}
+ function teeLabel(k){k=String(k||'').trim();var tb=teeBase(k),es=tb.base,en=tb.base;for(var i=0;i<TEECOL.length;i++)if(TEECOL[i][2].test(tb.base)){es=TEECOL[i][0];en=TEECOL[i][1];break;}
+   if(tb.g){es+=tb.g==='D'?' Damas':' Caballeros';en+=tb.g==='D'?' Ladies':' Men';}return es===en?es:es+' / '+en;}
+ /* "Rojo Caballeros" + "Rojo Damas" with the same yardages are one tee: "Rojo" (men's rating kept). Different yardages stay apart. */
+ function normTees(T0){var by={},order=[];Object.keys(T0||{}).forEach(function(k){var tb=teeBase(k);if(!by[tb.base]){by[tb.base]=[];order.push(tb.base);}by[tb.base].push({g:tb.g,t:T0[k]});});
+   var out={};order.forEach(function(b){var L=by[b],sig=function(x){return (x.t.yds||[]).join(',');},same=L.every(function(x){return sig(x)===sig(L[0]);});
+     if(L.length===1||same){var pick=L.filter(function(x){return x.g!=='D';})[0]||L[0];out[b]=Object.assign({},pick.t,{label:teeLabel(b)});}
+     else L.forEach(function(x,i){var nm=b+(x.g==='D'?' Damas':x.g==='C'?' Caballeros':(i?' '+(i+1):''));if(out[nm])nm=nm+' '+(i+1);out[nm]=Object.assign({},x.t,{label:teeLabel(nm)});});});
+   return out;}
  function teeShow(lb){lb=String(lb||'');if(lb.indexOf('/')<0)return lb;var p2=lb.split('/');return (ES()?p2[0]:p2[1]).trim();}
  function row(cls,vals){var h='';for(var i=0;i<18;i++)h+='<input class="'+cls+'" data-i="'+i+'" inputmode="numeric" value="'+(vals&&vals[i]!=null?vals[i]:'')+'">';return h;}
  function teeBlock(n){return '<div class="crTee"><div class="crTeeH"><input class="tKey" placeholder="'+T('Tee name, e.g. Blue','Nombre del tee, ej. Azules')+'"><input class="tEn" style="display:none"><input class="tCr" placeholder="CR 71.4" inputmode="decimal"><input class="tSl" placeholder="Slope 126" inputmode="numeric"><button type="button" class="frx tDel">✕</button></div><div class="crGrid">'+row('tY')+'</div></div>';}
@@ -4845,8 +4856,8 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
      var dupF=findCourse(box.querySelector('#ceName').value);if(dupF){box.querySelector('.crRes').innerHTML='<span style="color:var(--clay);font-weight:700">⚠ '+esc(dupF.name)+' '+T('is already in the course list. Use Edit on that course instead of adding it again.','ya está en la lista de canchas. Usá Editar en esa cancha en vez de agregarla de nuevo.')+'</span>';return;}
      box.querySelector('#ceCode').value='';autoCode();
      var h=t0[0].holes;box.querySelectorAll('.cP').forEach(function(i,k){i.value=h[k].par;});box.querySelectorAll('.cH').forEach(function(i,k){i.value=h[k].si||'';});
-     var tw=box.querySelector('.crTees');tw.innerHTML='';var seen={};t0.forEach(function(t){var nm=String(t.name||'Tee');if(seen[nm])return;seen[nm]=1;tw.insertAdjacentHTML('beforeend',teeBlock());var el=tw.lastElementChild;
-       el.querySelector('.tKey').value=nm;el.querySelector('.tEn').value=nm;el.querySelector('.tCr').value=t.cr||'';el.querySelector('.tSl').value=t.slope||'';el.querySelectorAll('.tY').forEach(function(i,k){i.value=t.holes[k].yds||'';});});wireDel();
+     var tw=box.querySelector('.crTees');tw.innerHTML='';var raw={};t0.forEach(function(t){var nm=String(t.name||'Tee');if(raw[nm])return;raw[nm]={cr:t.cr,slope:t.slope,yds:t.holes.map(function(x){return x.yds;})};});var nt2=normTees(raw);Object.keys(nt2).forEach(function(nm){var t=nt2[nm];tw.insertAdjacentHTML('beforeend',teeBlock());var el=tw.lastElementChild;
+       el.querySelector('.tKey').value=nm;el.querySelector('.tCr').value=t.cr||'';el.querySelector('.tSl').value=t.slope||'';el.querySelectorAll('.tY').forEach(function(i,k){i.value=t.yds[k]||'';});});wireDel();
      box.querySelector('.crRes').innerHTML='<span style="color:var(--fairway);font-weight:700">✓ '+T('Filled from GolfCourseAPI — now check every number against the scorecard photo.','Completado desde GolfCourseAPI — ahora revisá cada número contra la foto de la tarjeta.')+'</span>';};
    var doSearch=function(){var q=box.querySelector('#ceQ').value.trim(),rs=box.querySelector('.crRes');if(q.length<3)return;rs.textContent='…';
      api('gcaSearch',{q:q}).then(function(j){if(!j||!j.ok){rs.textContent=j&&j.error==='no-gca-key'?T('GolfCourseAPI key not set in Vercel yet (GOLFCOURSEAPI_KEY).','Falta la clave de GolfCourseAPI en Vercel (GOLFCOURSEAPI_KEY).'):T('Search failed','La búsqueda falló')+(j&&j.status?' ('+j.status+(j.message?': '+j.message:'')+')':'');return;}
@@ -4878,7 +4889,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
      var tw0=box.querySelector('.crTees');tw0.innerHTML='';Object.keys(D.tees).forEach(function(tk){var x=D.tees[tk];tw0.insertAdjacentHTML('beforeend',teeBlock());var e2=tw0.lastElementChild,lp=String(x.label||tk).split('/');
        e2.querySelector('.tKey').value=tk;e2.querySelector('.tEn').value=lp[1]?lp[1].trim():'';e2.querySelector('.tCr').value=x.cr;e2.querySelector('.tSl').value=x.slope;e2.querySelectorAll('.tY').forEach(function(i,k){i.value=x.yds[k];});});wireDel();}
  }
- window.COURSEREQ={open:openRequest,admin:adminPanel,refresh:refreshCourses};
+ window.COURSEREQ={open:openRequest,admin:adminPanel,refresh:refreshCourses,normTees:normTees,nameKey:nameKey};
  function boot(){refreshCourses();addLink();setInterval(addLink,2000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
