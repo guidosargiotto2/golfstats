@@ -3149,10 +3149,10 @@ function dispKind(hi,si,s){var h=R.holes[hi];if(!s||s.lie==='putt')return '';
  return 'app';}   /* every other non-putt shot, short game included */
 function dispSel(hi,si,s){var k=dispKind(hi,si,s);if(!k)return '';var es=window.__LANG==='es'?2:0;
  var codes=k==='tee'?['L','R']:['ok','L','R','S','G','SL','SR','GL','GR'],cur=(s.disp&&codes.indexOf(s.disp)>=0)?s.disp:'';
- return '<select class="dispsel'+(cur==='ok'?' ok':cur?' miss':'')+'" data-disp="'+hi+':'+si+'" title="'+(cur?DISP_LBL[cur][es+1]:(es?'¿Dónde terminó respecto de tu objetivo?':'Where did it finish against your target?'))+'"><option value="">·</option>'+
+ return '<select class="dispsel'+(cur==='ok'?' ok':cur?' miss':'')+'" data-disp="'+hi+':'+si+'" data-kind="'+k+'" title="'+(cur?DISP_LBL[cur][es+1]:(es?'¿Dónde terminó respecto de tu objetivo?':'Where did it finish against your target?'))+'"><option value="">·</option>'+
    codes.map(function(c){return '<option value="'+c+'"'+(c===cur?' selected':'')+'>'+DISP_LBL[c][es]+'\u2003\u2003\u2003'+DISP_LBL[c][es+1]+'</option>';}).join('')+'</select>'+
-   '<input class="dispyd" type="number" inputmode="numeric" min="0" max="150" data-dispyd="'+hi+':'+si+'" value="'+(s.dispYd!=null?Y2U(s.dispYd):'')+'" placeholder="'+distUnit('fw')+'" title="'+(es?'¿Por cuánto? Al costado si fallaste a izquierda o derecha; corto o largo si no (opcional)':'By how much? Offline for a left/right miss; short or long otherwise (optional)')+'" style="'+(dispSide(cur)?'':'display:none')+'">';}
-function dispSide(c){return !!c&&c!=='ok';}   /* any miss can carry a distance: yards offline for a side, yards short/long for S and G */
+   '<input class="dispyd" type="number" inputmode="numeric" min="0" max="150" data-dispyd="'+hi+':'+si+'" value="'+(s.dispYd!=null?Y2U(s.dispYd):'')+'" placeholder="'+distUnit('fw')+'" title="'+(es?'¿Cuánto hacia el costado? (opcional)':'How far offline? (optional)')+'" style="'+(k==='tee'&&dispSide(cur)?'':'display:none')+'">';}
+function dispSide(c){return !!c&&c!=='ok';}   /* yards offline are asked on tee shots only: on every other shot the miss distance is the next shot's distance to the hole */
 function compBtn(hi,si,s){var v=s.comp===true?'y':s.comp===false?'n':'',ES=window.__LANG==='es';
  return '<button type="button" class="compbtn'+(v?' '+v:'')+'" data-comp="'+hi+':'+si+'" title="'+(ES?'¿Cumpliste tu proceso en este tiro? Tocá: sí → no → sin respuesta':'Did you follow your process on this shot? Tap: yes → no → blank')+'">'+(v==='y'?'✓':v==='n'?'✕':'·')+'</button>';}
 function compTot(h){var a=confShots(h).filter(function(s){return s.comp===true||s.comp===false;});if(!a.length)return '';return a.filter(function(s){return s.comp;}).length+'/'+a.length;}
@@ -3335,7 +3335,7 @@ function wire(){
  wireArrows();
  document.querySelectorAll('#lgBody select.dispsel').forEach(function(el){el.addEventListener('change',function(){var a=el.getAttribute('data-disp').split(':'),sh=R.holes[+a[0]].shots[+a[1]];if(!sh)return;
    if(el.value)sh.disp=el.value;else delete sh.disp;el.className='dispsel'+(el.value==='ok'?' ok':el.value?' miss':'');
-   var yi=el.parentNode.querySelector('input.dispyd');if(yi){if(dispSide(el.value)){yi.style.display='';if(!el._kb)yi.focus();}else{yi.style.display='none';yi.value='';delete sh.dispYd;}}save();});});
+   var yi=el.parentNode.querySelector('input.dispyd');if(yi){if(el.getAttribute('data-kind')==='tee'&&dispSide(el.value)){yi.style.display='';if(!el._kb)yi.focus();}else{yi.style.display='none';yi.value='';delete sh.dispYd;}}save();});});
  document.querySelectorAll('#lgBody input.dispyd').forEach(function(el){el.addEventListener('change',function(){var a=el.getAttribute('data-dispyd').split(':'),sh=R.holes[+a[0]].shots[+a[1]];if(!sh)return;
    var v=parseFloat(el.value);if(isFinite(v)&&v>=0){sh.dispYd=U2Y(Math.min(150,Math.round(v)));}else{delete sh.dispYd;el.value='';}save();});
    });
@@ -3518,7 +3518,7 @@ function renderProf(){
     <label>${window.__LANG==='es'?'Registrar hacia dónde fallaste':'Record where you missed'}<select id="pf_disp">
       <option value="off" ${PROF.trackDisp?'':'selected'}>${window.__LANG==='es'?'No':'Off'}</option>
       <option value="on" ${PROF.trackDisp?'selected':''}>${window.__LANG==='es'?'Sí — una celda por tiro':'On — one cell per shot'}</option></select></label>
-    <div class="hisub">${window.__LANG==='es'?'Salida en par 4 y 5: solo si no quedó en el fairway, izquierda (I) o derecha (D). Todos los demás tiros salvo putts: corto/largo e izquierda/derecha — CI, CD, LI, LD — o ✓ si quedó en el objetivo. En cualquier fallo un casillero permite agregar por cuánto: al costado si fue izquierda/derecha (I 15), corto o largo si no (C 8). Los tiros de juego corto también tienen la celda. Opcional en cada tiro.':'Tee shots on par 4s and 5s: only when you missed the fairway, left (L) or right (R). Every other shot except putts: short/long and left/right — SL, SR, LL, LR — or ✓ when it finished on target. On any miss a small box lets you add by how much: yards offline for left/right (L 15), yards short or long otherwise (S 8). Short-game shots have the cell too. Optional on each shot.'}</div>
+    <div class="hisub">${window.__LANG==='es'?'Salida en par 4 y 5: solo si no quedó en el fairway, izquierda (I) o derecha (D). Todos los demás tiros salvo putts: corto/largo e izquierda/derecha — CI, CD, LI, LD — o ✓ si quedó en el objetivo. Si fallaste el fairway, un casillero permite agregar cuánto al costado (I 15). En los demás tiros el tamaño del fallo ya se conoce: es la distancia de tu próximo tiro. Opcional en cada tiro.':'Tee shots on par 4s and 5s: only when you missed the fairway, left (L) or right (R). Every other shot except putts: short/long and left/right — SL, SR, LL, LR — or ✓ when it finished on target. On a missed fairway a small box lets you add how far offline (L 15). On every other shot the size of the miss is already known: it is the distance of your next shot. Optional on each shot.'}</div>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>${window.__LANG==='es'?'Cumplimiento del proceso':'Process compliance'}</span><em class="estchip">+2 min</em></div>
