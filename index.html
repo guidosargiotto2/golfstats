@@ -807,6 +807,14 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 @keyframes dpGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 @media (max-width:560px){#panel_dp{padding:4px 12px 12px}.dpGrid{grid-template-columns:repeat(3,minmax(64px,1fr));grid-auto-rows:66px}.dpGridWrap{display:flex}}
 .lgscope td.clubc{text-align:center;}
+.lvGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:6px}
+.lvCard{position:relative;text-align:left;display:flex;flex-direction:column;gap:4px;padding:14px 14px 12px;border-radius:14px;border:1.5px solid var(--line);background:#fffdf7;cursor:pointer;font:inherit;color:var(--ink);transition:transform .15s,border-color .15s,box-shadow .15s}
+.lvCard:hover{transform:translateY(-2px);border-color:var(--fairway)}
+.lvCard.on{border-color:var(--pine);background:#fff;box-shadow:inset 0 0 0 1.5px var(--pine)}
+.lvCard b{font-family:var(--serif,Georgia,serif);font-size:19px;font-weight:600;color:var(--pine)}
+.lvCard span{font-size:12.5px;line-height:1.4;color:var(--ink-soft);text-transform:none;letter-spacing:0;font-weight:400}
+.lvCard small{font-family:var(--cond);font-weight:700;font-size:12px;color:var(--pine);margin-top:2px}
+.lvCard em{position:absolute;top:-9px;right:10px;font-style:normal;font-family:var(--cond);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--sand-deep,#b89a52);color:#fff;padding:2px 8px;border-radius:999px}
 .estbig{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:4px 0 6px;}
 .estbig b{font-family:var(--serif,Georgia,serif);font-size:30px;font-weight:600;color:var(--pine,#1c3d2e);letter-spacing:-.01em;}
 .estbig span{font-size:13px;color:var(--ink-soft,#666);}
@@ -933,6 +941,14 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #obWiz input:focus,#obWiz select:focus{border-color:#1f7a4d;box-shadow:0 0 0 4px rgba(31,122,77,.12)}\
 #obWiz .obChips{display:flex;flex-wrap:wrap;gap:8px}\
 #obWiz .obChip{font:600 14px "Trebuchet MS",sans-serif;color:#0f3a2c;background:#f6f2e7;border:1.5px solid #e2ddcc;border-radius:999px;padding:10px 15px;cursor:pointer;transition:all .18s;user-select:none}\
+.obLv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}\
+.obLv .obLvC{position:relative;display:flex;flex-direction:column;gap:3px;border-radius:14px;padding:14px 14px 12px;text-align:left}\
+.obLvC b{font:600 18px Georgia,serif;color:#0f3a2c}\
+.obLvC i{font-style:normal;font-weight:400;font-size:12.5px;line-height:1.4;color:#5c6357}\
+.obLvC small{font-size:12px;font-weight:700;color:#1f7a4d;margin-top:2px}\
+.obLvC em{position:absolute;top:-9px;right:10px;font-style:normal;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;background:#b89a52;color:#fff;padding:2px 8px;border-radius:999px}\
+.obLvC.on b,.obLvC.on i,.obLvC.on small{color:#fff}\
+@media (max-width:520px){.obLv{grid-template-columns:1fr}}\
 #obWiz .obChip:hover{border-color:#b89a52;transform:translateY(-1px)}\
 #obWiz .obChip.on{background:#0f3a2c;color:#fff;border-color:#0f3a2c;box-shadow:0 6px 16px rgba(15,58,44,.25)}\
 #obWiz .obChip.on::before{content:"\\2713  "}\
@@ -972,6 +988,10 @@ svg.tgSvg{width:100%;height:auto;display:block;}
       '<input type="text" data-f="othersText" style="margin-top:10px" maxlength="120" value="'+esc(A.othersText)+'" placeholder="'+T('Any others? Separate with commas','¿Otras? Separadas por comas')+'"><div class="obHint">'+T('Your course is not in the list? ','¿Tu cancha no está en la lista? ')+'<a href="#" data-obfind style="color:#1f7a4d;font-weight:700">'+T('Search all courses','Buscar entre todas las canchas')+'</a></div>';}},
   {id:'index',ok:function(){return A.hi===''||A.hi==null||!isNaN(parseHI(A.hi));},h:function(){return '<h2>'+T('What is your current index?','¿Cuál es tu hándicap index actual?')+'</h2><p class="obSub">'+T('Your official handicap index. Golfimbul uses it for net par and strokes gained against your level.','Tu hándicap index oficial. Golfimbul lo usa para el par neto y los strokes gained contra tu nivel.')+'</p><label class="obL">'+T('Handicap index','Hándicap index')+'</label><div style="display:flex;gap:8px"><button type="button" class="obPlus" data-plus title="plus handicap">'+(String(A.hi||'').trim().charAt(0)==='+'?'+':'±')+'</button><input type="text" inputmode="decimal" style="flex:1" data-f="hi" value="'+esc(A.hi)+'" placeholder="'+T('e.g. 12.4','ej. 12,4')+'"></div><div class="obHint">'+T('Plus handicap? Tap ± so it reads +2.6.','¿Hándicap plus? Tocá ± para que quede +2,6.')+'</div><div class="obHint">'+T('No index yet? Leave it empty — it will be calculated from your rounds.','¿Todavía no tenés? Dejalo vacío — se calcula con tus vueltas.')+'</div>';}},
   {id:'dist',ok:function(){var d=+A.drive,n=+A.nine;return d>=100&&d<=400&&n>=60&&n<=220;},h:function(){return '<h2>'+T('How far do you hit it?','¿Cuánto le pegás?')+'</h2><p class="obSub">'+T('Your typical shot on a normal day, in yards — not your best one. This seeds your shot predictions until your own rounds take over.','Tu tiro típico en un día normal, en yardas — no el mejor. Con esto arrancan las predicciones hasta que tus vueltas tomen el control.')+'</p><div class="obRow"><div><label class="obL">'+T('Driver (total)','Driver (total)')+'</label><input type="number" inputmode="numeric" data-f="drive" min="100" max="400" value="'+esc(A.drive)+'" placeholder="230"></div><div><label class="obL">'+T('9 iron','Hierro 9')+'</label><input type="number" inputmode="numeric" data-f="nine" min="60" max="220" value="'+esc(A.nine)+'" placeholder="135"></div></div><div class="obHint">'+T('Be realistic. Over-estimating is the most common mistake — and it makes every prediction too long.','Sé realista. Sobreestimar es el error más común — y hace que todas las predicciones queden largas.')+'</div>';}},
+  {id:'level',ok:function(){return !!A.level;},h:function(){var LV=window.LOGLVL,rec=LV?LV.recommend({hi:parseHI(A.hi),lessons:A.lessons,golfHrs:A.golfHrs}):'ess';if(!A.level)A.level=rec;var hi=parseHI(A.hi),es=lang==='es'?1:0;
+    return '<h2>'+T('How much detail do you want to log?','¿Cuánto detalle querés cargar?')+'</h2><p class="obSub">'+(isNaN(hi)?T('Without a handicap index we start you on the lightest level.','Sin hándicap index empezamos por el nivel más liviano.'):T('For your index we suggest <b>','Para tu index sugerimos <b>')+(LV?LV.L[rec].n[es]:'')+'</b>. '+T('More detail gives more answers but takes longer after each round.','Más detalle da más respuestas, pero lleva más tiempo después de cada vuelta.'))+'</p>'+
+      '<div class="obLv">'+(LV?LV.order.map(function(k){var l=LV.L[k],m=LV.mins(k);return '<span class="obChip obLvC'+(A.level===k?' on':'')+'" data-lv="'+k+'">'+(k===rec?'<em>'+T('Suggested','Sugerido')+'</em>':'')+'<b>'+l.n[es]+'</b><i>'+l.d[es]+'</i><small>≈ '+(m%1?m.toFixed(1):m)+' min '+T('per round','por vuelta')+'</small></span>';}).join(''):'')+'</div>'+
+      '<p class="obSub" style="margin-top:12px;font-size:13px">'+T('Strokes gained, shot prediction and compliance come with every level. You can change this any time in Profile → Round logging.','Strokes gained, predicción de tiros y cumplimiento vienen en todos los niveles. Podés cambiarlo cuando quieras en Perfil → Carga de vueltas.')+'</p>';}},
   {id:'done',ok:function(){return true;},h:function(){var nm=(A.name||'').trim().split(' ')[0];return '<div class="obDone"><div class="obBall"></div><h2>'+T('You\'re set, ','Listo, ')+esc(nm)+'.</h2><p class="obSub">'+T('Your profile is ready. One honest note: the analysis grows with your rounds. Round 1 gives you the scorecard and strokes gained; 5 rounds, your first limits; 12 rounds, limits you can trust. Next, a short tour.','Tu perfil está listo. Una nota honesta: el análisis crece con tus vueltas. La vuelta 1 te da la tarjeta y strokes gained; 5 vueltas, tus primeros límites; 12 vueltas, límites confiables. Ahora, un recorrido corto.')+'</p></div>';}}
  ];
  function parseHI(v){v=String(v||'').trim().replace(',','.');if(!v)return NaN;var plus=/^\+/.test(v);var n=parseFloat(v.replace('+',''));if(isNaN(n)||n<0||n>54)return NaN;return plus?-n:n;}
@@ -985,7 +1005,8 @@ svg.tgSvg{width:100%;height:auto;display:block;}
    wire();var f=el.querySelector('textarea,input[type=text],input[type=number]');if(f&&s.id!=='course')setTimeout(function(){f.focus();},60);
  }
  function refreshNext(){var b=el.querySelector('.obNext');if(b)b.disabled=!STEPS[step].ok();}
- function wire(){
+ function wireLv(){el.querySelectorAll('[data-lv]').forEach(function(c){c.onclick=function(){A.level=c.getAttribute('data-lv');el.querySelectorAll('[data-lv]').forEach(function(x){x.classList.toggle('on',x===c);});refreshNext();};});}
+ function wire(){wireLv();
    el.querySelectorAll('[data-lang]').forEach(function(b){b.onclick=function(){lang=b.getAttribute('data-lang');render();};});
    el.querySelectorAll('[data-f]').forEach(function(i){var k=i.getAttribute('data-f');
      i.addEventListener('input',function(){A[k]=i.value;refreshNext();var c=el.querySelector('[data-cnt]');if(c&&k==='whyText')c.textContent=(i.value.trim().length<15)?T('A sentence or two is enough.','Con una o dos frases alcanza.'):'✓';});
@@ -1005,7 +1026,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
    var bk=el.querySelector('.obBack');if(bk)bk.onclick=function(){step=Math.max(0,step-1);render();};
    var sk=el.querySelector('.obSkip');if(sk)sk.onclick=function(){step++;render();};
  }
- function next(){var s=STEPS[step];if(!s.ok())return;if(s.id==='done'){finish(true);return;}if(s.id==='dist')apply();step++;render();}
+ function next(){var s=STEPS[step];if(!s.ok())return;if(s.id==='done'){finish(true);return;}if(s.id==='dist')apply();if(s.id==='level'&&window.LOGLVL){try{window.LOGLVL.apply(A.level);}catch(e){}}step++;render();}
  function apply(){
    var p=P();p.name=(A.name||'').trim()||p.name;p.lang=lang;window.__LANG=lang;
    if(A.birthday)p.birthday=A.birthday;if(A.gender)p.gender=A.gender;if(A.hand)p.hand=A.hand;
@@ -2817,7 +2838,7 @@ function saveYover(){localStorage.setItem(YKEY,JSON.stringify(YOVER));}
 function stdYd(course,tee,i){const k=course+'|'+tee+'#'+i;return YOVER[k]!=null?YOVER[k]:COURSES[course].tees[tee].yds[i];}
 /* ===== USER PROFILE ===== */
 const PROFK=LU+'scard-prof-v1';
-const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeClub:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true,atgYd:50,trackClubs:false,trackComp:false,trackDisp:false,trackRead:false,clubShort:{},teeSet:'all',hideRed:false,askedDrive:false,driveFromData:false,tourDone:false};
+const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeClub:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true,atgYd:50,trackClubs:false,trackComp:false,trackDisp:false,dispMode:'all',trackRead:false,logLevel:'',clubShort:{},teeSet:'all',hideRed:false,askedDrive:false,driveFromData:false,tourDone:false};
 function nineIron(){var x=parseInt(PROF.nineIron,10);if(isNaN(x))x=140;return Math.min(200,Math.max(80,x));}
 function bogeyXyd(){var x=parseInt(PROF.bogeyX,10);if(isNaN(x))x=nineIron();return Math.min(150,Math.max(50,x));}
 /* average drive in yards — where the predicted second shot is played from */
@@ -2891,11 +2912,30 @@ function roundRecord(){
    ott:r2(sg.ott),app:r2(sg.app),atg:r2(sg.atg),putt:r2(sg.putt),sgtot:r2(sg.tot),bir:bir,bog:bog,dbl:dbl,
    courseCode:R.course,tee:R.tee,notes:R.notes||'',lesson:R.lesson||'',holes:JSON.parse(JSON.stringify(R.holes))};
 }
+/* ===== detail levels: one recommendation instead of five switches. Strokes gained, prediction and compliance are in every level ===== */
+var LOGLVL={order:['ess','ply','plus','ana'],
+ L:{ess:{n:['Essentials','Esencial'],d:['Lie and distance on every shot, plus compliance.','Lie y distancia en cada tiro, más cumplimiento.'],clubs:false,disp:'off',read:false},
+    ply:{n:['Player','Jugador'],d:['Adds the club, and which side you miss your tee shots.','Suma el palo, y hacia qué lado fallás las salidas.'],clubs:true,disp:'tee',read:false},
+    plus:{n:['Player+','Jugador+'],d:['Adds where every approach and short shot finishes against your target.','Suma dónde termina cada approach y tiro corto respecto de tu objetivo.'],clubs:true,disp:'app',read:false},
+    ana:{n:['Analyst','Analista'],d:['Adds missed putts and the read of each putt: slope and break.','Suma los putts errados y la lectura de cada putt: pendiente y caída.'],clubs:true,disp:'all',read:true}},
+ /* handicap sets the level; a coach moves it up one, very little golf time moves it down one */
+ recommend:function(o){o=o||{};var h=parseFloat(o.hi),i=(isNaN(h)?0:h>=20?0:h>=10?1:h>=5?2:3);
+   if(!isNaN(h)){if(o.lessons==='month'||o.lessons==='week')i++;if(o.golfHrs==='0-4')i--;}
+   return this.order[Math.max(0,Math.min(3,i))];},
+ mine:function(){var hi=null;try{hi=effHI();}catch(e){}var a=PROF.about||{};return this.recommend({hi:(hi==null||hi==='')?NaN:hi,lessons:a.lessons,golfHrs:a.golfHrs});},
+ current:function(){var k=null,me=this;this.order.forEach(function(x){var l=me.L[x];if(PROF.predict!==false&&!!PROF.trackComp&&!!PROF.trackClubs===l.clubs&&!!PROF.trackRead===l.read&&(l.disp==='off'?!PROF.trackDisp:(!!PROF.trackDisp&&(PROF.dispMode||'all')===l.disp)))k=x;});return k;},
+ apply:function(k){var l=this.L[k];if(!l)return;PROF.predict=true;PROF.trackComp=true;PROF.trackClubs=l.clubs;PROF.trackRead=l.read;PROF.trackDisp=l.disp!=='off';if(l.disp!=='off')PROF.dispMode=l.disp;PROF.logLevel=k;saveProf();},
+ mins:function(k){var l=this.L[k];return 5+2+(l.clubs?1:0)+(l.disp==='tee'?0.5:l.disp==='app'?1.2:l.disp==='all'?1.5:0)+(l.read?1:0);},
+ html:function(){var es=window.__LANG==='es'?1:0,rec=this.mine(),cur=this.current(),me=this;
+   return '<div class="lvGrid">'+this.order.map(function(k){var l=me.L[k],m=me.mins(k);return '<button type="button" class="lvCard'+(cur===k?' on':'')+'" data-lvl="'+k+'">'+(rec===k?'<em>'+(es?'Recomendado':'Recommended')+'</em>':'')+'<b>'+l.n[es]+'</b><span>'+l.d[es]+'</span><small>≈ '+(m%1?m.toFixed(1):m)+' min</small></button>';}).join('')+'</div>'+
+     (cur?'':'<p class="hisub" style="margin-top:8px">'+(es?'Ahora tenés una combinación propia. Tocá un nivel para volver a uno estándar.':'You are on a custom mix right now. Tap a level to go back to a standard one.')+'</p>');}};
+window.LOGLVL=LOGLVL;
 /* rough time to log 18 holes with the current logging options (estimates, not measurements) */
-function logEstHTML(){var es=window.__LANG==='es',m=5+(PROF.predict===false?3:0)+(PROF.trackClubs?1:0)+(PROF.trackDisp?1.5:0)+(PROF.trackRead?1:0)+(PROF.trackComp?2:0);
- var parts=[(es?'base 5':'base 5')];if(PROF.predict===false)parts.push(es?'sin predicción +3':'no prediction +3');if(PROF.trackClubs)parts.push(es?'palo +1':'club +1');if(PROF.trackDisp)parts.push(es?'dispersión +1.5':'dispersion +1.5');if(PROF.trackRead)parts.push(es?'lectura +1':'read +1');if(PROF.trackComp)parts.push(es?'cumplimiento +2':'compliance +2');
+function logEstHTML(){var es=window.__LANG==='es',m=5+(PROF.predict===false?3:0)+(PROF.trackClubs?1:0)+(PROF.trackDisp?((PROF.dispMode==='tee')?0.5:(PROF.dispMode==='app')?1.2:1.5):0)+(PROF.trackRead?1:0)+(PROF.trackComp?2:0);
+ var parts=[(es?'base 5':'base 5')];if(PROF.predict===false)parts.push(es?'sin predicción +3':'no prediction +3');if(PROF.trackClubs)parts.push(es?'palo +1':'club +1');if(PROF.trackDisp){var dm=(PROF.dispMode==='tee')?'0.5':(PROF.dispMode==='app')?'1.2':'1.5';parts.push((es?'dispersión +':'dispersion +')+dm);}if(PROF.trackRead)parts.push(es?'lectura +1':'read +1');if(PROF.trackComp)parts.push(es?'cumplimiento +2':'compliance +2');
  return '<div class="estbig"><b>≈ '+(m%1?m.toFixed(1):m)+' min</b><span>'+parts.join(' · ')+'</span></div>';}
-document.addEventListener('change',function(e){var t=e.target;if(t&&/^pf_(predict|clubs|disp|read|comp)$/.test(t.id||'')){var el=document.getElementById('pf_logest');if(el)el.innerHTML=logEstHTML();}});
+document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('#pf_level [data-lvl]'):null;if(!b)return;LOGLVL.apply(b.getAttribute('data-lvl'));try{renderProf();}catch(_){}try{render();}catch(_){}try{if(window.PGRP&&window.PGRP.refresh)window.PGRP.refresh();}catch(_){}});
+document.addEventListener('change',function(e){var t=e.target;if(t&&/^pf_(predict|clubs|disp|read|comp)$/.test(t.id||'')){var el=document.getElementById('pf_logest');if(el)el.innerHTML=logEstHTML();var lv=document.getElementById('pf_level');if(lv)lv.innerHTML=LOGLVL.html();}});
 function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage.getItem(PROFK))||{})}catch(e){return Object.assign({},PROF_DEF)}}
 let PROF=loadProf();
 /* ===== profile photo: kept on the device and on the server (gs_profiles.avatar), shown to friends ===== */
@@ -3382,10 +3422,10 @@ function clubSel(hi,si,s){
    stored codes are language-neutral: ok, L, R (side), S (short), G (long), SL, SR, GL, GR */
 var DISP_LBL={ok:['✓','On target','✓','En el objetivo'],L:['L','Left','I','Izquierda'],R:['R','Right','D','Derecha'],S:['S','Short','C','Corto'],G:['LO','Long','L','Largo'],
   SL:['SL','Short left','CI','Corto izquierda'],SR:['SR','Short right','CD','Corto derecha'],GL:['LL','Long left','LI','Largo izquierda'],GR:['LR','Long right','LD','Largo derecha']};
-function dispKind(hi,si,s){var h=R.holes[hi];if(!s)return '';
- if(s.lie==='putt'){var np=h.shots[si+1];return (np&&np.lie==='putt')?'putt':'';}   /* a missed putt: the one that went in has nothing to mark */
+function dispKind(hi,si,s){var h=R.holes[hi],DM=PROF.dispMode||'all';if(!s)return '';
+ if(s.lie==='putt'){if(DM!=='all')return '';var np=h.shots[si+1];return (np&&np.lie==='putt')?'putt':'';}   /* a missed putt: the one that went in has nothing to mark */
  if(si===0&&s.lie==='tee'&&h.par!==3){var n=h.shots[si+1];return (n&&n.lie!=='fw'&&n.lie!=='putt')?'tee':'';}   /* fairway hit = nothing to ask */
- return 'app';}   /* every other non-putt shot, short game included */
+ return DM==='tee'?'':'app';}   /* every other non-putt shot, short game included */
 function dispSel(hi,si,s){var k=dispKind(hi,si,s);if(!k)return '';var es=window.__LANG==='es'?2:0;
  var codes=k==='tee'?['L','R']:k==='putt'?['L','R','S','G','SL','SR','GL','GR']:['ok','L','R','S','G','SL','SR','GL','GR'],cur=(s.disp&&codes.indexOf(s.disp)>=0)?s.disp:'';
  return '<select class="dispsel'+(cur==='ok'?' ok':cur?' miss':'')+'" data-disp="'+hi+':'+si+'" data-kind="'+k+'" title="'+(cur?DISP_LBL[cur][es+1]:(es?'¿Dónde terminó respecto de tu objetivo?':'Where did it finish against your target?'))+'"><option value="">·</option>'+
@@ -3744,6 +3784,11 @@ function renderProf(){
     <label>Your 9-iron carry (yd)<input id="pf_nine" type="number" min="80" max="200" step="5" value="${nineIron()}"></label>
     <label>X — 9-iron-or-less distance (yd, 50–150)<input id="pf_bogeyx" type="number" min="50" max="150" step="5" value="${bogeyXyd()}"></label>
   </div>
+  <div class="hiblock">
+    <div class="hirow"><span>${window.__LANG==='es'?'Nivel de detalle':'Detail level'}</span></div>
+    <div id="pf_level">${LOGLVL.html()}</div>
+    <div class="hisub">${window.__LANG==='es'?'Recomendado según tu hándicap, si tomás clases y cuánto tiempo jugás. Strokes gained, predicción y cumplimiento están en todos los niveles. Es solo un punto de partida: abajo podés cambiar cada opción.':'Recommended from your handicap, whether you take lessons and how much you play. Strokes gained, prediction and compliance are in every level. It is only a starting point: you can change each option below.'}</div>
+  </div>
   <div class="hiblock logest">
     <div class="hirow"><span>${window.__LANG==='es'?'Tiempo estimado por vuelta':'Estimated time per round'}</span></div>
     <div id="pf_logest">${logEstHTML()}</div>
@@ -3767,7 +3812,9 @@ function renderProf(){
     <div class="hirow"><span>${window.__LANG==='es'?'Dispersión':'Dispersion'}</span><em class="estchip">+1.5 min</em></div>
     <label>${window.__LANG==='es'?'Registrar hacia dónde fallaste':'Record where you missed'}<select id="pf_disp">
       <option value="off" ${PROF.trackDisp?'':'selected'}>${window.__LANG==='es'?'No':'Off'}</option>
-      <option value="on" ${PROF.trackDisp?'selected':''}>${window.__LANG==='es'?'Sí — una celda por tiro':'On — one cell per shot'}</option></select></label>
+      <option value="tee" ${PROF.trackDisp&&PROF.dispMode==='tee'?'selected':''}>${window.__LANG==='es'?'Solo salidas — izquierda o derecha al fallar el fairway':'Tee shots only — left or right when you miss the fairway'}</option>
+      <option value="app" ${PROF.trackDisp&&PROF.dispMode==='app'?'selected':''}>${window.__LANG==='es'?'Salidas y approaches (sin putts)':'Tee shots and approaches (no putts)'}</option>
+      <option value="all" ${PROF.trackDisp&&(PROF.dispMode||'all')==='all'?'selected':''}>${window.__LANG==='es'?'Todo — también los putts errados':'Everything — missed putts too'}</option></select></label>
     <div class="hisub">${window.__LANG==='es'?'Salida en par 4 y 5: solo si no quedó en el fairway, izquierda (I) o derecha (D). Todos los demás tiros salvo putts: corto/largo e izquierda/derecha — CI, CD, LI, LD — o ✓ si quedó en el objetivo. La dispersión se mide contra tu objetivo, no contra la bandera: si apuntás 20 yardas a la derecha del hoyo y la dejás ahí, es ✓. En cualquier fallo un casillero permite agregar a cuánto de tu objetivo quedaste (I 15). Un putt errado también tiene la celda (corto o largo, izquierda o derecha). Opcional en cada tiro.':'Tee shots on par 4s and 5s: only when you missed the fairway, left (L) or right (R). Every other shot except putts: short/long and left/right — SL, SR, LL, LR — or ✓ when it finished on target. Dispersion is measured against your target, not the flag: aim 20 yards right of the pin and hit it there, and that is ✓. On any miss a small box lets you add how far from the target you finished (L 15). A missed putt gets the cell too (short or long, left or right). Optional on each shot.'}</div>
   </div>
   <div class="hiblock">
@@ -3849,7 +3896,7 @@ function renderProf(){
  document.getElementById('pf_predict').addEventListener('change',e=>{PROF.predict=(e.target.value!=='off');saveProf();try{render();}catch(_){}} );
  
  var prd=document.getElementById('pf_read');if(prd)prd.addEventListener('change',e=>{PROF.trackRead=(e.target.value==='on');saveProf();try{render();}catch(_){}});
- var pds=document.getElementById('pf_disp');if(pds)pds.addEventListener('change',e=>{PROF.trackDisp=(e.target.value==='on');saveProf();try{render();}catch(_){}});
+ var pds=document.getElementById('pf_disp');if(pds)pds.addEventListener('change',e=>{PROF.trackDisp=(e.target.value!=='off');if(PROF.trackDisp)PROF.dispMode=e.target.value;saveProf();try{render();}catch(_){}});
  var pcm=document.getElementById('pf_comp');if(pcm)pcm.addEventListener('change',e=>{PROF.trackComp=(e.target.value==='on');saveProf();try{render();}catch(_){}});
  var pcl=document.getElementById('pf_clubs');if(pcl)pcl.addEventListener('change',e=>{PROF.trackClubs=(e.target.value==='on');saveProf();try{render();}catch(_){}});
  var pts=document.getElementById('pf_teeset');if(pts)pts.addEventListener('change',e=>{PROF.teeSet=e.target.value;saveProf();try{renderProf();}catch(_){}try{render();renderSel();}catch(_){}});
@@ -5177,7 +5224,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
   {k:'course',t:['Course & tees','Cancha y tees'],ids:['pf_homeclub','pf_course','pf_favbtn','pf_tee','pf_teeset','pf_hidered']},
   {k:'game',t:['My game & handicap','Mi juego y hándicap'],ids:['pf_drive','pf_himode','pf_impbtn','pf_imphbtn']},
   {k:'bag',t:['My bag','Mi bolsa'],link:'bag',sub:['Distance and dispersion for every club · Garmin import','Distancia y dispersión de cada palo · importación de Garmin']},
-  {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_logest','pf_predict','pf_clubs','pf_disp','pf_read','pf_comp']},
+  {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_level','pf_logest','pf_predict','pf_clubs','pf_disp','pf_read','pf_comp']},
   {k:'analysis',t:['Scoring & analysis','Score y análisis'],ids:['pf_netpar','pf_sgbase','pf_atg']},
   {k:'t5',t:["Tiger's 5",'Tiger 5'],ids:['pf_t5mode','pf_t5x','pf_nine','pf_bogeyx']},
   {k:'app',t:['App preferences','Preferencias de la app'],ids:['pf_units','pf_lang']},
