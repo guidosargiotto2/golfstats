@@ -3097,6 +3097,11 @@ var CLUBDEF=[['Dr','Driver',1],['3W','3 Wood',.92],['5W','5 Wood',.86],['Hy','Hy
 function clubCode(name){var m=String(name||'');if(/^Driver/i.test(m))return 'Dr';var w=m.match(/^(\d)\s*Wood/i);if(w)return w[1]+'W';var hy=m.match(/^(\d)\s*Hybrid/i);if(hy)return hy[1]+'H';var ir=m.match(/^(\d)\s*Iron/i);if(ir)return ir[1]+'i';
  if(/Pitching/i.test(m))return 'PW';if(/Gap/i.test(m))return 'GW';if(/Sand/i.test(m))return 'SW';if(/Lob/i.test(m))return 'LW';if(/Putter/i.test(m))return 'Pt';return m.slice(0,3);}
 function clubLbl(c){var m=PROF.clubShort||{};if(m[c])return m[c];if(c==='Dr')return 'D';if(c==='Pt')return 'P';var i=String(c).match(/^(\d)i$/);return i?i[1]:c;}
+/* short-name editor, shown in My bag */
+window.CLUBSHORT={html:function(){var es=window.__LANG==='es',NM={Dr:'Driver',Pt:'Putter',PW:'Pitching W',GW:'Gap W',SW:'Sand W',LW:'Lob W'};
+  return '<div class="frsec"><h3>'+(es?'Abreviatura de cada palo':'Short name for each club')+'</h3><p class="frsub">'+(es?'Así aparece cada palo al cargar una vuelta: una o dos letras o un número (D, 3W, 2H, 7, 54, 60).':'How each club appears when you log a round: a letter or two, or a number (D, 3W, 2H, 7, 54, 60).')+'</p><div class="clubshorts">'+
+   myClubs().map(function(x){var n=NM[x.c]||x.c.replace(/^(\d)i$/,es?'Hierro $1':'$1 Iron').replace(/^(\d)W$/,es?'Madera $1':'$1 Wood').replace(/^(\d)H$/,es?'Híbrido $1':'$1 Hybrid');return '<label><span>'+n+'</span><input class="pf_cs" data-c="'+x.c+'" maxlength="3" value="'+clubLbl(x.c)+'"></label>';}).join('')+'</div></div>';},
+ wire:function(root){(root||document).querySelectorAll('.pf_cs').forEach(function(el){el.addEventListener('change',function(){var v=el.value.trim().slice(0,3),c=el.getAttribute('data-c');PROF.clubShort=PROF.clubShort||{};if(v)PROF.clubShort[c]=v;else delete PROF.clubShort[c];el.value=clubLbl(c);saveProf();});});}};
 function myClubs(){ /* [{c:code,d:typical total yards}] longest first */
  try{var u=localStorage.getItem('app-user')||'',B=window.gsBag?window.gsBag():((typeof BAG!=='undefined'&&BAG[u])?BAG[u]:null);
    if(B&&B.clubs&&B.clubs.length){var L=B.clubs.map(function(k){var v=k.d.map(function(x){return x[0];}).sort(function(a,b){return a-b;});return {c:clubCode(k.name),d:v.length?v[Math.floor(v.length/2)]:0};}).filter(function(o){return o.d>0;});
@@ -3445,9 +3450,7 @@ function renderProf(){
     <label>${window.__LANG==='es'?'Registrar el palo de cada tiro':'Track the club for every shot'}<select id="pf_clubs">
       <option value="off" ${PROF.trackClubs?'':'selected'}>${window.__LANG==='es'?'No':'Off'}</option>
       <option value="on" ${PROF.trackClubs?'selected':''}>${window.__LANG==='es'?'Sí — obligatorio en cada tiro (se sugiere solo)':'On — required on every shot (pre-filled for you)'}</option></select></label>
-    <div class="hisub">${window.__LANG==='es'?'El palo se predice con tu bolsa y tus vueltas anteriores; solo lo corregís si cambia. Con más vueltas, Mi bolsa se arma con tus propios tiros.':'The club is predicted from your bag and past rounds; you only change it when it differs. Over time, My bag builds itself from your own shots.'}</div>
-    <div class="hisub" style="margin-top:10px"><b>${window.__LANG==='es'?'Abreviatura de cada palo':'Short name for each club'}</b> — ${window.__LANG==='es'?'una o dos letras o un número (D, 3W, 2H, 7, 54, 60).':'a letter or two, or a number (D, 3W, 2H, 7, 54, 60).'}</div>
-    <div class="clubshorts">${myClubs().map(x=>`<label><span>${({Dr:'Driver',Pt:'Putter',PW:'Pitching W',GW:'Gap W',SW:'Sand W',LW:'Lob W'})[x.c]||x.c.replace(/^(\d)i$/,'$1 Iron').replace(/^(\d)W$/,'$1 Wood').replace(/^(\d)H$/,'$1 Hybrid')}</span><input class="pf_cs" data-c="${x.c}" maxlength="3" value="${clubLbl(x.c)}"></label>`).join('')}</div>
+    <div class="hisub">${window.__LANG==='es'?'El palo se predice con tu bolsa y tus vueltas anteriores; solo lo corregís si cambia. Con más vueltas, Mi bolsa se arma con tus propios tiros. La abreviatura de cada palo se define en Mi bolsa.':'The club is predicted from your bag and past rounds; you only change it when it differs. Over time, My bag builds itself from your own shots. The short name of each club is set in My bag.'}</div>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>${window.__LANG==='es'?'Dispersión':'Dispersion'}</span></div>
@@ -3526,7 +3529,7 @@ function renderProf(){
  document.getElementById('pf_nine').addEventListener('change',e=>{var n=Math.min(200,Math.max(80,parseInt(e.target.value||'140',10)||140));PROF.nineIron=n;if(!PROF.bogeyX||PROF.bogeyX==='')PROF.bogeyX=Math.min(150,n);saveProf();renderProf();});
  document.getElementById('pf_bogeyx').addEventListener('change',e=>{PROF.bogeyX=Math.min(150,Math.max(50,parseInt(e.target.value||'140',10)||140));saveProf();renderProf();});
  document.getElementById('pf_predict').addEventListener('change',e=>{PROF.predict=(e.target.value!=='off');saveProf();try{render();}catch(_){}} );
- document.querySelectorAll('.pf_cs').forEach(function(el){el.addEventListener('change',function(){var v=el.value.trim().slice(0,3),c=el.getAttribute('data-c');PROF.clubShort=PROF.clubShort||{};if(v)PROF.clubShort[c]=v;else delete PROF.clubShort[c];el.value=clubLbl(c);saveProf();});});
+ 
  var pds=document.getElementById('pf_disp');if(pds)pds.addEventListener('change',e=>{PROF.trackDisp=(e.target.value==='on');saveProf();try{render();}catch(_){}});
  var pcm=document.getElementById('pf_comp');if(pcm)pcm.addEventListener('change',e=>{PROF.trackComp=(e.target.value==='on');saveProf();try{render();}catch(_){}});
  var pcl=document.getElementById('pf_clubs');if(pcl)pcl.addEventListener('change',e=>{PROF.trackClubs=(e.target.value==='on');saveProf();try{render();}catch(_){}});
@@ -4509,7 +4512,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
    return h;}
  function render(){
    var el=document.getElementById('bagBody');if(!el)return;var d=data();
-   if(!d){el.innerHTML='<div id="gimBox"></div>';if(window.GIMPORT)window.GIMPORT.paint(document.getElementById('gimBox'));return;}
+   if(!d){el.innerHTML='<div id="gimBox"></div>'+(window.CLUBSHORT?window.CLUBSHORT.html():'');if(window.GIMPORT)window.GIMPORT.paint(document.getElementById('gimBox'));if(window.CLUBSHORT)window.CLUBSHORT.wire(el);return;}
    var L=clubs();if(!SEL||!L.some(function(o){return o.c.name===SEL;}))SEL=(L.find(function(o){return /7 Iron/.test(o.c.name);})||L[0]||{c:{}}).c.name;
    var tot=L.reduce(function(a,o){return a+o.n;},0);
    el.innerHTML='<div id="gimBox"></div><div class="controls" id="bagPeriod" style="margin:0 0 12px">'+[['all',T('All','Todo')],['2y','2025–26'],['1y','2026']].map(function(b){return '<button data-p="'+b[0]+'"'+(PERIOD===b[0]?' class="on"':'')+'>'+b[1]+'</button>';}).join('')+'</div>'+
@@ -4517,6 +4520,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
      '<div class="frsec" id="bagDispBox">'+disp(L.find(function(o){return o.c.name===SEL;}))+'</div>'+
      '<div class="frsec"><h3>'+T('Gapping','Distancias entre palos')+'</h3><div class="frscroll">'+table(L)+'</div><p class="frsub" style="margin-top:8px">⚠ '+T('marks clubs less than 7 yards apart — they do the same job.','marca palos a menos de 7 yardas — hacen el mismo trabajo.')+' · '+T('Source','Fuente')+': '+d.source+' · '+d.updated+'</p></div>';
    if(window.GIMPORT){window.GIMPORT.paint(document.getElementById('gimBox'));var t5=window.GIMPORT.t5HTML(d);if(t5)el.insertAdjacentHTML('beforeend',t5);}
+   if(window.CLUBSHORT){el.insertAdjacentHTML('beforeend',window.CLUBSHORT.html());window.CLUBSHORT.wire(el);}
    el.querySelectorAll('#bagPeriod button').forEach(function(b){b.onclick=function(){PERIOD=b.getAttribute('data-p');render();};});
    el.querySelectorAll('[data-club]').forEach(function(g){g.style.cursor='pointer';g.onclick=function(){SEL=g.getAttribute('data-club');render();var bx=document.getElementById('bagDispBox');if(bx&&bx.scrollIntoView&&window.innerWidth<820)bx.scrollIntoView({behavior:'smooth',block:'start'});};});
  }
