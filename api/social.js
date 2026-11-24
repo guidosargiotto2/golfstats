@@ -27,9 +27,9 @@ module.exports = async (req, res) => {
     const needLite = () => L.rank(myPlan) < 1;   // friends, professor link and Statistics are Lite and up
 
     if (action === 'me') {
-      const p = (await sql`select username, display, findable, professor, prof_status, plan from gs_profiles where username = ${me}`)[0];
-      const following = await sql`select p.username, p.display from gs_follows f join gs_profiles p on p.username = f.followee where f.follower = ${me}`;
-      const followers = await sql`select p.username, p.display from gs_follows f join gs_profiles p on p.username = f.follower where f.followee = ${me}`;
+      const p = (await sql`select username, display, findable, professor, prof_status, plan, avatar from gs_profiles where username = ${me}`)[0];
+      const following = await sql`select p.username, p.display, p.avatar from gs_follows f join gs_profiles p on p.username = f.followee where f.follower = ${me}`;
+      const followers = await sql`select p.username, p.display, p.avatar from gs_follows f join gs_profiles p on p.username = f.follower where f.followee = ${me}`;
       const students = await sql`select username, display, prof_status from gs_profiles where professor = ${me}`;
       let profName = null;
       if (p.professor) { const r = await sql`select display from gs_profiles where username = ${p.professor}`; profName = r.length ? r[0].display : p.professor; }
@@ -39,6 +39,7 @@ module.exports = async (req, res) => {
       const cu = await sql`select created from gs_users where username = ${me}`;
       const created = cu.length && cu[0].created ? new Date(cu[0].created) : new Date();
       out.created = created.toISOString();
+      out.avatar = p.avatar || '';
       const tm = await sql`select m.code, t.owner, t.paid, t.seats, t.plan from gs_team_members m join gs_teams t on t.code = m.code where m.username = ${me}`;
       if (tm.length) {
         const mem = await sql`select m.username, p.display from gs_team_members m join gs_profiles p on p.username = m.username where m.code = ${tm[0].code} order by m.joined`;
@@ -53,6 +54,14 @@ module.exports = async (req, res) => {
       return ok(out);
     }
 
+    if (action === 'setAvatar') {   // profile photo: a small square image the app shrinks before sending; '' removes it
+      const a = String(b.avatar || '');
+      if (a && !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(a)) return bad(400, 'bad-image');
+      if (a.length > 80000) return bad(413, 'too-big');
+      await sql`update gs_profiles set avatar = ${a || null} where username = ${me}`;
+      return ok();
+    }
+
     if (action === 'setFindable') {
       await sql`update gs_profiles set findable = ${!!b.findable} where username = ${me}`;
       return ok();
@@ -62,7 +71,7 @@ module.exports = async (req, res) => {
       const q = String(b.q || '').trim().toLowerCase().replace(/[%_\\]/g, '');
       if (q.length < 2) return ok({ results: [] });
       const like = '%' + q + '%';
-      const rows = await sql`select username, display from gs_profiles where findable = true and username <> ${me} and (lower(username) like ${like} or lower(display) like ${like}) order by display limit 12`;
+      const rows = await sql`select username, display, avatar from gs_profiles where findable = true and username <> ${me} and (lower(username) like ${like} or lower(display) like ${like}) order by display limit 12`;
       return ok({ results: rows });
     }
 
@@ -86,9 +95,9 @@ module.exports = async (req, res) => {
     if (action === 'feed') {
       if (needLite()) return ok({ friends: [] });
       // per-round summaries of everyone I follow (logged rounds that reached the server)
-      const rows = await sql`select r.username, p.display, r.data from gs_rounds r join gs_follows f on f.followee = r.username and f.follower = ${me} join gs_profiles p on p.username = r.username where r.deleted = false`;
+      const rows = await sql`select r.username, p.display, p.avatar, r.data from gs_rounds r join gs_follows f on f.followee = r.username and f.follower = ${me} join gs_profiles p on p.username = r.username where r.deleted = false`;
       const by = {};
-      for (const r of rows) { (by[r.username] = by[r.username] || { username: r.username, name: r.display, rounds: [] }).rounds.push(summary(r.data)); }
+      for (const r of rows) { (by[r.username] = by[r.username] || { username: r.username, name: r.display, avatar: r.avatar || '', rounds: [] }).rounds.push(summary(r.data)); }
       const friends = Object.values(by);
       friends.forEach(f => { f.rounds.sort(byDateDesc); f.rounds = f.rounds.slice(0, 60); });
       return ok({ friends });

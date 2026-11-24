@@ -534,6 +534,12 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .frchk{display:flex;gap:8px;align-items:center;font-family:var(--cond);font-size:14px;cursor:pointer;}
 .lgscope .frchip{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:999px;padding:3px 6px 3px 10px;font-family:var(--cond);font-size:12.5px;margin:2px 4px 2px 0;}
 .lgscope .frlbl{font-family:var(--cond);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-right:6px;}
+.gsav{border-radius:50%;object-fit:cover;flex:none;vertical-align:middle;display:inline-block;}
+.gsavI{display:inline-flex;align-items:center;justify-content:center;background:var(--sand);color:var(--pine);font-family:var(--cond);font-weight:700;}
+.lgscope .frwho{display:inline-flex;align-items:center;gap:7px;}
+.lgscope .pfAv{display:flex;align-items:center;gap:14px;margin:2px 0 10px;}
+.lgscope .pfAvB{display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+.lgscope .pfAvB small{flex-basis:100%;font-family:var(--cond);font-size:12px;color:var(--ink-soft);}
 .lgscope .frrow{display:flex;gap:6px 14px;align-items:baseline;flex-wrap:wrap;padding:7px 0;border-top:1px solid var(--line);font-family:var(--cond);font-size:13.5px;}
 .lgscope .frrow .frd{color:var(--ink-soft);font-size:12px;min-width:78px;}
 .lgscope .frrow .frc{color:var(--ink-soft);flex:1;min-width:120px;}
@@ -787,7 +793,10 @@ svg.tgSvg{width:100%;height:auto;display:block;}
  function chips(key,opts,multi){var cur=A[key];return '<div class="obChips" data-key="'+key+'" data-multi="'+(multi?1:0)+'">'+opts.map(function(o){var on=multi?(cur||[]).indexOf(o[0])>=0:cur===o[0];return '<span class="obChip'+(on?' on':'')+'" data-v="'+o[0]+'">'+T(o[1],o[2])+'</span>';}).join('')+'</div>';}
 /* WHY chips removed: players write their own reason */ var WHY_UNUSED=[['compete','Compete in tournaments','Competir en torneos'],['lower','Lower my handicap','Bajar mi hándicap'],['friends','Time with friends','Tiempo con amigos'],['outdoors','Exercise and fresh air','Ejercicio y aire libre'],['mastery','The challenge of mastering it','El desafío de dominarlo'],['unwind','To switch off','Para desconectarme'],['business','Business and networking','Negocios y contactos']];
  var STEPS=[
-  {id:'name',ok:function(){return (A.name||'').trim().length>=2;},h:function(){return '<h2>'+T('Welcome to Golfimbul.','Bienvenido a Golfimbul.')+'</h2><p class="obSub">'+T('A few questions so your numbers are right from the first round. About a minute.','Unas preguntas para que tus números estén bien desde la primera vuelta. Un minuto, más o menos.')+'</p><label class="obL">'+T('Your name','Tu nombre')+'</label><input type="text" data-f="name" maxlength="40" value="'+esc(A.name)+'" placeholder="'+T('First name','Nombre')+'">';}},
+  {id:'name',ok:function(){return (A.name||'').trim().length>=2;},h:function(){return '<h2>'+T('Welcome to Golfimbul.','Bienvenido a Golfimbul.')+'</h2><p class="obSub">'+T('A few questions so your numbers are right from the first round. About a minute.','Unas preguntas para que tus números estén bien desde la primera vuelta. Un minuto, más o menos.')+'</p><label class="obL">'+T('Your name','Tu nombre')+'</label><input type="text" data-f="name" maxlength="40" value="'+esc(A.name)+'" placeholder="'+T('First name','Nombre')+'">'+
+      '<div class="obRow" style="margin-top:14px"><div><label class="obL">'+T('Birthday','Fecha de nacimiento')+'</label><input type="date" data-f="birthday" value="'+esc(A.birthday||'')+'" max="'+new Date().toISOString().slice(0,10)+'" style="width:100%;box-sizing:border-box;font:600 16px \'Trebuchet MS\',sans-serif;color:#20261f;background:#f6f2e7;border:1.5px solid #e2ddcc;border-radius:12px;padding:11px 14px"></div>'+
+      '<div><label class="obL">'+T('Gender','Género')+'</label><select data-f="gender">'+[['',T('— Choose —','— Elegí —')],['m',T('Male','Masculino')],['f',T('Female','Femenino')],['x',T('Other','Otro')],['n',T('Prefer not to say','Prefiero no decirlo')]].map(function(o){return '<option value="'+o[0]+'"'+((A.gender||'')===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></div></div>'+
+      '<label class="obL">'+T('You play','Jugás')+'</label>'+chips('hand',[['R',T('Right-handed','Diestro'),T('Right-handed','Diestro')],['L',T('Left-handed','Zurdo'),T('Left-handed','Zurdo')]],false);}},
   {id:'why',ok:function(){return (A.whyText||'').trim().length>=15;},h:function(){var n=(A.whyText||'').trim().length;return '<h2>'+T('Why do you play the game?','¿Por qué jugás al golf?')+'</h2><p class="obSub">'+T('Not the polite answer — the real one, in your own words. Your reason decides what “better” means for you: someone who competes and someone who plays to switch off need very different things from their numbers. It is also the first thing read before your review call.','No la respuesta correcta — la verdadera, con tus palabras. Tu motivo define qué significa “mejorar” para vos: alguien que compite y alguien que juega para desconectarse necesitan cosas muy distintas de sus números. Y es lo primero que se lee antes de tu llamada de revisión.')+'</p><textarea data-f="whyText" rows="5" maxlength="600" placeholder="'+T('I play because…','Juego porque…')+'" style="width:100%;box-sizing:border-box;font:16px/1.5 \'Trebuchet MS\',sans-serif;color:#20261f;background:#f6f2e7;border:1.5px solid #e2ddcc;border-radius:12px;padding:12px 14px;outline:none;resize:vertical">'+esc(A.whyText)+'</textarea><div class="obHint" data-cnt>'+(n<15?T('A sentence or two is enough.','Con una o dos frases alcanza.'):'✓')+'</div>';}},
   {id:'years',ok:function(){return !!A.years;},h:function(){return '<h2>'+T('How long have you been playing?','¿Hace cuánto que jugás?')+'</h2><p class="obSub">'+T('Since you first took it seriously.','Desde que lo empezaste a tomar en serio.')+'</p>'+chips('years',[['lt1','Less than a year','Menos de un año'],['1-3','1–3 years','1–3 años'],['3-10','3–10 years','3–10 años'],['10+','More than 10 years','Más de 10 años']]);}},
   {id:'lessons',ok:function(){return !!A.lessons;},h:function(){return '<h2>'+T('How often do you take a lesson?','¿Cada cuánto tomás clases?')+'</h2><p class="obSub">'+T('With a professional, in person or online.','Con un profesional, presencial u online.')+'</p>'+chips('lessons',[['never','Never','Nunca'],['year','A few times a year','Algunas veces al año'],['month','About once a month','Más o menos una vez por mes'],['week','Every week or more','Todas las semanas o más']]);}},
@@ -835,6 +844,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
  function next(){var s=STEPS[step];if(!s.ok())return;if(s.id==='done'){finish(true);return;}if(s.id==='dist')apply();step++;render();}
  function apply(){
    var p=P();p.name=(A.name||'').trim()||p.name;p.lang=lang;window.__LANG=lang;
+   if(A.birthday)p.birthday=A.birthday;if(A.gender)p.gender=A.gender;if(A.hand)p.hand=A.hand;
    if(A.home&&C()[A.home]){p.homeCourse=A.home;if(A.tee)p.defaultTee=A.tee;}
    p.homeClub=(A.homeClub||'').trim()||(C()[p.homeCourse]?String(C()[p.homeCourse].name).split(' — ')[0]:'');
    var hi=parseHI(A.hi);if(!isNaN(hi)){p.hiManual=String(hi);if(p.hiMode==='auto')p.hiMode='both';}
@@ -842,14 +852,14 @@ svg.tgSvg{width:100%;height:auto;display:block;}
    p.about={why:(A.whyText||'').trim(),years:A.years||'',lessons:A.lessons||'',range:A.range||'',golfHrs:A.golfHrs||'',practiceHrs:A.practiceHrs||'',
      otherCourses:(A.others||[]).map(function(k){return C()[k]?C()[k].name:k;}).concat(String(A.othersText||'').split(',').map(function(x){return x.trim();}).filter(Boolean)),at:new Date().toISOString().slice(0,10)};
    p.askedDrive=true;p.onboarded=true;save();
-   try{var tok=localStorage.getItem('gs-token');if(tok)fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({action:'setAbout',about:Object.assign({name:p.name,hi:isNaN(hi)?null:hi,drive:p.driveYd,nine:p.nineIron,homeClub:p.homeClub,home:p.homeCourse,tee:p.defaultTee},p.about)})}).catch(function(){});}catch(e){}
+   try{var tok=localStorage.getItem('gs-token');if(tok)fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({action:'setAbout',about:Object.assign({name:p.name,birthday:p.birthday||null,gender:p.gender||null,hand:p.hand||null,hi:isNaN(hi)?null:hi,drive:p.driveYd,nine:p.nineIron,homeClub:p.homeClub,home:p.homeCourse,tee:p.defaultTee},p.about)})}).catch(function(){});}catch(e){}
  }
  function finish(tour){var wasEs=lang==='es';if(el){el.remove();el=null;}
    if(window.OBOARD&&window.OBOARD.onDone){try{window.OBOARD.onDone(tour,wasEs);}catch(e){}}}
  function open(opts){opts=opts||{};if(el)return;
    if(!document.getElementById('obCss')){var st=document.createElement('style');st.id='obCss';st.textContent=CSS;document.head.appendChild(st);}
    var p=P();lang=opts.lang||p.lang||((navigator.language||'').slice(0,2)==='es'?'es':'en');
-   A={name:p.name||opts.name||'',homeClub:p.homeClub||'',home:p.homeCourse||'',tee:p.defaultTee||'',hi:p.hiManual!=null&&p.hiManual!==''?(+p.hiManual<0?'+'+(-p.hiManual):String(p.hiManual)):'',drive:'',nine:''};
+   A={birthday:p.birthday||'',gender:p.gender||'',hand:p.hand||'',name:p.name||opts.name||'',homeClub:p.homeClub||'',home:p.homeCourse||'',tee:p.defaultTee||'',hi:p.hiManual!=null&&p.hiManual!==''?(+p.hiManual<0?'+'+(-p.hiManual):String(p.hiManual)):'',drive:'',nine:''};
    if(p.about){A.whyText=typeof p.about.why==='string'?p.about.why:'';A.years=p.about.years;A.lessons=p.about.lessons;A.range=p.about.range;A.golfHrs=p.about.golfHrs;A.practiceHrs=p.about.practiceHrs;}
    if(p.onboarded){A.drive=p.driveYd||'';A.nine=p.nineIron||'';}
    step=0;el=document.createElement('div');el.id='obWiz';document.body.appendChild(el);render();}
@@ -2529,6 +2539,17 @@ function roundRecord(){
 }
 function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage.getItem(PROFK))||{})}catch(e){return Object.assign({},PROF_DEF)}}
 let PROF=loadProf();
+/* ===== profile photo: kept on the device and on the server (gs_profiles.avatar), shown to friends ===== */
+function avKey(){return (localStorage.getItem('app-user')||'')+'::avatar';}
+function myAvatar(){try{return localStorage.getItem(avKey())||'';}catch(e){return '';}}
+function avatarHTML(src,name,px){px=px||28;var n=String(name||'?').trim(),ini=(n.split(/\s+/).map(function(w){return w.charAt(0);}).join('').slice(0,2)||'?').toUpperCase(),st='width:'+px+'px;height:'+px+'px;font-size:'+Math.round(px*0.4)+'px';
+ return src&&/^data:image\//.test(src)?'<img class="gsav" style="'+st+'" src="'+src+'" alt="">':'<span class="gsav gsavI" style="'+st+'">'+ini.replace(/[<>&"]/g,'')+'</span>';}
+/* square-crop and shrink on the device: ~256px JPEG, a few tens of KB */
+function avatarFromFile(file){return new Promise(function(res,rej){var fr=new FileReader();fr.onerror=rej;fr.onload=function(){var im=new Image();im.onerror=rej;im.onload=function(){var S=256,m=Math.min(im.width,im.height),c=document.createElement('canvas');c.width=S;c.height=S;var g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,S,S);g.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,S,S);var q=.85,d=c.toDataURL('image/jpeg',q);while(d.length>70000&&q>.4){q-=.1;d=c.toDataURL('image/jpeg',q);}res(d);};im.src=fr.result;};fr.readAsDataURL(file);});}
+function setAvatar(d){try{if(d)localStorage.setItem(avKey(),d);else localStorage.removeItem(avKey());}catch(e){}
+ var tok=localStorage.getItem('gs-token');if(!tok)return Promise.resolve({ok:true,local:true});
+ return fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({action:'setAvatar',avatar:d||''})}).then(function(r){return r.json();});}
+window.avatarHTML=avatarHTML;window.myAvatar=myAvatar;
 function saveProf(){PROF._upd=Date.now();delete PROF._first;localStorage.setItem(PROFK,JSON.stringify(PROF));prefPush();}
 /* settings sync: the profile follows the player to every device (newest change wins) */
 var _prefT=null;
@@ -3222,8 +3243,12 @@ function renderProf(){
  const tkeys=teeList(COURSES[PROF.homeCourse]?PROF.homeCourse:'CGC',PROF.defaultTee);
  const teeOpts=tkeys.map(k=>`<option value="${k}" ${k===PROF.defaultTee?'selected':''}>${teeEN(PROF.homeCourse,k)}</option>`).join('');
  document.getElementById('pform').innerHTML=`
+  <div id="pf_avatar" class="pfAv"><span class="pfAvPic">${avatarHTML(myAvatar(),PROF.name||localStorage.getItem('app-user'),72)}</span><span class="pfAvB"><button type="button" class="pf_btn" id="pf_avup">${window.__LANG==='es'?(myAvatar()?'Cambiar foto':'Subir foto'):(myAvatar()?'Change photo':'Upload photo')}</button>${myAvatar()?`<button type="button" class="pf_btn frgrey" id="pf_avrm">${window.__LANG==='es'?'Quitar':'Remove'}</button>`:''}<input type="file" id="pf_avfile" accept="image/*" hidden><small id="pf_avmsg">${window.__LANG==='es'?'Tus amigos la ven junto a tu nombre.':'Your friends see it next to your name.'}</small></span></div>
   <label>Name<input id="pf_name" value="${PROF.name||''}" placeholder="${localStorage.getItem('app-user')||''}"></label>
   <label>Nickname<input id="pf_nick" value="${PROF.nick||localStorage.getItem('app-user')||''}" placeholder="${localStorage.getItem('app-user')||''}"></label>
+  <label>${window.__LANG==='es'?'Fecha de nacimiento':'Birthday'}<input type="date" id="pf_birth" value="${PROF.birthday||''}" max="${new Date().toISOString().slice(0,10)}"></label>
+  <label>${window.__LANG==='es'?'Género':'Gender'}<select id="pf_gender">${[['',window.__LANG==='es'?'— Elegí —':'— Choose —'],['m',window.__LANG==='es'?'Masculino':'Male'],['f',window.__LANG==='es'?'Femenino':'Female'],['x',window.__LANG==='es'?'Otro':'Other'],['n',window.__LANG==='es'?'Prefiero no decirlo':'Prefer not to say']].map(o=>`<option value="${o[0]}" ${(PROF.gender||'')===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></label>
+  <label>${window.__LANG==='es'?'Juega':'Plays'}<select id="pf_hand">${[['',window.__LANG==='es'?'— Elegí —':'— Choose —'],['R',window.__LANG==='es'?'Diestro':'Right-handed'],['L',window.__LANG==='es'?'Zurdo':'Left-handed']].map(o=>`<option value="${o[0]}" ${(PROF.hand||'')===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></label>
   <label>Units<select id="pf_units"><option value="yd" ${PROF.units==='yd'?'selected':''}>Yards</option><option value="m" ${PROF.units==='m'?'selected':''}>Meters</option></select></label>
   <label>${window.__LANG==='es'?'Club de pertenencia':'Home club'}<select id="pf_homeclub">${clubOptsHTML(PROF.homeClub||'')}</select></label>
 <label>${window.__LANG==='es'?'Cancha por defecto (la que se abre al cargar una vuelta)':'Default course (opens when you log a round)'}<select id="pf_course">${courseOpts}</select></label>
@@ -3303,6 +3328,12 @@ function renderProf(){
   </div>`;
  const txt=(id,key)=>{const el=document.getElementById(id);if(el)el.addEventListener('input',()=>{PROF[key]=el.value;saveProf();});};
  txt('pf_name','name');txt('pf_nick','nick');
+ [['pf_birth','birthday'],['pf_gender','gender'],['pf_hand','hand']].forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.addEventListener('change',()=>{PROF[k]=el.value;saveProf();});});
+ (function(){const es=window.__LANG==='es',up=document.getElementById('pf_avup'),fi=document.getElementById('pf_avfile'),rm=document.getElementById('pf_avrm'),msg=document.getElementById('pf_avmsg');
+   const said=(t,bad)=>{if(msg){msg.textContent=t;msg.style.color=bad?'var(--clay)':'';}};
+   if(up&&fi){up.onclick=()=>fi.click();fi.onchange=()=>{const f=fi.files&&fi.files[0];if(!f)return;said(es?'Preparando la foto…':'Preparing the photo…');
+     avatarFromFile(f).then(d=>setAvatar(d)).then(j=>{renderProf();if(!(j&&j.ok))alert(es?'La foto quedó en este dispositivo, pero no se pudo subir. Probá de nuevo.':'The photo is saved on this device but could not be uploaded. Please try again.');}).catch(()=>said(es?'No se pudo leer esa imagen.':'That image could not be read.',true));};}
+   if(rm)rm.onclick=()=>{setAvatar('').then(()=>renderProf()).catch(()=>renderProf());};})();
  /* picking the home club also makes its course the default course; the default can still be changed below */
  document.getElementById('pf_homeclub').addEventListener('change',e=>{const done=()=>{saveProf();renderProf();try{renderSel();}catch(_){}};
    const toCourse=k=>{if(k&&COURSES[k]){PROF.homeCourse=k;PROF.defaultTee=teeFor(k,PROF.defaultTee);}};
@@ -3896,18 +3927,18 @@ render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoO
    return sec(T('You vs. friends','Vos vs. amigos'),h,T('Average of each player\'s last 10 full rounds. Best in each column is highlighted.','Promedio de las últimas 10 vueltas completas de cada jugador. Se resalta el mejor de cada columna.'));
  }
  function feedHTML(){
-   var all=[];FEED.forEach(function(f){(f.rounds||[]).forEach(function(r){all.push({n:f.name,r:r});});});
+   var all=[];FEED.forEach(function(f){(f.rounds||[]).forEach(function(r){all.push({n:f.name,av:f.avatar,r:r});});});
    all.sort(function(a,b){return (a.r.date||'')<(b.r.date||'')?1:-1;});all=all.slice(0,12);
    if(!all.length)return '';
    return sec(T('Latest rounds from friends','Últimas vueltas de amigos'),all.map(function(o){var r=o.r;
-     return '<div class="frrow"><span class="frd">'+esc(r.date||'')+'</span><b>'+esc(o.n)+'</b><span class="frc">'+esc(r.course||'')+'</span><span class="frs">'+(r.score!=null?r.score:'·')+(r.stp!=null?' <small>('+(r.stp>0?'+':'')+r.stp+')</small>':'')+'</span><span class="'+((r.sgtot!=null&&r.sgtot<0)?'sg-neg':'sg-pos')+'">SG '+sgn(num(r.sgtot),2)+'</span><span class="frt5">T5 '+(r.mtot!=null?r.mtot:'·')+'</span></div>';}).join(''));
+     return '<div class="frrow"><span class="frd">'+esc(r.date||'')+'</span><b class="frwho">'+avatarHTML(o.av,o.n,22)+esc(o.n)+'</b><span class="frc">'+esc(r.course||'')+'</span><span class="frs">'+(r.score!=null?r.score:'·')+(r.stp!=null?' <small>('+(r.stp>0?'+':'')+r.stp+')</small>':'')+'</span><span class="'+((r.sgtot!=null&&r.sgtot<0)?'sg-neg':'sg-pos')+'">SG '+sgn(num(r.sgtot),2)+'</span><span class="frt5">T5 '+(r.mtot!=null?r.mtot:'·')+'</span></div>';}).join(''));
  }
  function findHTML(){
    return sec(T('Find players','Buscar jugadores'),'<div class="frline"><input id="frQ" placeholder="'+T('Name or username','Nombre o usuario')+'" autocapitalize="none"><button class="pf_btn" id="frGo">'+T('Search','Buscar')+'</button></div><div id="frRes"></div>',
      T('Only players who chose to be findable appear here. Privacy, professor and password are in Profile.','Solo aparecen los jugadores que eligieron ser encontrables. Privacidad, profesor y contraseña están en Perfil.'));
  }
  function privacyHTML(){
-   var fl=(ME.followers||[]).map(function(f){return '<span class="frchip">'+esc(f.display)+' <button class="frx" data-rmf="'+esc(f.username)+'" title="'+T('Remove follower','Quitar seguidor')+'">✕</button></span>';}).join('');
+   var fl=(ME.followers||[]).map(function(f){return '<span class="frchip">'+avatarHTML(f.avatar,f.display,18)+' '+esc(f.display)+' <button class="frx" data-rmf="'+esc(f.username)+'" title="'+T('Remove follower','Quitar seguidor')+'">✕</button></span>';}).join('');
    return sec(T('Privacy','Privacidad'),'<label class="frchk"><input type="checkbox" id="frFind"'+(ME.findable?' checked':'')+'> '+T('Let other players find and follow me','Permitir que otros jugadores me encuentren y me sigan')+'</label>'+
      '<p class="frsub" style="margin-top:8px">'+T('Followers see a summary of each round (date, course, score, strokes gained, Tiger 5) — never your shots, notes or lessons.','Tus seguidores ven un resumen de cada vuelta (fecha, cancha, score, strokes gained, Tiger 5) — nunca tus tiros, notas ni aprendizajes.')+'</p>'+
      '<div style="margin-top:6px"><span class="frlbl">'+T('Followers','Seguidores')+' ('+(ME.followers||[]).length+')</span> '+(fl||'<span class="frsub">'+T('none yet','ninguno todavía')+'</span>')+'</div>'+
@@ -4050,14 +4081,14 @@ render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoO
      var pc=document.getElementById('plChooser');if(pc&&window.PLANS&&window.PLANS.chooser)window.PLANS.chooser(pc);}
  }
  function load(msg){MSG=msg||'';if(!tok()){draw();return;}
-   Promise.all([api('me'),api('feed')]).then(function(a){if(a[0]&&a[0].ok){ME=a[0];FEED=(a[1]&&a[1].friends)||[];if(ME.plan){localStorage.setItem('gs-plan',ME.plan);}if(ME.upgradeFrom)localStorage.setItem('gs-upfrom',ME.upgradeFrom);
+   Promise.all([api('me'),api('feed')]).then(function(a){if(a[0]&&a[0].ok){ME=a[0];FEED=(a[1]&&a[1].friends)||[];if(ME.avatar!=null&&window.myAvatar&&ME.avatar!==window.myAvatar()){try{var ak=(localStorage.getItem('app-user')||'')+'::avatar';if(ME.avatar)localStorage.setItem(ak,ME.avatar);else localStorage.removeItem(ak);}catch(e){}}if(ME.plan){localStorage.setItem('gs-plan',ME.plan);}if(ME.upgradeFrom)localStorage.setItem('gs-upfrom',ME.upgradeFrom);
        if(ME.admin){api('members').then(function(m){MEMBERS=(m&&m.members)||[];draw();}).catch(function(){});}}else{ME=null;MSG=T('Could not load — sign in again.','No se pudo cargar — volvé a entrar.');}draw();}).catch(function(){ME=null;MSG=T('Offline — try again later.','Sin conexión — probá más tarde.');draw();});}
  var ERR={'too-early':['Your review opens when the free month ends.','Tu revisión se habilita cuando termina el mes gratis.'],'few-rounds':['Log at least 5 rounds first.','Primero cargá al menos 5 vueltas.'],'contact':['Add a WhatsApp number or email.','Agregá un WhatsApp o email.'],'in-team':['You are already in a team.','Ya estás en un equipo.'],'full':['That team is full (4 players).','Ese equipo está completo (4 jugadores).'],'no-team':['No team with that code.','No hay un equipo con ese código.'],'already':['You are already in this team.','Ya estás en este equipo.'],'not-findable':['That player is not findable.','Ese jugador no es encontrable.'],'no-user':['No player with that username.','No hay un jugador con ese usuario.'],'bad-user':['Check the username.','Revisá el usuario.']};
  function act(action,extra,okMsg){api(action,extra).then(function(j){if(j&&j.ok)load(okMsg||'');else{var e=ERR[j&&j.error];MSG=e?T(e[0],e[1]):T('That did not work.','No funcionó.');draw();}}).catch(function(){MSG=T('Offline — try again later.','Sin conexión — probá más tarde.');draw();});}
  function wire(el){
    var q=el.querySelector('#frQ'),go=el.querySelector('#frGo');
    function search(){var v=(q.value||'').trim();if(v.length<2)return;api('search',{q:v}).then(function(j){var res=el.querySelector('#frRes'),fol={};(ME.following||[]).forEach(function(f){fol[f.username]=1;});
-     res.innerHTML=(j&&j.results&&j.results.length)?j.results.map(function(u){return '<div class="frline"><span><b>'+esc(u.display)+'</b> <small>@'+esc(u.username)+'</small></span>'+(fol[u.username]?'<span class="frsub">'+T('following','siguiendo')+'</span>':'<button class="pf_btn" data-fol="'+esc(u.username)+'">'+T('Follow','Seguir')+'</button>')+'</div>';}).join(''):'<p class="frsub">'+T('No players found.','No se encontraron jugadores.')+'</p>';
+     res.innerHTML=(j&&j.results&&j.results.length)?j.results.map(function(u){return '<div class="frline"><span class="frwho">'+avatarHTML(u.avatar,u.display,26)+'<b>'+esc(u.display)+'</b> <small>@'+esc(u.username)+'</small></span>'+(fol[u.username]?'<span class="frsub">'+T('following','siguiendo')+'</span>':'<button class="pf_btn" data-fol="'+esc(u.username)+'">'+T('Follow','Seguir')+'</button>')+'</div>';}).join(''):'<p class="frsub">'+T('No players found.','No se encontraron jugadores.')+'</p>';
      res.querySelectorAll('[data-fol]').forEach(function(b){b.onclick=function(){act('follow',{user:b.getAttribute('data-fol')});};});});}
    if(go)go.onclick=search;if(q)q.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();search();}});
    el.querySelectorAll('[data-unf]').forEach(function(b){b.onclick=function(){act('unfollow',{user:b.getAttribute('data-unf')});};});
@@ -4636,13 +4667,14 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
  var ES=function(){return window.__LANG==='es';};
  var G=[
   {head:['Settings','Configuración']},
-  {k:'personal',t:['Personal','Personal'],ids:['pf_name','pf_nick','pf_units','pf_lang']},
+  {k:'personal',t:['Personal','Personal'],ids:['pf_avatar','pf_name','pf_nick','pf_birth','pf_gender','pf_hand']},
   {k:'course',t:['Course & tees','Cancha y tees'],ids:['pf_homeclub','pf_course','pf_favbtn','pf_tee','pf_teeset','pf_hidered']},
   {k:'game',t:['My game & handicap','Mi juego y hándicap'],ids:['pf_drive','pf_himode','pf_impbtn','pf_imphbtn']},
   {k:'bag',t:['My bag','Mi bolsa'],link:'bag',sub:['Distance and dispersion for every club · Garmin import','Distancia y dispersión de cada palo · importación de Garmin']},
   {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_predict','pf_clubs']},
   {k:'analysis',t:['Scoring & analysis','Score y análisis'],ids:['pf_netpar','pf_sgbase','pf_atg']},
   {k:'t5',t:["Tiger's 5",'Tiger 5'],ids:['pf_t5mode','pf_t5x','pf_nine','pf_bogeyx']},
+  {k:'app',t:['App preferences','Preferencias de la app'],ids:['pf_units','pf_lang']},
   {k:'other',t:['Other','Otros'],ids:[]},
   {head:['Account','Cuenta'],forExt:'acctBody'},
   {flat:'acctBody'}
@@ -4659,7 +4691,8 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
  function onToggle(d,key){if(d.open){var first=openKey!==key;setKey(key);document.querySelectorAll('#view-profile details.pgrp').forEach(function(x){if(x!==d&&x.open)x.open=false;});focusOn(d);if(first)try{window.scrollTo({top:0,behavior:'smooth'});}catch(e){}}
    else if(openKey===key){back();}}
  function hint(k){try{var P=PROF,es=ES(),oo=function(v){return v?(es?'sí':'on'):(es?'no':'off');};
-   if(k==='personal')return [(P.name||localStorage.getItem('app-user')||''),(P.lang==='es'?'Español':'English'),(P.units==='m'?(es?'metros':'metres'):(es?'yardas':'yards'))].filter(Boolean).join(' · ');
+   if(k==='personal')return [(P.name||localStorage.getItem('app-user')||''),(P.hand==='L'?(es?'zurdo':'left-handed'):P.hand==='R'?(es?'diestro':'right-handed'):'')].filter(Boolean).join(' · ');
+   if(k==='app')return [(P.lang==='es'?'Español':'English'),(P.units==='m'?(es?'metros':'metres'):(es?'yardas':'yards'))].join(' · ');
    if(k==='course'){var c=COURSES[P.homeCourse],cn=c?c.name:'';return (P.homeClub&&P.homeClub!==cn?P.homeClub+' · '+(es?'juega en ':'plays at '):'')+cn+' · '+teeEN(P.homeCourse,P.defaultTee);}
    if(k==='game')return 'Drive '+P.driveYd+' yd'+(P.hiManual!==''&&P.hiManual!=null?' · HI '+(+P.hiManual<0?'+'+(-P.hiManual):P.hiManual):'');
    if(k==='logging')return (es?'Predicción ':'Prediction ')+oo(P.predict)+' · '+(es?'Palo por tiro ':'Club per shot ')+oo(P.trackClubs);
