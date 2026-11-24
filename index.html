@@ -3098,6 +3098,8 @@ function myClubs(){ /* [{c:code,d:typical total yards}] longest first */
  var dr=driveYd();return CLUBDEF.map(function(x){return {c:x[0],d:Math.round(dr*x[2])};});}
 function predictClub(hi,si,s){
  if(!s)return '';if(s.lie==='putt')return 'Pt';
+ /* recovery = a punch back into play: a low iron, whatever the distance says */
+ if(s.lie==='rec'){var irons=myClubs().map(function(x){return x.c;}).filter(function(c){return /^\di$/.test(c);}).sort();if(irons.length)return irons[0];}
  var h=R.holes[hi],P=PROFILE[pkey(R.course,R.tee,hi)];
  if(P&&P.clubs&&P.clubs[si]){var best=null;Object.keys(P.clubs[si]).forEach(function(c){var n=P.clubs[si][c];if(!best||n>best.n)best={c:c,n:n};});if(best&&best.n>=2)return best.c;}   /* what you usually hit from here */
  var L=myClubs(),D=+s.dist||0;
