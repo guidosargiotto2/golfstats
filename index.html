@@ -295,7 +295,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 /* ===== full-screen round editor with a frozen header ===== */
 #view-log{width:100vw;position:relative;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;}
 #view-log .wrap{max-width:none;padding:0 20px 60px;}
-#view-log .bar{position:sticky;top:0;z-index:12;}
+#view-log .bar{position:static;}   /* the menu is the only sticky header; two sticky bars overlapped when scrolling */
 .lgscope .lgtablewrap{max-height:calc(100vh - 230px);overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:2px;max-width:980px;}
 .lgscope .holeacts,.lgscope #holenav{max-width:980px;}
 .lgscope .lgtablewrap table{min-width:720px;}
