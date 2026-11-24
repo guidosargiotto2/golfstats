@@ -298,6 +298,61 @@ module.exports = async (req, res) => {
       return ok();
     }
 
+    /* ---- course lookup on demand: a player searches for a course we do not have; it is fetched once, saved for everyone, marked unverified ---- */
+    if (action === 'courseFind' || action === 'courseAdopt') {
+      const key = String(process.env.GOLFCOURSEAPI_KEY || process.env.GOLF_COURSE_API_KEY || '').trim().replace(/^["']|["']$/g, '').replace(/^(Bearer|Key)\s+/i, '').trim();
+      if (!key) return bad(503, 'unavailable');
+      const day = new Date().toISOString().slice(0, 10), CAP = me === L.ADMIN ? 500 : 15;   // per-player daily cap
+      const used = await sql`select n from gs_lookups where username = ${me} and day = ${day}`;
+      if (used.length && used[0].n >= CAP) return bad(429, 'daily-limit');
+      await sql`insert into gs_lookups (username, day, n) values (${me}, ${day}, 1) on conflict (username, day) do update set n = gs_lookups.n + 1`;
+      const tidy = x => String(x || '').replace(/\t/g, ' ').replace(/^\s*\d{1,4}\s+/, '').replace(/\s+/g, ' ').trim();
+      const fullName = (club, course) => { club = tidy(club); let v = tidy(course); if (v.toLowerCase().indexOf(club.toLowerCase()) === 0) v = v.slice(club.length); v = v.replace(/^[\s\-–(]+/, '').replace(/\)\s*$/, '').trim(); return (v ? club + ' — ' + v : club).slice(0, 60); };
+      const get = async url => { const r = await fetch(url, { headers: { Authorization: 'Bearer ' + key, Accept: 'application/json' } }); const j = await r.json().catch(() => ({})); return { ok: r.ok, j }; };
+      if (action === 'courseFind') {
+        const q = String(b.q || '').trim().slice(0, 80);
+        if (q.length < 3) return ok({ results: [] });
+        const r = await get('https://api.golfcourseapi.com/v1/search?search_query=' + encodeURIComponent(q));
+        if (!r.ok) return bad(502, 'unavailable');
+        return ok({ results: (r.j.courses || []).slice(0, 12).map(c => ({ id: c.id, name: fullName(c.club_name, c.course_name), where: [c.location && c.location.city, c.location && c.location.country].filter(Boolean).join(', ') })) });
+      }
+      const r = await get('https://api.golfcourseapi.com/v1/courses/' + encodeURIComponent(String(b.id || '').replace(/[^0-9a-zA-Z_-]/g, '')));
+      if (!r.ok) return bad(502, 'unavailable');
+      const c = r.j.course || r.j, name = fullName(c.club_name, c.course_name);
+      const lo = c.location || {}, loc = { country: String(lo.country || '').slice(0, 40), state: String(lo.state || '').slice(0, 40), city: String(lo.city || '').slice(0, 40) };
+      const nk = x => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w && !['golf', 'club', 'de', 'del', 'el', 'la', 'los', 'las', 'country', 'the', 'gc', 'cc', 'course', 'y', 'and'].includes(w)).sort().join(' ');
+      const pd = x => (typeof x.data === 'string' ? JSON.parse(x.data) : x.data);
+      const all = await sql`select code, data from gs_courses`;
+      const have = all.find(x => !pd(x).empty && nk(pd(x).name) === nk(name));
+      if (have) return ok({ code: have.code, course: pd(have), existed: true });
+      // tees: 18-hole sets (a 9-hole card is played twice); men's and ladies' tees with the same yardages become one
+      const raw = [].concat((c.tees && c.tees.male) || [], (c.tees && c.tees.female) || []);
+      const n18 = raw.some(t => (t.holes || []).length === 18), want = n18 ? 18 : 9, T0 = {};
+      raw.forEach(t => { const nm = String(t.tee_name || 'Tee').replace(/[^A-Za-zÀ-ÿ0-9 ]/g, '').trim().slice(0, 20) || 'Tee'; if (T0[nm] || (t.holes || []).length !== want) return;
+        let y = t.holes.map(h => +h.yardage), pr = t.holes.map(h => +h.par), si = t.holes.map(h => +h.handicap), cr = +t.course_rating, sl = +t.slope_rating;
+        if (!y.every(v => v >= 40 && v <= 800) || !pr.every(v => v >= 3 && v <= 6) || !(cr > 20) || !(sl >= 55)) return;
+        if (want === 9) { y = y.concat(y); pr = pr.concat(pr); si = []; cr = Math.round(cr * 20) / 10; }
+        T0[nm] = { cr, slope: sl, yds: y, par: pr, si }; });
+      const names = Object.keys(T0);
+      if (!names.length) return ok({ nodata: true, name, city: loc.city });
+      const GEN = /\b(damas?|ladies|lady|women|mujeres|femenin[oa]s?|caballeros?|men|mens|hombres|masculin[oa]s?)\b/ig;
+      const COL = [['Negras', 'Black', /^(black|negr[oa]s?)$/i], ['Azules', 'Blue', /^(blue|azul(es)?)$/i], ['Blancas', 'White', /^(white|blanc[oa]s?)$/i], ['Rojas', 'Red', /^(red|roj[oa]s?)$/i], ['Doradas', 'Gold', /^(gold|dorad[oa]s?|oro)$/i], ['Amarillas', 'Yellow', /^(yellow|amarill[oa]s?)$/i], ['Verdes', 'Green', /^(green|verdes?)$/i], ['Plateadas', 'Silver', /^(silver|platead[oa]s?|plata)$/i], ['Naranjas', 'Orange', /^(orange|naranjas?)$/i]];
+      const base = n => ({ base: n.replace(GEN, ' ').replace(/\s+/g, ' ').trim() || n, g: /\b(damas?|ladies|lady|women|mujeres|femenin[oa]s?)\b/i.test(n) ? 'D' : (/\b(caballeros?|men|mens|hombres|masculin[oa]s?)\b/i.test(n) ? 'C' : '') });
+      const label = k => { const tb = base(k); let es = tb.base, en = tb.base; for (const cc of COL) if (cc[2].test(tb.base)) { es = cc[0]; en = cc[1]; break; } if (tb.g) { es += tb.g === 'D' ? ' Damas' : ' Caballeros'; en += tb.g === 'D' ? ' Ladies' : ' Men'; } return es === en ? es : es + ' / ' + en; };
+      const by = {}, order = []; names.forEach(k => { const tb = base(k); if (!by[tb.base]) { by[tb.base] = []; order.push(tb.base); } by[tb.base].push({ g: tb.g, t: T0[k] }); });
+      const tees = {}; order.forEach(bn => { const Ls = by[bn], sig = x => x.t.yds.join(','), same = Ls.every(x => sig(x) === sig(Ls[0]));
+        if (Ls.length === 1 || same) { const pk = Ls.find(x => x.g !== 'D') || Ls[0]; tees[bn] = { label: label(bn), cr: pk.t.cr, slope: pk.t.slope, est: false, yds: pk.t.yds }; }
+        else Ls.forEach((x, i) => { let nm = bn + (x.g === 'D' ? ' Damas' : x.g === 'C' ? ' Caballeros' : (i ? ' ' + (i + 1) : '')); if (tees[nm]) nm += ' ' + (i + 1); tees[nm] = { label: label(nm), cr: x.t.cr, slope: x.t.slope, est: false, yds: x.t.yds }; }); });
+      const first = T0[names[0]], si = first.si || [], okS = si.length === 18 && si.every(v => v >= 1 && v <= 18) && new Set(si).size === 18;
+      let base0 = name.split(/[^A-Za-zÀ-ÿ]+/).filter(w => w.length > 2).map(w => w[0]).join('').normalize('NFD').replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 4);
+      if (base0.length < 2) base0 = (name.replace(/[^A-Za-z]/g, '').toUpperCase() + 'GC').slice(0, 4);
+      const taken = new Set(all.map(x => x.code).concat(['CGC', 'TER', 'SIG'])); let code = base0, n = 2; while (taken.has(code)) code = base0 + (n++);
+      for (const st of all.filter(x => pd(x).empty && nk(pd(x).name) === nk(name))) await sql`delete from gs_courses where code = ${st.code}`;
+      const data = { name: (want === 9 ? (name + ' (9 x2)').slice(0, 60) : name), loc, unverified: true, noSI: okS ? undefined : true, addedBy: me, abbr: code, pins: { F: 'red', M: 'white', B: 'blue' }, par: first.par, hcp: okS ? si : first.par.map(() => 0), tees };
+      await sql`insert into gs_courses (code, data, upd) values (${code}, ${JSON.stringify(data)}, ${Date.now()})`;
+      return ok({ code, course: data });
+    }
+
     /* ---- players help complete and verify courses: stroke index, "matches my scorecard", corrections ---- */
     const okSI = a => Array.isArray(a) && a.length === 18 && a.every(x => Number.isInteger(+x) && +x >= 1 && +x <= 18) && new Set(a.map(Number)).size === 18;
     const loadCourse = async code => { const r = await sql`select data from gs_courses where code = ${code}`; return r.length ? (typeof r[0].data === 'string' ? JSON.parse(r[0].data) : r[0].data) : null; };
@@ -313,7 +368,9 @@ module.exports = async (req, res) => {
       await sql`delete from gs_course_fixes where code = ${code} and username = ${me} and status = 'pending'`;   // one open contribution per player per course
       const id = 'f' + L.crypto.randomBytes(6).toString('hex');
       await sql`insert into gs_course_fixes (id, code, username, hcp, confirms, note, photos) values (${id}, ${code}, ${me}, ${hcp ? JSON.stringify(hcp) : null}, ${confirms}, ${note}, ${JSON.stringify(photos)})`;
-      // a request only: nothing changes for players until the admin accepts it
+      // a missing stroke index applies at once (the course stays unverified, and the request stays in the admin's list to confirm);
+      // every other correction waits for the admin
+      if (hcp && d.noSI) { d.hcp = hcp; delete d.noSI; d.siBy = me; await saveCourse(code, d); return ok({ applied: true }); }
       return ok({ pending: true });
     }
     if (action === 'courseFixes') {
