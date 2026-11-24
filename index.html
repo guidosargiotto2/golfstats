@@ -872,7 +872,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
       '<input type="text" data-f="othersText" style="margin-top:10px" maxlength="120" value="'+esc(A.othersText)+'" placeholder="'+T('Any others? Separate with commas','¿Otras? Separadas por comas')+'"><div class="obHint">'+T('Your course is not in the list? ','¿Tu cancha no está en la lista? ')+'<a href="#" data-obfind style="color:#1f7a4d;font-weight:700">'+T('Search all courses','Buscar entre todas las canchas')+'</a></div>';}},
   {id:'index',ok:function(){return A.hi===''||A.hi==null||!isNaN(parseHI(A.hi));},h:function(){return '<h2>'+T('What is your current index?','¿Cuál es tu hándicap index actual?')+'</h2><p class="obSub">'+T('Your official handicap index. Golfimbul uses it for net par and strokes gained against your level.','Tu hándicap index oficial. Golfimbul lo usa para el par neto y los strokes gained contra tu nivel.')+'</p><label class="obL">'+T('Handicap index','Hándicap index')+'</label><div style="display:flex;gap:8px"><button type="button" class="obPlus" data-plus title="plus handicap">'+(String(A.hi||'').trim().charAt(0)==='+'?'+':'±')+'</button><input type="text" inputmode="decimal" style="flex:1" data-f="hi" value="'+esc(A.hi)+'" placeholder="'+T('e.g. 12.4','ej. 12,4')+'"></div><div class="obHint">'+T('Plus handicap? Tap ± so it reads +2.6.','¿Hándicap plus? Tocá ± para que quede +2,6.')+'</div><div class="obHint">'+T('No index yet? Leave it empty — it will be calculated from your rounds.','¿Todavía no tenés? Dejalo vacío — se calcula con tus vueltas.')+'</div>';}},
   {id:'dist',ok:function(){var d=+A.drive,n=+A.nine;return d>=100&&d<=400&&n>=60&&n<=220;},h:function(){return '<h2>'+T('How far do you hit it?','¿Cuánto le pegás?')+'</h2><p class="obSub">'+T('Your typical shot on a normal day, in yards — not your best one. This seeds your shot predictions until your own rounds take over.','Tu tiro típico en un día normal, en yardas — no el mejor. Con esto arrancan las predicciones hasta que tus vueltas tomen el control.')+'</p><div class="obRow"><div><label class="obL">'+T('Driver (total)','Driver (total)')+'</label><input type="number" inputmode="numeric" data-f="drive" min="100" max="400" value="'+esc(A.drive)+'" placeholder="230"></div><div><label class="obL">'+T('9 iron','Hierro 9')+'</label><input type="number" inputmode="numeric" data-f="nine" min="60" max="220" value="'+esc(A.nine)+'" placeholder="135"></div></div><div class="obHint">'+T('Be realistic. Over-estimating is the most common mistake — and it makes every prediction too long.','Sé realista. Sobreestimar es el error más común — y hace que todas las predicciones queden largas.')+'</div>';}},
-  {id:'done',ok:function(){return true;},h:function(){var nm=(A.name||'').trim().split(' ')[0];return '<div class="obDone"><div class="obBall"></div><h2>'+T('You\'re set, ','Listo, ')+esc(nm)+'.</h2><p class="obSub">'+T('Your profile is ready. Next, a 60-second tour of how to log a round — then go play.','Tu perfil está listo. Ahora, un recorrido de 60 segundos para cargar una vuelta — y después a jugar.')+'</p></div>';}}
+  {id:'done',ok:function(){return true;},h:function(){var nm=(A.name||'').trim().split(' ')[0];return '<div class="obDone"><div class="obBall"></div><h2>'+T('You\'re set, ','Listo, ')+esc(nm)+'.</h2><p class="obSub">'+T('Your profile is ready. One honest note: the analysis grows with your rounds. Round 1 gives you the scorecard and strokes gained; 5 rounds, your first limits; 12 rounds, limits you can trust. Next, a short tour.','Tu perfil está listo. Una nota honesta: el análisis crece con tus vueltas. La vuelta 1 te da la tarjeta y strokes gained; 5 vueltas, tus primeros límites; 12 vueltas, límites confiables. Ahora, un recorrido corto.')+'</p></div>';}}
  ];
  function parseHI(v){v=String(v||'').trim().replace(',','.');if(!v)return NaN;var plus=/^\+/.test(v);var n=parseFloat(v.replace('+',''));if(isNaN(n)||n<0||n>54)return NaN;return plus?-n:n;}
  function render(){
@@ -1136,6 +1136,18 @@ svg.tgSvg{width:100%;height:auto;display:block;}
   <div><b data-l="Your friends|Tus amigos">Your friends</b><span data-l="Follow each other, compare where each of you gains and loses, share the round.|Seguirse, comparar dónde gana y pierde cada uno, compartir la vuelta.">Follow each other, compare where each of you gains and loses, share the round.</span></div>
   <div><b data-l="Your coach|Tu profesor">Your coach</b><span data-l="Link your professor. He sees every round before the lesson starts.|Vinculá a tu profesor. Ve cada vuelta antes de que empiece la clase.">Link your professor. He sees every round before the lesson starts.</span></div>
  </div>
+</div></section>
+
+<section class="blk" id="l-honest"><div class="lw rv">
+ <div class="kick" data-l="No shortcuts|Sin atajos">No shortcuts</div>
+ <h2 data-l="No data, no truth.|Sin datos, no hay verdad.">No data, no truth.</h2>
+ <p class="sub" data-l="Golfimbul does not guess. It tells you what your own rounds show, so what you get grows with what you log. Anyone who promises you analysis from one round is selling you noise.|Golfimbul no adivina. Te dice lo que muestran tus propias vueltas, así que lo que recibís crece con lo que cargás. El que te promete análisis con una sola vuelta te está vendiendo ruido.">Golfimbul does not guess. It tells you what your own rounds show, so what you get grows with what you log. Anyone who promises you analysis from one round is selling you noise.</p>
+ <div class="grid3">
+  <div class="feat"><div class="n">1</div><h3 data-l="From your first round|Desde tu primera vuelta">From your first round</h3><p data-l="The full scorecard, strokes gained for every shot and your Tiger 5 mistakes for that round. Useful the same day.|La tarjeta completa, strokes gained de cada tiro y tus errores Tiger 5 de esa vuelta. Útil el mismo día.">The full scorecard, strokes gained for every shot and your Tiger 5 mistakes for that round. Useful the same day.</p></div>
+  <div class="feat"><div class="n">5</div><h3 data-l="From five rounds|Desde cinco vueltas">From five rounds</h3><p data-l="Your first control limits appear, marked provisional. Enough for a first look at what is normal for you, not enough for verdicts.|Aparecen tus primeros límites de control, marcados como provisorios. Alcanza para una primera mirada a lo que es normal en vos, no para veredictos.">Your first control limits appear, marked provisional. Enough for a first look at what is normal for you, not enough for verdicts.</p></div>
+  <div class="feat"><div class="n">12</div><h3 data-l="From twelve rounds|Desde doce vueltas">From twelve rounds</h3><p data-l="Limits you can trust. From here Golfimbul can tell you, with a straight face, when your game really changed.|Límites en los que podés confiar. Desde acá Golfimbul te puede decir, sin pestañear, cuándo tu juego cambió de verdad.">Limits you can trust. From here Golfimbul can tell you, with a straight face, when your game really changed.</p></div>
+ </div>
+ <p class="sub" data-l="Already have years of rounds on a Garmin? Import them and start with your history on day one.|¿Ya tenés años de vueltas en un Garmin? Importalas y empezá con tu historia desde el primer día.">Already have years of rounds on a Garmin? Import them and start with your history on day one.</p>
 </div></section>
 
 <section class="blk" id="l-plans"><div class="lw rv">
@@ -2125,8 +2137,11 @@ function xmrLine(cvId,o){ // o:{v,cenA,upA,loA,cols,rad,pbc,pbw,lo,hi,cnt,breaks
     const lbl=(o.brkLabels&&o.brkLabels[bidx])||''; if(lbl){ctx.fillStyle='#5a4bb0';ctx.font="600 9px 'Optima',sans-serif";ctx.fillText(lbl,tx,mT+19);}
     ctx.font="11px 'Optima','Segoe UI',Candara,sans-serif"; });
   function step(arr,color,dash,w){ ctx.strokeStyle=color;ctx.lineWidth=w;ctx.setLineDash(dash);ctx.beginPath();arr.forEach((val,i)=>{const x=xOf(i),y=yOf(val);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();ctx.setLineDash([]); }
-  step(o.upA,F.clay,[4,3],1.3);
-  if(!o.cnt || o.loA.some(x=>x>0)) step(o.loA,F.clay,[4,3],1.3);   // hide a count lower limit that just clamps to 0
+  /* limits: none under 5 rounds, drawn faint and dotted ("provisional") from 5 to 11, full from 12 */
+  if(!o.noLim){const lc=o.prov?'rgba(194,80,46,.5)':F.clay, ld=o.prov?[1,4]:[4,3];
+    step(o.upA,lc,ld,1.3);
+    if(!o.cnt || o.loA.some(x=>x>0)) step(o.loA,lc,ld,1.3);   // hide a count lower limit that just clamps to 0
+    if(o.prov){ctx.fillStyle='rgba(194,80,46,.85)';ctx.textAlign='right';ctx.textBaseline='top';ctx.font="600 9px 'Optima',sans-serif";ctx.fillText(LX('provisional limits','límites provisorios'),W-mR-2,mT+1);ctx.font="11px 'Optima','Segoe UI',Candara,sans-serif";ctx.textBaseline='middle';}}
   step(o.cenA,F.inkSoft,[6,4],1.5);
   if(o.ref!=null){const yr=yOf(o.ref);ctx.strokeStyle='#b8862b';ctx.lineWidth=1.6;ctx.setLineDash([2,2]);ctx.beginPath();ctx.moveTo(mL,yr);ctx.lineTo(W-mR,yr);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#8a6410';ctx.textAlign='left';ctx.textBaseline='bottom';ctx.font="700 9px 'Optima',sans-serif";ctx.fillText(LX('Tour avg ','Prom. Tour ')+o.ref,mL+3,yr-2);ctx.font="11px 'Optima','Segoe UI',Candara,sans-serif";ctx.textBaseline='middle';}
   ctx.strokeStyle=F.blue;ctx.lineWidth=2;ctx.beginPath();o.v.forEach((val,i)=>{const x=xOf(i),y=yOf(val);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
@@ -2149,7 +2164,20 @@ function drawXmr(sfx){
    return;
  }
  const v=RR.map(metrics[key]),cnt=isCount(key),S=segLimits(v,cnt),idx=RR.map((_,i)=>i+1),N=v.length;
- {const ex=document.getElementById('expl_'+sfx);if(ex)ex.innerHTML=verdict(key,S,cnt,v);}
+ const XMR_MIN=5,XMR_FULL=12;
+ if(N<XMR_MIN){   /* too few rounds for limits: show the rounds and their average, and say how many are missing */
+   const m0=mean(v);let lo0=Math.min(...v),hi0=Math.max(...v);const pd=((hi0-lo0)||Math.abs(m0)||1)*0.35;lo0-=pd;hi0+=pd;if(cnt&&lo0<0)lo0=0;
+   xmrLine('xmr_'+sfx,{v,cenA:v.map(()=>rnd(m0,2)),upA:v.map(()=>hi0),loA:v.map(()=>lo0),cols:v.map(()=>F.blue),pbc:v.map(()=>F.blue),pbw:v.map(()=>0),rad:v.map(()=>3.5),lo:lo0,hi:hi0,cnt,breaks:[],brkLabels:[],key,noLim:true});
+   {const mr=document.getElementById('mr_'+sfx);if(mr)cvInit(mr);} {const dc=document.getElementById('dist_'+sfx);if(dc)cvInit(dc);}
+   const need=XMR_MIN-N;
+   {const ex=document.getElementById('expl_'+sfx);if(ex)ex.innerHTML=LX('<strong>'+need+' more round'+(need===1?'':'s')+' until your limits appear.</strong> With '+N+' round'+(N===1?'':'s')+' there is only an average ('+fmtN(rnd(m0,2))+'): not enough to tell a real change from an ordinary good or bad day. Keep logging.','<strong>Falta'+(need===1?'':'n')+' '+need+' vuelta'+(need===1?'':'s')+' para que aparezcan tus límites.</strong> Con '+N+' vuelta'+(N===1?'':'s')+' solo hay un promedio ('+fmtN(rnd(m0,2))+'): no alcanza para distinguir un cambio real de un día bueno o malo cualquiera. Seguí cargando.');}
+   ['sig_'+sfx,'dnote_'+sfx].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='';});
+   document.getElementById('ctrl_'+sfx).querySelectorAll('button').forEach(b=>{if(b.dataset.k)b.classList.toggle('on',b.dataset.k===base);});
+   {var ut0=document.getElementById('unit_'+sfx);if(ut0){var able0=!!PCT_OF[base];ut0.style.display=able0?'':'none';ut0.textContent=GROUPS[sfx].pct?'%':'#';}}
+   return;
+ }
+ const PROV=N<XMR_FULL;
+ {const ex=document.getElementById('expl_'+sfx);if(ex)ex.innerHTML=(PROV?'<span class="provTag">'+LX('Provisional','Provisorio')+'</span> '+LX('Only '+N+' rounds so far: these limits will keep moving until you have '+XMR_FULL+'. Treat any signal as a hint, not a verdict. ','Solo '+N+' vueltas hasta ahora: estos límites se van a seguir moviendo hasta que tengas '+XMR_FULL+'. Tomá cualquier señal como un indicio, no como un veredicto. '):'')+verdict(key,S,cnt,v);}
  const last=S.segs[S.segs.length-1],sgLast=(last.mrb/1.128)||1;
  let lo=Math.min(Math.min(...v),...S.segs.map(g=>g.l),last.m-3.3*sgLast);
  let hi=Math.max(Math.max(...v),...S.segs.map(g=>g.u),last.m+3.3*sgLast);
@@ -2167,7 +2195,7 @@ function drawXmr(sfx){
  const confSig=(S.signals||[]).filter(s=>!s.pending);
  const brkArr=(S.breaks||[]).slice(1);
  const brkLabels=brkArr.map((_,bi)=>confSig[bi]?(SLBLc[confSig[bi].type]||confSig[bi].type):'');
- xmrLine('xmr_'+sfx,{v,cenA,upA,loA,cols,pbc,pbw,rad,lo,hi,cnt,breaks:brkArr,brkLabels,key,ref});
+ xmrLine('xmr_'+sfx,{v,cenA,upA,loA,cols,pbc,pbw,rad,lo,hi,cnt,breaks:brkArr,brkLabels,key,ref,prov:PROV});
  if(MRSHOW){
    const mrCen=S.mr.map((_,k)=>rnd(S.segOf(k+1).mrb,2)),mrUcl=S.mr.map((_,k)=>rnd(S.segOf(k+1).mrucl,2));
    const mrC=S.mr.map((x,k)=>x>S.segOf(k+1).mrucl?F.amber:F.blue),mrR=S.mr.map((x,k)=>x>S.segOf(k+1).mrucl?5.5:3);
@@ -3913,6 +3941,7 @@ render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoO
 .hwForm{display:grid;gap:8px}.hwForm input,.hwForm textarea,.hwForm select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--cream,#f6f2e7);box-sizing:border-box;max-width:100%}
 .hwSeg{display:flex;gap:14px;flex-wrap:wrap;font-size:13px}.hwP,.hwC{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px}.hwP input,.hwC input{width:80px}.hwMsg{font-size:12px;color:var(--clay)}
 .pmBtn{align-self:flex-start;margin-top:5px;border:1px solid var(--line);background:var(--paper,#fffdf7);color:var(--pine);border-radius:8px;padding:5px 10px;font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.03em;cursor:pointer;text-transform:none}
+.provTag{display:inline-block;font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--clay);border-radius:20px;padding:2px 8px;margin-right:4px;vertical-align:1px}
 .demoCard{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between;background:linear-gradient(120deg,rgba(216,196,140,.22),rgba(31,122,77,.08));border:1px dashed var(--sand-deep,#b89a52);border-radius:14px;padding:14px 16px;margin:0 0 14px;font-size:14px;line-height:1.5}
 #demoBar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#0f3a2c;color:#f6f2e7;border-radius:12px;padding:10px 14px;margin:0 0 12px;font-size:13px;box-shadow:0 8px 20px rgba(15,58,44,.25)}
 #demoBar b{color:#d8c48c;letter-spacing:.08em}#demoBar button{background:#d8c48c;color:#0f3a2c;border:none;border-radius:8px;padding:7px 12px;font-weight:700;cursor:pointer}
