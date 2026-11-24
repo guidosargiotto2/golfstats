@@ -775,6 +775,33 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .dpR{position:relative;flex:1 1 0;max-width:34px;height:100%;display:flex;align-items:flex-end}
 .dpR i{display:block;width:100%;background:var(--fairway);border-radius:5px 5px 0 0;animation:dpGrow .6s ease both;transform-origin:bottom}
 .dpR span{position:absolute;bottom:-17px;left:0;right:0;text-align:center;font-family:var(--cond);font-size:11px;color:var(--ink-soft)}
+.dpH4{font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 10px}
+.dpTbl{width:100%;border-collapse:collapse;font-size:14px;margin-top:14px}
+.dpTbl th{font-family:var(--cond);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);text-align:right;padding:6px 8px;border-bottom:1.5px solid var(--pine);white-space:nowrap}
+.dpTbl td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--line);font-family:var(--cond);font-weight:700;white-space:nowrap}
+.dpTbl th:first-child,.dpTbl td:first-child{text-align:left}
+.dpTbl small{font-weight:400;color:var(--ink-soft);margin-left:3px}
+.dpTbl td.neg{color:var(--clay)}.dpTbl td.pos{color:var(--fairway)}
+.dpTbl tr.z td{color:var(--ink-soft);font-weight:400}
+.dpTbl tr.tot td{border-top:1.5px solid var(--pine);border-bottom:none;background:rgba(15,58,44,.04)}
+.dpSg{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:560px}
+.dpSgC{display:flex;flex-direction:column;align-items:center;font-family:var(--cond)}
+.dpSgC .up,.dpSgC .dn{height:48px;width:100%;display:flex;justify-content:center}
+.dpSgC .up{align-items:flex-end;border-bottom:1.5px solid var(--pine)}
+.dpSgC i{display:block;width:60%;max-width:34px;animation:dpGrow .6s ease both}
+.dpSgC i.pos{background:var(--fairway);border-radius:5px 5px 0 0;transform-origin:bottom}
+.dpSgC i.neg{background:var(--clay);border-radius:0 0 5px 5px;transform-origin:top}
+.dpSgC b{font-size:13px;margin-top:2px}.dpSgC b.neg{color:var(--clay)}.dpSgC b.pos{color:var(--fairway)}
+.dpSgC span{font-size:11px;color:var(--ink-soft)}
+.dpSpd{display:flex;flex-direction:column;gap:6px}
+.dpSpdR{display:grid;grid-template-columns:74px 1fr 44px;align-items:center;gap:8px;font-family:var(--cond)}
+.dpSpdR span{font-size:12.5px;font-weight:700;color:var(--ink-soft)}
+.dpSpdR em{font-style:normal;font-weight:700;font-size:14px;color:var(--pine);text-align:right}
+.dpSpdB{display:flex;height:22px;border-radius:6px;overflow:hidden;gap:1px;background:var(--line)}
+.dpSpdB i{display:block;min-width:2px;animation:dpIn .5s ease both}
+.dpLeg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:10px;font-size:12px;color:var(--ink-soft)}
+.dpLeg span{display:inline-flex;align-items:center;gap:5px}
+.dpLeg i{width:10px;height:10px;border-radius:3px;display:inline-block}
 @keyframes dpIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes dpGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 @media (max-width:560px){#panel_dp{padding:4px 12px 12px}.dpGrid{grid-template-columns:repeat(3,minmax(64px,1fr));grid-auto-rows:66px}.dpGridWrap{display:flex}}
@@ -2146,14 +2173,25 @@ function dpCollect(rows){
        if(s.club)clubs[s.club]=(clubs[s.club]||0)+1;
        app.push({code:s.disp,short:(+s.dist<=atg),club:s.club||'',leave:leave});});});
    if(ry+rn)comp.rounds.push({date:r.date||'',y:ry,n:ry+rn});});
- return {tee:tee,app:app,putts:putts,lag:lag,comp:comp,clubs:clubs,atg:atg};}
+ var PBK=[[0,3],[3,5],[5,10],[10,15],[15,25],[25,40],[40,999]],pk=PBK.map(function(){return {n:0,holed:0,first:0,three:0,sg:0,lv:0,miss:0,c:{hole:0,szP:0,szS:0,szU:0,past:0,short:0,unk:0}};}),prounds=0;
+ (rows||[]).forEach(function(r){if(!r)return;var HS=Array.isArray(r.holes)?r.holes:null;if(!HS&&typeof shotsOf==='function'){try{HS=shotsOf(r);}catch(e){HS=null;}}if(!HS||!HS.length)return;var had=false;
+   HS.forEach(function(h){if(!h||!h.shots)return;var S=h.shots;S.forEach(function(s,i){if(!s||s.lie!=='putt')return;var d=+s.dist,nx=S[i+1],miss=!!(nx&&nx.lie==='putt');had=true;
+     var k=0;while(k<PBK.length-1&&d>PBK[k][1])k++;var o=pk[k];o.n++;
+     if(E&&E.Estart){try{var g=E.Estart('putt',d)-(miss?E.Estart('putt',+nx.dist):0)-1;if(isFinite(g))o.sg+=g;}catch(e){}}
+     if(i===0||S[i-1].lie!=='putt'){o.first++;if(S[i+2]&&S[i+2].lie==='putt')o.three++;}
+     if(!miss){o.holed++;o.c.hole++;return;}
+     var lv=+nx.dist,code=s.disp||'',dir=/^S/.test(code)?'S':/^G/.test(code)?'P':'';o.miss++;o.lv+=lv;
+     if(lv<=3)o.c[dir==='S'?'szS':dir==='P'?'szP':'szU']++;else o.c[dir==='S'?'short':dir==='P'?'past':'unk']++;});});
+   if(had)prounds++;});
+ return {pbk:PBK,pk:pk,prounds:prounds,tee:tee,app:app,putts:putts,lag:lag,comp:comp,clubs:clubs,atg:atg};}
 function dpHTML(rows){
  var es=window.__LANG==='es',T=function(a,b){return es?b:a;},D=dpCollect(rows),t=D.tee,MIN=10;
  var avg=function(a){return a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length):null;};
  var pct=function(a,b){return b?Math.round(a/b*100):0;};
  var unit=function(){try{return (typeof PROF!=='undefined'&&PROF.units==='m')?'m':'yd';}catch(e){return 'yd';}},toU=function(y){return unit()==='m'?Math.round(y*0.9144):y;};
  var lbl=function(c){return window.clubLbl?window.clubLbl(c):c;};
- var any=t.L+t.R+t.unk+D.app.length+D.putts.length+D.lag.n+D.comp.y+D.comp.n;
+ var ptot=D.pk.reduce(function(a,o){return a+o.n;},0);
+ var any=t.L+t.R+t.unk+D.app.length+D.putts.length+D.lag.n+ptot+D.comp.y+D.comp.n;
  if(!any)return '<div class="dpEmpty"><strong>'+T('Nothing logged yet.','Todavía no hay datos.')+'</strong> '+T('Turn on Dispersion and Process compliance in Profile → Round logging, and mark them as you log. This section fills itself from your own shots.','Activá Dispersión y Cumplimiento del proceso en Perfil → Carga de vueltas y marcalos al cargar. Esta sección se arma sola con tus tiros.')+'</div>';
  var h='';
  var grid=function(A,centre){var N=A.length,G={};A.forEach(function(x){(G[x.code]=G[x.code]||[]).push(x.leave);});
@@ -2208,10 +2246,28 @@ function dpHTML(rows){
        '<p class="dpMute">'+T('Under each share: how far from the hole the next shot was, on average.','Debajo de cada porcentaje: a qué distancia del hoyo quedó el tiro siguiente, en promedio.')+'</p>'
       :'<p class="dpMute">'+T('No shots match these filters.','Ningún tiro coincide con estos filtros.')+'</p>')+'</div>';}
  /* ---- missed putts ---- */
- if(D.putts.length||D.lag.n){var lg=D.lag;
+ if(D.putts.length||D.lag.n||ptot){var lg=D.lag;
    var PB={all:[0,999],s:[0,9.99],m:[10,24.99],l:[25,999]},pr=PB[DPF.putt]||PB.all,PA=D.putts.filter(function(x){return x.len>=pr[0]&&x.len<=pr[1];});
    var g=grid(PA,'<div class="dpCell hole" title="'+T('The hole','El hoyo')+'"><b>◯</b></div>'),pm=g.N;
    var pb=function(k,tx){return '<button type="button" data-dpputt="'+k+'"'+(DPF.putt===k?' class="on"':'')+'>'+tx+'</button>';};
+   var fs=function(x){return (x>0?'+':'')+x.toFixed(2);},bl=function(k){var r=D.pbk[k];return r[1]>900?r[0]+'+ ft':r[0]+'–'+r[1]+' ft';};
+   var sgAll=D.pk.reduce(function(a,o){return a+o.sg;},0),holedAll=D.pk.reduce(function(a,o){return a+o.holed;},0);
+   var SEG=[['hole',T('Holed','Embocado'),'#1f7a4d'],['szP',T('Past, inside 3 ft','Pasado, a menos de 3 ft'),'#57a97f'],['szS',T('Short, inside 3 ft','Corto, a menos de 3 ft'),'#9ccdb1'],['szU',T('Inside 3 ft, side not marked','A menos de 3 ft, sin marcar'),'#c9d8cc'],['past',T('Past, over 3 ft','Pasado, más de 3 ft'),'#c2502e'],['short',T('Short, over 3 ft','Corto, más de 3 ft'),'#d9a441'],['unk',T('Over 3 ft, not marked','Más de 3 ft, sin marcar'),'#b9b4a3']];
+   var marked=D.pk.reduce(function(a,o){return a+o.c.szP+o.c.szS+o.c.past+o.c.short;},0);
+   var tbl='<div class="frscroll"><table class="dpTbl"><thead><tr><th>'+T('Distance','Distancia')+'</th><th>Putts</th><th>'+T('Holed','Embocados')+'</th><th>'+T('3-putt','3 putts')+'</th><th>'+T('SG per putt','SG por putt')+'</th><th>'+T('SG per round','SG por vuelta')+'</th><th>'+T('Avg leave','Te dejás')+'</th></tr></thead><tbody>'+
+     D.pk.map(function(o,k){if(!o.n)return '<tr class="z"><td>'+bl(k)+'</td><td>0</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>';var sp=o.sg/o.n,sr=D.prounds?o.sg/D.prounds:0;
+       return '<tr><td>'+bl(k)+'</td><td>'+o.n+'</td><td>'+pct(o.holed,o.n)+'% <small>'+o.holed+'</small></td><td>'+(o.first?pct(o.three,o.first)+'%':'·')+'</td><td class="'+(sp<0?'neg':'pos')+'">'+fs(sp)+'</td><td class="'+(sr<0?'neg':'pos')+'">'+fs(sr)+'</td><td>'+(o.miss?(o.lv/o.miss).toFixed(1)+' ft':'·')+'</td></tr>';}).join('')+
+     '<tr class="tot"><td>'+T('All','Todos')+'</td><td>'+ptot+'</td><td>'+pct(holedAll,ptot)+'% <small>'+holedAll+'</small></td><td></td><td class="'+(sgAll<0?'neg':'pos')+'">'+(ptot?fs(sgAll/ptot):'·')+'</td><td class="'+(sgAll<0?'neg':'pos')+'">'+(D.prounds?fs(sgAll/D.prounds):'·')+'</td><td></td></tr></tbody></table></div>';
+   var mxAbs=Math.max.apply(null,D.pk.map(function(o){return D.prounds?Math.abs(o.sg/D.prounds):0;}).concat([0.05]));
+   var sgBars='<div class="dpSg">'+D.pk.map(function(o,k){var v=D.prounds?o.sg/D.prounds:0,hh=o.n?Math.max(3,Math.abs(v)/mxAbs*46):0;
+       return '<div class="dpSgC" title="'+bl(k)+' · '+fs(v)+'"><div class="up">'+(v>=0&&o.n?'<i class="pos" style="height:'+hh.toFixed(0)+'px"></i>':'')+'</div><div class="dn">'+(v<0?'<i class="neg" style="height:'+hh.toFixed(0)+'px"></i>':'')+'</div><b class="'+(v<0?'neg':'pos')+'">'+(o.n?fs(v):'·')+'</b><span>'+bl(k).replace(' ft','')+'</span></div>';}).join('')+'</div>';
+   var speed='<div class="dpSpd">'+D.pk.map(function(o,k){if(!o.n)return '';return '<div class="dpSpdR"><span>'+bl(k)+'</span><div class="dpSpdB">'+SEG.map(function(g){var n=o.c[g[0]];return n?'<i style="flex:'+n+' 1 0;background:'+g[2]+'" title="'+g[1]+' · '+n+' ('+pct(n,o.n)+'%)"></i>':'';}).join('')+'</div><em>'+pct(o.c.hole+o.c.szP+o.c.szS+o.c.szU,o.n)+'%</em></div>';}).join('')+'</div>'+
+     '<div class="dpLeg">'+SEG.map(function(g){return '<span><i style="background:'+g[2]+'"></i>'+g[1]+'</span>';}).join('')+'</div>';
+   h+='<div class="dpBlock"><h3>'+T('Putting — by distance','Putt — por distancia')+'</h3>'+
+     (ptot?'<p class="dpMute" style="margin:0 0 10px">'+ptot+' putts · '+D.prounds+' '+T('rounds with shot-by-shot data','vueltas con datos tiro a tiro')+'</p>'+
+       '<h4 class="dpH4">'+T('Strokes gained per round, by putt length','Golpes ganados por vuelta, según el largo del putt')+'</h4>'+sgBars+tbl+
+       '<h4 class="dpH4">'+T('Speed — where each putt stopped','Velocidad — dónde paró cada putt')+'</h4>'+speed+
+       '<p class="dpMute">'+T('The figure on the right is the share holed or left inside 3 ft.','El número a la derecha es el porcentaje embocado o dejado a menos de 3 ft.')+(marked?'':' '+T('Short or past only shows on putts where you marked it when logging.','Corto o pasado solo aparece en los putts donde lo marcaste al cargar.'))+'</p>':'')+'</div>';
    h+='<div class="dpBlock"><h3>'+T('Putting — lag and misses','Putt — aproximación y errores')+'</h3>'+
      (lg.n?'<div class="dpKpis" style="margin-bottom:14px"><div><span>'+T('Lag putts — first putt from 25 ft or more','Putts de aproximación — primer putt desde 25 ft o más')+'</span><b>'+(lg.sum/lg.n).toFixed(1)+' ft</b><small>'+T('average leave','promedio que te dejás')+' · '+lg.n+' putts</small></div>'+
        '<div><span>'+T('Left inside 6 ft','Dejados a menos de 6 ft')+'</span><b>'+(lg.n>=MIN?pct(lg.in6,lg.n)+'%':lg.in6+'/'+lg.n)+'</b><small>'+T('includes the ones holed','incluye los embocados')+'</small></div>'+
