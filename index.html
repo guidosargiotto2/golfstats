@@ -733,6 +733,10 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope .pgrp .pgB .frsec{border:none;padding:10px 0 6px;margin:0;border-bottom:1px solid var(--line-soft,#eee9da);border-radius:0;background:transparent;}
 .lgscope .pgrp .pgB .frsec:last-child{border-bottom:none;}
 .lgscope td.clubc{text-align:center;}
+.estbig{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:4px 0 6px;}
+.estbig b{font-family:var(--serif,Georgia,serif);font-size:30px;font-weight:600;color:var(--pine,#1c3d2e);letter-spacing:-.01em;}
+.estbig span{font-size:13px;color:var(--ink-soft,#666);}
+.estchip{font-style:normal;margin-left:10px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:none;padding:2px 8px;border-radius:999px;background:#efe3c8;color:#7a5a16;white-space:nowrap;}
 .lgscope td.compc{text-align:center;font-family:var(--cond);font-weight:700;font-size:12.5px;color:var(--ink-soft);}
 .lgscope td.dispc{text-align:center;}
 .lgscope table.nodisp thead th:nth-child(12),.lgscope table.nodisp td.dispc{display:none;}
@@ -2645,6 +2649,11 @@ function roundRecord(){
    ott:r2(sg.ott),app:r2(sg.app),atg:r2(sg.atg),putt:r2(sg.putt),sgtot:r2(sg.tot),bir:bir,bog:bog,dbl:dbl,
    courseCode:R.course,tee:R.tee,notes:R.notes||'',lesson:R.lesson||'',holes:JSON.parse(JSON.stringify(R.holes))};
 }
+/* rough time to log 18 holes with the current logging options (estimates, not measurements) */
+function logEstHTML(){var es=window.__LANG==='es',m=5+(PROF.predict===false?3:0)+(PROF.trackClubs?1:0)+(PROF.trackDisp?1.5:0)+(PROF.trackComp?2:0);
+ var parts=[(es?'base 5':'base 5')];if(PROF.predict===false)parts.push(es?'sin predicción +3':'no prediction +3');if(PROF.trackClubs)parts.push(es?'palo +1':'club +1');if(PROF.trackDisp)parts.push(es?'dispersión +1.5':'dispersion +1.5');if(PROF.trackComp)parts.push(es?'cumplimiento +2':'compliance +2');
+ return '<div class="estbig"><b>≈ '+(m%1?m.toFixed(1):m)+' min</b><span>'+parts.join(' · ')+'</span></div>';}
+document.addEventListener('change',function(e){var t=e.target;if(t&&/^pf_(predict|clubs|disp|comp)$/.test(t.id||'')){var el=document.getElementById('pf_logest');if(el)el.innerHTML=logEstHTML();}});
 function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage.getItem(PROFK))||{})}catch(e){return Object.assign({},PROF_DEF)}}
 let PROF=loadProf();
 /* ===== profile photo: kept on the device and on the server (gs_profiles.avatar), shown to friends ===== */
@@ -3438,29 +3447,34 @@ function renderProf(){
     <label>Your 9-iron carry (yd)<input id="pf_nine" type="number" min="80" max="200" step="5" value="${nineIron()}"></label>
     <label>X — 9-iron-or-less distance (yd, 50–150)<input id="pf_bogeyx" type="number" min="50" max="150" step="5" value="${bogeyXyd()}"></label>
   </div>
+  <div class="hiblock logest">
+    <div class="hirow"><span>${window.__LANG==='es'?'Tiempo estimado por vuelta':'Estimated time per round'}</span></div>
+    <div id="pf_logest">${logEstHTML()}</div>
+    <div class="hisub">${window.__LANG==='es'?'Estimación para 18 hoyos cargados después de jugar. Cada opción que activás suma tiempo: elegí lo que de verdad vas a usar.':'An estimate for 18 holes logged after you play. Every option you turn on adds time: pick what you will really use.'}</div>
+  </div>
   <div class="hiblock">
-    <div class="hirow"><span>${t('Shot prediction')}</span></div>
+    <div class="hirow"><span>${t('Shot prediction')}</span><em class="estchip">${window.__LANG==='es'?'apagada: +3 min':'off: +3 min'}</em></div>
     <label>When logging a round<select id="pf_predict">
       <option value="on" ${PROF.predict!==false?'selected':''}>On — predict each next shot (confirm or correct)</option>
       <option value="off" ${PROF.predict===false?'selected':''}>Off — enter every shot manually</option></select></label>
     <div class="hisub">Predictions improve as you log more rounds; each one is based on your prior shots and learned patterns for that hole.</div>
   </div>
   <div class="hiblock">
-    <div class="hirow"><span>${window.__LANG==='es'?'Palo por tiro':'Club per shot'}</span></div>
+    <div class="hirow"><span>${window.__LANG==='es'?'Palo por tiro':'Club per shot'}</span><em class="estchip">+1 min</em></div>
     <label>${window.__LANG==='es'?'Registrar el palo de cada tiro':'Track the club for every shot'}<select id="pf_clubs">
       <option value="off" ${PROF.trackClubs?'':'selected'}>${window.__LANG==='es'?'No':'Off'}</option>
       <option value="on" ${PROF.trackClubs?'selected':''}>${window.__LANG==='es'?'Sí — obligatorio en cada tiro (se sugiere solo)':'On — required on every shot (pre-filled for you)'}</option></select></label>
     <div class="hisub">${window.__LANG==='es'?'El palo se predice con tu bolsa y tus vueltas anteriores; solo lo corregís si cambia. Con más vueltas, Mi bolsa se arma con tus propios tiros. La abreviatura de cada palo se define en Mi bolsa.':'The club is predicted from your bag and past rounds; you only change it when it differs. Over time, My bag builds itself from your own shots. The short name of each club is set in My bag.'}</div>
   </div>
   <div class="hiblock">
-    <div class="hirow"><span>${window.__LANG==='es'?'Dispersión':'Dispersion'}</span></div>
+    <div class="hirow"><span>${window.__LANG==='es'?'Dispersión':'Dispersion'}</span><em class="estchip">+1.5 min</em></div>
     <label>${window.__LANG==='es'?'Registrar hacia dónde fallaste':'Record where you missed'}<select id="pf_disp">
       <option value="off" ${PROF.trackDisp?'':'selected'}>${window.__LANG==='es'?'No':'Off'}</option>
       <option value="on" ${PROF.trackDisp?'selected':''}>${window.__LANG==='es'?'Sí — una celda por tiro':'On — one cell per shot'}</option></select></label>
     <div class="hisub">${window.__LANG==='es'?'Salida en par 4 y 5: solo si no quedó en el fairway, izquierda (I) o derecha (D). Approaches: corto/largo e izquierda/derecha — CI, CD, LI, LD — o ✓ si quedó en el objetivo. Opcional en cada tiro.':'Tee shots on par 4s and 5s: only when you missed the fairway, left (L) or right (R). Approaches: short/long and left/right — SL, SR, LL, LR — or ✓ when it finished on target. Optional on each shot.'}</div>
   </div>
   <div class="hiblock">
-    <div class="hirow"><span>${window.__LANG==='es'?'Cumplimiento del proceso':'Process compliance'}</span></div>
+    <div class="hirow"><span>${window.__LANG==='es'?'Cumplimiento del proceso':'Process compliance'}</span><em class="estchip">+2 min</em></div>
     <label>${window.__LANG==='es'?'Marcar en cada tiro si cumpliste tu proceso':'Mark on every shot whether you followed your process'}<select id="pf_comp">
       <option value="off" ${PROF.trackComp?'':'selected'}>${window.__LANG==='es'?'No':'Off'}</option>
       <option value="on" ${PROF.trackComp?'selected':''}>${window.__LANG==='es'?'Sí — columna ✓ / ✕ en cada tiro':'On — ✓ / ✕ column on every shot'}</option></select></label>
@@ -4856,7 +4870,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
   {k:'course',t:['Course & tees','Cancha y tees'],ids:['pf_homeclub','pf_course','pf_favbtn','pf_tee','pf_teeset','pf_hidered']},
   {k:'game',t:['My game & handicap','Mi juego y hándicap'],ids:['pf_drive','pf_himode','pf_impbtn','pf_imphbtn']},
   {k:'bag',t:['My bag','Mi bolsa'],link:'bag',sub:['Distance and dispersion for every club · Garmin import','Distancia y dispersión de cada palo · importación de Garmin']},
-  {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_predict','pf_clubs']},
+  {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_logest','pf_predict','pf_clubs','pf_disp','pf_comp']},
   {k:'analysis',t:['Scoring & analysis','Score y análisis'],ids:['pf_netpar','pf_sgbase','pf_atg']},
   {k:'t5',t:["Tiger's 5",'Tiger 5'],ids:['pf_t5mode','pf_t5x','pf_nine','pf_bogeyx']},
   {k:'app',t:['App preferences','Preferencias de la app'],ids:['pf_units','pf_lang']},
