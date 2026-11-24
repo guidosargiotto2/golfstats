@@ -2496,7 +2496,20 @@ function roundRecord(){
 }
 function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage.getItem(PROFK))||{})}catch(e){return Object.assign({},PROF_DEF)}}
 let PROF=loadProf();
-function saveProf(){localStorage.setItem(PROFK,JSON.stringify(PROF));}
+function saveProf(){PROF._upd=Date.now();delete PROF._first;localStorage.setItem(PROFK,JSON.stringify(PROF));prefPush();}
+/* settings sync: the profile follows the player to every device (newest change wins) */
+var _prefT=null;
+function prefCall(body){return fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(localStorage.getItem('gs-token')||'')},body:JSON.stringify(body)}).then(function(r){return r.json();});}
+function prefDiff(o){var n=0;Object.keys(o||{}).forEach(function(k){if(k.charAt(0)==='_')return;if(JSON.stringify(o[k])!==JSON.stringify(PROF_DEF[k]))n++;});return n;}
+function prefPush(now){if(!localStorage.getItem('gs-token'))return;clearTimeout(_prefT);_prefT=setTimeout(function(){prefCall({action:'prefsSet',prefs:PROF,upd:PROF._upd||Date.now()}).catch(function(){});},now?0:1500);}
+function prefPull(){if(!localStorage.getItem('gs-token'))return;prefCall({action:'prefsGet'}).then(function(j){if(!j||!j.ok)return;var sv=j.prefs,su=+j.upd||0,synced=!!PROF._upd&&!PROF._first;
+   var take=function(){Object.keys(sv).forEach(function(k){PROF[k]=sv[k];});PROF._upd=su;delete PROF._first;localStorage.setItem(PROFK,JSON.stringify(PROF));var was=window.__LANG;window.__LANG=PROF.lang||was;
+     try{if(was!==window.__LANG)applyI18n();}catch(e){}try{renderProf();}catch(e){}try{render();renderSel();}catch(e){}try{if(window.PGRP)window.PGRP.build();}catch(e){}};
+   var giveFirst=function(){PROF._upd=Date.now();PROF._first=true;PROF._diff=prefDiff(PROF);localStorage.setItem(PROFK,JSON.stringify(PROF));prefPush(true);};
+   if(!sv){giveFirst();return;}
+   if(synced){if(su>PROF._upd)take();else if(PROF._upd>su)prefPush(true);return;}
+   /* this device has never synced: the profile with more settings changed from the defaults wins the first time */
+   if(sv._first&&prefDiff(PROF)>(+sv._diff||0))giveFirst();else take();}).catch(function(){});}
 /* ===== i18n (Stage 1: on-course flow) ===== */
 var I18N_ES={"Club":"Palo","My bag":"Mi bolsa","← Profile":"← Perfil","Plans":"Planes","Pricing":"Precios","Approach":"Approach","Around grn":"Juego corto","Copy for sheet":"Copiar para planilla","pen":"pen","Friends":"Amigos","Share":"Compartir","NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
  "Log a round":"Cargar vuelta","Statistics":"Estadísticas","Round ledger":"Mis vueltas","Profile":"Perfil","Ideas":"Ideas","Log out":"Salir",
@@ -3363,6 +3376,7 @@ function demoBanner(){var v=document.getElementById('view-log');if(!v)return;var
 function demoCardHTML(){if(!demoAvailable())return '';var es=window.__LANG==='es';
  return '<div class="demoCard"><div><b>'+(es?'¿Primera vez?':'New here?')+'</b> '+(es?'Mirá una vuelta completa cargada tiro por tiro — 18 hoyos, en el mismo formato que vas a usar.':'See a complete round logged shot by shot — 18 holes, in the same format you will use.')+'</div><button type="button" class="pf_btn" id="demoOpen">'+(es?'Abrir la vuelta de demostración':'Open the demo round')+' →</button></div>';}
 /* shared with the other modules (setup wizard, Garmin import, course requests, profile cards) */
+setTimeout(prefPull,900);window.addEventListener('focus',function(){prefPull();});
 window.COURSES=COURSES;window.PROF=PROF;window.saveProf=saveProf;window.teeEN=teeEN;window.applyI18n=applyI18n;
 render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoOn:function(){return DEMO_ON;},card:function(){render();renderSel();},importCard:importCard,profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause,practice:lgPractice,practiceEnd:lgPracticeEnd,tourCard:function(){try{if(!R._tour)return;for(var i=R.hStart;i<R.hEnd;i++){var h=R.holes[i],y=h.yd;
    h.shots=h.par===3?[{lie:'tee',dist:y,pen:0,conf:true},{lie:'putt',dist:22,pen:0,conf:true},{lie:'putt',dist:2,pen:0,conf:true}]

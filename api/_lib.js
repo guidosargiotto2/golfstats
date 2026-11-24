@@ -38,6 +38,8 @@ async function init() {
       await s`create table if not exists gs_profiles (username text primary key, display text not null, findable boolean not null default true, professor text, prof_status text)`;
       await s`alter table gs_profiles add column if not exists plan text`;
       await s`alter table gs_profiles add column if not exists about jsonb`;
+      await s`alter table gs_profiles add column if not exists prefs jsonb`;
+      await s`alter table gs_profiles add column if not exists prefs_upd bigint not null default 0`;
       await s`create table if not exists gs_follows (follower text not null, followee text not null, primary key (follower, followee))`;
       await s`create table if not exists gs_settings (k text primary key, v text)`;
       await s`create table if not exists gs_teams (code text primary key, owner text not null, seats int not null default 4, paid boolean not null default false, created timestamptz default now())`;

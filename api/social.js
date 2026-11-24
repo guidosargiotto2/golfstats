@@ -135,6 +135,21 @@ module.exports = async (req, res) => {
       await sql`insert into gs_reviews (username, contact, note) values (${me}, ${contact}, ${note}) on conflict (username) do update set contact = excluded.contact, note = excluded.note, status = 'requested', requested = now()`;
       return ok();
     }
+    /* ---- profile settings follow the player to every device ---- */
+    if (action === 'prefsGet') {
+      const r = await sql`select prefs, prefs_upd from gs_profiles where username = ${me}`;
+      const pr = r.length ? (typeof r[0].prefs === 'string' ? JSON.parse(r[0].prefs) : r[0].prefs) : null;
+      return ok({ prefs: pr || null, upd: r.length ? Number(r[0].prefs_upd) : 0 });
+    }
+    if (action === 'prefsSet') {
+      const pr = b.prefs && typeof b.prefs === 'object' ? b.prefs : null;
+      if (!pr) return bad(400, 'bad-prefs');
+      const js = JSON.stringify(pr);
+      if (js.length > 30000) return bad(413, 'too-big');
+      const upd = Number(b.upd) || Date.now();
+      await sql`update gs_profiles set prefs = ${js}, prefs_upd = ${upd} where username = ${me}`;
+      return ok({ upd });
+    }
     if (action === 'setAbout') {   // first-login answers: why they play, experience, practice habits, course, index, distances
       const a = b.about && typeof b.about === 'object' ? b.about : null;
       if (!a) return bad(400, 'bad-about');
