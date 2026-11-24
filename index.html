@@ -2906,7 +2906,7 @@ function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert(
    if(!confirm(es3?('¿3 en un par 5? Eso es un águila.\n\nPara un hándicap '+R.chcp+', un águila es más rara que una vuelta sin perder una pelota: revisá que no falte un tiro.\n\nAceptar = sí, hice águila (¡contalo en el bar!)\nCancelar = volver y completar los tiros'):
        ('3 on a par 5? That is an eagle.\n\nFor a '+R.chcp+' handicap, an eagle is rarer than a round without losing a ball: check that no shot is missing.\n\nOK = yes, I made eagle (tell everyone at the bar!)\nCancel = go back and add the missing shots')))return;
    h._rareOk=true;}
- if(PROF.trackClubs&&!clubOptional()){var miss=confShots(h).filter(function(s,i){if(!s.club)s.club=predictClub(R.cur,i,s);return !s.club;});if(miss.length){alert(window.__LANG==='es'?'Elegí el palo de cada tiro antes de pasar al siguiente hoyo.':'Choose the club for every shot before moving to the next hole.');return;}}h.shots=confShots(h);h.done=true;
+ if(PROF.trackClubs&&!clubOptional()){var miss=confShots(h).filter(function(s,i){if(!s.club&&(PROF.predict!==false||s.lie==='putt'))s.club=predictClub(R.cur,i,s);return !s.club;});if(miss.length){alert(window.__LANG==='es'?'Elegí el palo de cada tiro antes de pasar al siguiente hoyo.':'Choose the club for every shot before moving to the next hole.');return;}}h.shots=confShots(h);h.done=true;
  /* every hole done: only the last hole leads to the scorecard — while reviewing or editing, Next hole really goes to the next hole */
  if(R.holes.slice(R.hStart,R.hEnd).every(function(x){return x.done;})&&!(adv&&R.cur<R.hEnd-1)){scMode=true;render();return;}
  if(adv&&R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
@@ -3131,7 +3131,7 @@ function predictClub(hi,si,s){
 /* past rounds (a saved round being edited, or a round dated before today): club is optional and never guessed */
 function clubOptional(){try{return !!(R._editId||editRoundId)||(R.date&&R.date<new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10));}catch(e){return false;}}
 function clubSel(hi,si,s){
- var OPT=clubOptional(),L=myClubs(),cur=OPT?(s.club||''):(s.club||predictClub(hi,si,s));if(!OPT&&!s.clubSet&&cur&&s.club!==cur)s.club=cur;
+ var OPT=clubOptional()||(PROF.predict===false&&s.lie!=='putt'),L=myClubs(),cur=OPT?((s.clubSet||clubOptional())?(s.club||''):''):(s.club||predictClub(hi,si,s));if(OPT&&!s.clubSet&&!clubOptional()&&s.club)delete s.club;if(!OPT&&!s.clubSet&&cur&&s.club!==cur)s.club=cur;
  var opts=L.map(function(x){return x.c;});if(cur&&opts.indexOf(cur)<0)opts.push(cur);if(OPT)opts.unshift('');
  return '<select class="clubsel'+(s.clubSet?' set':'')+'" data-club="'+hi+':'+si+'" title="'+(s.clubSet?'':'predicted — change if needed')+'">'+opts.map(function(c){return '<option value="'+c+'"'+(c===cur?' selected':'')+'>'+(c?clubLbl(c):'–')+'</option>';}).join('')+'</select>';}
 /* ===== compliance per shot: did you follow your process? yes / no / not answered ===== */
@@ -3184,7 +3184,7 @@ function renderShots(hi){
      var cells=LIECOLS.map(function(lc){var on=pr.lie===lc;var val=on?(lc==='putt'?pr.dist:Y2U(pr.dist)):'';
        return '<td class="liec"><input class="lc'+(on?' on':'')+'" type="text" inputmode="numeric" data-entry="'+hi+'" data-lie="'+lc+'" value="'+val+'" placeholder="·"></td>';}).join('');
      html+='<tr class="shot entry'+(isPred?' pred':'')+'"><td class="sidx">'+(confShots(h).length+1)+'</td>'+cells+
-       '<td></td><td class="sgc"></td><td class="clubc"><span class="clubpred">'+(!CLB?'':isPred?(predictClub(hi,confShots(h).length,pr)||'·'):'·')+'</span></td><td class="compc"></td><td class="dispc"></td><td class="rm"><button data-entryfin="1" title="Holed it — no more shots on this hole (or press Delete). Stays here so you can review.">×</button></td></tr>';
+       '<td></td><td class="sgc"></td><td class="clubc"><span class="clubpred">'+(!CLB||PROF.predict===false?'':isPred?(predictClub(hi,confShots(h).length,pr)||'·'):'·')+'</span></td><td class="compc"></td><td class="dispc"></td><td class="rm"><button data-entryfin="1" title="Holed it — no more shots on this hole (or press Delete). Stays here so you can review.">×</button></td></tr>';
    }
  }
  if(nshot>=1){var sgTot=holeSGlive(h).tot,penTot=confShots(h).reduce(function(a,s){return a+(s.pen||0);},0);
@@ -3453,18 +3453,18 @@ function renderProf(){
     <div class="hisub">${window.__LANG==='es'?'Estimación para 18 hoyos cargados después de jugar. Cada opción que activás suma tiempo: elegí lo que de verdad vas a usar.':'An estimate for 18 holes logged after you play. Every option you turn on adds time: pick what you will really use.'}</div>
   </div>
   <div class="hiblock">
-    <div class="hirow"><span>${t('Shot prediction')}</span><em class="estchip">${window.__LANG==='es'?'apagada: +3 min':'off: +3 min'}</em></div>
+    <div class="hirow"><span>${window.__LANG==='es'?'Predicción':'Prediction'}</span><em class="estchip">${window.__LANG==='es'?'apagada: +3 min':'off: +3 min'}</em></div>
     <label>When logging a round<select id="pf_predict">
-      <option value="on" ${PROF.predict!==false?'selected':''}>On — predict each next shot (confirm or correct)</option>
-      <option value="off" ${PROF.predict===false?'selected':''}>Off — enter every shot manually</option></select></label>
-    <div class="hisub">Predictions improve as you log more rounds; each one is based on your prior shots and learned patterns for that hole.</div>
+      <option value="on" ${PROF.predict!==false?'selected':''}>${window.__LANG==='es'?'Sí — predecir el próximo tiro y el palo (confirmás o corregís)':'On — predict each next shot and its club (confirm or correct)'}</option>
+      <option value="off" ${PROF.predict===false?'selected':''}>${window.__LANG==='es'?'No — cargar cada tiro y cada palo a mano':'Off — enter every shot and club yourself'}</option></select></label>
+    <div class="hisub">${window.__LANG==='es'?'Una sola llave para todo lo que la app adivina: el próximo tiro (lie y distancia) y el palo. Mejora con cada vuelta: usa tus tiros anteriores en ese hoyo y las distancias de Mi bolsa.':'One switch for everything the app guesses: the next shot (lie and distance) and the club. It improves with every round: it uses your earlier shots on that hole and the distances in My bag.'}</div>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>${window.__LANG==='es'?'Palo por tiro':'Club per shot'}</span><em class="estchip">+1 min</em></div>
     <label>${window.__LANG==='es'?'Registrar el palo de cada tiro':'Track the club for every shot'}<select id="pf_clubs">
       <option value="off" ${PROF.trackClubs?'':'selected'}>${window.__LANG==='es'?'No':'Off'}</option>
-      <option value="on" ${PROF.trackClubs?'selected':''}>${window.__LANG==='es'?'Sí — obligatorio en cada tiro (se sugiere solo)':'On — required on every shot (pre-filled for you)'}</option></select></label>
-    <div class="hisub">${window.__LANG==='es'?'El palo se predice con tu bolsa y tus vueltas anteriores; solo lo corregís si cambia. Con más vueltas, Mi bolsa se arma con tus propios tiros. La abreviatura de cada palo se define en Mi bolsa.':'The club is predicted from your bag and past rounds; you only change it when it differs. Over time, My bag builds itself from your own shots. The short name of each club is set in My bag.'}</div>
+      <option value="on" ${PROF.trackClubs?'selected':''}>${window.__LANG==='es'?'Sí — obligatorio en cada tiro':'On — required on every shot'}</option></select></label>
+    <div class="hisub">${window.__LANG==='es'?'Con Predicción activada el palo viene sugerido y solo lo corregís si cambia; apagada, lo elegís en cada tiro. Con más vueltas, Mi bolsa se arma con tus propios tiros. La abreviatura de cada palo se define en Mi bolsa.':'With Prediction on, the club comes pre-filled and you only change it when it differs; with it off, you pick it on every shot. Over time, My bag builds itself from your own shots. The short name of each club is set in My bag.'}</div>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>${window.__LANG==='es'?'Dispersión':'Dispersion'}</span><em class="estchip">+1.5 min</em></div>
