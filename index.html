@@ -2848,6 +2848,11 @@ function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert(
        (ace?('1 on a par 3? That is a hole-in-one.\n\nHoles-in-one are rarer than a three-footer conceded in a tournament: this is almost always a shot that was not logged.\n\nOK = yes, I holed it from the tee (and the drinks are on you!)\nCancel = go back and add the missing shots'):
          ('2 on a par 4? That is an eagle.\n\nHoling your second shot is rarer than finding your ball exactly where you thought it was: this is almost always a shot that was not logged.\n\nOK = yes, I holed my second\nCancel = go back and add the missing shots'))))return;
    h._rareOk=true;}
+ /* an eagle on a par 5 is normal for a single-figure player; for a 10+ handicap it is worth a second look */
+ else if(!h._rareOk&&!DEMO_ON&&h.par===5&&_st===3&&(+R.chcp>=10)){var es3=window.__LANG==='es';
+   if(!confirm(es3?('¿3 en un par 5? Eso es un águila.\n\nPara un hándicap '+R.chcp+', un águila es más rara que una vuelta sin perder una pelota: revisá que no falte un tiro.\n\nAceptar = sí, hice águila (¡contalo en el bar!)\nCancelar = volver y completar los tiros'):
+       ('3 on a par 5? That is an eagle.\n\nFor a '+R.chcp+' handicap, an eagle is rarer than a round without losing a ball: check that no shot is missing.\n\nOK = yes, I made eagle (tell everyone at the bar!)\nCancel = go back and add the missing shots')))return;
+   h._rareOk=true;}
  if(PROF.trackClubs){var miss=confShots(h).filter(function(s,i){if(!s.club)s.club=predictClub(R.cur,i,s);return !s.club;});if(miss.length){alert(window.__LANG==='es'?'Elegí el palo de cada tiro antes de pasar al siguiente hoyo.':'Choose the club for every shot before moving to the next hole.');return;}}h.shots=confShots(h);h.done=true;
  if(R.holes.slice(R.hStart,R.hEnd).every(function(x){return x.done;})){scMode=true;render();return;}
  if(adv&&R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
