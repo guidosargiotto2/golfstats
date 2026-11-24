@@ -962,6 +962,8 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .obCmp .lvTbl td:first-child{text-align:left}\
 .obCmp .lvTbl .cur{background:rgba(15,58,44,.07)}\
 .obCmp .lvTbl i{font-style:normal}.obCmp .lvTbl i.y{color:#1f7a4d}.obCmp .lvTbl i.n{color:#b9b4a3}\
+.obFit{display:flex;flex-direction:column;gap:10px;margin-top:18px}\
+.obFit button{width:100%;margin:0}\
 .obLv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}\
 .obLv .obLvC{position:relative;display:flex;flex-direction:column;gap:3px;border-radius:14px;padding:14px 14px 12px;text-align:left}\
 .obLvC b{font:600 18px Georgia,serif;color:#0f3a2c}\
@@ -1009,12 +1011,13 @@ svg.tgSvg{width:100%;height:auto;display:block;}
       '<input type="text" data-f="othersText" style="margin-top:10px" maxlength="120" value="'+esc(A.othersText)+'" placeholder="'+T('Any others? Separate with commas','¿Otras? Separadas por comas')+'"><div class="obHint">'+T('Your course is not in the list? ','¿Tu cancha no está en la lista? ')+'<a href="#" data-obfind style="color:#1f7a4d;font-weight:700">'+T('Search all courses','Buscar entre todas las canchas')+'</a></div>';}},
   {id:'index',ok:function(){return A.hi===''||A.hi==null||!isNaN(parseHI(A.hi));},h:function(){return '<h2>'+T('What is your current index?','¿Cuál es tu hándicap index actual?')+'</h2><p class="obSub">'+T('Your official handicap index. Golfimbul uses it for net par and strokes gained against your level.','Tu hándicap index oficial. Golfimbul lo usa para el par neto y los strokes gained contra tu nivel.')+'</p><label class="obL">'+T('Handicap index','Hándicap index')+'</label><div style="display:flex;gap:8px"><button type="button" class="obPlus" data-plus title="plus handicap">'+(String(A.hi||'').trim().charAt(0)==='+'?'+':'±')+'</button><input type="text" inputmode="decimal" style="flex:1" data-f="hi" value="'+esc(A.hi)+'" placeholder="'+T('e.g. 12.4','ej. 12,4')+'"></div><div class="obHint">'+T('Plus handicap? Tap ± so it reads +2.6.','¿Hándicap plus? Tocá ± para que quede +2,6.')+'</div><div class="obHint">'+T('No index yet? Leave it empty — it will be calculated from your rounds.','¿Todavía no tenés? Dejalo vacío — se calcula con tus vueltas.')+'</div>';}},
   {id:'dist',ok:function(){var d=+A.drive,n=+A.nine;return d>=100&&d<=400&&n>=60&&n<=220;},h:function(){return '<h2>'+T('How far do you hit it?','¿Cuánto le pegás?')+'</h2><p class="obSub">'+T('Your typical shot on a normal day, in yards — not your best one. This seeds your shot predictions until your own rounds take over.','Tu tiro típico en un día normal, en yardas — no el mejor. Con esto arrancan las predicciones hasta que tus vueltas tomen el control.')+'</p><div class="obRow"><div><label class="obL">'+T('Driver (total)','Driver (total)')+'</label><input type="number" inputmode="numeric" data-f="drive" min="100" max="400" value="'+esc(A.drive)+'" placeholder="230"></div><div><label class="obL">'+T('9 iron','Hierro 9')+'</label><input type="number" inputmode="numeric" data-f="nine" min="60" max="220" value="'+esc(A.nine)+'" placeholder="135"></div></div><div class="obHint">'+T('Be realistic. Over-estimating is the most common mistake — and it makes every prediction too long.','Sé realista. Sobreestimar es el error más común — y hace que todas las predicciones queden largas.')+'</div>';}},
-  {id:'level',ok:function(){return !!A.level&&!!A.recall&&(A.recall==='all'||!!A.live);},h:function(){var LV=window.LOGLVL,rec=LV?LV.recommend({hi:parseHI(A.hi),lessons:A.lessons,golfHrs:A.golfHrs,recall:A.recall,live:A.live}):'ess';if(!A.level)A.level=rec;var hi=parseHI(A.hi),es=lang==='es'?1:0;
+  {id:'level',ok:function(){return !!A.level&&!!A.recall&&!!A.sit&&((A.recall==='all'&&A.sit==='yes')||!!A.live);},h:function(){var LV=window.LOGLVL,rec=LV?LV.recommend({hi:parseHI(A.hi),lessons:A.lessons,golfHrs:A.golfHrs,recall:A.recall,live:A.live}):'ess';if(!A.level)A.level=rec;var hi=parseHI(A.hi),es=lang==='es'?1:0;
     return '<h2>'+T('How much detail do you want to log?','¿Cuánto detalle querés cargar?')+'</h2>'+
       '<label class="obL">'+T('After a round, can you remember it shot by shot?','Después de una vuelta, ¿la recordás tiro por tiro?')+'</label>'+chips('recall',[['all','Every shot','Cada tiro'],['most','Most of it','Casi toda'],['little','Only the score, more or less','Solo el score, más o menos']])+
-      (A.recall&&A.recall!=='all'?'<label class="obL" style="margin-top:14px">'+T('If you don\'t remember, would you jot down notes or log on your phone during the round?','Si no te acordás, ¿anotarías o cargarías en el teléfono durante la vuelta?')+'</label>'+chips('live',[['yes','Yes','Sí'],['no','No, only afterwards','No, solo después']])+
+      '<label class="obL" style="margin-top:14px">'+T('After each round, will you sit down for a few minutes and enter the details?','Después de cada vuelta, ¿te vas a sentar unos minutos a cargar los detalles?')+'</label>'+chips('sit',[['yes','Yes','Sí'],['no','No','No']])+
+      (A.recall&&A.sit&&(A.recall!=='all'||A.sit==='no')?'<label class="obL" style="margin-top:14px">'+T('Would you jot down notes or log on your phone during the round instead?','¿Anotarías o cargarías en el teléfono durante la vuelta?')+'</label>'+chips('live',[['yes','Yes','Sí'],['no','No','No']])+
         (A.live==='yes'?'<p class="obSub" style="font-size:13px;margin:8px 0 0">'+T('Good: log hole by hole on your phone as you play. It takes seconds per hole and nothing is left to memory.','Bien: cargá hoyo por hoyo en el teléfono mientras jugás. Son segundos por hoyo y nada queda librado a la memoria.')+'</p>':
-         (A.live==='no'&&A.recall==='little'?'<p class="obSub" style="font-size:13px;margin:8px 0 0">'+T('Then we suggest one level lighter: fewer things to remember, and what you do log will be true.','Entonces sugerimos un nivel más liviano: menos cosas para recordar, y lo que cargues va a ser cierto.')+'</p>':'')):'')+
+         ''):'')+
       '<p class="obSub" style="margin-top:14px">'+(isNaN(hi)?T('Without a handicap index we start you on the lightest level.','Sin hándicap index empezamos por el nivel más liviano.'):T('For your index we suggest <b>','Para tu index sugerimos <b>')+(LV?LV.L[rec].n[es]:'')+'</b>. '+T('More detail gives more answers but takes longer after each round.','Más detalle da más respuestas, pero lleva más tiempo después de cada vuelta.'))+'</p>'+
       '<div class="obLv">'+(LV?LV.order.map(function(k){var l=LV.L[k],m=LV.mins(k);return '<span class="obChip obLvC'+(A.level===k?' on':'')+'" data-lv="'+k+'">'+(k===rec?'<em>'+T('Suggested','Sugerido')+'</em>':'')+'<b>'+l.n[es]+'</b><i>'+l.d[es]+'</i><small>≈ '+(m%1?m.toFixed(1):m)+' min '+T('per round','por vuelta')+'</small></span>';}).join(''):'')+'</div>'+
       (LV&&LV.table?'<details class="obCmp"><summary>'+T('Compare the levels','Comparar los niveles')+'</summary>'+LV.table(es,rec,A.level)+'</details>':'')+
@@ -1023,16 +1026,34 @@ svg.tgSvg{width:100%;height:auto;display:block;}
  ];
  function parseHI(v){v=String(v||'').trim().replace(',','.');if(!v)return NaN;var plus=/^\+/.test(v);var n=parseFloat(v.replace('+',''));if(isNaN(n)||n<0||n>54)return NaN;return plus?-n:n;}
  function render(){
+   if(NOFIT){
+     el.innerHTML='<div class="obCard" role="dialog" aria-modal="true"><div class="obLang"><button data-lang="en"'+(lang==='en'?' class="on"':'')+'>EN</button><button data-lang="es"'+(lang==='es'?' class="on"':'')+'>ES</button></div><div class="obBody">'+
+       (NOFIT===1?
+        '<h2>'+T('Honestly, Golfimbul is not for you. Not yet.','Con honestidad: Golfimbul no es para vos. Todavía no.')+'</h2>'+
+        '<p class="obSub">'+T('Everything here is built from your shots: where each one was played from and how far it was from the hole. If you will not enter them after the round, or cannot recall them, and will not note them as you play, we would be showing you charts made of guesses. We don\'t do that.','Todo acá se arma con tus tiros: desde dónde jugaste cada uno y a qué distancia del hoyo estaba. Si no los vas a cargar después de la vuelta, o no los recordás, y tampoco los vas a anotar mientras jugás, te estaríamos mostrando gráficos hechos de suposiciones. Eso no lo hacemos.')+'</p>'+
+        '<p class="obSub"><b>'+T('Two ways this changes:','Dos formas de cambiarlo:')+'</b><br>'+T('1. Log on your phone as you play. It takes seconds per hole.','1. Cargá en el teléfono mientras jugás. Son segundos por hoyo.')+'<br>'+T('2. Jot the distances on your scorecard and enter them at home.','2. Anotá las distancias en la tarjeta y cargalas en tu casa.')+'</p>'+
+        '<div class="obFit"><button class="obNext" id="obFitYes">'+T('I\'ll log during the round','Voy a cargar durante la vuelta')+' →</button><button class="obBack" id="obFitNo">'+T('This isn\'t for me','No es para mí')+'</button></div>'
+        :
+        '<h2>'+T('Fair enough.','Está bien.')+'</h2>'+
+        '<p class="obSub">'+T('Better to know now than after three rounds of made-up numbers. Your account stays here. If one day you want the truth about your game and are ready to write it down, sign in again and we will ask you the same questions.','Mejor saberlo ahora que después de tres vueltas con números inventados. Tu cuenta queda acá. Si un día querés la verdad sobre tu juego y estás dispuesto a anotarla, volvé a entrar y te vamos a hacer las mismas preguntas.')+'</p>'+
+        '<div class="obFit"><button class="obNext" id="obFitOut">'+T('Sign out','Cerrar sesión')+'</button><button class="obBack" id="obFitBack">← '+T('I changed my mind','Cambié de idea')+'</button></div>')+
+       '</div></div>';
+     el.querySelectorAll('[data-lang]').forEach(function(b){b.onclick=function(){lang=b.getAttribute('data-lang');render();};});
+     var by=el.querySelector('#obFitYes');if(by)by.onclick=function(){A.live='yes';A.level='';NOFIT=0;render();};   /* logging as they play covers both cases: poor recall, or no time afterwards */
+     var bn=el.querySelector('#obFitNo');if(bn)bn.onclick=function(){NOFIT=2;try{var p=P();p.onboarded=false;p.about=p.about||{};p.about.recall=A.recall;p.about.sit=A.sit;p.about.live=A.live;p.about.notFit=new Date().toISOString().slice(0,10);save();}catch(e){}render();};
+     var bb=el.querySelector('#obFitBack');if(bb)bb.onclick=function(){NOFIT=1;render();};
+     var bo=el.querySelector('#obFitOut');if(bo)bo.onclick=function(){var lo=document.getElementById('logoutBtn');if(lo)lo.click();else{try{localStorage.removeItem('app-user');localStorage.removeItem('gs-token');}catch(e){}location.reload();}};
+     return;}
    var s=STEPS[step],n=STEPS.length-1,pct=Math.round(100*step/n);
    el.innerHTML='<div class="obCard" role="dialog" aria-modal="true"><div class="obLang"><button data-lang="en"'+(lang==='en'?' class="on"':'')+'>EN</button><button data-lang="es"'+(lang==='es'?' class="on"':'')+'>ES</button></div>'+
      '<div class="obTop"><span class="obStep">'+(s.id==='done'?T('Done','Listo'):T('Step ','Paso ')+(step+1)+' / '+n)+'</span><div class="obBar"><i style="width:'+pct+'%"></i></div></div>'+
      '<div class="obBody">'+s.h()+'</div><div class="obNav">'+(step>0&&s.id!=='done'?'<button class="obBack">← '+T('Back','Atrás')+'</button>':'')+
-     (s.id!=='done'&&s.id!=='name'?'<button class="obSkip">'+T('Skip','Saltear')+'</button>':'<span style="margin-left:auto"></span>')+
+     (s.id!=='done'&&s.id!=='name'&&s.id!=='level'?'<button class="obSkip">'+T('Skip','Saltear')+'</button>':'<span style="margin-left:auto"></span>')+
      '<button class="obNext"'+(s.ok()?'':' disabled')+'>'+(s.id==='done'?T('Start the tour','Empezar el recorrido'):s.id==='dist'?T('Finish','Terminar'):T('Next','Siguiente'))+' →</button></div></div>';
    wire();var f=el.querySelector('textarea,input[type=text],input[type=number]');if(f&&s.id!=='course')setTimeout(function(){f.focus();},60);
  }
  function refreshNext(){var b=el.querySelector('.obNext');if(b)b.disabled=!STEPS[step].ok();}
- function wireLv(){el.querySelectorAll('.obChips[data-key="recall"] .obChip, .obChips[data-key="live"] .obChip').forEach(function(c){c.addEventListener('click',function(){setTimeout(function(){A.level='';render();},0);});});
+ function wireLv(){el.querySelectorAll('.obChips[data-key="recall"] .obChip, .obChips[data-key="live"] .obChip, .obChips[data-key="sit"] .obChip').forEach(function(c){c.addEventListener('click',function(){setTimeout(function(){A.level='';render();},0);});});
  el.querySelectorAll('[data-lv]').forEach(function(c){c.onclick=function(){A.level=c.getAttribute('data-lv');el.querySelectorAll('[data-lv]').forEach(function(x){x.classList.toggle('on',x===c);});refreshNext();};});}
  function wire(){wireLv();
    el.querySelectorAll('[data-lang]').forEach(function(b){b.onclick=function(){lang=b.getAttribute('data-lang');render();};});
@@ -1054,7 +1075,10 @@ svg.tgSvg{width:100%;height:auto;display:block;}
    var bk=el.querySelector('.obBack');if(bk)bk.onclick=function(){step=Math.max(0,step-1);render();};
    var sk=el.querySelector('.obSkip');if(sk)sk.onclick=function(){step++;render();};
  }
- function next(){var s=STEPS[step];if(!s.ok())return;if(s.id==='done'){finish(true);return;}if(s.id==='dist')apply();if(s.id==='level'&&window.LOGLVL){try{var pp=P();pp.about=pp.about||{};pp.about.recall=A.recall||'';pp.about.live=A.recall==='all'?'':(A.live||'');window.LOGLVL.apply(A.level);}catch(e){}}step++;render();}
+ var NOFIT=0;   /* 1 = honest "not for you" screen, 2 = goodbye */
+ function next(){var s=STEPS[step];if(!s.ok())return;
+   /* cannot recall the round and will not note it while playing: there is nothing true to analyse */
+   if(s.id==='level'&&A.live!=='yes'&&(A.sit==='no'||A.recall==='little')){NOFIT=1;render();return;}if(s.id==='done'){finish(true);return;}if(s.id==='dist')apply();if(s.id==='level'&&window.LOGLVL){try{var pp=P();pp.about=pp.about||{};pp.about.recall=A.recall||'';pp.about.sit=A.sit||'';delete pp.about.notFit;pp.about.live=A.live||'';window.LOGLVL.apply(A.level);}catch(e){}}step++;render();}
  function apply(){
    var p=P();p.name=(A.name||'').trim()||p.name;p.lang=lang;window.__LANG=lang;
    if(A.birthday)p.birthday=A.birthday;if(A.gender)p.gender=A.gender;if(A.hand)p.hand=A.hand;
@@ -1073,7 +1097,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
    if(!document.getElementById('obCss')){var st=document.createElement('style');st.id='obCss';st.textContent=CSS;document.head.appendChild(st);}
    var p=P();lang=opts.lang||p.lang||((navigator.language||'').slice(0,2)==='es'?'es':'en');
    A={birthday:p.birthday||'',gender:p.gender||'',hand:p.hand||'',name:p.name||opts.name||'',homeClub:p.homeClub||'',home:p.homeCourse||'',tee:p.defaultTee||'',hi:p.hiManual!=null&&p.hiManual!==''?(+p.hiManual<0?'+'+(-p.hiManual):String(p.hiManual)):'',drive:'',nine:''};
-   if(p.about){A.whyText=typeof p.about.why==='string'?p.about.why:'';A.years=p.about.years;A.lessons=p.about.lessons;A.recall=p.about.recall||'';A.live=p.about.live||'';A.range=p.about.range;A.golfHrs=p.about.golfHrs;A.practiceHrs=p.about.practiceHrs;}
+   if(p.about){A.whyText=typeof p.about.why==='string'?p.about.why:'';A.years=p.about.years;A.lessons=p.about.lessons;A.recall=p.about.recall||'';A.sit=p.about.sit||'';A.live=p.about.live||'';A.range=p.about.range;A.golfHrs=p.about.golfHrs;A.practiceHrs=p.about.practiceHrs;}
    if(p.onboarded){A.drive=p.driveYd||'';A.nine=p.nineIron||'';}
    step=0;el=document.createElement('div');el.id='obWiz';document.body.appendChild(el);render();}
  window.OBOARD=window.OBOARD||{};window.OBOARD.open=open;window.OBOARD.parseHI=parseHI;
