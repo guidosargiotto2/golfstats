@@ -2892,7 +2892,8 @@ function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert(
        ('3 on a par 5? That is an eagle.\n\nFor a '+R.chcp+' handicap, an eagle is rarer than a round without losing a ball: check that no shot is missing.\n\nOK = yes, I made eagle (tell everyone at the bar!)\nCancel = go back and add the missing shots')))return;
    h._rareOk=true;}
  if(PROF.trackClubs&&!clubOptional()){var miss=confShots(h).filter(function(s,i){if(!s.club)s.club=predictClub(R.cur,i,s);return !s.club;});if(miss.length){alert(window.__LANG==='es'?'Elegí el palo de cada tiro antes de pasar al siguiente hoyo.':'Choose the club for every shot before moving to the next hole.');return;}}h.shots=confShots(h);h.done=true;
- if(R.holes.slice(R.hStart,R.hEnd).every(function(x){return x.done;})){scMode=true;render();return;}
+ /* every hole done: only the last hole leads to the scorecard — while reviewing or editing, Next hole really goes to the next hole */
+ if(R.holes.slice(R.hStart,R.hEnd).every(function(x){return x.done;})&&!(adv&&R.cur<R.hEnd-1)){scMode=true;render();return;}
  if(adv&&R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
 function startRound(){var sc=document.getElementById('selScore'),ch=document.getElementById('selChcp'),hm=document.getElementById('selHoles');
  R.holesMode=hm?hm.value:'18';if(R.holesMode==='front'){R.hStart=0;R.hEnd=9;}else if(R.holesMode==='back'){R.hStart=9;R.hEnd=18;}else{R.hStart=0;R.hEnd=18;}
