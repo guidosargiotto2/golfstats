@@ -731,6 +731,9 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope .pgrp .pgB .frsec{border:none;padding:10px 0 6px;margin:0;border-bottom:1px solid var(--line-soft,#eee9da);border-radius:0;background:transparent;}
 .lgscope .pgrp .pgB .frsec:last-child{border-bottom:none;}
 .lgscope td.clubc{text-align:center;}
+.clubshorts{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin-top:8px;}
+.clubshorts label{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:12.5px;margin:0;}
+.clubshorts input{width:46px;text-align:center;font-family:var(--cond);font-weight:700;padding:5px 2px;border:1px solid var(--line);border-radius:7px;background:#fff;}
 .lgscope select.clubsel{width:100%;max-width:62px;border:1px solid var(--line);border-radius:7px;background:transparent;font-family:var(--cond);font-weight:700;font-size:12.5px;color:var(--ink-soft);padding:4px 2px;text-align:center;}
 .lgscope select.clubsel.set{color:var(--pine);border-color:var(--pine);background:#fff;}
 .lgscope .clubpred{font-family:var(--cond);font-weight:700;font-size:12px;color:#b08a3a;}
@@ -2555,7 +2558,7 @@ function saveYover(){localStorage.setItem(YKEY,JSON.stringify(YOVER));}
 function stdYd(course,tee,i){const k=course+'|'+tee+'#'+i;return YOVER[k]!=null?YOVER[k]:COURSES[course].tees[tee].yds[i];}
 /* ===== USER PROFILE ===== */
 const PROFK=LU+'scard-prof-v1';
-const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeClub:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true,atgYd:50,trackClubs:false,teeSet:'all',hideRed:false,askedDrive:false,driveFromData:false,tourDone:false};
+const PROF_DEF={name:'',nick:'',units:'yd',hiMode:'both',hiManual:'',homeClub:'',homeCourse:'CGC',defaultTee:'Negras',teeClub:'Driver',driveYd:250,nineIron:140,bogeyX:140,lang:'en',t5mode:'dist',t5x:30,predict:true,netPar:true,atgYd:50,trackClubs:false,clubShort:{},teeSet:'all',hideRed:false,askedDrive:false,driveFromData:false,tourDone:false};
 function nineIron(){var x=parseInt(PROF.nineIron,10);if(isNaN(x))x=140;return Math.min(200,Math.max(80,x));}
 function bogeyXyd(){var x=parseInt(PROF.bogeyX,10);if(isNaN(x))x=nineIron();return Math.min(150,Math.max(50,x));}
 /* average drive in yards — where the predicted second shot is played from */
@@ -3079,6 +3082,7 @@ function recomputeHoleYd(hi){var h=R.holes[hi];var base=stdYd(R.course,h.teeOv||
 var CLUBDEF=[['Dr','Driver',1],['3W','3 Wood',.92],['5W','5 Wood',.86],['Hy','Hybrid',.8],['4i','4 Iron',.74],['5i','5 Iron',.7],['6i','6 Iron',.66],['7i','7 Iron',.62],['8i','8 Iron',.58],['9i','9 Iron',.54],['PW','Pitching Wedge',.49],['GW','Gap Wedge',.44],['SW','Sand Wedge',.38],['LW','Lob Wedge',.31],['Pt','Putter',0]];
 function clubCode(name){var m=String(name||'');if(/^Driver/i.test(m))return 'Dr';var w=m.match(/^(\d)\s*Wood/i);if(w)return w[1]+'W';var hy=m.match(/^(\d)\s*Hybrid/i);if(hy)return hy[1]+'H';var ir=m.match(/^(\d)\s*Iron/i);if(ir)return ir[1]+'i';
  if(/Pitching/i.test(m))return 'PW';if(/Gap/i.test(m))return 'GW';if(/Sand/i.test(m))return 'SW';if(/Lob/i.test(m))return 'LW';if(/Putter/i.test(m))return 'Pt';return m.slice(0,3);}
+function clubLbl(c){var m=PROF.clubShort||{};if(m[c])return m[c];if(c==='Dr')return 'D';if(c==='Pt')return 'P';var i=String(c).match(/^(\d)i$/);return i?i[1]:c;}
 function myClubs(){ /* [{c:code,d:typical total yards}] longest first */
  try{var u=localStorage.getItem('app-user')||'',B=window.gsBag?window.gsBag():((typeof BAG!=='undefined'&&BAG[u])?BAG[u]:null);
    if(B&&B.clubs&&B.clubs.length){var L=B.clubs.map(function(k){var v=k.d.map(function(x){return x[0];}).sort(function(a,b){return a-b;});return {c:clubCode(k.name),d:v.length?v[Math.floor(v.length/2)]:0};}).filter(function(o){return o.d>0;});
@@ -3097,7 +3101,7 @@ function predictClub(hi,si,s){
 function clubSel(hi,si,s){
  var L=myClubs(),cur=s.club||predictClub(hi,si,s);if(!s.clubSet&&cur&&s.club!==cur)s.club=cur;
  var opts=L.map(function(x){return x.c;});if(cur&&opts.indexOf(cur)<0)opts.push(cur);
- return '<select class="clubsel'+(s.clubSet?' set':'')+'" data-club="'+hi+':'+si+'" title="'+(s.clubSet?'':'predicted — change if needed')+'">'+opts.map(function(c){return '<option'+(c===cur?' selected':'')+'>'+c+'</option>';}).join('')+'</select>';}
+ return '<select class="clubsel'+(s.clubSet?' set':'')+'" data-club="'+hi+':'+si+'" title="'+(s.clubSet?'':'predicted — change if needed')+'">'+opts.map(function(c){return '<option value="'+c+'"'+(c===cur?' selected':'')+'>'+clubLbl(c)+'</option>';}).join('')+'</select>';}
 function renderShots(hi){
  var h=R.holes[hi],body=document.getElementById('lgBody'),html='';
  var CLB=!!PROF.trackClubs,tb=document.getElementById('lgTable');if(tb)tb.classList.toggle('noclub',!CLB);
@@ -3401,6 +3405,8 @@ function renderProf(){
       <option value="off" ${PROF.trackClubs?'':'selected'}>${window.__LANG==='es'?'No':'Off'}</option>
       <option value="on" ${PROF.trackClubs?'selected':''}>${window.__LANG==='es'?'Sí — obligatorio en cada tiro (se sugiere solo)':'On — required on every shot (pre-filled for you)'}</option></select></label>
     <div class="hisub">${window.__LANG==='es'?'El palo se predice con tu bolsa y tus vueltas anteriores; solo lo corregís si cambia. Con más vueltas, Mi bolsa se arma con tus propios tiros.':'The club is predicted from your bag and past rounds; you only change it when it differs. Over time, My bag builds itself from your own shots.'}</div>
+    <div class="hisub" style="margin-top:10px"><b>${window.__LANG==='es'?'Abreviatura de cada palo':'Short name for each club'}</b> — ${window.__LANG==='es'?'una o dos letras o un número (D, 3W, 2H, 7, 54, 60).':'a letter or two, or a number (D, 3W, 2H, 7, 54, 60).'}</div>
+    <div class="clubshorts">${myClubs().map(x=>`<label><span>${({Dr:'Driver',Pt:'Putter',PW:'Pitching W',GW:'Gap W',SW:'Sand W',LW:'Lob W'})[x.c]||x.c.replace(/^(\d)i$/,'$1 Iron').replace(/^(\d)W$/,'$1 Wood').replace(/^(\d)H$/,'$1 Hybrid')}</span><input class="pf_cs" data-c="${x.c}" maxlength="3" value="${clubLbl(x.c)}"></label>`).join('')}</div>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>${t('Net par')}</span></div>
@@ -3465,6 +3471,7 @@ function renderProf(){
  document.getElementById('pf_nine').addEventListener('change',e=>{var n=Math.min(200,Math.max(80,parseInt(e.target.value||'140',10)||140));PROF.nineIron=n;if(!PROF.bogeyX||PROF.bogeyX==='')PROF.bogeyX=Math.min(150,n);saveProf();renderProf();});
  document.getElementById('pf_bogeyx').addEventListener('change',e=>{PROF.bogeyX=Math.min(150,Math.max(50,parseInt(e.target.value||'140',10)||140));saveProf();renderProf();});
  document.getElementById('pf_predict').addEventListener('change',e=>{PROF.predict=(e.target.value!=='off');saveProf();try{render();}catch(_){}} );
+ document.querySelectorAll('.pf_cs').forEach(function(el){el.addEventListener('change',function(){var v=el.value.trim().slice(0,3),c=el.getAttribute('data-c');PROF.clubShort=PROF.clubShort||{};if(v)PROF.clubShort[c]=v;else delete PROF.clubShort[c];el.value=clubLbl(c);saveProf();});});
  var pcl=document.getElementById('pf_clubs');if(pcl)pcl.addEventListener('change',e=>{PROF.trackClubs=(e.target.value==='on');saveProf();try{render();}catch(_){}});
  var pts=document.getElementById('pf_teeset');if(pts)pts.addEventListener('change',e=>{PROF.teeSet=e.target.value;saveProf();try{renderProf();}catch(_){}try{render();renderSel();}catch(_){}});
  var phr=document.getElementById('pf_hidered');if(phr)phr.addEventListener('change',e=>{PROF.hideRed=!!e.target.checked;saveProf();try{renderProf();}catch(_){}try{render();renderSel();}catch(_){}});
