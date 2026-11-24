@@ -306,7 +306,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .lgtablewrap thead th:nth-child(9){width:64px;}
 .lgscope .lgtablewrap thead th:nth-child(10){width:66px;}
 .lgscope .lgtablewrap thead th:nth-child(11){width:60px;}
-.lgscope .lgtablewrap thead th:nth-child(12){width:62px;}
+.lgscope .lgtablewrap thead th:nth-child(12){width:104px;}
 .lgscope .lgtablewrap thead th:nth-child(13){width:58px;}
 .lgscope .lgtablewrap td input{max-width:100%;box-sizing:border-box;}
 .lgscope .lgtablewrap thead th{position:sticky;top:0;z-index:6;background:var(--pine);color:#fff;box-shadow:0 2px 0 rgba(0,0,0,.08);font-size:13px;padding:9px 4px;}
@@ -739,7 +739,9 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .estbig span{font-size:13px;color:var(--ink-soft,#666);}
 .estchip{font-style:normal;margin-left:10px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:none;padding:2px 8px;border-radius:999px;background:#efe3c8;color:#7a5a16;white-space:nowrap;}
 .lgscope td.compc{text-align:center;font-family:var(--cond);font-weight:700;font-size:12.5px;color:var(--ink-soft);}
-.lgscope td.dispc{text-align:center;}
+.lgscope td.dispc{text-align:center;white-space:nowrap;}
+.lgscope input.dispyd{width:40px;margin-left:4px;border:1px solid var(--line);border-radius:7px;background:#fff;font-family:var(--cond);font-weight:700;font-size:12.5px;color:var(--ink);padding:5px 2px;text-align:center;-moz-appearance:textfield;}
+.lgscope input.dispyd::-webkit-outer-spin-button,.lgscope input.dispyd::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 .lgscope table.nodisp thead th:nth-child(12),.lgscope table.nodisp td.dispc{display:none;}
 .lgscope select.dispsel{width:50px;border:1px dashed var(--line);border-radius:7px;background:transparent;font-family:var(--cond);font-weight:700;font-size:12.5px;color:var(--ink-soft);padding:5px 0 5px 9px;-webkit-appearance:none;appearance:none;overflow:hidden;white-space:nowrap;text-overflow:clip;cursor:pointer;}
 .lgscope select.dispsel.ok{border:1.5px solid #2e7d4f;background:#e3f1e6;color:#1f7a4d;}
@@ -3146,7 +3148,9 @@ function dispKind(hi,si,s){var h=R.holes[hi];if(!s||s.lie==='putt')return '';
 function dispSel(hi,si,s){var k=dispKind(hi,si,s);if(!k)return '';var es=window.__LANG==='es'?2:0;
  var codes=k==='tee'?['L','R']:['ok','L','R','S','G','SL','SR','GL','GR'],cur=(s.disp&&codes.indexOf(s.disp)>=0)?s.disp:'';
  return '<select class="dispsel'+(cur==='ok'?' ok':cur?' miss':'')+'" data-disp="'+hi+':'+si+'" title="'+(cur?DISP_LBL[cur][es+1]:(es?'¿Dónde terminó respecto de tu objetivo?':'Where did it finish against your target?'))+'"><option value="">·</option>'+
-   codes.map(function(c){return '<option value="'+c+'"'+(c===cur?' selected':'')+'>'+DISP_LBL[c][es]+'\u2003\u2003\u2003'+DISP_LBL[c][es+1]+'</option>';}).join('')+'</select>';}
+   codes.map(function(c){return '<option value="'+c+'"'+(c===cur?' selected':'')+'>'+DISP_LBL[c][es]+'\u2003\u2003\u2003'+DISP_LBL[c][es+1]+'</option>';}).join('')+'</select>'+
+   '<input class="dispyd" type="number" inputmode="numeric" min="0" max="150" data-dispyd="'+hi+':'+si+'" value="'+(s.dispYd!=null?Y2U(s.dispYd):'')+'" placeholder="'+distUnit('fw')+'" title="'+(es?'¿Cuánto hacia el costado? (opcional)':'How far offline? (optional)')+'" style="'+(dispSide(cur)?'':'display:none')+'">';}
+function dispSide(c){return !!c&&/[LR]$/.test(c);}   /* codes that include a left/right miss */
 function compBtn(hi,si,s){var v=s.comp===true?'y':s.comp===false?'n':'',ES=window.__LANG==='es';
  return '<button type="button" class="compbtn'+(v?' '+v:'')+'" data-comp="'+hi+':'+si+'" title="'+(ES?'¿Cumpliste tu proceso en este tiro? Tocá: sí → no → sin respuesta':'Did you follow your process on this shot? Tap: yes → no → blank')+'">'+(v==='y'?'✓':v==='n'?'✕':'·')+'</button>';}
 function compTot(h){var a=confShots(h).filter(function(s){return s.comp===true||s.comp===false;});if(!a.length)return '';return a.filter(function(s){return s.comp;}).length+'/'+a.length;}
@@ -3295,7 +3299,11 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input
 function wire(){
  wireArrows();
  document.querySelectorAll('#lgBody select.dispsel').forEach(function(el){el.addEventListener('change',function(){var a=el.getAttribute('data-disp').split(':'),sh=R.holes[+a[0]].shots[+a[1]];if(!sh)return;
-   if(el.value)sh.disp=el.value;else delete sh.disp;el.className='dispsel'+(el.value==='ok'?' ok':el.value?' miss':'');save();});});
+   if(el.value)sh.disp=el.value;else delete sh.disp;el.className='dispsel'+(el.value==='ok'?' ok':el.value?' miss':'');
+   var yi=el.parentNode.querySelector('input.dispyd');if(yi){if(dispSide(el.value)){yi.style.display='';yi.focus();}else{yi.style.display='none';yi.value='';delete sh.dispYd;}}save();});});
+ document.querySelectorAll('#lgBody input.dispyd').forEach(function(el){el.addEventListener('change',function(){var a=el.getAttribute('data-dispyd').split(':'),sh=R.holes[+a[0]].shots[+a[1]];if(!sh)return;
+   var v=parseFloat(el.value);if(isFinite(v)&&v>=0){sh.dispYd=U2Y(Math.min(150,Math.round(v)));}else{delete sh.dispYd;el.value='';}save();});
+   el.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();el.blur();}e.stopPropagation();});});
  document.querySelectorAll('#lgBody button.compbtn').forEach(function(el){el.addEventListener('click',function(){var a=el.getAttribute('data-comp').split(':'),hh=R.holes[+a[0]],sh=hh&&hh.shots[+a[1]];if(!sh)return;
    if(sh.comp===true)sh.comp=false;else if(sh.comp===false)delete sh.comp;else sh.comp=true;
    el.className='compbtn'+(sh.comp===true?' y':sh.comp===false?' n':'');el.textContent=sh.comp===true?'✓':sh.comp===false?'✕':'·';var ct=document.getElementById('compTot');if(ct)ct.textContent=compTot(hh);save();});});
@@ -3474,7 +3482,7 @@ function renderProf(){
     <label>${window.__LANG==='es'?'Registrar hacia dónde fallaste':'Record where you missed'}<select id="pf_disp">
       <option value="off" ${PROF.trackDisp?'':'selected'}>${window.__LANG==='es'?'No':'Off'}</option>
       <option value="on" ${PROF.trackDisp?'selected':''}>${window.__LANG==='es'?'Sí — una celda por tiro':'On — one cell per shot'}</option></select></label>
-    <div class="hisub">${window.__LANG==='es'?'Salida en par 4 y 5: solo si no quedó en el fairway, izquierda (I) o derecha (D). Approaches: corto/largo e izquierda/derecha — CI, CD, LI, LD — o ✓ si quedó en el objetivo. Opcional en cada tiro.':'Tee shots on par 4s and 5s: only when you missed the fairway, left (L) or right (R). Approaches: short/long and left/right — SL, SR, LL, LR — or ✓ when it finished on target. Optional on each shot.'}</div>
+    <div class="hisub">${window.__LANG==='es'?'Salida en par 4 y 5: solo si no quedó en el fairway, izquierda (I) o derecha (D). Approaches: corto/largo e izquierda/derecha — CI, CD, LI, LD — o ✓ si quedó en el objetivo. Si fallaste a izquierda o derecha, un casillero permite agregar cuánto (ej. I 15). Opcional en cada tiro.':'Tee shots on par 4s and 5s: only when you missed the fairway, left (L) or right (R). Approaches: short/long and left/right — SL, SR, LL, LR — or ✓ when it finished on target. When you miss left or right, a small box lets you add how far offline (e.g. L 15). Optional on each shot.'}</div>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>${window.__LANG==='es'?'Cumplimiento del proceso':'Process compliance'}</span><em class="estchip">+2 min</em></div>
@@ -3569,7 +3577,7 @@ function lgLoad(o){
  var c=COURSES[o.course]||COURSES.CGC, t=(c.tees[o.tee]||c.tees[Object.keys(c.tees)[0]]);
  R={course:(COURSES[o.course]?o.course:R.course),tee:(c.tees[o.tee]?o.tee:R.tee),courseName:c.name,cr:t.cr,slope:t.slope,date:o.date||new Date().toISOString().slice(0,10),
    score:o.score||'',chcp:o.chcp||'',notes:o.notes||'',lesson:o.lesson||'',phase:'play',cur:0,holesMode:(o.holes.length===9?'front':'18'),hStart:0,hEnd:o.holes.length,
-   holes:o.holes.map(function(h,i){return {par:h.par,yd:h.yd||((h.shots&&h.shots[0])?h.shots[0].dist:0),hcp:(c.hcp?c.hcp[i]:0),pin:h.pin||'M',teeOv:h.teeOv||null,done:true,shots:(h.shots||[]).map(function(s){return {lie:s.lie,dist:s.dist,pen:s.pen||0,conf:true,club:s.club,clubSet:s.clubSet,comp:s.comp,disp:s.disp};})};})};
+   holes:o.holes.map(function(h,i){return {par:h.par,yd:h.yd||((h.shots&&h.shots[0])?h.shots[0].dist:0),hcp:(c.hcp?c.hcp[i]:0),pin:h.pin||'M',teeOv:h.teeOv||null,done:true,shots:(h.shots||[]).map(function(s){return {lie:s.lie,dist:s.dist,pen:s.pen||0,conf:true,club:s.club,clubSet:s.clubSet,comp:s.comp,disp:s.disp,dispYd:s.dispYd};})};})};
  lgEntered=true;save();render();renderSel();
 }
 function lgPause(){if(R.phase==='play'){var act=R.holes.slice(R.hStart,R.hEnd),allDone=act.length>0&&act.every(function(x){return x.done;});if(!allDone&&lgEntered){lgEntered=false;render();}}}
@@ -3600,7 +3608,7 @@ function importCard(hl){
    '<div class="sgcats2">'+chip('Off tee',cat.ott)+chip('Approach',cat.app)+chip('Around grn',cat.atg)+chip('Putting',cat.putt)+chip('Total',cat.tot)+'</div>'+
    '<div class="scHint ihShots">'+t('Tap any hole to see its shots.')+'</div>',shots:shots,pars:H.map(function(h){return h.par;})};
 }
-function lgSnap(){try{return JSON.stringify([R.notes||'',R.lesson||'',R.holes.map(function(h){return [h.pin||'M',h.teeOv||'',(h.shots||[]).filter(function(x){return x.conf!==false;}).map(function(x){return [x.lie,+x.dist,x.pen||0,x.club||'',x.comp===true?1:x.comp===false?0:'',x.disp||''];})];})]);}catch(e){return '';}}
+function lgSnap(){try{return JSON.stringify([R.notes||'',R.lesson||'',R.holes.map(function(h){return [h.pin||'M',h.teeOv||'',(h.shots||[]).filter(function(x){return x.conf!==false;}).map(function(x){return [x.lie,+x.dist,x.pen||0,x.club||'',x.comp===true?1:x.comp===false?0:'',(x.disp||'')+(x.dispYd!=null?x.dispYd:'')];})];})]);}catch(e){return '';}}
 function lgOpenCard(o){if(!o||!o.holes)return;editRoundId=o.id||null;lgLoad(o);R._editId=o.id||null;R._snap=lgSnap();save();scMode=true;render();renderLogged();}
 /* new user with no imported and no logged rounds → ask for a realistic average drive */
 (function(){try{var u=localStorage.getItem('app-user')||'';
