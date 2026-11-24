@@ -2836,6 +2836,12 @@ function delShot(hb,sb){var h=R.holes[hb];if(sb==null||sb<=0||sb>=h.shots.length
  h.shots.splice(sb,1);h.done=false;scMode=false;h._sank=!!priorPutt;render();focusEntry();}
 function gotoHole(i){R.cur=Math.max(R.hStart,Math.min(R.hEnd-1,i));var h=R.holes[R.cur];if(!h.done&&confShots(h).length===0)h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];h._sank=false;teeArmed=confShots(h).length>1;render();focusTee();}
 function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert('Enter at least the tee shot before finishing the hole.');return;}
+ /* scores that almost never happen (a 1 on a par 4 or 5, a 2 on a par 5) are nearly always a missing shot: ask before accepting */
+ var _st=confShots(h).reduce(function(n,x){return n+1+(x.pen||0);},0);
+ if(!h._rareOk&&!DEMO_ON&&_st<=h.par-3){var es=window.__LANG==='es',what=_st===1?(es?'un hoyo en uno':'a hole-in-one'):(es?'un albatros':'an albatross');
+   if(!confirm(es?('¿'+_st+' en un par '+h.par+'? Eso es '+what+'.\n\nLos albatros son más raros que un socio que arregla sus piques: casi siempre es un tiro que faltó cargar.\n\nAceptar = sí, pasó de verdad (¡y pagás la ronda!)\nCancelar = volver y completar los tiros'):
+       (_st+' on a par '+h.par+'? That is '+what+'.\n\nAlbatrosses are rarer than a golfer who repairs his pitch marks: this is almost always a shot that was not logged.\n\nOK = yes, it really happened (and the drinks are on you!)\nCancel = go back and add the missing shots')))return;
+   h._rareOk=true;}
  if(PROF.trackClubs){var miss=confShots(h).filter(function(s,i){if(!s.club)s.club=predictClub(R.cur,i,s);return !s.club;});if(miss.length){alert(window.__LANG==='es'?'Elegí el palo de cada tiro antes de pasar al siguiente hoyo.':'Choose the club for every shot before moving to the next hole.');return;}}h.shots=confShots(h);h.done=true;
  if(R.holes.slice(R.hStart,R.hEnd).every(function(x){return x.done;})){scMode=true;render();return;}
  if(adv&&R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
