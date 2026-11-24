@@ -3146,13 +3146,13 @@ var DISP_LBL={ok:['✓','On target','✓','En el objetivo'],L:['L','Left','I','I
   SL:['SL','Short left','CI','Corto izquierda'],SR:['SR','Short right','CD','Corto derecha'],GL:['LL','Long left','LI','Largo izquierda'],GR:['LR','Long right','LD','Largo derecha']};
 function dispKind(hi,si,s){var h=R.holes[hi];if(!s||s.lie==='putt')return '';
  if(si===0&&s.lie==='tee'&&h.par!==3){var n=h.shots[si+1];return (n&&n.lie!=='fw'&&n.lie!=='putt')?'tee':'';}   /* fairway hit = nothing to ask */
- return (+s.dist>(+PROF.atgYd||50))?'app':'';}
+ return 'app';}   /* every other non-putt shot, short game included */
 function dispSel(hi,si,s){var k=dispKind(hi,si,s);if(!k)return '';var es=window.__LANG==='es'?2:0;
  var codes=k==='tee'?['L','R']:['ok','L','R','S','G','SL','SR','GL','GR'],cur=(s.disp&&codes.indexOf(s.disp)>=0)?s.disp:'';
  return '<select class="dispsel'+(cur==='ok'?' ok':cur?' miss':'')+'" data-disp="'+hi+':'+si+'" title="'+(cur?DISP_LBL[cur][es+1]:(es?'¿Dónde terminó respecto de tu objetivo?':'Where did it finish against your target?'))+'"><option value="">·</option>'+
    codes.map(function(c){return '<option value="'+c+'"'+(c===cur?' selected':'')+'>'+DISP_LBL[c][es]+'\u2003\u2003\u2003'+DISP_LBL[c][es+1]+'</option>';}).join('')+'</select>'+
-   '<input class="dispyd" type="number" inputmode="numeric" min="0" max="150" data-dispyd="'+hi+':'+si+'" value="'+(s.dispYd!=null?Y2U(s.dispYd):'')+'" placeholder="'+distUnit('fw')+'" title="'+(es?'¿Cuánto hacia el costado? (opcional)':'How far offline? (optional)')+'" style="'+(dispSide(cur)?'':'display:none')+'">';}
-function dispSide(c){return !!c&&/[LR]$/.test(c);}   /* codes that include a left/right miss */
+   '<input class="dispyd" type="number" inputmode="numeric" min="0" max="150" data-dispyd="'+hi+':'+si+'" value="'+(s.dispYd!=null?Y2U(s.dispYd):'')+'" placeholder="'+distUnit('fw')+'" title="'+(es?'¿Por cuánto? Al costado si fallaste a izquierda o derecha; corto o largo si no (opcional)':'By how much? Offline for a left/right miss; short or long otherwise (optional)')+'" style="'+(dispSide(cur)?'':'display:none')+'">';}
+function dispSide(c){return !!c&&c!=='ok';}   /* any miss can carry a distance: yards offline for a side, yards short/long for S and G */
 function compBtn(hi,si,s){var v=s.comp===true?'y':s.comp===false?'n':'',ES=window.__LANG==='es';
  return '<button type="button" class="compbtn'+(v?' '+v:'')+'" data-comp="'+hi+':'+si+'" title="'+(ES?'¿Cumpliste tu proceso en este tiro? Tocá: sí → no → sin respuesta':'Did you follow your process on this shot? Tap: yes → no → blank')+'">'+(v==='y'?'✓':v==='n'?'✕':'·')+'</button>';}
 function compTot(h){var a=confShots(h).filter(function(s){return s.comp===true||s.comp===false;});if(!a.length)return '';return a.filter(function(s){return s.comp;}).length+'/'+a.length;}
@@ -3518,7 +3518,7 @@ function renderProf(){
     <label>${window.__LANG==='es'?'Registrar hacia dónde fallaste':'Record where you missed'}<select id="pf_disp">
       <option value="off" ${PROF.trackDisp?'':'selected'}>${window.__LANG==='es'?'No':'Off'}</option>
       <option value="on" ${PROF.trackDisp?'selected':''}>${window.__LANG==='es'?'Sí — una celda por tiro':'On — one cell per shot'}</option></select></label>
-    <div class="hisub">${window.__LANG==='es'?'Salida en par 4 y 5: solo si no quedó en el fairway, izquierda (I) o derecha (D). Approaches: corto/largo e izquierda/derecha — CI, CD, LI, LD — o ✓ si quedó en el objetivo. Si fallaste a izquierda o derecha, un casillero permite agregar cuánto (ej. I 15). Opcional en cada tiro.':'Tee shots on par 4s and 5s: only when you missed the fairway, left (L) or right (R). Approaches: short/long and left/right — SL, SR, LL, LR — or ✓ when it finished on target. When you miss left or right, a small box lets you add how far offline (e.g. L 15). Optional on each shot.'}</div>
+    <div class="hisub">${window.__LANG==='es'?'Salida en par 4 y 5: solo si no quedó en el fairway, izquierda (I) o derecha (D). Todos los demás tiros salvo putts: corto/largo e izquierda/derecha — CI, CD, LI, LD — o ✓ si quedó en el objetivo. En cualquier fallo un casillero permite agregar por cuánto: al costado si fue izquierda/derecha (I 15), corto o largo si no (C 8). Los tiros de juego corto también tienen la celda. Opcional en cada tiro.':'Tee shots on par 4s and 5s: only when you missed the fairway, left (L) or right (R). Every other shot except putts: short/long and left/right — SL, SR, LL, LR — or ✓ when it finished on target. On any miss a small box lets you add by how much: yards offline for left/right (L 15), yards short or long otherwise (S 8). Short-game shots have the cell too. Optional on each shot.'}</div>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>${window.__LANG==='es'?'Cumplimiento del proceso':'Process compliance'}</span><em class="estchip">+2 min</em></div>
