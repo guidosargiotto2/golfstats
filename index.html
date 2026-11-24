@@ -2884,7 +2884,7 @@ function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert(
    if(!confirm(es3?('¿3 en un par 5? Eso es un águila.\n\nPara un hándicap '+R.chcp+', un águila es más rara que una vuelta sin perder una pelota: revisá que no falte un tiro.\n\nAceptar = sí, hice águila (¡contalo en el bar!)\nCancelar = volver y completar los tiros'):
        ('3 on a par 5? That is an eagle.\n\nFor a '+R.chcp+' handicap, an eagle is rarer than a round without losing a ball: check that no shot is missing.\n\nOK = yes, I made eagle (tell everyone at the bar!)\nCancel = go back and add the missing shots')))return;
    h._rareOk=true;}
- if(PROF.trackClubs){var miss=confShots(h).filter(function(s,i){if(!s.club)s.club=predictClub(R.cur,i,s);return !s.club;});if(miss.length){alert(window.__LANG==='es'?'Elegí el palo de cada tiro antes de pasar al siguiente hoyo.':'Choose the club for every shot before moving to the next hole.');return;}}h.shots=confShots(h);h.done=true;
+ if(PROF.trackClubs&&!clubOptional()){var miss=confShots(h).filter(function(s,i){if(!s.club)s.club=predictClub(R.cur,i,s);return !s.club;});if(miss.length){alert(window.__LANG==='es'?'Elegí el palo de cada tiro antes de pasar al siguiente hoyo.':'Choose the club for every shot before moving to the next hole.');return;}}h.shots=confShots(h);h.done=true;
  if(R.holes.slice(R.hStart,R.hEnd).every(function(x){return x.done;})){scMode=true;render();return;}
  if(adv&&R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
 function startRound(){var sc=document.getElementById('selScore'),ch=document.getElementById('selChcp'),hm=document.getElementById('selHoles');
@@ -3098,10 +3098,12 @@ function predictClub(hi,si,s){
  var cand=L.filter(function(x){return x.c!=='Pt'&&(x.c!=='Dr'||s.lie==='tee');});if(!cand.length)return '';
  if(D<=cand[cand.length-1].d)return cand[cand.length-1].c;
  var b=cand[0];cand.forEach(function(x){if(Math.abs(x.d-D)<Math.abs(b.d-D))b=x;});return b.c;}
+/* past rounds (a saved round being edited, or a round dated before today): club is optional and never guessed */
+function clubOptional(){try{return !!(R._editId||editRoundId)||(R.date&&R.date<new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10));}catch(e){return false;}}
 function clubSel(hi,si,s){
- var L=myClubs(),cur=s.club||predictClub(hi,si,s);if(!s.clubSet&&cur&&s.club!==cur)s.club=cur;
- var opts=L.map(function(x){return x.c;});if(cur&&opts.indexOf(cur)<0)opts.push(cur);
- return '<select class="clubsel'+(s.clubSet?' set':'')+'" data-club="'+hi+':'+si+'" title="'+(s.clubSet?'':'predicted — change if needed')+'">'+opts.map(function(c){return '<option value="'+c+'"'+(c===cur?' selected':'')+'>'+clubLbl(c)+'</option>';}).join('')+'</select>';}
+ var OPT=clubOptional(),L=myClubs(),cur=OPT?(s.club||''):(s.club||predictClub(hi,si,s));if(!OPT&&!s.clubSet&&cur&&s.club!==cur)s.club=cur;
+ var opts=L.map(function(x){return x.c;});if(cur&&opts.indexOf(cur)<0)opts.push(cur);if(OPT)opts.unshift('');
+ return '<select class="clubsel'+(s.clubSet?' set':'')+'" data-club="'+hi+':'+si+'" title="'+(s.clubSet?'':'predicted — change if needed')+'">'+opts.map(function(c){return '<option value="'+c+'"'+(c===cur?' selected':'')+'>'+(c?clubLbl(c):'–')+'</option>';}).join('')+'</select>';}
 function renderShots(hi){
  var h=R.holes[hi],body=document.getElementById('lgBody'),html='';
  var CLB=!!PROF.trackClubs,tb=document.getElementById('lgTable');if(tb)tb.classList.toggle('noclub',!CLB);
@@ -3242,7 +3244,7 @@ function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input
    if(j>=0&&j<arr.length){e.preventDefault();arr[j].focus();if(arr[j].select)arr[j].select();}});});}
 function wire(){
  wireArrows();
- document.querySelectorAll('#lgBody select.clubsel').forEach(function(el){el.addEventListener('change',function(){var a=el.getAttribute('data-club').split(':'),sh=R.holes[+a[0]].shots[+a[1]];if(!sh)return;sh.club=el.value;sh.clubSet=true;el.classList.add('set');save();});});
+ document.querySelectorAll('#lgBody select.clubsel').forEach(function(el){el.addEventListener('change',function(){var a=el.getAttribute('data-club').split(':'),sh=R.holes[+a[0]].shots[+a[1]];if(!sh)return;sh.club=el.value;sh.clubSet=!!el.value;el.classList.toggle('set',!!el.value);save();});});
  document.querySelectorAll('#lgBody input.lc[data-s]').forEach(function(el){
    // click a different category → move the existing value into it, clear the old
    el.addEventListener('focus',function(){var h=+el.dataset.h,si=+el.dataset.s,lie=el.dataset.lie,sh=R.holes[h].shots[si];if(!sh)return;
