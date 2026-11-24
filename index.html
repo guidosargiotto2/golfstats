@@ -765,6 +765,52 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 @keyframes gimGrow{from{transform:scaleX(0);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}
 @media(max-width:560px){.gimCat{grid-template-columns:120px 1fr 34px 34px;font-size:12px}}
 </style>
+<style id="lgphone">
+/* ===== logging on a phone: ask for landscape, then give the table the whole screen ===== */
+#rotHint{display:none;position:fixed;inset:0;z-index:9500;background:#0b2c21;color:#f6f2e7;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:28px;text-align:center}
+#rotHint svg{width:150px;height:150px}
+#rotHint .rhPhone{transform-origin:75px 75px;animation:rhTurn 2.6s cubic-bezier(.6,0,.3,1) infinite}
+@keyframes rhTurn{0%,18%{transform:rotate(0)}48%,82%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+#rotHint h3{font-family:var(--serif,Georgia,serif);font-weight:600;font-size:24px;margin:0;color:#fff}
+#rotHint p{font-size:14.5px;line-height:1.5;margin:0;max-width:300px;color:#cfe0d4}
+#rotHint button{background:none;border:1px solid #5f8a72;color:#cfe0d4;border-radius:22px;padding:9px 18px;font:600 12px var(--cond,sans-serif);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+#lgMenuBtn{display:none}
+/* wide screens: the actions sit to the right of the table instead of under it */
+@media (min-width:1240px) and (pointer:fine){
+ #view-log #holeView{display:grid;grid-template-columns:minmax(0,980px) minmax(260px,380px);column-gap:26px;align-items:start}
+ #view-log #holeView .holebar{grid-column:1 / -1;max-width:none}
+ #view-log #holeView .holenav,#view-log #holeView .warn,#view-log #holeView .lgtablewrap{grid-column:1}
+ #view-log #holeView .holeacts{grid-column:2;grid-row:2 / span 3;position:sticky;top:12px;background:var(--paper,#fffdf7);border:1px solid var(--line);border-radius:14px;padding:16px;gap:12px;max-width:none}
+ #view-log #holeView .holeacts .actbtns{flex-direction:column;align-items:stretch}
+ #view-log #holeView .holeacts .actbtns button{width:100%;margin-left:0!important}
+ #view-log #holeView .holeacts .actbtns .finish{order:-1}
+ #view-log #holeView .holeacts .inshint{font-size:12px;line-height:1.55}
+}
+@media (orientation:portrait) and (max-width:600px) and (pointer:coarse){body.lgPlaying:not(.rotOk) #rotHint{display:flex}}
+@media (orientation:landscape) and (max-height:540px) and (pointer:coarse){
+ body.lgPlaying:not(.lgNavOpen) .tabnav{display:none}
+ body.lgPlaying #lgMenuBtn{display:flex;position:fixed;right:8px;bottom:8px;z-index:60;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--paper,#fffdf7);color:var(--pine);align-items:center;justify-content:center;font-size:17px;box-shadow:0 4px 12px rgba(15,58,44,.2)}
+ body.lgPlaying #view-log .wrap{padding:0 6px 6px}
+ body.lgPlaying #view-log .bar{display:none}
+ body.lgPlaying #holeView{display:grid;grid-template-columns:minmax(0,1fr) 216px;column-gap:8px;align-items:start;padding-top:4px}
+ body.lgPlaying #holeView .lgtablewrap{grid-column:1;grid-row:1 / span 6;position:sticky;top:4px;max-height:none;height:calc(100dvh - 8px);margin:0;max-width:none}
+ body.lgPlaying #holeView .holebar,body.lgPlaying #holeView .holenav,body.lgPlaying #holeView .warn,body.lgPlaying #holeView .holeacts{grid-column:2;max-width:none;min-width:0}
+ body.lgPlaying #holeView .holebar{padding:6px 8px;margin:0;font-size:12px}
+ body.lgPlaying #holeView .holebar .hn{font-size:17px}
+ body.lgPlaying #holeView .holescore{font-size:18px}
+ body.lgPlaying #holeView .holenav{padding:4px 0;gap:6px}
+ body.lgPlaying #holeView .holenav .prog{display:none}
+ body.lgPlaying #holeView .holenav .navb{flex:1;padding:8px 4px}
+ body.lgPlaying #holeView .holeacts{padding:2px 0 44px;gap:6px}
+ body.lgPlaying #holeView .predhint,body.lgPlaying #holeView .inshint{display:none}
+ body.lgPlaying #holeView .nextshot{padding:12px;font-size:13px}
+ body.lgPlaying #holeView .actbtns{flex-direction:column;gap:6px}
+ body.lgPlaying #holeView .actbtns button{width:100%;margin-left:0!important;padding:9px 8px!important;font-size:11px!important}
+ body.lgPlaying #holeView .actbtns .finish{order:-1}
+ body.lgPlaying .lgscope input.lc{padding:9px 2px;font-size:15px}
+ body.lgPlaying #demoBar,body.lgPlaying #hwSlot{display:none}
+}
+</style>
 <style id="noprint">@media print{html,body{background:#fff!important}body>*{display:none!important}body::before{content:"Golfimbul \2014  printing is disabled. Your game lives in the app.";display:block!important;font:600 18px Georgia,serif;color:#0f3a2c;padding:40px;text-align:center}}</style>
 <script>(function(){document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&(e.key==='p'||e.key==='P')){e.preventDefault();e.stopPropagation();}},true);})();</script>
 </head>
@@ -5120,6 +5166,19 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
    b.textContent='± '+(window.__LANG==='es'?'hándicap plus':'plus handicap');b.onclick=function(){var v=parseFloat(String(i.value).replace(',','.'));if(isNaN(v)||v===0)return;i.value=-v;i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}));};
    i.parentNode.insertBefore(b,i.nextSibling);}
  setInterval(function(){addPM('selChcp');addPM('pf_himan');},1200);})();
+</script>
+<div id="rotHint" role="dialog" aria-live="polite"><svg viewBox="0 0 150 150" aria-hidden="true"><g class="rhPhone"><rect x="50" y="22" width="50" height="106" rx="9" fill="none" stroke="#d8c48c" stroke-width="4"/><line x1="67" y1="118" x2="83" y2="118" stroke="#d8c48c" stroke-width="4" stroke-linecap="round"/></g><path d="M22 60 A 56 56 0 0 1 58 16" fill="none" stroke="#5f8a72" stroke-width="3" stroke-linecap="round"/><path d="M58 16 l-11 0 m11 0 l-3 10" fill="none" stroke="#5f8a72" stroke-width="3" stroke-linecap="round"/></svg><h3 id="rhT"></h3><p id="rhP"></p><button type="button" id="rhGo"></button></div>
+<button type="button" id="lgMenuBtn" aria-label="menu">☰</button>
+<script>
+/* phone logging: flag the play screen on <body>, ask for landscape in portrait, menu button in landscape */
+(function(){var es=function(){return window.__LANG==='es';};
+ function vis(id){var e=document.getElementById(id);return !!(e&&e.offsetParent!==null);}
+ function tick(){var on=vis('view-log')&&vis('holeView')&&vis('lgTable');if(document.body.classList.contains('lgPlaying')!==on){document.body.classList.toggle('lgPlaying',on);if(!on)document.body.classList.remove('lgNavOpen');}
+   var t=document.getElementById('rhT');if(t&&t._l!==es()){t._l=es();t.textContent=es()?'Girá tu teléfono':'Rotate your phone';document.getElementById('rhP').textContent=es()?'Cargar una vuelta es mucho más cómodo de costado: ves todas las columnas a la vez.':'Logging a round works best sideways: you see every column at once.';document.getElementById('rhGo').textContent=es()?'Seguir en vertical':'Continue upright';}}
+ try{if(sessionStorage.getItem('gs-rotok'))document.body.classList.add('rotOk');}catch(e){}
+ document.getElementById('rhGo').onclick=function(){document.body.classList.add('rotOk');try{sessionStorage.setItem('gs-rotok','1');}catch(e){}};
+ document.getElementById('lgMenuBtn').onclick=function(){document.body.classList.toggle('lgNavOpen');window.scrollTo(0,0);};
+ setInterval(tick,400);tick();})();
 </script>
 </body>
 </html>
