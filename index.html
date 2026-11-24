@@ -2176,7 +2176,7 @@ function dpCollect(rows){
        if(!s.disp)return;
        var leave=nx?(nx.lie==='putt'?+nx.dist:+nx.dist*3):0;   /* feet left to the hole after this shot */
        if(s.club)clubs[s.club]=(clubs[s.club]||0)+1;
-       app.push({code:s.disp,short:(+s.dist<=atg),club:s.club||'',leave:leave});});});
+       app.push({code:s.disp,short:(+s.dist<=atg),club:s.club||'',leave:(s.dispYd!=null&&s.disp!=='ok')?+s.dispYd*3:(s.disp==='ok'?0:null),prox:leave});});});
    if(ry+rn)comp.rounds.push({date:r.date||'',y:ry,n:ry+rn});});
  var PBK=[[0,3],[3,5],[5,10],[10,15],[15,25],[25,40],[40,999]],rd={},pk=PBK.map(function(){return {n:0,holed:0,first:0,three:0,sg:0,lv:0,miss:0,c:{hole:0,szP:0,szS:0,szU:0,past:0,short:0,unk:0}};}),prounds=0;
  (rows||[]).forEach(function(r){if(!r)return;var HS=Array.isArray(r.holes)?r.holes:null;if(!HS&&typeof shotsOf==='function'){try{HS=shotsOf(r);}catch(e){HS=null;}}if(!HS||!HS.length)return;var had=false;
@@ -2202,9 +2202,9 @@ function dpHTML(rows){
  var h='';
  var grid=function(A,centre){var N=A.length,G={};A.forEach(function(x){(G[x.code]=G[x.code]||[]).push(x.leave);});
    var mx=Math.max.apply(null,Object.keys(G).map(function(k){return G[k].length;}).concat([1]));
-   var leaveTxt=function(a){if(!a||!a.length)return '';var f=a.reduce(function(x,y){return x+y;},0)/a.length;return f<45?Math.round(f)+' ft':toU(Math.round(f/3))+' '+unit();};
+   var leaveTxt=function(a){a=(a||[]).filter(function(v){return v!=null;});if(!a.length)return '';var f=a.reduce(function(x,y){return x+y;},0)/a.length;return f<45?Math.round(f)+' ft':toU(Math.round(f/3))+' '+unit();};
    var cell=function(c,name){var a=G[c]||[],n=a.length,sh=n?(0.10+0.55*n/mx):0;
-     return '<div class="dpCell'+(c==='ok'?' ok':'')+(n?'':' zero')+'" style="'+(n?'background:rgba('+(c==='ok'?'31,122,77':'15,58,44')+','+sh.toFixed(2)+');'+(sh>0.42?'color:#fff;':''):'')+'" title="'+name+'"><b>'+(n?(N>=MIN?pct(n,N)+'%':n):'·')+'</b>'+(n?'<span>'+(N>=MIN?n+' · ':'')+leaveTxt(a)+'</span>':'')+'</div>';};
+     return '<div class="dpCell'+(c==='ok'?' ok':'')+(n?'':' zero')+'" style="'+(n?'background:rgba('+(c==='ok'?'31,122,77':'15,58,44')+','+sh.toFixed(2)+');'+(sh>0.42?'color:#fff;':''):'')+'" title="'+name+'"><b>'+(n?(N>=MIN?pct(n,N)+'%':n):'·')+'</b>'+(n?'<span>'+[(N>=MIN?n:''),(c==='ok'?'':leaveTxt(a))].filter(Boolean).join(' · ')+'</span>':'')+'</div>';};
    var cnt=function(cs){return cs.reduce(function(a,c){return a+((G[c]||[]).length);},0);};
    return {N:N,sh:cnt(['S','SL','SR']),lo:cnt(['G','GL','GR']),le:cnt(['L','SL','GL']),ri:cnt(['R','SR','GR']),ok:cnt(['ok']),
      html:'<div class="dpGridWrap"><div class="dpAx top">'+T('Long','Largo')+'</div><div class="dpMid"><div class="dpAx side">'+T('Left','Izq.')+'</div>'+
@@ -2231,13 +2231,13 @@ function dpHTML(rows){
    var A=D.app.filter(function(x){return (DPF.seg==='all'||(DPF.seg==='short')===x.short)&&(!DPF.club||x.club===DPF.club);}),N=A.length;
    var G={};A.forEach(function(x){(G[x.code]=G[x.code]||[]).push(x.leave);});
    var mx=Math.max.apply(null,Object.keys(G).map(function(k){return G[k].length;}).concat([1]));
-   var leaveTxt=function(a){if(!a||!a.length)return '';var f=a.reduce(function(x,y){return x+y;},0)/a.length;return f<45?Math.round(f)+' ft':toU(Math.round(f/3))+' '+unit();};
+   var leaveTxt=function(a){a=(a||[]).filter(function(v){return v!=null;});if(!a.length)return '';var f=a.reduce(function(x,y){return x+y;},0)/a.length;return f<45?Math.round(f)+' ft':toU(Math.round(f/3))+' '+unit();};
    var cell=function(c,name){var a=G[c]||[],n=a.length,sh=n?(0.10+0.55*n/mx):0;
-     return '<div class="dpCell'+(c==='ok'?' ok':'')+(n?'':' zero')+'" style="'+(n?'background:rgba('+(c==='ok'?'31,122,77':'15,58,44')+','+sh.toFixed(2)+');'+(sh>0.42?'color:#fff;':''):'')+'" title="'+name+'"><b>'+(n?(N>=MIN?pct(n,N)+'%':n):'·')+'</b>'+(n?'<span>'+(N>=MIN?n+' · ':'')+leaveTxt(a)+'</span>':'')+'</div>';};
+     return '<div class="dpCell'+(c==='ok'?' ok':'')+(n?'':' zero')+'" style="'+(n?'background:rgba('+(c==='ok'?'31,122,77':'15,58,44')+','+sh.toFixed(2)+');'+(sh>0.42?'color:#fff;':''):'')+'" title="'+name+'"><b>'+(n?(N>=MIN?pct(n,N)+'%':n):'·')+'</b>'+(n?'<span>'+[(N>=MIN?n:''),(c==='ok'?'':leaveTxt(a))].filter(Boolean).join(' · ')+'</span>':'')+'</div>';};
    var cnt=function(cs){return cs.reduce(function(a,c){return a+((G[c]||[]).length);},0);};
    var sh=cnt(['S','SL','SR']),lo=cnt(['G','GL','GR']),le=cnt(['L','SL','GL']),ri=cnt(['R','SR','GR']),ok=cnt(['ok']),miss=N-ok;
    var btn=function(k,tx){return '<button type="button" data-dpseg="'+k+'"'+(DPF.seg===k?' class="on"':'')+'>'+tx+'</button>';};
-   h+='<div class="dpBlock"><h3>'+T('Where you finish against the flag','Dónde terminás respecto de la bandera')+'</h3>'+
+   h+='<div class="dpBlock"><h3>'+T('Where you finish against your target','Dónde terminás respecto de tu objetivo')+'</h3>'+
      '<div class="controls dpCtl">'+btn('all',T('All','Todos'))+btn('app','Approaches (>'+toU(D.atg)+' '+unit()+')')+btn('short',T('Short game','Juego corto'))+
        (clubKeys.length?'<select id="dpClub"><option value="">'+T('All clubs','Todos los palos')+'</option>'+clubKeys.map(function(c){return '<option value="'+c+'"'+(c===DPF.club?' selected':'')+'>'+lbl(c)+' ('+D.clubs[c]+')</option>';}).join('')+'</select>':'')+'</div>'+
      (N?'<div class="dpGridWrap"><div class="dpAx top">'+T('Long','Largo')+'</div><div class="dpMid"><div class="dpAx side">'+T('Left','Izq.')+'</div>'+
@@ -2249,7 +2249,7 @@ function dpHTML(rows){
        (N<MIN?'<p class="dpMute">'+T('Counts only for now: percentages appear from '+MIN+' shots.','Por ahora solo cantidades: los porcentajes aparecen desde '+MIN+' tiros.')+'</p>':
         (miss>=6&&sh>=miss*0.6?'<p class="dpRead">'+T('Most of your misses are short ('+pct(sh,miss)+'%). That is rarely a swing problem: it is a club choice.','La mayoría de tus fallos son cortos ('+pct(sh,miss)+'%). Rara vez es el swing: es la elección del palo.')+'</p>':
          miss>=6&&lo>=miss*0.6?'<p class="dpRead">'+T('Most of your misses are long ('+pct(lo,miss)+'%).','La mayoría de tus fallos son largos ('+pct(lo,miss)+'%).')+'</p>':''))+
-       '<p class="dpMute">'+T('Under each share: how far from the hole the next shot was, on average.','Debajo de cada porcentaje: a qué distancia del hoyo quedó el tiro siguiente, en promedio.')+'</p>'
+       (function(){var pr=A.map(function(x){return x.prox;}),pa=pr.length?pr.reduce(function(x,y){return x+y;},0)/pr.length:0;return '<p class="dpMute">'+T('Misses are measured against your target, not the flag: under each share, the average distance from the target on the shots where you entered it. Proximity to the hole is a different number: ','Los fallos se miden contra tu objetivo, no contra la bandera: debajo de cada porcentaje, la distancia promedio al objetivo en los tiros donde la cargaste. La cercanía al hoyo es otro número: ')+'<b>'+(pa<45?Math.round(pa)+' ft':toU(Math.round(pa/3))+' '+unit())+'</b> '+T('on average after these shots.','en promedio después de estos tiros.')+'</p>';})()
       :'<p class="dpMute">'+T('No shots match these filters.','Ningún tiro coincide con estos filtros.')+'</p>')+'</div>';}
  /* ---- missed putts ---- */
  if(D.putts.length||D.lag.n||ptot){var lg=D.lag;
@@ -3390,8 +3390,8 @@ function dispSel(hi,si,s){var k=dispKind(hi,si,s);if(!k)return '';var es=window.
  var codes=k==='tee'?['L','R']:k==='putt'?['L','R','S','G','SL','SR','GL','GR']:['ok','L','R','S','G','SL','SR','GL','GR'],cur=(s.disp&&codes.indexOf(s.disp)>=0)?s.disp:'';
  return '<select class="dispsel'+(cur==='ok'?' ok':cur?' miss':'')+'" data-disp="'+hi+':'+si+'" data-kind="'+k+'" title="'+(cur?DISP_LBL[cur][es+1]:(es?'¿Dónde terminó respecto de tu objetivo?':'Where did it finish against your target?'))+'"><option value="">·</option>'+
    codes.map(function(c){return '<option value="'+c+'"'+(c===cur?' selected':'')+'>'+DISP_LBL[c][es]+'\u2003\u2003\u2003'+DISP_LBL[c][es+1]+'</option>';}).join('')+'</select>'+
-   '<input class="dispyd" type="number" inputmode="numeric" min="0" max="150" data-dispyd="'+hi+':'+si+'" value="'+(s.dispYd!=null?Y2U(s.dispYd):'')+'" placeholder="'+distUnit('fw')+'" title="'+(es?'¿Cuánto hacia el costado? (opcional)':'How far offline? (optional)')+'" style="'+(k==='tee'&&dispSide(cur)?'':'display:none')+'">';}
-function dispSide(c){return !!c&&c!=='ok';}   /* yards offline are asked on tee shots only: on every other shot the miss distance is the next shot's distance to the hole */
+   '<input class="dispyd" type="number" inputmode="numeric" min="0" max="150" data-dispyd="'+hi+':'+si+'" value="'+(s.dispYd!=null?Y2U(s.dispYd):'')+'" placeholder="'+distUnit('fw')+'" title="'+(es?'¿A cuánto de tu objetivo? (opcional)':'How far from your target? (optional)')+'" style="'+(k!=='putt'&&dispSide(cur)?'':'display:none')+'">';}
+function dispSide(c){return !!c&&c!=='ok';}   /* any miss except a putt can carry a distance: how far from the TARGET (not the flag) the ball finished */
 /* ===== putt read: slope and break, on putts longer than 3 ft. Codes are language-neutral:
    D/U = downhill/uphill, L = breaks left-to-right, R = right-to-left, F = flat and straight ===== */
 var READ_LBL={DL:['DL','Downhill, left-to-right','BI','Bajada, de izquierda a derecha'],D:['D','Downhill, straight','B','Bajada, recto'],DR:['DR','Downhill, right-to-left','BD','Bajada, de derecha a izquierda'],
@@ -3583,7 +3583,7 @@ function wire(){
  wireArrows();
  document.querySelectorAll('#lgBody select.dispsel').forEach(function(el){el.addEventListener('change',function(){var a=el.getAttribute('data-disp').split(':'),sh=R.holes[+a[0]].shots[+a[1]];if(!sh)return;
    if(el.value)sh.disp=el.value;else delete sh.disp;el.className='dispsel'+(el.value==='ok'?' ok':el.value?' miss':'');
-   var yi=el.parentNode.querySelector('input.dispyd');if(yi){if(el.getAttribute('data-kind')==='tee'&&dispSide(el.value)){yi.style.display='';if(!el._kb)yi.focus();}else{yi.style.display='none';yi.value='';delete sh.dispYd;}}save();});});
+   var yi=el.parentNode.querySelector('input.dispyd');if(yi){if(el.getAttribute('data-kind')!=='putt'&&dispSide(el.value)){yi.style.display='';if(!el._kb)yi.focus();}else{yi.style.display='none';yi.value='';delete sh.dispYd;}}save();});});
  document.querySelectorAll('#lgBody select.readsel').forEach(function(el){el.addEventListener('change',function(){var a=el.getAttribute('data-read').split(':'),sh=R.holes[+a[0]].shots[+a[1]];if(!sh)return;
    if(el.value)sh.read=el.value;else delete sh.read;el.classList.toggle('set',!!el.value);save();});});
  document.querySelectorAll('#lgBody input.dispyd').forEach(function(el){el.addEventListener('change',function(){var a=el.getAttribute('data-dispyd').split(':'),sh=R.holes[+a[0]].shots[+a[1]];if(!sh)return;
@@ -3768,7 +3768,7 @@ function renderProf(){
     <label>${window.__LANG==='es'?'Registrar hacia dónde fallaste':'Record where you missed'}<select id="pf_disp">
       <option value="off" ${PROF.trackDisp?'':'selected'}>${window.__LANG==='es'?'No':'Off'}</option>
       <option value="on" ${PROF.trackDisp?'selected':''}>${window.__LANG==='es'?'Sí — una celda por tiro':'On — one cell per shot'}</option></select></label>
-    <div class="hisub">${window.__LANG==='es'?'Salida en par 4 y 5: solo si no quedó en el fairway, izquierda (I) o derecha (D). Todos los demás tiros salvo putts: corto/largo e izquierda/derecha — CI, CD, LI, LD — o ✓ si quedó en el objetivo. Si fallaste el fairway, un casillero permite agregar cuánto al costado (I 15). En los demás tiros el tamaño del fallo ya se conoce: es la distancia de tu próximo tiro. Un putt errado también tiene la celda (corto o largo, izquierda o derecha): así se mide el putt de aproximación. Opcional en cada tiro.':'Tee shots on par 4s and 5s: only when you missed the fairway, left (L) or right (R). Every other shot except putts: short/long and left/right — SL, SR, LL, LR — or ✓ when it finished on target. On a missed fairway a small box lets you add how far offline (L 15). On every other shot the size of the miss is already known: it is the distance of your next shot. A missed putt gets the cell too (short or long, left or right), which is how lag putting is measured. Optional on each shot.'}</div>
+    <div class="hisub">${window.__LANG==='es'?'Salida en par 4 y 5: solo si no quedó en el fairway, izquierda (I) o derecha (D). Todos los demás tiros salvo putts: corto/largo e izquierda/derecha — CI, CD, LI, LD — o ✓ si quedó en el objetivo. La dispersión se mide contra tu objetivo, no contra la bandera: si apuntás 20 yardas a la derecha del hoyo y la dejás ahí, es ✓. En cualquier fallo un casillero permite agregar a cuánto de tu objetivo quedaste (I 15). Un putt errado también tiene la celda (corto o largo, izquierda o derecha). Opcional en cada tiro.':'Tee shots on par 4s and 5s: only when you missed the fairway, left (L) or right (R). Every other shot except putts: short/long and left/right — SL, SR, LL, LR — or ✓ when it finished on target. Dispersion is measured against your target, not the flag: aim 20 yards right of the pin and hit it there, and that is ✓. On any miss a small box lets you add how far from the target you finished (L 15). A missed putt gets the cell too (short or long, left or right). Optional on each shot.'}</div>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>${window.__LANG==='es'?'Lectura del putt':'Putt read'}</span><em class="estchip">+1 min</em></div>
