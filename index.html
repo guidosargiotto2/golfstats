@@ -735,6 +735,48 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope .pgrp .pgB .bagEntry{margin:10px 0 0;}
 .lgscope .pgrp .pgB .frsec{border:none;padding:10px 0 6px;margin:0;border-bottom:1px solid var(--line-soft,#eee9da);border-radius:0;background:transparent;}
 .lgscope .pgrp .pgB .frsec:last-child{border-bottom:none;}
+
+/* ===== Statistics: dispersion & process ===== */
+#panel_dp{padding:6px 20px 16px}
+.dpBlock{padding:18px 0;border-bottom:1px solid var(--line)}
+.dpBlock:last-child{border-bottom:none}
+.dpBlock h3{font-family:var(--serif);font-weight:600;font-size:19px;color:var(--pine);margin:0 0 12px}
+.dpEmpty{padding:18px 4px;font-size:15px;line-height:1.55;color:var(--ink)}
+.dpBar{display:flex;gap:3px;height:58px;border-radius:12px;overflow:hidden;margin-bottom:12px}
+.dpSeg{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;color:#fff;font-family:var(--cond);animation:dpIn .5s ease both}
+.dpSeg b{font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;opacity:.9;white-space:nowrap}
+.dpSeg span{font-size:20px;font-weight:700;line-height:1.1}
+.dpSeg.f{background:var(--fairway)}.dpSeg.l,.dpSeg.r{background:var(--sand-deep,#b89a52)}
+.dpFacts{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:14px;color:var(--ink-soft)}
+.dpFacts b{color:var(--ink);font-family:var(--cond);font-size:16px}
+.dpRead{margin:12px 0 0;padding:10px 14px;background:rgba(216,196,140,.18);border-left:3px solid var(--sand-deep,#b89a52);font-size:14.5px;line-height:1.5;color:var(--ink)}
+.dpMute{font-size:12.5px;color:var(--ink-soft);margin:10px 0 0}
+.dpCtl{margin:0 0 14px!important;align-items:center}
+.dpCtl select{margin-left:6px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:7px 10px;font-family:var(--cond);font-weight:700;font-size:13px;color:var(--ink)}
+.dpGridWrap{display:inline-flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:12px;max-width:100%}
+.dpMid{display:flex;align-items:center;gap:8px}
+.dpAx{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.dpAx.side{writing-mode:vertical-rl;transform:rotate(180deg)}
+.dpMid .dpAx.side:last-child{transform:none}
+.dpGrid{display:grid;grid-template-columns:repeat(3,minmax(78px,112px));grid-auto-rows:74px;gap:4px}
+.dpCell{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;color:var(--pine);font-family:var(--cond);animation:dpIn .45s ease both}
+.dpCell b{font-size:22px;font-weight:700;line-height:1.1}
+.dpCell span{font-size:11.5px;opacity:.85;white-space:nowrap}
+.dpCell.zero{border:1px dashed var(--line);color:var(--ink-soft)}
+.dpCell.ok{outline:2px solid var(--fairway);outline-offset:-2px}
+.dpKpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.dpKpis>div{background:rgba(15,58,44,.05);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.dpKpis span{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.dpKpis b{font-family:var(--serif);font-size:30px;font-weight:600;color:var(--pine);line-height:1.15}
+.dpKpis b.neg{color:var(--clay)}.dpKpis b.pos{color:var(--fairway)}
+.dpKpis small{font-size:12px;color:var(--ink-soft)}
+.dpRounds{display:flex;align-items:flex-end;gap:5px;height:96px;margin-top:16px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.dpR{position:relative;flex:1 1 0;max-width:34px;height:100%;display:flex;align-items:flex-end}
+.dpR i{display:block;width:100%;background:var(--fairway);border-radius:5px 5px 0 0;animation:dpGrow .6s ease both;transform-origin:bottom}
+.dpR span{position:absolute;bottom:-17px;left:0;right:0;text-align:center;font-family:var(--cond);font-size:11px;color:var(--ink-soft)}
+@keyframes dpIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes dpGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@media (max-width:560px){#panel_dp{padding:4px 12px 12px}.dpGrid{grid-template-columns:repeat(3,minmax(64px,1fr));grid-auto-rows:66px}.dpGridWrap{display:flex}}
 .lgscope td.clubc{text-align:center;}
 .estbig{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:4px 0 6px;}
 .estbig b{font-family:var(--serif,Georgia,serif);font-size:30px;font-weight:600;color:var(--pine,#1c3d2e);letter-spacing:-.01em;}
@@ -1381,6 +1423,12 @@ svg.tgSvg{width:100%;height:auto;display:block;}
     <div class="controls" id="ctrl_sh"></div>
     <div class="chtype"><span id="mlbl_sh">XmR</span> <span data-i18n="chart">chart</span></div>
     <div class="card" id="panel_sh"></div>
+  </section>
+
+  <section id="sec_dp">
+    <h2><span class="n">⌖</span> <span data-i18n="Dispersion & process">Dispersion &amp; process</span></h2>
+    <p class="lead" data-i18n="Where your shots finish and whether you did what you had decided to do. Built only from what you mark on each shot when you log a round.">Where your shots finish and whether you did what you had decided to do. Built only from what you mark on each shot when you log a round.</p>
+    <div class="card" id="panel_dp"></div>
   </section>
 
   <section>
@@ -2076,9 +2124,93 @@ function distFromRounds(rows){
    putt:ps.map(b=>({from:b.from,to:b.to,sgr:r3(b.sum/nr),pr:r3(b.cnt/nr),sgp:b.cnt?r3(b.sum/b.cnt):0})),
    puttTotal:{sgr:r3(pS/nr),pr:r3(pC/nr),sgp:pC?r3(pS/pC):0}};}
 window.SGVIEW=function(r,force){try{return sgView(r,force);}catch(e){return r;}};
+/* ===== Dispersion & process: built only from what the player logs per shot (disp, dispYd, comp, club) ===== */
+var DPF={seg:'all',club:''};
+function dpCollect(rows){
+ var E=window.SGE,atg=(E&&E.atgYd)?E.atgYd():50;
+ var tee={n:0,fw:0,L:0,R:0,unk:0,ydL:[],ydR:[]},app=[],comp={y:0,n:0,sgY:0,sgN:0,rounds:[]},clubs={};
+ (rows||[]).forEach(function(r){if(!r||!Array.isArray(r.holes))return;var ry=0,rn=0;
+   r.holes.forEach(function(h){if(!h||!h.shots||!h.shots.length)return;var S=h.shots;
+     S.forEach(function(s,i){if(!s)return;var nx=S[i+1];
+       if(s.comp===true||s.comp===false){var sg=null;if(E&&E.Estart){try{sg=E.Estart(s.lie,+s.dist)-(nx?E.Estart(nx.lie,+nx.dist):0)-1-(s.pen||0);}catch(e){sg=null;}}
+         if(s.comp){comp.y++;ry++;if(sg!=null&&isFinite(sg))comp.sgY+=sg;}else{comp.n++;rn++;if(sg!=null&&isFinite(sg))comp.sgN+=sg;}}
+       if(s.lie==='putt')return;
+       if(i===0&&s.lie==='tee'&&h.par!==3){if(!nx)return;tee.n++;
+         if(nx.lie==='fw'||nx.lie==='putt'){tee.fw++;return;}
+         if(s.disp==='L'){tee.L++;if(s.dispYd!=null)tee.ydL.push(+s.dispYd);}else if(s.disp==='R'){tee.R++;if(s.dispYd!=null)tee.ydR.push(+s.dispYd);}else tee.unk++;
+         return;}
+       if(!s.disp)return;
+       var leave=nx?(nx.lie==='putt'?+nx.dist:+nx.dist*3):0;   /* feet left to the hole after this shot */
+       if(s.club)clubs[s.club]=(clubs[s.club]||0)+1;
+       app.push({code:s.disp,short:(+s.dist<=atg),club:s.club||'',leave:leave});});});
+   if(ry+rn)comp.rounds.push({date:r.date||'',y:ry,n:ry+rn});});
+ return {tee:tee,app:app,comp:comp,clubs:clubs,atg:atg};}
+function dpHTML(rows){
+ var es=window.__LANG==='es',T=function(a,b){return es?b:a;},D=dpCollect(rows),t=D.tee,MIN=10;
+ var avg=function(a){return a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length):null;};
+ var pct=function(a,b){return b?Math.round(a/b*100):0;};
+ var unit=function(){try{return (typeof PROF!=='undefined'&&PROF.units==='m')?'m':'yd';}catch(e){return 'yd';}},toU=function(y){return unit()==='m'?Math.round(y*0.9144):y;};
+ var lbl=function(c){return window.clubLbl?window.clubLbl(c):c;};
+ var any=t.L+t.R+t.unk+D.app.length+D.comp.y+D.comp.n;
+ if(!any)return '<div class="dpEmpty"><strong>'+T('Nothing logged yet.','Todavía no hay datos.')+'</strong> '+T('Turn on Dispersion and Process compliance in Profile → Round logging, and mark them as you log. This section fills itself from your own shots.','Activá Dispersión y Cumplimiento del proceso en Perfil → Carga de vueltas y marcalos al cargar. Esta sección se arma sola con tus tiros.')+'</div>';
+ var h='';
+ /* ---- tee shots ---- */
+ var known=t.fw+t.L+t.R;
+ if(t.L+t.R+t.unk>0){
+   var seg=function(n,cls,txt){var w=known?Math.max(n?9:0,n/known*100):0;return n?'<div class="dpSeg '+cls+'" style="flex:'+w.toFixed(1)+' 1 0"><b>'+txt+'</b><span>'+(known>=MIN?pct(n,known)+'%':n)+'</span></div>':'';};
+   var aL=avg(t.ydL),aR=avg(t.ydR);
+   h+='<div class="dpBlock"><h3>'+T('Tee shots — par 4s and 5s','Salidas — pares 4 y 5')+'</h3>'+
+     (known?'<div class="dpBar">'+seg(t.L,'l',T('Left','Izquierda'))+seg(t.fw,'f','Fairway')+seg(t.R,'r',T('Right','Derecha'))+'</div>':'')+
+     '<div class="dpFacts"><span><b>'+t.fw+'/'+t.n+'</b> '+T('fairways hit','fairways')+'</span>'+
+       '<span><b>'+t.L+'</b> '+T('left','a la izquierda')+(aL!=null?' · '+T('avg','prom.')+' '+toU(aL)+' '+unit():'')+'</span>'+
+       '<span><b>'+t.R+'</b> '+T('right','a la derecha')+(aR!=null?' · '+T('avg','prom.')+' '+toU(aR)+' '+unit():'')+'</span>'+
+       (t.unk?'<span class="dpMute"><b>'+t.unk+'</b> '+T('missed, side not recorded','fallados sin lado cargado')+'</span>':'')+'</div>'+
+     ((t.L+t.R)>=5&&Math.abs(t.L-t.R)>=Math.max(3,(t.L+t.R)*0.4)?'<p class="dpRead">'+(t.L>t.R?T('Your miss is one-sided: left. That is a pattern you can aim for.','Tu fallo es de un solo lado: izquierda. Es un patrón al que podés apuntarle.'):T('Your miss is one-sided: right. That is a pattern you can aim for.','Tu fallo es de un solo lado: derecha. Es un patrón al que podés apuntarle.'))+'</p>':'')+
+     '</div>';}
+ /* ---- approaches & short game ---- */
+ if(D.app.length){
+   var clubKeys=Object.keys(D.clubs).sort(function(a,b){return D.clubs[b]-D.clubs[a];});if(DPF.club&&clubKeys.indexOf(DPF.club)<0)DPF.club='';
+   var A=D.app.filter(function(x){return (DPF.seg==='all'||(DPF.seg==='short')===x.short)&&(!DPF.club||x.club===DPF.club);}),N=A.length;
+   var G={};A.forEach(function(x){(G[x.code]=G[x.code]||[]).push(x.leave);});
+   var mx=Math.max.apply(null,Object.keys(G).map(function(k){return G[k].length;}).concat([1]));
+   var leaveTxt=function(a){if(!a||!a.length)return '';var f=a.reduce(function(x,y){return x+y;},0)/a.length;return f<45?Math.round(f)+' ft':toU(Math.round(f/3))+' '+unit();};
+   var cell=function(c,name){var a=G[c]||[],n=a.length,sh=n?(0.10+0.55*n/mx):0;
+     return '<div class="dpCell'+(c==='ok'?' ok':'')+(n?'':' zero')+'" style="'+(n?'background:rgba('+(c==='ok'?'31,122,77':'15,58,44')+','+sh.toFixed(2)+');'+(sh>0.42?'color:#fff;':''):'')+'" title="'+name+'"><b>'+(n?(N>=MIN?pct(n,N)+'%':n):'·')+'</b>'+(n?'<span>'+(N>=MIN?n+' · ':'')+leaveTxt(a)+'</span>':'')+'</div>';};
+   var cnt=function(cs){return cs.reduce(function(a,c){return a+((G[c]||[]).length);},0);};
+   var sh=cnt(['S','SL','SR']),lo=cnt(['G','GL','GR']),le=cnt(['L','SL','GL']),ri=cnt(['R','SR','GR']),ok=cnt(['ok']),miss=N-ok;
+   var btn=function(k,tx){return '<button type="button" data-dpseg="'+k+'"'+(DPF.seg===k?' class="on"':'')+'>'+tx+'</button>';};
+   h+='<div class="dpBlock"><h3>'+T('Where you finish against the flag','Dónde terminás respecto de la bandera')+'</h3>'+
+     '<div class="controls dpCtl">'+btn('all',T('All','Todos'))+btn('app','Approaches (>'+toU(D.atg)+' '+unit()+')')+btn('short',T('Short game','Juego corto'))+
+       (clubKeys.length?'<select id="dpClub"><option value="">'+T('All clubs','Todos los palos')+'</option>'+clubKeys.map(function(c){return '<option value="'+c+'"'+(c===DPF.club?' selected':'')+'>'+lbl(c)+' ('+D.clubs[c]+')</option>';}).join('')+'</select>':'')+'</div>'+
+     (N?'<div class="dpGridWrap"><div class="dpAx top">'+T('Long','Largo')+'</div><div class="dpMid"><div class="dpAx side">'+T('Left','Izq.')+'</div>'+
+       '<div class="dpGrid">'+cell('GL',T('Long left','Largo izquierda'))+cell('G',T('Long','Largo'))+cell('GR',T('Long right','Largo derecha'))+
+         cell('L',T('Left','Izquierda'))+cell('ok',T('On target','En el objetivo'))+cell('R',T('Right','Derecha'))+
+         cell('SL',T('Short left','Corto izquierda'))+cell('S',T('Short','Corto'))+cell('SR',T('Short right','Corto derecha'))+'</div>'+
+       '<div class="dpAx side">'+T('Right','Der.')+'</div></div><div class="dpAx top">'+T('Short','Corto')+'</div></div>'+
+       '<div class="dpFacts"><span><b>'+N+'</b> '+T('shots','tiros')+'</span><span><b>'+ok+'</b> '+T('on target','en el objetivo')+'</span><span><b>'+sh+'</b> '+T('short','cortos')+' · <b>'+lo+'</b> '+T('long','largos')+'</span><span><b>'+le+'</b> '+T('left','izquierda')+' · <b>'+ri+'</b> '+T('right','derecha')+'</span></div>'+
+       (N<MIN?'<p class="dpMute">'+T('Counts only for now: percentages appear from '+MIN+' shots.','Por ahora solo cantidades: los porcentajes aparecen desde '+MIN+' tiros.')+'</p>':
+        (miss>=6&&sh>=miss*0.6?'<p class="dpRead">'+T('Most of your misses are short ('+pct(sh,miss)+'%). That is rarely a swing problem: it is a club choice.','La mayoría de tus fallos son cortos ('+pct(sh,miss)+'%). Rara vez es el swing: es la elección del palo.')+'</p>':
+         miss>=6&&lo>=miss*0.6?'<p class="dpRead">'+T('Most of your misses are long ('+pct(lo,miss)+'%).','La mayoría de tus fallos son largos ('+pct(lo,miss)+'%).')+'</p>':''))+
+       '<p class="dpMute">'+T('Under each share: how far from the hole the next shot was, on average.','Debajo de cada porcentaje: a qué distancia del hoyo quedó el tiro siguiente, en promedio.')+'</p>'
+      :'<p class="dpMute">'+T('No shots match these filters.','Ningún tiro coincide con estos filtros.')+'</p>')+'</div>';}
+ /* ---- process compliance ---- */
+ var c=D.comp,ct=c.y+c.n;
+ if(ct){var f=function(x){return (x>0?'+':'')+x.toFixed(2);},sy=c.y?c.sgY/c.y:null,sn=c.n?c.sgN/c.n:null;
+   h+='<div class="dpBlock"><h3>'+T('Process compliance','Cumplimiento del proceso')+'</h3>'+
+     '<div class="dpKpis"><div><span>'+T('Followed your process','Cumpliste tu proceso')+'</span><b>'+pct(c.y,ct)+'%</b><small>'+c.y+' / '+ct+' '+T('shots answered','tiros respondidos')+'</small></div>'+
+       '<div><span>'+T('Strokes gained per shot — ✓','Golpes ganados por tiro — ✓')+'</span><b class="'+(sy==null?'':sy<0?'neg':'pos')+'">'+(sy==null?'—':f(sy))+'</b><small>'+c.y+' '+T('shots','tiros')+'</small></div>'+
+       '<div><span>'+T('Strokes gained per shot — ✕','Golpes ganados por tiro — ✕')+'</span><b class="'+(sn==null?'':sn<0?'neg':'pos')+'">'+(sn==null?'—':f(sn))+'</b><small>'+c.n+' '+T('shots','tiros')+'</small></div></div>'+
+     (sy!=null&&sn!=null&&c.y>=MIN&&c.n>=MIN?'<p class="dpRead">'+T('The price of skipping your process: '+f(sn-sy)+' strokes per shot.','El precio de saltearte el proceso: '+f(sn-sy)+' golpes por tiro.')+'</p>':'<p class="dpMute">'+T('The comparison becomes meaningful with at least '+MIN+' shots on each side.','La comparación empieza a decir algo con al menos '+MIN+' tiros de cada lado.')+'</p>')+
+     '<div class="dpRounds">'+c.rounds.slice(-20).map(function(r){var p=pct(r.y,r.n);return '<div class="dpR" title="'+r.date+' · '+r.y+'/'+r.n+'"><i style="height:'+Math.max(4,p)+'%"></i><span>'+p+'</span></div>';}).join('')+'</div>'+
+     '<p class="dpMute">'+T('Compliance % per round, oldest to newest.','Cumplimiento % por vuelta, de la más antigua a la más reciente.')+'</p></div>';}
+ return h;}
+function renderDisp(){var el=document.getElementById('panel_dp');if(!el)return;el.innerHTML=dpHTML(R);
+ el.querySelectorAll('[data-dpseg]').forEach(function(b){b.onclick=function(){DPF.seg=b.getAttribute('data-dpseg');renderDisp();};});
+ var cs=el.querySelector('#dpClub');if(cs)cs.onchange=function(){DPF.club=cs.value;renderDisp();};}
+
 function renderAll(){
  const FULL=BASE.concat(CUSTOM).map(sgView);
- R=filterRounds(FULL,kpiRange); const N=R.length, idx=R.map((_,i)=>i+1);
+ R=filterRounds(FULL,kpiRange);try{renderDisp();}catch(e){} const N=R.length, idx=R.map((_,i)=>i+1);
  document.getElementById('customBadge').innerHTML=CUSTOM.length?`<span class="badge">${CUSTOM.length} ${LX('logged here','cargadas acá')}</span>`:'';
  {const rc=document.getElementById('kpiRange');if(rc)rc.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.r===kpiRange));}
  document.getElementById('foot').textContent=PLAYER+' · '+RANGE_LBL[kpiRange]+LX(' · showing ',' · mostrando ')+N+LX(' of ',' de ')+FULL.length+LX(' rounds · SG via Broadie benchmark tables',' vueltas · SG según tablas de referencia de Broadie');
@@ -2687,7 +2819,7 @@ function prefPull(){if(!localStorage.getItem('gs-token'))return;prefCall({action
    /* this device has never synced: the profile with more settings changed from the defaults wins the first time */
    if(sv._first&&prefDiff(PROF)>(+sv._diff||0))giveFirst();else take();}).catch(function(){});}
 /* ===== i18n (Stage 1: on-course flow) ===== */
-var I18N_ES={"Club":"Palo","Compl.":"Cumpl.","Disp.":"Disp.","My bag":"Mi bolsa","← Profile":"← Perfil","Plans":"Planes","Pricing":"Precios","Approach":"Approach","Around grn":"Juego corto","Copy for sheet":"Copiar para planilla","pen":"pen","Friends":"Amigos","Share":"Compartir","NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
+var I18N_ES={"Club":"Palo","Dispersion & process":"Dispersión y proceso","Where your shots finish and whether you did what you had decided to do. Built only from what you mark on each shot when you log a round.":"Dónde terminan tus tiros y si hiciste lo que habías decidido hacer. Se arma solo con lo que marcás en cada tiro al cargar una vuelta.","Compl.":"Cumpl.","Disp.":"Disp.","My bag":"Mi bolsa","← Profile":"← Perfil","Plans":"Planes","Pricing":"Precios","Approach":"Approach","Around grn":"Juego corto","Copy for sheet":"Copiar para planilla","pen":"pen","Friends":"Amigos","Share":"Compartir","NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
  "Log a round":"Cargar vuelta","Statistics":"Estadísticas","Round ledger":"Mis vueltas","Profile":"Perfil","Ideas":"Ideas","Log out":"Salir",
  "Course":"Cancha","Tee":"Tee","Holes":"Hoyos","Score":"Score","Playing HCP":"HCP de juego","Date":"Fecha",
  "18 holes":"18 hoyos","Front 9 (1–9)":"Primeros 9 (1–9)","Back 9 (10–18)":"Segundos 9 (10–18)",
@@ -3112,6 +3244,7 @@ function clubCode(name){var m=String(name||'');if(/^Driver/i.test(m))return 'Dr'
  if(/Pitching/i.test(m))return 'PW';if(/Gap/i.test(m))return 'GW';if(/Sand/i.test(m))return 'SW';if(/Lob/i.test(m))return 'LW';if(/Putter/i.test(m))return 'Pt';return m.slice(0,3);}
 function clubLbl(c){var m=PROF.clubShort||{};if(m[c])return m[c];if(c==='Dr')return 'D';if(c==='Pt')return 'P';var i=String(c).match(/^(\d)i$/);return i?i[1]:c;}
 /* short-name editor, shown in My bag */
+window.clubLbl=function(c){return clubLbl(c);};
 window.CLUBSHORT={html:function(){var es=window.__LANG==='es',NM={Dr:'Driver',Pt:'Putter',PW:'Pitching W',GW:'Gap W',SW:'Sand W',LW:'Lob W'};
   return '<div class="frsec"><h3>'+(es?'Abreviatura de cada palo':'Short name for each club')+'</h3><p class="frsub">'+(es?'Así aparece cada palo al cargar una vuelta: una o dos letras o un número (D, 3W, 2H, 7, 54, 60).':'How each club appears when you log a round: a letter or two, or a number (D, 3W, 2H, 7, 54, 60).')+'</p><div class="clubshorts">'+
    myClubs().map(function(x){var n=NM[x.c]||x.c.replace(/^(\d)i$/,es?'Hierro $1':'$1 Iron').replace(/^(\d)W$/,es?'Madera $1':'$1 Wood').replace(/^(\d)H$/,es?'Híbrido $1':'$1 Hybrid');return '<label><span>'+n+'</span><input class="pf_cs" data-c="'+x.c+'" maxlength="3" value="'+clubLbl(x.c)+'"></label>';}).join('')+'</div></div>';},
