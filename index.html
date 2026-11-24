@@ -807,6 +807,17 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 @keyframes dpGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 @media (max-width:560px){#panel_dp{padding:4px 12px 12px}.dpGrid{grid-template-columns:repeat(3,minmax(64px,1fr));grid-auto-rows:66px}.dpGridWrap{display:flex}}
 .lgscope td.clubc{text-align:center;}
+.lvCmp{margin-top:14px}
+.lvCmp summary{cursor:pointer;font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--pine);padding:4px 0}
+.lvTblW{overflow-x:auto;margin-top:8px}
+.lvTbl{width:100%;min-width:560px;border-collapse:collapse;font-size:13.5px}
+.lvTbl th{font-family:var(--serif,Georgia,serif);font-weight:600;font-size:15px;color:var(--pine);padding:8px 8px 10px;text-align:center;border-bottom:1.5px solid var(--pine);vertical-align:bottom;text-transform:none;letter-spacing:0}
+.lvTbl th small{display:block;font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sand-deep,#b89a52)}
+.lvTbl td{padding:8px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--cond);font-weight:700;color:var(--ink)}
+.lvTbl td:first-child{text-align:left;font-family:inherit;font-weight:400;color:var(--ink)}
+.lvTbl .cur{background:rgba(15,58,44,.07)}
+.lvTbl i{font-style:normal;font-size:15px}.lvTbl i.y{color:var(--fairway)}.lvTbl i.n{color:#b9b4a3}
+.lvTbl tbody tr:last-child td{border-bottom:none;color:var(--pine)}
 .lvGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:6px}
 .lvCard{position:relative;text-align:left;display:flex;flex-direction:column;gap:4px;padding:14px 14px 12px;border-radius:14px;border:1.5px solid var(--line);background:#fffdf7;cursor:pointer;font:inherit;color:var(--ink);transition:transform .15s,border-color .15s,box-shadow .15s}
 .lvCard:hover{transform:translateY(-2px);border-color:var(--fairway)}
@@ -941,6 +952,16 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #obWiz input:focus,#obWiz select:focus{border-color:#1f7a4d;box-shadow:0 0 0 4px rgba(31,122,77,.12)}\
 #obWiz .obChips{display:flex;flex-wrap:wrap;gap:8px}\
 #obWiz .obChip{font:600 14px "Trebuchet MS",sans-serif;color:#0f3a2c;background:#f6f2e7;border:1.5px solid #e2ddcc;border-radius:999px;padding:10px 15px;cursor:pointer;transition:all .18s;user-select:none}\
+.obCmp{margin-top:12px}\
+.obCmp summary{cursor:pointer;font:700 12px "Trebuchet MS",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#0f3a2c}\
+.obCmp .lvTblW{overflow-x:auto;margin-top:8px}\
+.obCmp .lvTbl{width:100%;min-width:520px;border-collapse:collapse;font:13px "Trebuchet MS",sans-serif}\
+.obCmp .lvTbl th{font:600 14px Georgia,serif;color:#0f3a2c;padding:6px;border-bottom:1.5px solid #0f3a2c;text-align:center}\
+.obCmp .lvTbl th small{display:block;font:700 10px "Trebuchet MS",sans-serif;text-transform:uppercase;color:#b89a52}\
+.obCmp .lvTbl td{padding:6px;text-align:center;border-bottom:1px solid #e2ddcc;color:#20261f}\
+.obCmp .lvTbl td:first-child{text-align:left}\
+.obCmp .lvTbl .cur{background:rgba(15,58,44,.07)}\
+.obCmp .lvTbl i{font-style:normal}.obCmp .lvTbl i.y{color:#1f7a4d}.obCmp .lvTbl i.n{color:#b9b4a3}\
 .obLv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}\
 .obLv .obLvC{position:relative;display:flex;flex-direction:column;gap:3px;border-radius:14px;padding:14px 14px 12px;text-align:left}\
 .obLvC b{font:600 18px Georgia,serif;color:#0f3a2c}\
@@ -988,9 +1009,15 @@ svg.tgSvg{width:100%;height:auto;display:block;}
       '<input type="text" data-f="othersText" style="margin-top:10px" maxlength="120" value="'+esc(A.othersText)+'" placeholder="'+T('Any others? Separate with commas','¿Otras? Separadas por comas')+'"><div class="obHint">'+T('Your course is not in the list? ','¿Tu cancha no está en la lista? ')+'<a href="#" data-obfind style="color:#1f7a4d;font-weight:700">'+T('Search all courses','Buscar entre todas las canchas')+'</a></div>';}},
   {id:'index',ok:function(){return A.hi===''||A.hi==null||!isNaN(parseHI(A.hi));},h:function(){return '<h2>'+T('What is your current index?','¿Cuál es tu hándicap index actual?')+'</h2><p class="obSub">'+T('Your official handicap index. Golfimbul uses it for net par and strokes gained against your level.','Tu hándicap index oficial. Golfimbul lo usa para el par neto y los strokes gained contra tu nivel.')+'</p><label class="obL">'+T('Handicap index','Hándicap index')+'</label><div style="display:flex;gap:8px"><button type="button" class="obPlus" data-plus title="plus handicap">'+(String(A.hi||'').trim().charAt(0)==='+'?'+':'±')+'</button><input type="text" inputmode="decimal" style="flex:1" data-f="hi" value="'+esc(A.hi)+'" placeholder="'+T('e.g. 12.4','ej. 12,4')+'"></div><div class="obHint">'+T('Plus handicap? Tap ± so it reads +2.6.','¿Hándicap plus? Tocá ± para que quede +2,6.')+'</div><div class="obHint">'+T('No index yet? Leave it empty — it will be calculated from your rounds.','¿Todavía no tenés? Dejalo vacío — se calcula con tus vueltas.')+'</div>';}},
   {id:'dist',ok:function(){var d=+A.drive,n=+A.nine;return d>=100&&d<=400&&n>=60&&n<=220;},h:function(){return '<h2>'+T('How far do you hit it?','¿Cuánto le pegás?')+'</h2><p class="obSub">'+T('Your typical shot on a normal day, in yards — not your best one. This seeds your shot predictions until your own rounds take over.','Tu tiro típico en un día normal, en yardas — no el mejor. Con esto arrancan las predicciones hasta que tus vueltas tomen el control.')+'</p><div class="obRow"><div><label class="obL">'+T('Driver (total)','Driver (total)')+'</label><input type="number" inputmode="numeric" data-f="drive" min="100" max="400" value="'+esc(A.drive)+'" placeholder="230"></div><div><label class="obL">'+T('9 iron','Hierro 9')+'</label><input type="number" inputmode="numeric" data-f="nine" min="60" max="220" value="'+esc(A.nine)+'" placeholder="135"></div></div><div class="obHint">'+T('Be realistic. Over-estimating is the most common mistake — and it makes every prediction too long.','Sé realista. Sobreestimar es el error más común — y hace que todas las predicciones queden largas.')+'</div>';}},
-  {id:'level',ok:function(){return !!A.level;},h:function(){var LV=window.LOGLVL,rec=LV?LV.recommend({hi:parseHI(A.hi),lessons:A.lessons,golfHrs:A.golfHrs}):'ess';if(!A.level)A.level=rec;var hi=parseHI(A.hi),es=lang==='es'?1:0;
-    return '<h2>'+T('How much detail do you want to log?','¿Cuánto detalle querés cargar?')+'</h2><p class="obSub">'+(isNaN(hi)?T('Without a handicap index we start you on the lightest level.','Sin hándicap index empezamos por el nivel más liviano.'):T('For your index we suggest <b>','Para tu index sugerimos <b>')+(LV?LV.L[rec].n[es]:'')+'</b>. '+T('More detail gives more answers but takes longer after each round.','Más detalle da más respuestas, pero lleva más tiempo después de cada vuelta.'))+'</p>'+
+  {id:'level',ok:function(){return !!A.level&&!!A.recall&&(A.recall==='all'||!!A.live);},h:function(){var LV=window.LOGLVL,rec=LV?LV.recommend({hi:parseHI(A.hi),lessons:A.lessons,golfHrs:A.golfHrs,recall:A.recall,live:A.live}):'ess';if(!A.level)A.level=rec;var hi=parseHI(A.hi),es=lang==='es'?1:0;
+    return '<h2>'+T('How much detail do you want to log?','¿Cuánto detalle querés cargar?')+'</h2>'+
+      '<label class="obL">'+T('After a round, can you remember it shot by shot?','Después de una vuelta, ¿la recordás tiro por tiro?')+'</label>'+chips('recall',[['all','Every shot','Cada tiro'],['most','Most of it','Casi toda'],['little','Only the score, more or less','Solo el score, más o menos']])+
+      (A.recall&&A.recall!=='all'?'<label class="obL" style="margin-top:14px">'+T('If you don\'t remember, would you jot down notes or log on your phone during the round?','Si no te acordás, ¿anotarías o cargarías en el teléfono durante la vuelta?')+'</label>'+chips('live',[['yes','Yes','Sí'],['no','No, only afterwards','No, solo después']])+
+        (A.live==='yes'?'<p class="obSub" style="font-size:13px;margin:8px 0 0">'+T('Good: log hole by hole on your phone as you play. It takes seconds per hole and nothing is left to memory.','Bien: cargá hoyo por hoyo en el teléfono mientras jugás. Son segundos por hoyo y nada queda librado a la memoria.')+'</p>':
+         (A.live==='no'&&A.recall==='little'?'<p class="obSub" style="font-size:13px;margin:8px 0 0">'+T('Then we suggest one level lighter: fewer things to remember, and what you do log will be true.','Entonces sugerimos un nivel más liviano: menos cosas para recordar, y lo que cargues va a ser cierto.')+'</p>':'')):'')+
+      '<p class="obSub" style="margin-top:14px">'+(isNaN(hi)?T('Without a handicap index we start you on the lightest level.','Sin hándicap index empezamos por el nivel más liviano.'):T('For your index we suggest <b>','Para tu index sugerimos <b>')+(LV?LV.L[rec].n[es]:'')+'</b>. '+T('More detail gives more answers but takes longer after each round.','Más detalle da más respuestas, pero lleva más tiempo después de cada vuelta.'))+'</p>'+
       '<div class="obLv">'+(LV?LV.order.map(function(k){var l=LV.L[k],m=LV.mins(k);return '<span class="obChip obLvC'+(A.level===k?' on':'')+'" data-lv="'+k+'">'+(k===rec?'<em>'+T('Suggested','Sugerido')+'</em>':'')+'<b>'+l.n[es]+'</b><i>'+l.d[es]+'</i><small>≈ '+(m%1?m.toFixed(1):m)+' min '+T('per round','por vuelta')+'</small></span>';}).join(''):'')+'</div>'+
+      (LV&&LV.table?'<details class="obCmp"><summary>'+T('Compare the levels','Comparar los niveles')+'</summary>'+LV.table(es,rec,A.level)+'</details>':'')+
       '<p class="obSub" style="margin-top:12px;font-size:13px">'+T('Strokes gained, shot prediction and compliance come with every level. You can change this any time in Profile → Round logging.','Strokes gained, predicción de tiros y cumplimiento vienen en todos los niveles. Podés cambiarlo cuando quieras en Perfil → Carga de vueltas.')+'</p>';}},
   {id:'done',ok:function(){return true;},h:function(){var nm=(A.name||'').trim().split(' ')[0];return '<div class="obDone"><div class="obBall"></div><h2>'+T('You\'re set, ','Listo, ')+esc(nm)+'.</h2><p class="obSub">'+T('Your profile is ready. One honest note: the analysis grows with your rounds. Round 1 gives you the scorecard and strokes gained; 5 rounds, your first limits; 12 rounds, limits you can trust. Next, a short tour.','Tu perfil está listo. Una nota honesta: el análisis crece con tus vueltas. La vuelta 1 te da la tarjeta y strokes gained; 5 vueltas, tus primeros límites; 12 vueltas, límites confiables. Ahora, un recorrido corto.')+'</p></div>';}}
  ];
@@ -1005,7 +1032,8 @@ svg.tgSvg{width:100%;height:auto;display:block;}
    wire();var f=el.querySelector('textarea,input[type=text],input[type=number]');if(f&&s.id!=='course')setTimeout(function(){f.focus();},60);
  }
  function refreshNext(){var b=el.querySelector('.obNext');if(b)b.disabled=!STEPS[step].ok();}
- function wireLv(){el.querySelectorAll('[data-lv]').forEach(function(c){c.onclick=function(){A.level=c.getAttribute('data-lv');el.querySelectorAll('[data-lv]').forEach(function(x){x.classList.toggle('on',x===c);});refreshNext();};});}
+ function wireLv(){el.querySelectorAll('.obChips[data-key="recall"] .obChip, .obChips[data-key="live"] .obChip').forEach(function(c){c.addEventListener('click',function(){setTimeout(function(){A.level='';render();},0);});});
+ el.querySelectorAll('[data-lv]').forEach(function(c){c.onclick=function(){A.level=c.getAttribute('data-lv');el.querySelectorAll('[data-lv]').forEach(function(x){x.classList.toggle('on',x===c);});refreshNext();};});}
  function wire(){wireLv();
    el.querySelectorAll('[data-lang]').forEach(function(b){b.onclick=function(){lang=b.getAttribute('data-lang');render();};});
    el.querySelectorAll('[data-f]').forEach(function(i){var k=i.getAttribute('data-f');
@@ -1026,7 +1054,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
    var bk=el.querySelector('.obBack');if(bk)bk.onclick=function(){step=Math.max(0,step-1);render();};
    var sk=el.querySelector('.obSkip');if(sk)sk.onclick=function(){step++;render();};
  }
- function next(){var s=STEPS[step];if(!s.ok())return;if(s.id==='done'){finish(true);return;}if(s.id==='dist')apply();if(s.id==='level'&&window.LOGLVL){try{window.LOGLVL.apply(A.level);}catch(e){}}step++;render();}
+ function next(){var s=STEPS[step];if(!s.ok())return;if(s.id==='done'){finish(true);return;}if(s.id==='dist')apply();if(s.id==='level'&&window.LOGLVL){try{var pp=P();pp.about=pp.about||{};pp.about.recall=A.recall||'';pp.about.live=A.recall==='all'?'':(A.live||'');window.LOGLVL.apply(A.level);}catch(e){}}step++;render();}
  function apply(){
    var p=P();p.name=(A.name||'').trim()||p.name;p.lang=lang;window.__LANG=lang;
    if(A.birthday)p.birthday=A.birthday;if(A.gender)p.gender=A.gender;if(A.hand)p.hand=A.hand;
@@ -1045,7 +1073,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
    if(!document.getElementById('obCss')){var st=document.createElement('style');st.id='obCss';st.textContent=CSS;document.head.appendChild(st);}
    var p=P();lang=opts.lang||p.lang||((navigator.language||'').slice(0,2)==='es'?'es':'en');
    A={birthday:p.birthday||'',gender:p.gender||'',hand:p.hand||'',name:p.name||opts.name||'',homeClub:p.homeClub||'',home:p.homeCourse||'',tee:p.defaultTee||'',hi:p.hiManual!=null&&p.hiManual!==''?(+p.hiManual<0?'+'+(-p.hiManual):String(p.hiManual)):'',drive:'',nine:''};
-   if(p.about){A.whyText=typeof p.about.why==='string'?p.about.why:'';A.years=p.about.years;A.lessons=p.about.lessons;A.range=p.about.range;A.golfHrs=p.about.golfHrs;A.practiceHrs=p.about.practiceHrs;}
+   if(p.about){A.whyText=typeof p.about.why==='string'?p.about.why:'';A.years=p.about.years;A.lessons=p.about.lessons;A.recall=p.about.recall||'';A.live=p.about.live||'';A.range=p.about.range;A.golfHrs=p.about.golfHrs;A.practiceHrs=p.about.practiceHrs;}
    if(p.onboarded){A.drive=p.driveYd||'';A.nine=p.nineIron||'';}
    step=0;el=document.createElement('div');el.id='obWiz';document.body.appendChild(el);render();}
  window.OBOARD=window.OBOARD||{};window.OBOARD.open=open;window.OBOARD.parseHI=parseHI;
@@ -2920,14 +2948,30 @@ var LOGLVL={order:['ess','ply','plus','ana'],
     ana:{n:['Analyst','Analista'],d:['Adds missed putts and the read of each putt: slope and break.','Suma los putts errados y la lectura de cada putt: pendiente y caída.'],clubs:true,disp:'all',read:true}},
  /* handicap sets the level; a coach moves it up one, very little golf time moves it down one */
  recommend:function(o){o=o||{};var h=parseFloat(o.hi),i=(isNaN(h)?0:h>=20?0:h>=10?1:h>=5?2:3);
-   if(!isNaN(h)){if(o.lessons==='month'||o.lessons==='week')i++;if(o.golfHrs==='0-4')i--;}
+   if(!isNaN(h)){if(o.lessons==='month'||o.lessons==='week')i++;if(o.golfHrs==='0-4')i--;if(o.recall==='little'&&o.live!=='yes')i--;}
    return this.order[Math.max(0,Math.min(3,i))];},
- mine:function(){var hi=null;try{hi=effHI();}catch(e){}var a=PROF.about||{};return this.recommend({hi:(hi==null||hi==='')?NaN:hi,lessons:a.lessons,golfHrs:a.golfHrs});},
+ mine:function(){var hi=null;try{hi=effHI();}catch(e){}var a=PROF.about||{};return this.recommend({hi:(hi==null||hi==='')?NaN:hi,lessons:a.lessons,golfHrs:a.golfHrs,recall:a.recall,live:a.live});},
  current:function(){var k=null,me=this;this.order.forEach(function(x){var l=me.L[x];if(PROF.predict!==false&&!!PROF.trackComp&&!!PROF.trackClubs===l.clubs&&!!PROF.trackRead===l.read&&(l.disp==='off'?!PROF.trackDisp:(!!PROF.trackDisp&&(PROF.dispMode||'all')===l.disp)))k=x;});return k;},
  apply:function(k){var l=this.L[k];if(!l)return;PROF.predict=true;PROF.trackComp=true;PROF.trackClubs=l.clubs;PROF.trackRead=l.read;PROF.trackDisp=l.disp!=='off';if(l.disp!=='off')PROF.dispMode=l.disp;PROF.logLevel=k;saveProf();},
  mins:function(k){var l=this.L[k];return 5+2+(l.clubs?1:0)+(l.disp==='tee'?0.5:l.disp==='app'?1.2:l.disp==='all'?1.5:0)+(l.read?1:0);},
+ /* side-by-side comparison of the four levels */
+ table:function(es,rec,cur){var me=this,Y='<i class="y">✓</i>',N='<i class="n">–</i>',O=this.order;
+   var rows=[[['Suggested handicap index','Hándicap index sugerido'],['20+','10–19.9','5–9.9',['under 5','menos de 5'][es]]],
+     [['Lie and distance of every shot','Lie y distancia de cada tiro'],[Y,Y,Y,Y]],
+     [['Strokes gained and Tiger 5','Strokes gained y Tiger 5'],[Y,Y,Y,Y]],
+     [['Shot prediction','Predicción de tiros'],[Y,Y,Y,Y]],
+     [['Process compliance ✓ / ✕','Cumplimiento del proceso ✓ / ✕'],[Y,Y,Y,Y]],
+     [['Club on every shot','Palo en cada tiro'],O.map(function(k){return me.L[k].clubs?Y:N;})],
+     [['Tee shots: missed left or right','Salidas: fallo a izquierda o derecha'],O.map(function(k){return me.L[k].disp!=='off'?Y:N;})],
+     [['Approaches and short game against your target','Approaches y juego corto respecto de tu objetivo'],O.map(function(k){var d=me.L[k].disp;return (d==='app'||d==='all')?Y:N;})],
+     [['Missed putts: short or long, left or right','Putts errados: corto o largo, izquierda o derecha'],O.map(function(k){return me.L[k].disp==='all'?Y:N;})],
+     [['Putt read: slope and break','Lectura del putt: pendiente y caída'],O.map(function(k){return me.L[k].read?Y:N;})],
+     [['Time per round','Tiempo por vuelta'],O.map(function(k){var m=me.mins(k);return '≈ '+(m%1?m.toFixed(1):m)+' min';})]];
+   return '<div class="lvTblW"><table class="lvTbl"><thead><tr><th></th>'+O.map(function(k){return '<th class="'+(k===cur?'cur ':'')+(k===rec?'rec':'')+'">'+me.L[k].n[es]+(k===rec?'<small>'+(es?'recomendado':'recommended')+'</small>':'')+'</th>';}).join('')+'</tr></thead><tbody>'+
+     rows.map(function(r){return '<tr><td>'+r[0][es]+'</td>'+r[1].map(function(v,i){return '<td class="'+(O[i]===cur?'cur':'')+'">'+v+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table></div>';},
  html:function(){var es=window.__LANG==='es'?1:0,rec=this.mine(),cur=this.current(),me=this;
    return '<div class="lvGrid">'+this.order.map(function(k){var l=me.L[k],m=me.mins(k);return '<button type="button" class="lvCard'+(cur===k?' on':'')+'" data-lvl="'+k+'">'+(rec===k?'<em>'+(es?'Recomendado':'Recommended')+'</em>':'')+'<b>'+l.n[es]+'</b><span>'+l.d[es]+'</span><small>≈ '+(m%1?m.toFixed(1):m)+' min</small></button>';}).join('')+'</div>'+
+     '<details class="lvCmp" open><summary>'+(es?'Comparar los niveles':'Compare the levels')+'</summary>'+this.table(es,rec,cur)+'</details>'+
      (cur?'':'<p class="hisub" style="margin-top:8px">'+(es?'Ahora tenés una combinación propia. Tocá un nivel para volver a uno estándar.':'You are on a custom mix right now. Tap a level to go back to a standard one.')+'</p>');}};
 window.LOGLVL=LOGLVL;
 /* rough time to log 18 holes with the current logging options (estimates, not measurements) */
@@ -3787,7 +3831,7 @@ function renderProf(){
   <div class="hiblock">
     <div class="hirow"><span>${window.__LANG==='es'?'Nivel de detalle':'Detail level'}</span></div>
     <div id="pf_level">${LOGLVL.html()}</div>
-    <div class="hisub">${window.__LANG==='es'?'Recomendado según tu hándicap, si tomás clases y cuánto tiempo jugás. Strokes gained, predicción y cumplimiento están en todos los niveles. Es solo un punto de partida: abajo podés cambiar cada opción.':'Recommended from your handicap, whether you take lessons and how much you play. Strokes gained, prediction and compliance are in every level. It is only a starting point: you can change each option below.'}</div>
+    <div class="hisub">${window.__LANG==='es'?'Recomendado según tu hándicap, si tomás clases, cuánto tiempo jugás, cuánto recordás de tus vueltas y si cargarías durante la vuelta. Strokes gained, predicción y cumplimiento están en todos los niveles. Es solo un punto de partida: abajo podés cambiar cada opción.':'Recommended from your handicap, whether you take lessons, how much you play, how well you remember your rounds and whether you would log during the round. Strokes gained, prediction and compliance are in every level. It is only a starting point: you can change each option below.'}</div>
   </div>
   <div class="hiblock logest">
     <div class="hirow"><span>${window.__LANG==='es'?'Tiempo estimado por vuelta':'Estimated time per round'}</span></div>
