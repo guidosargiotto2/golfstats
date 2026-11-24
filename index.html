@@ -193,7 +193,8 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .tabnav button:hover{color:var(--pine)}
 .tabnav .navbrand{display:inline-flex;align-items:center;gap:8px;margin:0 14px 0 2px;padding:6px 4px 8px;text-decoration:none;font-family:var(--serif);font-weight:600;font-size:20px;color:var(--pine);white-space:nowrap;align-self:center;}
 .tabnav .navbrand svg{flex:none;}
-@media (max-width:699px){.tabnav{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;}.tabnav::-webkit-scrollbar{display:none;}.tabnav button,.tabnav .logoutbtn{white-space:nowrap;padding-left:10px;padding-right:10px;flex:none;}.tabnav .whoami{flex:none;}}
+/* phones: every menu item visible, in two compact rows (no sideways scrolling) */
+@media (max-width:699px){.tabnav{flex-wrap:wrap;justify-content:center;gap:0 2px;padding-top:2px;}.tabnav button,.tabnav .logoutbtn{white-space:nowrap;padding:9px 7px;font-size:11px;letter-spacing:.06em;flex:none;}.tabnav .whoami{display:none!important;}.tabnav .navbrand{margin:0 4px 0 0;padding:4px 2px;}.tabnav .navbrand svg{width:24px;height:24px;}.tabnav .tourbtn{padding:4px 9px!important;}}
 @media (min-width:700px){.tabnav button{white-space:nowrap;padding-left:clamp(8px,1.1vw,20px);padding-right:clamp(8px,1.1vw,20px);}}
 @media (max-width:1100px){.tabnav .navbrand span{display:none;}.tabnav .navbrand{margin-right:6px;}}
 .tabnav button.on{color:var(--pine);border-bottom-color:var(--fairway)}
@@ -435,6 +436,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .pindot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;border:1px solid rgba(0,0,0,.25);vertical-align:middle;}
 /* ===== hole actions ===== */
 .lgscope .holeacts{display:flex;flex-direction:column;gap:10px;padding:12px 2px 4px;}
+.lgscope .nextshot{width:100%;border:none;border-radius:12px;padding:15px;font-family:var(--cond);font-weight:700;font-size:16px;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--amber);cursor:pointer;touch-action:manipulation;}
 .lgscope .holeacts .predhint{font-family:var(--cond);font-size:12px;color:var(--ink-soft);}
 .lgscope .holeacts .actbtns{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
 /* Cancel round: red, sitting just left of Next hole on the right */
@@ -505,8 +507,19 @@ table.rt tbody tr:hover{background:var(--line-soft);}
  .lgscope .holebar .hn{font-size:20px;}
  .lgscope .holescore{font-size:24px;}
  /* setup form one column */
- .lgscope .setupgrid{grid-template-columns:1fr;}
- .lgscope .setupgrid label:first-child{grid-column:auto;}
+ /* start form fits one phone screen: Holes|Score and HCP|Date side by side, tighter spacing */
+ .lgscope .setupgrid{grid-template-columns:1fr 1fr;gap:10px 10px;align-items:start;}
+ .lgscope .setupgrid label:first-child,.lgscope .setupgrid label:nth-child(2){grid-column:1 / -1;}
+ .lgscope .setupgrid select,.lgscope .setupgrid input{padding:9px 10px;font-size:16px;}
+ .lgscope .setupgrid label{gap:4px;}
+ .lgscope .setup{margin-top:6px;}
+ .lgscope .teeline{margin:6px 0 2px;}
+ .lgscope .startbtn{padding:13px;}
+ .lgscope .bar{padding:8px 12px;}
+ .lgscope .bar h1{font-size:18px;}
+ .crLink{margin-top:4px;}
+ .pmBtn{margin-top:3px;}
+ .wrap{padding-top:6px;}
  /* actions + nav stack full-width for thumb reach */
  .lgscope .actbtns{flex-direction:column;}
  .lgscope .actbtns button{width:100%;margin-left:0!important;}
@@ -3042,7 +3055,8 @@ function renderHoleActs(hi){
  var h=R.holes[hi],el=document.getElementById('holeacts');
  var predOn=PROF.predict;
  var ES=(window.__LANG==='es');
- el.innerHTML=(h.done?'':(predOn?'<span class="predhint">'+(ES?'Fila ámbar = tiro siguiente previsto. Presioná <b>Enter</b> para aceptarlo, o escribí el lie y la distancia reales.':'Amber row = predicted next shot. Press <b>Enter</b> to accept it, or type the real lie &amp; distance.')+'</span>':'<span class="predhint">'+(ES?'Cargá cada tiro: escribí la distancia bajo el lie desde donde se jugó.':'Enter each shot: type the distance under the lie it was played from.')+'</span>'))+
+ var TOUCH=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+ el.innerHTML=(h.done?'':(TOUCH?'<button type="button" class="nextshot" id="btnNextShot">✓ '+(ES?'Siguiente tiro':'Next shot')+'</button><span class="predhint">'+(predOn?(ES?'Fila ámbar = tiro previsto. Tocá <b>✓ Siguiente tiro</b> para aceptarlo, o escribí la distancia bajo el lie real.':'Amber row = predicted shot. Tap <b>✓ Next shot</b> to accept it, or type the distance under the real lie first.'):(ES?'Escribí la distancia bajo el lie y tocá <b>✓ Siguiente tiro</b>.':'Type the distance under the lie, then tap <b>✓ Next shot</b>.'))+'</span>':(predOn?'<span class="predhint">'+(ES?'Fila ámbar = tiro siguiente previsto. Presioná <b>Enter</b> para aceptarlo, o escribí el lie y la distancia reales.':'Amber row = predicted next shot. Press <b>Enter</b> to accept it, or type the real lie &amp; distance.')+'</span>':'<span class="predhint">'+(ES?'Cargá cada tiro: escribí la distancia bajo el lie desde donde se jugó.':'Enter each shot: type the distance under the lie it was played from.')+'</span>')))+
    '<div class="actbtns"><button class="ghost" id="btnAdd">'+t('+ Add a shot')+'</button><button class="cancelbtn" id="btnCancelHole" type="button">'+t('Cancel round')+'</button><button class="finish" id="btnHoled">'+((h.done&&R.holes.slice(R.hStart,R.hEnd).every(function(x){return x.done;})&&hi>=R.hEnd-1)?(ES?'Ver tarjeta →':'Scorecard →'):t('Next hole →'))+'</button></div>'+
    '<div class="inshint">'+(ES?'Tocá <b>+</b> en cualquier fila para agregar un tiro debajo. Teclado: <b>Tab</b> en el tee = cambiar tee · <b>Tab</b> en una fila = categoría siguiente · <b>Enter</b> = tiro siguiente · <b>↑↓</b> = moverse entre tiros · <b>Esc</b> = embocado · <b>Supr</b>, <b>Backspace</b> en celda vacía, o doble <b>Backspace</b> = borrar tiro (borrar el 2º/3er putt asume que lo embocaste).':'Tap <b>+</b> on any row to add a shot below it. Keyboard: <b>Tab</b> on the tee = cycle tee · <b>Tab</b> in a row = next category · <b>Enter</b> = next shot · <b>↑↓</b> = move between shots · <b>Esc</b> = holed it · <b>Del</b>, empty-cell <b>Backspace</b>, or double-<b>Backspace</b> = remove shot (deleting a 2nd/3rd putt assumes you sank it).')+'</div>';
 }
@@ -3073,7 +3087,12 @@ function totals(){
  var mt=document.getElementById('meta');if(mt){mt.style.display='';mt.textContent=teeEN(R.course,R.tee)+' · '+(R.date||'')+' · '+(editRoundId?t('Editing round'):t('Round in progress'));}
 }
 /* focus the cell for the next shot to enter */
-var entryBusy=false,lgToastT=null,teeArmed=false,bkLast={el:null,t:0};
+var entryBusy=false,lgToastT=null,teeArmed=false,bkLast={el:null,t:0},lastCell=null;
+document.addEventListener('focusin',function(e){var t=e.target;if(t&&t.matches&&t.matches('#lgBody input.lc, #lgBody input.p'))lastCell=t;});
+/* the phone's "✓ Next shot": the same as pressing Enter twice on the shot being typed (or once on the tee) */
+function tapEnter(){var el=(lastCell&&document.body.contains(lastCell))?lastCell:(document.querySelector('#lgBody tr.entry input.lc.on')||document.querySelector('#lgBody tr.entry input.lc'));
+ if(!el)return;var tr=el.closest('tr');if(tr&&tr.classList.contains('entry'))el.dataset.stage='editing';
+ el.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));}
 function lgToast(html){var el=document.getElementById('lgToast');if(!el)return;el.innerHTML=html;el.style.display='block';requestAnimationFrame(function(){el.classList.add('show');});clearTimeout(lgToastT);lgToastT=setTimeout(function(){el.classList.remove('show');setTimeout(function(){el.style.display='none';},350);},3600);}
 /* fresh hole → land the cursor on the tee-shot cell first (Tab cycles tee, Enter moves to the predicted shot) */
 function focusTee(){setTimeout(function(){try{var hh=R.holes[R.cur];if(hh&&hh.done){var nb=document.getElementById('btnHoled');if(nb){nb.focus();return;}}var cs=hh?confShots(hh):[];if(hh&&!hh.done&&cs.length===1&&cs[0].lie==='tee'){var te=document.querySelector('input[data-ydtee="'+R.cur+'"]');if(te){te.focus();if(te.select)te.select();return;}}}catch(e){}focusEntry();},0);}
@@ -3172,6 +3191,7 @@ function wire(){
    var nx=document.querySelector('#lgBody input.lc[data-h="'+h+'"][data-s="'+ins+'"][data-lie="'+lie+'"]');if(nx){nx.focus();if(nx.select)nx.select();}};});
  document.querySelectorAll('[data-par]').forEach(function(b){b.onclick=function(){var a=b.dataset.par.split(':').map(Number);R.holes[a[0]].par=a[1];render();};});
  document.querySelectorAll('input[data-ydtee]').forEach(function(el){el.addEventListener('change',function(){var hi=+el.dataset.ydtee,raw=Math.max(20,parseInt(el.value||'0',10)||0),v=U2Y(raw),hole=R.holes[hi];hole.yd=v;if(hole.shots[0]&&hole.shots[0].lie==='tee')hole.shots[0].dist=v;render();});});
+ var nsb=document.getElementById('btnNextShot');if(nsb){nsb.addEventListener('pointerdown',function(e){e.preventDefault();});nsb.onclick=function(){tapEnter();};}
  var acc=document.getElementById('btnAccept');if(acc)acc.onclick=function(){var pr=predictNext(R.cur);if(pr.lie==='')return;R.holes[R.cur].shots.push({lie:pr.lie,dist:pr.dist,pen:0,conf:true});render();focusEntry();};
  var add=document.getElementById('btnAdd');if(add)add.onclick=function(){var h=R.holes[R.cur],last=confShots(h).slice(-1)[0];h._sank=false;h.done=false;scMode=false;h.shots.push({lie:last&&last.lie==='putt'?'putt':'fw',dist:last&&last.lie==='putt'?2:20,pen:0,conf:true});render();focusEntry();};
  var fin=document.getElementById('btnHoled');if(fin)fin.onclick=function(){finishHole(R.cur<R.hEnd-1);};
