@@ -1357,6 +1357,18 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #landing .tier.pro .tp{color:#fff;} #landing .tier.pro .tn{color:var(--sand);}
 #landing .tier .tu{font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--ink-soft);margin:-4px 0 12px;}
 #landing .tier.pro .tu{color:rgba(255,255,255,.75);}
+#landing .deskWrap{display:grid;grid-template-columns:1.25fr 1fr;gap:36px;align-items:center;}
+#landing .deskArt{width:100%;height:auto;display:block;}
+#landing .deskPhone{transform-origin:118px 146px;transform:rotate(-9deg);animation:deskRing 3.2s ease-in-out infinite;}
+#landing .deskBuzz{opacity:0;animation:deskBuzz 3.2s ease-in-out infinite;}
+#landing .deskFlag{transform-origin:357px 133px;animation:deskWave 2.6s ease-in-out infinite;}
+#landing .deskLine{stroke-dasharray:140;stroke-dashoffset:140;animation:deskDraw 3.2s ease-out infinite;}
+@keyframes deskRing{0%,58%,100%{transform:rotate(-9deg)}62%{transform:rotate(-13deg)}66%{transform:rotate(-5deg)}70%{transform:rotate(-12deg)}74%{transform:rotate(-7deg)}78%{transform:rotate(-9deg)}}
+@keyframes deskBuzz{0%,58%,82%,100%{opacity:0}62%,76%{opacity:.9}}
+@keyframes deskWave{0%,100%{transform:skewY(0)}50%{transform:skewY(5deg) scaleX(.94)}}
+@keyframes deskDraw{0%{stroke-dashoffset:140}45%,100%{stroke-dashoffset:0}}
+@media(max-width:820px){#landing .deskWrap{grid-template-columns:1fr;gap:18px}#landing .deskArt{max-width:360px;margin:0 auto}}
+@media(prefers-reduced-motion:reduce){#landing .deskPhone,#landing .deskBuzz,#landing .deskFlag,#landing .deskLine{animation:none}#landing .deskLine{stroke-dashoffset:0}}
 #landing .tier{position:relative;}
 #landing .tier.free{background:#fbfaf6;border-color:#e6e2d6;}
 #landing .tier.lite{background:linear-gradient(170deg,#f8efd6,#efe1b8);border-color:var(--sand);}
@@ -1516,10 +1528,41 @@ svg.tgSvg{width:100%;height:auto;display:block;}
  <p class="sub" data-l="Already have years of rounds on a Garmin? Import them and start with your history on day one.|¿Ya tenés años de vueltas en un Garmin? Importalas y empezá con tu historia desde el primer día.">Already have years of rounds on a Garmin? Import them and start with your history on day one.</p>
 </div></section>
 
-<section class="blk" id="l-desk"><div class="lw rv">
+<section class="blk" id="l-desk"><div class="lw rv deskWrap">
+ <div class="deskTxt">
  <div class="kick" data-l="Phone or laptop?|¿Teléfono o laptop?">Phone or laptop?</div>
  <h2 data-l="Best on your laptop.|Mejor en tu laptop.">Best on your laptop.</h2>
- <p class="sub" data-l="We recommend using Golfimbul on a computer, in your browser: a bigger screen and a real keyboard make logging and reading your charts faster. If you insist on using your phone, there is an app you can install from this site.|Recomendamos usar Golfimbul en una computadora, en el navegador: una pantalla más grande y un teclado de verdad hacen más rápido cargar y leer tus gráficos. Si insistís en usar el teléfono, hay una app que podés instalar desde este sitio.">We recommend using Golfimbul on a computer, in your browser: a bigger screen and a real keyboard make logging and reading your charts faster. If you insist on using your phone, there is an app you can install from this site.</p>
+ <p class="sub" data-l="Be honest: you have answered work emails from the 7th tee. Your phone is great for taking the office to the course. For your golf, open the laptop: a bigger screen and a real keyboard make logging a round and reading your charts much faster. If you insist on the phone, there is an app you can install from this site.|Seamos honestos: ya contestaste mails del trabajo desde el tee del 7. El teléfono es ideal para llevar la oficina a la cancha. Para tu golf, abrí la laptop: una pantalla grande y un teclado de verdad hacen mucho más rápido cargar una vuelta y leer tus gráficos. Si insistís con el teléfono, hay una app que podés instalar desde este sitio.">Be honest: you have answered work emails from the 7th tee. Your phone is great for taking the office to the course. For your golf, open the laptop: a bigger screen and a real keyboard make logging a round and reading your charts much faster. If you insist on the phone, there is an app you can install from this site.</p>
+ </div>
+ <svg class="deskArt" viewBox="0 0 440 300" role="img" aria-label="A phone buzzing with work email on the 7th tee, and a laptop showing a control chart">
+  <defs><clipPath id="deskClip"><rect x="0" y="0" width="440" height="300" rx="22"/></clipPath><linearGradient id="deskSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#efe6cc"/><stop offset="1" stop-color="#f8f3e4"/></linearGradient></defs>
+  <g clip-path="url(#deskClip)"><rect width="440" height="300" fill="url(#deskSky)"/><circle cx="72" cy="44" r="20" fill="#d8c48c" opacity=".55"/>
+  <path d="M0 266 Q120 200 230 226 T440 212 L440 300 L0 300 Z" fill="#1f7a4d" opacity=".9"/>
+  <path d="M0 274 Q140 226 250 244 T440 234 L440 300 L0 300 Z" fill="#0f3a2c"/>
+  <line x1="356" y1="226" x2="356" y2="120" stroke="#20261f" stroke-width="2.5"/>
+  <path class="deskFlag" d="M357 121 L398 133 L357 146 Z" fill="#d8c48c"/>
+  <text x="368" y="138" font-family="Georgia,serif" font-size="12" font-weight="700" fill="#0f3a2c">7</text>
+  <ellipse cx="356" cy="227" rx="9" ry="2.6" fill="#0f3a2c"/>
+  <g class="deskPhone">
+    <rect x="70" y="58" width="96" height="176" rx="16" fill="#20261f"/>
+    <rect x="77" y="70" width="82" height="150" rx="9" fill="#fffdf7"/>
+    <rect x="88" y="86" width="60" height="40" rx="5" fill="none" stroke="#c2502e" stroke-width="2.5"/>
+    <path d="M88 89 L118 110 L148 89" fill="none" stroke="#c2502e" stroke-width="2.5"/>
+    <circle cx="150" cy="84" r="10" fill="#c2502e"/><text x="150" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">9</text>
+    <rect x="88" y="140" width="60" height="6" rx="3" fill="#e2ddcc"/><rect x="88" y="152" width="48" height="6" rx="3" fill="#e2ddcc"/><rect x="88" y="164" width="54" height="6" rx="3" fill="#e2ddcc"/>
+    <rect x="88" y="186" width="60" height="18" rx="9" fill="#c2502e" opacity=".85"/>
+    <path class="deskBuzz" d="M58 100 q-8 12 0 24 M48 94 q-12 18 0 36 M178 100 q8 12 0 24 M188 94 q12 18 0 36" fill="none" stroke="#c2502e" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <g class="deskLap">
+    <rect x="214" y="150" width="130" height="84" rx="7" fill="#20261f"/>
+    <rect x="221" y="157" width="116" height="70" rx="3" fill="#fffdf7"/>
+    <line x1="228" y1="172" x2="330" y2="172" stroke="#c2502e" stroke-width="1" stroke-dasharray="3 3"/>
+    <line x1="228" y1="212" x2="330" y2="212" stroke="#c2502e" stroke-width="1" stroke-dasharray="3 3"/>
+    <line x1="228" y1="192" x2="330" y2="192" stroke="#1f7a4d" stroke-width="1"/>
+    <polyline class="deskLine" points="230,196 242,186 254,200 266,182 278,194 290,188 302,202 314,190 326,184" fill="none" stroke="#0f3a2c" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M200 236 L358 236 L350 246 L208 246 Z" fill="#5c6357"/>
+  </g></g>
+</svg>
 </div></section>
 
 <section class="blk" id="l-plans"><div class="lw rv">
