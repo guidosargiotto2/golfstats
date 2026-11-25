@@ -851,6 +851,15 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #parCard .pcM td.up{background:rgba(216,196,140,.22)}
 #parCard .pcM th{color:var(--pine)}
 #parCard .pcTot{background:rgba(15,58,44,.06)}
+#parCard .pcS th{color:var(--pine)}
+#parCard .pcS td{border-bottom:none;padding:4px 2px}
+#parCard .pcS input{width:100%;max-width:38px;box-sizing:border-box;text-align:center;font-family:var(--cond);font-weight:700;font-size:16px;color:var(--ink);background:#fff;border:1.5px dashed var(--line);border-radius:8px;padding:6px 0}
+#parCard .pcS input:focus{outline:none;border:1.5px solid var(--pine)}
+#parCard .pcS input:not(:placeholder-shown){border-style:solid}
+#parCard .pcOpt{font-size:13px;line-height:1.5;color:var(--ink-soft);margin:4px 0 0}
+#parCard .pcSum{display:inline-block;margin-left:6px;color:var(--pine);font-family:var(--cond);font-weight:700}
+.lgscope .cardchip{font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;border:1.5px dashed var(--sand-deep,#b89a52);color:#8a6a1e;border-radius:999px;padding:3px 10px}
+.lgscope .cardchip.ok{border-style:solid;border-color:var(--fairway);color:var(--fairway)}
 #parCard .pcActs{display:flex;justify-content:flex-end;margin-top:8px}
 #parCard .pcGo{border:none;border-radius:11px;padding:13px 24px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:14px;color:#fff;background:linear-gradient(160deg,var(--fairway),var(--pine));cursor:pointer}
 @keyframes pcFade{from{opacity:0}to{opacity:1}}
@@ -3394,7 +3403,13 @@ function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert(
    if(!confirm(es3?('¿3 en un par 5? Eso es un águila.\n\nPara un hándicap '+R.chcp+', un águila es más rara que una vuelta sin perder una pelota: revisá que no falte un tiro.\n\nAceptar = sí, hice águila (¡contalo en el bar!)\nCancelar = volver y completar los tiros'):
        ('3 on a par 5? That is an eagle.\n\nFor a '+R.chcp+' handicap, an eagle is rarer than a round without losing a ball: check that no shot is missing.\n\nOK = yes, I made eagle (tell everyone at the bar!)\nCancel = go back and add the missing shots')))return;
    h._rareOk=true;}
- if(PROF.trackClubs&&!clubOptional()){var miss=confShots(h).filter(function(s,i){if(!s.club&&(PROF.predict!==false||s.lie==='putt'))s.club=predictClub(R.cur,i,s);return !s.club;});if(miss.length){alert(window.__LANG==='es'?'Elegí el palo de cada tiro antes de pasar al siguiente hoyo.':'Choose the club for every shot before moving to the next hole.');return;}}h.shots=confShots(h);h.done=true;
+ if(PROF.trackClubs&&!clubOptional()){var miss=confShots(h).filter(function(s,i){if(!s.club&&(PROF.predict!==false||s.lie==='putt'))s.club=predictClub(R.cur,i,s);return !s.club;});if(miss.length){alert(window.__LANG==='es'?'Elegí el palo de cada tiro antes de pasar al siguiente hoyo.':'Choose the club for every shot before moving to the next hole.');return;}}h.shots=confShots(h);
+ /* scorecard entered first: the shots logged on this hole must add up to it */
+ if(h.card&&!DEMO_ON){var lg=h.shots.reduce(function(n,x){return n+1+(x.pen||0);},0);
+   if(lg!==h.card){var es4=window.__LANG==='es';
+     if(!confirm(es4?('Tu tarjeta dice '+h.card+' en este hoyo, pero cargaste '+lg+' golpes.\n\nAceptar = quedarme con '+lg+' y corregir la tarjeta\nCancelar = volver y revisar los tiros'):('Your scorecard says '+h.card+' on this hole, but you logged '+lg+' strokes.\n\nOK = keep '+lg+' and correct the card\nCancel = go back and check the shots')))return;
+     h.card=lg;}}
+ h.done=true;
  /* every hole done: only the last hole leads to the scorecard — while reviewing or editing, Next hole really goes to the next hole */
  if(R.holes.slice(R.hStart,R.hEnd).every(function(x){return x.done;})&&!(adv&&R.cur<R.hEnd-1)){scMode=true;render();return;}
  if(adv&&R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
@@ -3415,25 +3430,26 @@ var scMode=false;
 /* ===== "Your par today": before hole 1, the card with the player's own par on every hole (par + handicap strokes).
    Gross par is a scratch player's target; this makes the player's real target visible from the first tee. ===== */
 function showParCard(go){
- var PH=parseInt(R.chcp,10)||0,c=COURSES[R.course]||{};
- if(!PROF.netPar||!PH){go();return;}
- var es=window.__LANG==='es',T=function(a,b){return es?b:a;},noSI=!!c.noSI,sr=srMap(),a=R.hStart,b=R.hEnd;
+ var PH=parseInt(R.chcp,10)||0,c=COURSES[R.course]||{},STK=!!(PROF.netPar&&PH);
+ var es=window.__LANG==='es',T=function(a,b){return es?b:a;},noSI=!!(c.noSI&&STK),sr=srMap(),a=R.hStart,b=R.hEnd;
  var par=0,mine=0;for(var i=a;i<b;i++){par+=R.holes[i].par;mine+=R.holes[i].par+(sr[i]||0);}
  if(noSI)mine=par+PH;
+ var anyCard=false;for(var q=a;q<b;q++)if(R.holes[q].card)anyCard=true;
  /* the card is filled in the way a golfer does it with a pen: hole by hole, read the index, cross it if you get a stroke there, write your par below */
- var nine=function(s0,s1,lbl,key){var h='<tr class="pcH"><th>'+T('Hole','Hoyo')+'</th>',p='<tr><th>Par</th>',x='<tr class="pcX"><th>'+T('Index','Hándicap')+'</th>',m='<tr class="pcM"><th>'+T('Your par','Tu par')+'</th>',tp=0;
+ var nine=function(s0,s1,lbl,key){var h='<tr class="pcH"><th>'+T('Hole','Hoyo')+'</th>',p='<tr><th>Par</th>',x='<tr class="pcX"><th>'+T('Index','Hándicap')+'</th>',m='<tr class="pcM"><th>'+T('Your par','Tu par')+'</th>',sc='<tr class="pcS"><th>'+T('Your score','Tu score')+'</th>',tp=0;
    for(var i=s0;i<s1;i++){var hh=R.holes[i];tp+=hh.par;
-     h+='<td>'+(i+1)+'</td>';p+='<td>'+hh.par+'</td>';x+='<td data-x="'+i+'"><span>'+(noSI?'·':(hh.hcp||'·'))+'</span></td>';m+='<td data-m="'+i+'"></td>';}
-   return '<table class="pcT"><tbody>'+h+'<td class="pcTot">'+lbl+'</td></tr>'+p+'<td class="pcTot">'+tp+'</td></tr>'+x+'<td class="pcTot"></td></tr>'+m+'<td class="pcTot" data-t="'+key+'"></td></tr></tbody></table>';};
+     h+='<td>'+(i+1)+'</td>';p+='<td>'+hh.par+'</td>';x+='<td data-x="'+i+'"><span>'+(noSI?'·':(hh.hcp||'·'))+'</span></td>';m+='<td data-m="'+i+'"></td>';sc+='<td><input type="text" inputmode="numeric" maxlength="2" data-sc="'+i+'" value="'+(hh.card||'')+'" placeholder="·" aria-label="'+T('Score, hole ','Score, hoyo ')+(i+1)+'"></td>';}
+   return '<table class="pcT"><tbody>'+h+'<td class="pcTot">'+lbl+'</td></tr>'+p+'<td class="pcTot">'+tp+'</td></tr>'+x+'<td class="pcTot"></td></tr>'+m+'<td class="pcTot" data-t="'+key+'"></td></tr>'+sc+'<td class="pcTot" data-st="'+key+'"></td></tr></tbody></table>';};
  var tables=(b-a===18)?nine(0,9,T('OUT','IDA'),'o')+nine(9,18,T('IN','VUELTA'),'i'):nine(a,b,T('TOT','TOT'),'o');
  var ov=document.createElement('div');ov.id='parCard';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');
  ov.innerHTML='<div class="pcBox"><div class="pcKick">'+T('Before the first tee','Antes del primer tee')+'</div>'+
    '<div class="pcHead"><div><h2>'+T('Your par today','Tu par de hoy')+'</h2><p>'+T('Course par','Par de la cancha')+' <b>'+par+'</b> + '+T('your playing handicap','tu hándicap de juego')+' <b>'+(PH>0?PH:'−'+(-PH))+'</b></p></div><div class="pcBig">'+par+'</div></div>'+
-   '<p class="pcLead">'+(PH>0?T('Par '+par+' is a scratch player\'s target, not yours. On every hole whose index is '+Math.min(PH,18)+' or lower you get a stroke, so a bogey there is your par.','El par '+par+' es el objetivo de un jugador scratch, no el tuyo. En cada hoyo con hándicap '+Math.min(PH,18)+' o menor recibís un golpe, así que ahí un bogey es tu par.')
+   '<p class="pcLead">'+(!STK?(PH?T('Net par is off in your profile, so this is the course par.','El par neto está apagado en tu perfil, así que este es el par de la cancha.'):T('You play off scratch today: your par is the course par.','Hoy jugás scratch: tu par es el par de la cancha.')):PH>0?T('Par '+par+' is a scratch player\'s target, not yours. On every hole whose index is '+Math.min(PH,18)+' or lower you get a stroke, so a bogey there is your par.','El par '+par+' es el objetivo de un jugador scratch, no el tuyo. En cada hoyo con hándicap '+Math.min(PH,18)+' o menor recibís un golpe, así que ahí un bogey es tu par.')
                        :T('You give strokes back today: on the crossed holes your par is one less than the card.','Hoy devolvés golpes: en los hoyos tachados tu par es uno menos que el de la tarjeta.'))+'</p>'+
    (noSI?'<p class="pcWarn">'+T('This course has no stroke index yet, so your strokes cannot be placed hole by hole. Your total par still applies.','Esta cancha todavía no tiene hándicap por hoyo, así que tus golpes no se pueden ubicar hoyo por hoyo. Tu par total igual vale.')+'</p>':'')+
    '<div class="pcWrap">'+tables+'</div>'+
-   '<div class="pcActs"><button type="button" class="pcGo">'+T('Start hole '+(a+1),'Empezar hoyo '+(a+1))+' →</button></div></div>';
+   '<p class="pcOpt"><b>'+T('Optional:','Opcional:')+'</b> '+T('type your score on each hole now, straight from your card. Then log the shots whenever you like; Golfimbul checks every hole adds up.','escribí ahora tu score de cada hoyo, directo de la tarjeta. Después cargá los tiros cuando quieras; Golfimbul controla que cada hoyo coincida.')+' <span class="pcSum"></span></p>'+
+   '<div class="pcActs"><button type="button" class="pcGo">'+T('Log the shots, hole '+(a+1),'Cargar los tiros, hoyo '+(a+1))+' →</button></div></div>';
  document.body.appendChild(ov);
  var big=ov.querySelector('.pcBig'),run=par,tot={o:0,i:0},timer=null,k=a,fin=false;
  var fill=function(i,anim){var hh=R.holes[i],st=noSI?0:(sr[i]||0),xc=ov.querySelector('[data-x="'+i+'"]'),mc=ov.querySelector('[data-m="'+i+'"]');
@@ -3446,8 +3462,17 @@ function showParCard(go){
  var finish=function(){if(fin)return;fin=true;if(timer)clearTimeout(timer);for(;k<b;k++)fill(k,false);ov.querySelectorAll('.pcScan').forEach(function(e){e.classList.remove('pcScan');});big.textContent=mine;big.classList.add('pcDone');};
  var step=function(){if(fin)return;if(k>=b){finish();return;}fill(k,true);k++;timer=setTimeout(step,(sr[k-1]&&!noSI)?330:200);};
  if(noSI){finish();}else timer=setTimeout(step,500);
- var done=function(){if(!fin){finish();return;}document.removeEventListener('keydown',kd);ov.remove();go();};   /* first press finishes the card, second starts the round */
- var kd=function(e){if(e.key==='Enter'||e.key==='Escape'){e.preventDefault();done();}};
+ var ins=[].slice.call(ov.querySelectorAll('[data-sc]'));
+ var sums=function(){var t={o:0,i:0},n=0,all=0;ins.forEach(function(el){var i=+el.getAttribute('data-sc'),v=parseInt(el.value,10),key=(b-a===18&&i>=9)?'i':'o';if(v>0){t[key]+=v;n++;all+=v;}});
+   ['o','i'].forEach(function(k2){var c2=ov.querySelector('[data-st="'+k2+'"]');if(c2)c2.textContent=t[k2]||'';});
+   var sm=ov.querySelector('.pcSum');if(sm){if(n===ins.length){var d=all-mine;sm.innerHTML='<b>'+all+'</b> · '+(d===0?T('exactly your par','justo tu par'):(d>0?'+'+d:'−'+(-d))+' '+T('against your par','contra tu par'))+(String(all)!==String(R.score)?' · '+T('your round score is set to '+all,'tu score de la vuelta pasa a '+all):'');}else sm.textContent=n?n+' / '+ins.length+' '+T('holes','hoyos'):'';}
+   return {n:n,all:all};};
+ var keep=function(){var r=sums();ins.forEach(function(el){var i=+el.getAttribute('data-sc'),v=parseInt(el.value,10);if(v>0&&v<20)R.holes[i].card=v;else delete R.holes[i].card;});if(r.n===ins.length)R.score=String(r.all);save();};
+ ins.forEach(function(el,ix){el.addEventListener('input',function(){el.value=el.value.replace(/[^0-9]/g,'');if(!fin)finish();sums();if(el.value.length>=1&&+el.value>1&&ins[ix+1])ins[ix+1].focus();});
+   el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key==='Tab'&&!e.shiftKey){if(ins[ix+1]){e.preventDefault();e.stopPropagation();ins[ix+1].focus();ins[ix+1].select();}else if(e.key==='Enter'){e.preventDefault();e.stopPropagation();var g=ov.querySelector('.pcGo');if(g)g.focus();}}});});
+ if(anyCard)sums();
+ var done=function(){if(!fin){finish();return;}keep();document.removeEventListener('keydown',kd);ov.remove();go();};   /* first press finishes the card, second starts the round */
+ var kd=function(e){if(e.target&&e.target.matches&&e.target.matches('[data-sc]'))return;if(e.key==='Enter'||e.key==='Escape'){e.preventDefault();done();}};
  document.addEventListener('keydown',kd);ov.querySelector('.pcGo').onclick=done;setTimeout(function(){var g=ov.querySelector('.pcGo');if(g)g.focus();},50);}
 function render(){
  var setup=document.getElementById('setupPanel'),play=document.getElementById('playPanel');
@@ -3622,6 +3647,7 @@ function renderHoleBar(hi){
    '<span class="parchip">'+t('Par')+' '+h.par+'</span>'+
    ((PROF.netPar&&netParOf(hi)!==h.par)?'<span class="netchip" title="Net par — '+(netParOf(hi)-h.par>0?'+':'')+(netParOf(hi)-h.par)+' stroke">'+t('Net')+' '+netParOf(hi)+'</span>':'')+
    '<span class="sichip" title="Stroke index / hole handicap">SI '+(h.hcp||'—')+'</span>'+
+   (h.card?(function(){var lg=confShots(h).reduce(function(n,x){return n+1+(x.pen||0);},0),ok=(h.done||h._sank)&&lg===h.card;return '<span class="cardchip'+(ok?' ok':'')+'" title="'+(window.__LANG==='es'?'Score de tu tarjeta':'Score from your card')+'">'+(window.__LANG==='es'?'Tarjeta ':'Card ')+h.card+'</span>';})():'')+
    (hstr?'<span class="holescore" title="Hole score">'+hstr+' <small>'+hdt+'</small></span>':'')+'</div>'+
    '<div class="hbR"><span class="sgmini"><span class="ydchip">'+Y2U(h.yd)+' '+PROF.units+'</span> · <span class="'+(sg.tot<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg.tot)+'</span>'+(flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':'')+'</span></div>'+
    '<div class="holeadj">'+teeSel+pinSeg+'</div>';
@@ -4165,7 +4191,7 @@ function lgLoad(o){
  var c=COURSES[o.course]||COURSES.CGC, t=(c.tees[o.tee]||c.tees[Object.keys(c.tees)[0]]);
  R={course:(COURSES[o.course]?o.course:R.course),tee:(c.tees[o.tee]?o.tee:R.tee),courseName:c.name,cr:t.cr,slope:t.slope,date:o.date||new Date().toISOString().slice(0,10),
    score:o.score||'',chcp:o.chcp||'',notes:o.notes||'',lesson:o.lesson||'',tourn:!!o.tourn,noHcp:!!o.noHcp,phase:'play',cur:0,holesMode:(o.holes.length===9?'front':'18'),hStart:0,hEnd:o.holes.length,
-   holes:o.holes.map(function(h,i){return {par:h.par,yd:h.yd||((h.shots&&h.shots[0])?h.shots[0].dist:0),hcp:(c.hcp?c.hcp[i]:0),pin:h.pin||'M',teeOv:h.teeOv||null,done:true,shots:(h.shots||[]).map(function(s){return {lie:s.lie,dist:s.dist,pen:s.pen||0,conf:true,club:s.club,clubSet:s.clubSet,comp:s.comp,disp:s.disp,dispYd:s.dispYd,read:s.read};})};})};
+   holes:o.holes.map(function(h,i){return {par:h.par,yd:h.yd||((h.shots&&h.shots[0])?h.shots[0].dist:0),hcp:(c.hcp?c.hcp[i]:0),pin:h.pin||'M',teeOv:h.teeOv||null,card:h.card||undefined,done:true,shots:(h.shots||[]).map(function(s){return {lie:s.lie,dist:s.dist,pen:s.pen||0,conf:true,club:s.club,clubSet:s.clubSet,comp:s.comp,disp:s.disp,dispYd:s.dispYd,read:s.read};})};})};
  lgEntered=true;save();render();renderSel();
 }
 function lgPause(){if(R.phase==='play'){var act=R.holes.slice(R.hStart,R.hEnd),allDone=act.length>0&&act.every(function(x){return x.done;});if(!allDone&&lgEntered){lgEntered=false;render();}}}
