@@ -816,6 +816,17 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lvTbl td{padding:8px;text-align:center;border-bottom:1px solid var(--line);font-family:var(--cond);font-weight:700;color:var(--ink)}
 .lvTbl td:first-child{text-align:left;font-family:inherit;font-weight:400;color:var(--ink)}
 .lvTbl .cur{background:rgba(15,58,44,.07)}
+#pf_level .lvTbl{table-layout:fixed;min-width:600px}
+#pf_level .lvTbl col.c0{width:40%}
+#pf_level .lvTbl thead th{position:static!important;top:auto!important;z-index:auto!important;background:transparent!important;box-shadow:none!important;font-family:var(--serif,Georgia,serif)!important;font-weight:600!important;font-size:16px!important;letter-spacing:0!important;text-transform:none!important;color:var(--pine)!important;padding:10px 6px 12px!important;text-align:center!important;border-bottom:1.5px solid var(--pine)!important;vertical-align:bottom;line-height:1.2}
+#pf_level .lvTbl thead th.cur{background:rgba(15,58,44,.08)!important;border-radius:10px 10px 0 0}
+#pf_level .lvTbl thead th small{display:block;margin-bottom:3px;font-family:var(--cond);font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#fff;background:var(--sand-deep,#b89a52);border-radius:999px;padding:2px 6px;width:max-content;max-width:100%;margin-left:auto;margin-right:auto}
+#pf_level .lvTbl td{padding:9px 6px;white-space:nowrap;font-size:14px}
+#pf_level .lvTbl td:first-child{white-space:normal;line-height:1.35;padding-left:2px}
+#pf_level .lvTbl tbody tr:first-child td{font-size:13px;color:var(--ink-soft)}
+#pf_level .lvTbl tbody tr:last-child td{font-size:14.5px;border-top:1.5px solid var(--pine)}
+#pf_level .lvTbl tbody tr:last-child td.cur{border-radius:0 0 10px 10px}
+#pf_level .lvCmp{margin-top:18px}
 .lvTbl i{font-style:normal;font-size:15px}.lvTbl i.y{color:var(--fairway)}.lvTbl i.n{color:#b9b4a3}
 .lvTbl tbody tr:last-child td{border-bottom:none;color:var(--pine)}
 .lvGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:6px}
@@ -2991,7 +3002,7 @@ var LOGLVL={order:['ess','ply','plus','ana'],
      [['Missed putts: short or long, left or right','Putts errados: corto o largo, izquierda o derecha'],O.map(function(k){return me.L[k].disp==='all'?Y:N;})],
      [['Putt read: slope and break','Lectura del putt: pendiente y caída'],O.map(function(k){return me.L[k].read?Y:N;})],
      [['Time per round','Tiempo por vuelta'],O.map(function(k){var m=me.mins(k);return '≈ '+(m%1?m.toFixed(1):m)+' min';})]];
-   return '<div class="lvTblW"><table class="lvTbl"><thead><tr><th></th>'+O.map(function(k){return '<th class="'+(k===cur?'cur ':'')+(k===rec?'rec':'')+'">'+me.L[k].n[es]+(k===rec?'<small>'+(es?'recomendado':'recommended')+'</small>':'')+'</th>';}).join('')+'</tr></thead><tbody>'+
+   return '<div class="lvTblW"><table class="lvTbl"><colgroup><col class="c0"><col><col><col><col></colgroup><thead><tr><th></th>'+O.map(function(k){return '<th class="'+(k===cur?'cur ':'')+(k===rec?'rec':'')+'">'+(k===rec?'<small>'+(es?'recomendado':'recommended')+'</small>':'')+me.L[k].n[es]+'</th>';}).join('')+'</tr></thead><tbody>'+
      rows.map(function(r){return '<tr><td>'+r[0][es]+'</td>'+r[1].map(function(v,i){return '<td class="'+(O[i]===cur?'cur':'')+'">'+v+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table></div>';},
  html:function(){var es=window.__LANG==='es'?1:0,rec=this.mine(),cur=this.current(),me=this;
    return '<div class="lvGrid">'+this.order.map(function(k){var l=me.L[k],m=me.mins(k);return '<button type="button" class="lvCard'+(cur===k?' on':'')+'" data-lvl="'+k+'">'+(rec===k?'<em>'+(es?'Recomendado':'Recommended')+'</em>':'')+'<b>'+l.n[es]+'</b><span>'+l.d[es]+'</span><small>≈ '+(m%1?m.toFixed(1):m)+' min</small></button>';}).join('')+'</div>'+
