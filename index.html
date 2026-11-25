@@ -1822,6 +1822,12 @@ function shiftIndex(v,foundFrom,searchStart,N,cnt){
  for(let i=s0;i<=N-1;i++){if(v[i]>u||v[i]<l){cands.push({at:i,type:'out',pts:[i]});break;}}
  for(let i=s0;i<=N-4;i++){const w=v.slice(i,i+4);const up=[],dn=[];for(let j=0;j<4;j++){if(w[j]-m>2*sg)up.push(i+j);if(m-w[j]>2*sg)dn.push(i+j);}if(up.length>=3||dn.length>=3){cands.push({at:i,type:'zone',pts:up.length>=3?up:dn});break;}}
  for(let i=s0;i<=N-6;i++){const w=v.slice(i,i+6);let inc=true,dec=true;for(let j=1;j<6;j++){if(!(w[j]>w[j-1]))inc=false;if(!(w[j]<w[j-1]))dec=false;}if(inc||dec){cands.push({at:i,type:'trend',pts:rng(i,i+5)});break;}}
+ /* the three pattern rules: also signals, and also start a new stage (user choice) */
+ for(let i=s0;i<=N-14;i++){const w=v.slice(i,i+14);let alt=true;for(let j=1;j<13;j++){if(!((w[j+1]-w[j])*(w[j]-w[j-1])<0)){alt=false;break;}}if(alt){cands.push({at:i,type:'alt',pts:rng(i,i+13)});break;}}
+ if(sg<1e8){
+   for(let i=s0;i<=N-15;i++){const w=v.slice(i,i+15);if(w.every(x=>Math.abs(x-m)<=sg)){cands.push({at:i,type:'strat',pts:rng(i,i+14)});break;}}
+   for(let i=s0;i<=N-8;i++){const w=v.slice(i,i+8);if(w.every(x=>Math.abs(x-m)>sg)){cands.push({at:i,type:'mix',pts:rng(i,i+7)});break;}}
+ }
  if(!cands.length)return null;
  cands.sort((a,b)=>a.at-b.at);
  return cands[0];
@@ -1839,7 +1845,7 @@ function segLimits(v,count){
  while(stageOK && guard++<60){
    const s=shiftIndex(v,foundFrom,dispStart,N,count);
    if(!s){ segs.push(mk(v,dispStart,N-1,foundFrom,Math.min(foundFrom+19,N-1),count)); break; }
-   const o=s.at, win=(s.type==='run'?8:s.type==='trend'?6:s.type==='out'?1:4), w=Math.min(o+win-1,N-1);
+   const o=s.at, win=({run:8,trend:6,out:1,zone:4,alt:14,strat:15,mix:8})[s.type]||4, w=Math.min(o+win-1,N-1);
    if(N-o < 8){   // fewer than 8 new-regime rounds — hold the old limits, flag the signal as a watch, don't draw shaky new limits
      segs.push(mk(v,dispStart,N-1,foundFrom,Math.min(foundFrom+19,o-1),count));
      signals.push(Object.assign({},s,{pending:true}));
@@ -1858,9 +1864,6 @@ function segLimits(v,count){
  const r1=[]; v.forEach((x,i)=>{const g=segOf(i);if(x>g.u||x<g.l)r1.push(i+1);});
  const r4=[]; mr.forEach((x,i)=>{const g=segOf(i+1);if(x>g.mrucl)r4.push(i+2);});
  const notes=[];
- let run=2;for(let i=2;i<N;i++){const a=v[i]-v[i-1],b=v[i-1]-v[i-2];if((a>0&&b<0)||(a<0&&b>0))run++;else run=2;if(run>=14){notes.push(LX('14+ rounds zig-zagging up-and-down — looks like over-adjusting, or two conditions mixed together','14+ vueltas en zig-zag — parece sobre-ajuste, o dos condiciones mezcladas'));break;}}
- let w=0;for(let i=0;i<N;i++){const g=segOf(i),sg=(g.mrb/1.128)||0;if(sg>0&&Math.abs(v[i]-g.m)<=sg)w++;else w=0;if(w>=15){notes.push(LX('15+ rounds hugging the centre line — the limits may be wider than how you actually score now','15+ vueltas pegadas a la línea central — los límites pueden ser más anchos que tu juego actual'));break;}}
- let bb=0;for(let i=0;i<N;i++){const g=segOf(i),sg=(g.mrb/1.128)||0;if(sg>0&&Math.abs(v[i]-g.m)>sg)bb++;else bb=0;if(bb>=8){notes.push(LX('8+ rounds in a row away from the centre — may be two different games blended in (e.g. different courses or tees)','8+ vueltas seguidas lejos del centro — pueden ser dos juegos distintos mezclados (ej. otras canchas o tees)'));break;}}
  return {segs,segOf,mr,r1,r4,breaks,notes,signals,sigSet};}
 function np(){return typeof PROF!=='undefined'&&PROF&&PROF.netPar;}
 const metrics={'SG: Total':r=>r.sgtot,'SG: Tee-to-green':r=>(r.ott==null||r.app==null||r.atg==null)?null:Math.round((r.ott+r.app+r.atg)*100)/100,'SG: Off tee':r=>r.ott,'SG: Approach':r=>r.app,'SG: Around green':r=>r.atg,'SG: Putting':r=>r.putt,'Mistakes: total':r=>(np()&&r.mtotNet!=null)?r.mtotNet:r.mtot,'Mistakes: 3-putts':r=>r.p3,'Mistakes: double bogeys':r=>(np()&&r.dbNet!=null)?r.dbNet:r.db,'Mistakes: bogey par-5':r=>(np()&&r.bp5Net!=null)?r.bp5Net:r.bp5,'Mistakes: 3+ from 150':r=>(np()&&r.f150Net!=null)?r.f150Net:r.f150,'Mistakes: 3+ from 40':r=>r.fx,'Fairways / round':r=>r.fw,'Driving accuracy %':r=>r.fw==null?null:Math.round(1000*r.fw/(r.fwAtt||14))/10,'Greens / round':r=>(np()&&r.girNet!=null)?r.girNet:r.gir,'GIR %':r=>{var g=(np()&&r.girNet!=null)?r.girNet:r.gir;return g==null?null:Math.round(1000*g/(r.holesPlayed||18))/10;},'Scrambling %':r=>r.scrmb==null?null:r.scrmb,'Putts per GIR':r=>r.pptgir==null?null:r.pptgir,'Short-game proximity (ft)':r=>r.sgprox==null?null:r.sgprox,'Greenside inside 6 ft %':r=>r.in6==null?null:r.in6,'Greenside outside 15 ft %':r=>r.out15==null?null:r.out15,'Putts / round':r=>r.putts,'Penalties / round':r=>r.pen,'Tee shot distance':r=>r.dist,'Bogey avoidance %':r=>r.bog==null?null:Math.round(1000*(r.bog+r.dbl)/18)/10,'Birdies / round':r=>r.bir==null?null:r.bir,'Score to par':r=>(np()&&r.stpNet!=null)?r.stpNet:r.stp};
@@ -2624,7 +2627,7 @@ function drawXmr(sfx){
  const pbw=v.map((x,i)=>S.sigSet.has(i)?2:0);
  const rad=v.map((x,i)=>{const g=S.segOf(i);return (S.sigSet.has(i)||x>g.u||x<g.l)?6:3;});
  const cenA=idx.map((_,i)=>rnd(S.segOf(i).m,2)), upA=idx.map((_,i)=>rnd(S.segOf(i).u,2)), loA=idx.map((_,i)=>rnd(S.segOf(i).l,2));
- const SLBLc={run:LX('run of 8','racha de 8'),out:LX('point outside limits','punto fuera de límites'),zone:LX('3 of 4 near limit','3 de 4 cerca del límite'),trend:LX('6-pt trend','tendencia de 6')};
+ const SLBLc={run:LX('run of 8','racha de 8'),out:LX('point outside limits','punto fuera de límites'),zone:LX('3 of 4 near limit','3 de 4 cerca del límite'),trend:LX('6-pt trend','tendencia de 6'),alt:LX('14 alternating','14 alternadas'),strat:LX('15 within 1σ','15 dentro de 1σ'),mix:LX('8 beyond 1σ','8 fuera de 1σ')};
  const confSig=(S.signals||[]).filter(s=>!s.pending);
  const brkArr=(S.breaks||[]).slice(1);
  const brkLabels=brkArr.map((_,bi)=>confSig[bi]?(SLBLc[confSig[bi].type]||confSig[bi].type):'');
@@ -2635,7 +2638,7 @@ function drawXmr(sfx){
    let mhi=Math.max(...S.mr,...mrUcl,0.5)*1.1;
    xmrLine('mr_'+sfx,{v:S.mr,cenA:mrCen,upA:mrUcl,loA:mrUcl,cols:mrC,pbc:mrC,pbw:S.mr.map(()=>0),rad:mrR,lo:0,hi:mhi,cnt:true,breaks:[]});
  }
- {const sig=document.getElementById('sig_'+sfx);if(sig){const SLBL={run:LX('8 rounds one side','8 vueltas de un mismo lado'),out:LX('a round outside the limits','una vuelta fuera de los límites'),zone:LX('3 of 4 near a limit','3 de 4 cerca de un límite'),trend:LX('6-round trend','tendencia de 6 vueltas')};const conf=(S.signals||[]).filter(s=>!s.pending);sig.innerHTML=conf.length?(LX('<b>Limit resets:</b> ','<b>Reinicios de límites:</b> ')+conf.map((s,i)=>`#${i+1} — ${SLBL[s.type]||s.type} (${LX('rounds','vueltas')} ${s.pts[0]+1}–${s.pts[s.pts.length-1]+1})`).join(' &nbsp;·&nbsp; ')):'<span style="color:var(--ink-soft)">'+LX('One stable stage — no resets yet.','Una sola etapa estable — sin reinicios todavía.')+'</span>';
+ {const sig=document.getElementById('sig_'+sfx);if(sig){const SLBL={run:LX('8 rounds one side','8 vueltas de un mismo lado'),out:LX('a round outside the limits','una vuelta fuera de los límites'),zone:LX('3 of 4 near a limit','3 de 4 cerca de un límite'),trend:LX('6-round trend','tendencia de 6 vueltas'),alt:LX('14 rounds alternating up and down','14 vueltas alternando arriba y abajo'),strat:LX('15 rounds within 1σ of the centre — more consistent','15 vueltas dentro de 1σ del centro — más consistente'),mix:LX('8 rounds beyond 1σ on either side — less consistent, or mixed courses','8 vueltas fuera de 1σ a cualquier lado — menos consistente, o canchas mezcladas')};const conf=(S.signals||[]).filter(s=>!s.pending);sig.innerHTML=conf.length?(LX('<b>Limit resets:</b> ','<b>Reinicios de límites:</b> ')+conf.map((s,i)=>`#${i+1} — ${SLBL[s.type]||s.type} (${LX('rounds','vueltas')} ${s.pts[0]+1}–${s.pts[s.pts.length-1]+1})`).join(' &nbsp;·&nbsp; ')):'<span style="color:var(--ink-soft)">'+LX('One stable stage — no resets yet.','Una sola etapa estable — sin reinicios todavía.')+'</span>';
    /* the three pattern rules that describe the data rather than a change in the game: shown, never used to reset the limits */
    if(S.notes&&S.notes.length)sig.innerHTML+='<div class="xmrNotes">'+S.notes.map(function(n){return '<span>⚠ '+n+'</span>';}).join('')+'</div>';}}
  const lv=v.slice(last.start,last.end+1),sg1=(last.mrb/1.128)||1;
