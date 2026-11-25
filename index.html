@@ -879,6 +879,17 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 @keyframes pcFade{from{opacity:0}to{opacity:1}}
 @keyframes pcUp{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
 @media (max-width:560px){#parCard .pcBox{padding:20px 14px 32px}#parCard h2{font-size:23px}#parCard .pcBig{font-size:44px;min-width:70px}}
+.cuModal{position:fixed;inset:0;z-index:7500;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(15,58,44,.5);animation:pcFade .2s ease both}
+.cuBox{position:relative;width:min(640px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#fffdf7;border-radius:18px;padding:24px 26px 20px;box-shadow:0 30px 70px -20px rgba(0,0,0,.45);animation:pcUp .3s cubic-bezier(.2,.9,.3,1.15) both}
+.cuX{position:absolute;top:10px;right:14px;border:none;background:none;font-size:26px;line-height:1;color:var(--ink-soft);cursor:pointer}
+.cuKick{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sand-deep)}
+.cuBox h3{font-family:var(--serif);font-weight:600;font-size:24px;color:var(--pine);margin:2px 0 8px}
+.cuLead{font-size:14.5px;line-height:1.55;color:var(--ink);margin:0 0 10px}
+.cuSvg{width:100%;height:auto;display:block;background:#fbf8ef;border-radius:12px;margin:4px 0 12px}
+.cuT{font-family:var(--cond);font-size:11px;font-weight:700;fill:#5c6357}
+.cuList{margin:0 0 10px;padding-left:20px;font-size:14px;line-height:1.55;color:var(--ink)}
+.cuList li{margin-bottom:6px}
+.cuFine{font-size:12px;color:var(--ink-soft);margin:6px 0 0}
 @keyframes dpIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes dpGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 @media (max-width:560px){#panel_dp{padding:4px 12px 12px}.dpGrid{grid-template-columns:repeat(3,minmax(64px,1fr));grid-auto-rows:66px}.dpGridWrap{display:flex}}
@@ -2017,7 +2028,7 @@ function panelHTML(sfx){return `
         <div class="chartbox" style="height:250px;width:132px;flex:none"><canvas id="dist_${sfx}" role="img" aria-label="Distribution of values vs a normal curve"></canvas></div>
       </div>
       <div id="det_${sfx}" style="display:none;margin-top:8px;padding:12px 14px;background:var(--surface-2,#fbf9f2);border:1px solid var(--line);border-radius:10px;font-size:13.5px;line-height:1.55;color:var(--ink);position:relative"></div>
-      <div style="font-size:11.5px;color:var(--ink-soft);font-family:var(--cond);letter-spacing:.03em;margin-top:4px">${LX(`tip · click any point to see that round's detail`,`tip · tocá cualquier punto para ver el detalle de esa vuelta`)} · <a href="#" onclick="window.TWOGOLF&&TWOGOLF.modal();return false" style="color:var(--fairway);font-weight:700">${LX('How to read this chart','Cómo leer este gráfico')}</a></div>
+      <div style="font-size:11.5px;color:var(--ink-soft);font-family:var(--cond);letter-spacing:.03em;margin-top:4px">${LX(`tip · click any point to see that round's detail`,`tip · tocá cualquier punto para ver el detalle de esa vuelta`)} · <a href="#" onclick="window.CHARTHELP?CHARTHELP('${sfx}'):(window.TWOGOLF&&TWOGOLF.modal());return false" style="color:var(--fairway);font-weight:700">${LX('How to read this chart','Cómo leer este gráfico')}</a></div>
       <div id="dnote_${sfx}" style="font-size:12px;color:var(--ink-soft);font-family:var(--cond);letter-spacing:.03em;margin-top:6px;text-align:right"></div>
       <div class="sig" id="sig_${sfx}" style="margin-top:8px"></div>
       <button type="button" class="mrtoggle" data-sfx="${sfx}" onclick="toggleMR()">${LX(`Show moving range (mR)`,`Mostrar rango móvil (mR)`)}</button>
@@ -2546,6 +2557,41 @@ function parHTML(rows){
 function renderPar(){var el=document.getElementById('panel_par');if(!el)return;el.innerHTML=parHTML(R);
  el.querySelectorAll('[data-parf]').forEach(function(b){b.onclick=function(){PARF.p=b.getAttribute('data-parf');renderPar();};});}
 
+/* "How to read this chart": the control-chart guide for XmR charts, a CUSUM guide for the CUSUM ones */
+window.CHARTHELP=function(sfx){var g=GROUPS[sfx],k=g&&g.cur;if(k&&CUSUM_METRICS.has(k)){cusumHelp(k);return;}if(window.TWOGOLF)TWOGOLF.modal();};
+function cusumHelp(key){
+ var es=window.__LANG==='es',T=function(a,b){return es?b:a;},nm=TRX(shortLbl(key)).toLowerCase();
+ var V=[0,0,.4,0,0,.9,0,.5,1.4,2.3,1.8,2.9,3.8,4.6,0,0,.3,0,0,0],W=520,H=170,mL=34,mR=14,mT=14,mB=26,pw=W-mL-mR,ph=H-mT-mB,hi=5.4,X=function(i){return mL+i*pw/(V.length-1);},Y=function(v){return mT+(hi-v)/hi*ph;},LIM=4.2,SG=13,BR=14;
+ var pts=V.map(function(v,i){return X(i).toFixed(1)+','+Y(v).toFixed(1);});
+ var svg='<svg viewBox="0 0 '+W+' '+H+'" class="cuSvg" role="img" aria-label="'+T('Example CUSUM chart','Ejemplo de gráfico CUSUM')+'">'+
+   '<line x1="'+mL+'" y1="'+Y(0)+'" x2="'+(W-mR)+'" y2="'+Y(0)+'" stroke="#9aa093"/>'+
+   '<line x1="'+mL+'" y1="'+Y(LIM)+'" x2="'+X(BR-.5)+'" y2="'+Y(LIM)+'" stroke="#c2502e" stroke-dasharray="5 4" stroke-width="1.6"/>'+
+   '<line x1="'+X(BR-.5)+'" y1="'+Y(3.6)+'" x2="'+(W-mR)+'" y2="'+Y(3.6)+'" stroke="#c2502e" stroke-dasharray="5 4" stroke-width="1.6"/>'+
+   '<line x1="'+X(BR-.5)+'" y1="'+mT+'" x2="'+X(BR-.5)+'" y2="'+(H-mB)+'" stroke="#8a63d2" stroke-dasharray="2 3"/>'+
+   '<polyline fill="none" stroke="#2f6f9c" stroke-width="2" points="'+pts.slice(0,BR).join(' ')+'"/>'+
+   '<polyline fill="none" stroke="#2f6f9c" stroke-width="2" points="'+pts.slice(BR).join(' ')+'"/>'+
+   V.map(function(v,i){return '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(v).toFixed(1)+'" r="'+(i===SG?6:3)+'" fill="'+(i===SG?'#8a63d2':'#2f6f9c')+'"'+(i===SG?' stroke="#fff" stroke-width="2"':'')+'/>';}).join('')+
+   '<text x="'+(mL+4)+'" y="'+(Y(LIM)-6)+'" class="cuT" fill="#c2502e">'+T('limit','límite')+'</text>'+
+   '<text x="'+(X(1))+'" y="'+(Y(0)+16)+'" class="cuT">'+T('① flat at 0: your normal','① plano en 0: tu normalidad')+'</text>'+
+   '<text x="'+(X(8)-30)+'" y="'+(Y(3)-4)+'" class="cuT" text-anchor="end">'+T('② climbing: a worse run','② subiendo: una racha peor')+'</text>'+
+   '<text x="'+(X(SG)+10)+'" y="'+(Y(4.9))+'" class="cuT" fill="#8a63d2">'+T('③ confirmed rise','③ suba confirmada')+'</text>'+
+   '<text x="'+(X(BR)+4)+'" y="'+Y(1.3)+'" class="cuT" fill="#8a63d2">'+T('④ new baseline','④ nueva base')+'</text>'+
+   '<text x="'+(W-mR)+'" y="'+(H-6)+'" class="cuT" text-anchor="end">'+T('rounds →','vueltas →')+'</text></svg>';
+ var m=document.createElement('div');m.className='cuModal';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');
+ m.innerHTML='<div class="cuBox"><button type="button" class="cuX" aria-label="'+T('Close','Cerrar')+'">×</button>'+
+   '<div class="cuKick">'+T('How to read','Cómo leer')+'</div><h3>'+T('A CUSUM chart','Un gráfico CUSUM')+'</h3>'+
+   '<p class="cuLead">'+T('Some mistakes, like '+nm+', happen zero, one or two times a round, so a single round says almost nothing. The CUSUM adds them up round after round, so a small rise that keeps going becomes visible long before an ordinary chart would show it.','Algunos errores, como '+nm+', pasan cero, una o dos veces por vuelta, así que una sola vuelta casi no dice nada. El CUSUM los va sumando vuelta tras vuelta, así que una suba chica pero sostenida se ve mucho antes que en un gráfico común.')+'</p>'+svg+
+   '<ol class="cuList">'+
+   '<li><b>'+T('The line is a running tab.','La línea es una cuenta corriente.')+'</b> '+T('Every round worse than your normal adds to it. A normal or better round takes it back toward 0, but never below.','Cada vuelta peor que tu normalidad le suma. Una vuelta normal o mejor la baja hacia 0, pero nunca por debajo.')+'</li>'+
+   '<li><b>'+T('Flat at 0 means you are at your usual rate.','Plano en 0 significa que estás en tu tasa habitual.')+'</b> '+T('This is where it should spend most of its time.','Ahí es donde debería pasar la mayor parte del tiempo.')+'</li>'+
+   '<li><b>'+T('Climbing means a worse run is piling up.','Subiendo significa que se acumula una racha peor.')+'</b> '+T('One bad round makes a bump that fades; several in a row make a climb.','Una mala vuelta hace un salto que se borra; varias seguidas hacen una subida.')+'</li>'+
+   '<li><b>'+T('A purple dot past the red line confirms it:','Un punto violeta pasando la línea roja lo confirma:')+'</b> '+T('your rate really went up, it is not a bad week. The baseline re-sets at that point and the tab starts again from 0, measured against your new rate.','tu tasa subió de verdad, no es una mala semana. La base se reinicia en ese punto y la cuenta vuelve a 0, medida contra tu nueva tasa.')+'</li>'+
+   '<li><b>'+T('This chart only watches for things getting worse.','Este gráfico solo vigila que las cosas empeoren.')+'</b> '+T('If you improve, the tab simply stays at 0.','Si mejorás, la cuenta simplemente se queda en 0.')+'</li></ol>'+
+   '<p class="cuFine">'+T('For the curious: "normal" is your average over the baseline rounds plus a small allowance of half a standard deviation, so ordinary noise does not build up. The red line sits at four standard deviations.','Para los curiosos: "normal" es tu promedio en las vueltas de base más un pequeño margen de media desviación estándar, para que el ruido común no se acumule. La línea roja está a cuatro desviaciones estándar.')+'</p></div>';
+ document.body.appendChild(m);
+ var close=function(){m.remove();document.removeEventListener('keydown',kd);},kd=function(e){if(e.key==='Escape')close();};
+ m.addEventListener('click',function(e){if(e.target===m||e.target.classList.contains('cuX'))close();});document.addEventListener('keydown',kd);}
+
 function renderAll(){
  const FULL=BASE.concat(CUSTOM).map(sgView);
  R=filterRounds(FULL,kpiRange);try{renderDisp();}catch(e){}try{renderPar();}catch(e){} const N=R.length, idx=R.map((_,i)=>i+1);
@@ -2788,7 +2834,11 @@ function hBar(cvId,arr){ // arr:[{label,v}] ascending
     ctx.fillStyle=a.total?totCol:shade(a.v);rRect(ctx,left,cy-bh/2,w,bh,5);ctx.fill();
     ctx.textAlign='right';ctx.textBaseline='middle';ctx.font=(a.total?"600 13px":"13px")+" 'Optima','Segoe UI',Candara,sans-serif";ctx.fillStyle=a.total?totCol:'#2a2a20';ctx.fillText(TRX(a.label),mL-8,cy);
     const valTxt=(a.v>=0?'+':'')+a.v.toFixed(2)+(a.total?'':`  (${a.pct}%)`);
-    ctx.fillStyle=a.total?totCol:(a.v<0?'#8f3418':'#1c5e3b');ctx.textAlign=a.v<0?'right':'left';ctx.font="600 13px 'Optima','Segoe UI',Candara,sans-serif";ctx.fillText(valTxt, a.v<0? x-8 : x+8, cy);
+    ctx.font="600 13px 'Optima','Segoe UI',Candara,sans-serif";const tw=ctx.measureText(valTxt).width;
+    /* label outside the bar when it fits; otherwise inside it, in white, so it never runs into the row name */
+    const fits=a.v<0?(x-8-tw>=mL+2):(x+8+tw<=W-2);
+    if(fits){ctx.fillStyle=a.total?totCol:(a.v<0?'#8f3418':'#1c5e3b');ctx.textAlign=a.v<0?'right':'left';ctx.fillText(valTxt, a.v<0? x-8 : x+8, cy);}
+    else{ctx.fillStyle='#fff';ctx.textAlign=a.v<0?'left':'right';ctx.fillText(valTxt, a.v<0? x+8 : x-8, cy);}
     ctx.font="11px 'Optima','Segoe UI',Candara,sans-serif";});
 }
 function stackBar(cvId,mcats){
