@@ -822,8 +822,8 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .plStage.out b,.plStage.out span{color:#fff}.plStage.out small{color:#cfe0d6}
 .plArr{align-self:center;font-family:var(--cond);font-weight:700;font-size:18px;color:var(--ink-soft)}
 @media (max-width:620px){.plArr{display:none}.plStage{flex:1 1 45%}}
-#parCard{position:fixed;inset:0;z-index:7000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(15,58,44,.55);animation:pcFade .2s ease both}
-#parCard .pcBox{width:min(760px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#fffdf7;border-radius:20px;padding:24px 26px 22px;box-shadow:0 30px 70px -20px rgba(0,0,0,.45);animation:pcUp .35s cubic-bezier(.2,.9,.3,1.15) both}
+#parCard{position:fixed;inset:0;z-index:7000;overflow:auto;background:radial-gradient(1200px 600px at 85% -10%, #eef4ea 0%, transparent 55%),var(--cream);animation:pcFade .2s ease both}
+#parCard .pcBox{width:100%;max-width:1120px;margin:0 auto;min-height:100vh;box-sizing:border-box;background:transparent;padding:40px 32px 48px;animation:pcUp .35s cubic-bezier(.2,.9,.3,1.15) both}
 #parCard .pcKick{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sand-deep,#b89a52)}
 #parCard .pcHead{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:4px 0 6px}
 #parCard h2{font-family:var(--serif);font-weight:600;font-size:28px;color:var(--pine);margin:0}
@@ -864,7 +864,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #parCard .pcGo{border:none;border-radius:11px;padding:13px 24px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:14px;color:#fff;background:linear-gradient(160deg,var(--fairway),var(--pine));cursor:pointer}
 @keyframes pcFade{from{opacity:0}to{opacity:1}}
 @keyframes pcUp{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
-@media (max-width:560px){#parCard .pcBox{padding:18px 16px}#parCard h2{font-size:23px}#parCard .pcBig{font-size:44px;min-width:70px}}
+@media (max-width:560px){#parCard .pcBox{padding:20px 14px 32px}#parCard h2{font-size:23px}#parCard .pcBig{font-size:44px;min-width:70px}}
 @keyframes dpIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes dpGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 @media (max-width:560px){#panel_dp{padding:4px 12px 12px}.dpGrid{grid-template-columns:repeat(3,minmax(64px,1fr));grid-auto-rows:66px}.dpGridWrap{display:flex}}
