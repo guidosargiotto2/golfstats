@@ -942,6 +942,8 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #parCard .rvSh,.rvInline .rvSh{text-align:center!important;font-size:10px!important;letter-spacing:.04em!important;text-transform:none!important}
 @media (max-width:640px){#parCard .rvT td:last-child,#parCard .rvT th:last-child,.rvInline .rvT td:last-child,.rvInline .rvT th:last-child{display:none}#parCard .rvSc,.rvInline .rvSc{width:auto}#parCard .rvSh span,.rvInline .rvSh span{display:none}}
 #parCard .rvSh span,.rvInline .rvSh span{color:var(--ink-soft);margin:0 8px;font-weight:400}
+/* phones: each number gets its own row, label above a full-width strip drawn at phone scale, so its figures read at real size */
+@media (max-width:640px){#parCard .rvT,.rvInline .rvT{display:block}#parCard .rvT thead,.rvInline .rvT thead{display:block}#parCard .rvT thead tr,.rvInline .rvT thead tr{display:block}#parCard .rvT thead th:first-child,.rvInline .rvT thead th:first-child{display:none}#parCard .rvT thead th.rvSh,.rvInline .rvT thead th.rvSh{display:block;font-size:12px!important}#parCard .rvT tbody,.rvInline .rvT tbody{display:block}#parCard .rvT tbody tr,.rvInline .rvT tbody tr{display:block;border-bottom:1px solid var(--line);padding:8px 0 4px}#parCard .rvT tbody td,.rvInline .rvT tbody td{display:block;border:0!important;padding:0!important;text-align:left}#parCard .rvT tbody td:first-child,.rvInline .rvT tbody td:first-child{font-size:15px!important;font-weight:600;color:var(--pine)}#parCard .rvT tbody td.rvTd,.rvInline .rvT tbody td.rvTd{font-size:17px!important}#parCard .rvSc,.rvInline .rvSc{width:100%!important}#parCard .rvSa,.rvInline .rvSa{font-size:12px}#parCard .rvSl,.rvInline .rvSl,#parCard .rvSf,.rvInline .rvSf{font-size:11.5px}#parCard .rvSt,.rvInline .rvSt{font-size:15px}.rvInline{padding:14px 12px;margin-left:0;margin-right:0}.rvInline h3{font-size:22px}.rvInline .rvLead{font-size:15px}.rvInline .pcOpt{font-size:13.5px}.rvInline .pcWrap{overflow:visible}}
 @keyframes dpIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes dpGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 @media (max-width:560px){#panel_dp{padding:4px 12px 12px}.dpGrid{grid-template-columns:repeat(3,minmax(64px,1fr));grid-auto-rows:66px}.dpGridWrap{display:flex}}
@@ -3609,7 +3611,7 @@ function reviewParts(rec,all){
  var V={b3:T('very good · 2σ+','muy buena · 2σ+'),b2:T('good · 1σ+','buena · 1σ+'),b1:T('above avg','sobre el prom.'),avg:T('average','promedio'),w1:T('below avg','bajo el prom.'),w2:T('poor · 1σ+','mala · 1σ+'),w3:T('bad · 2σ+','muy mala · 2σ+'),sigB:T('signal · better','señal · mejor'),sigW:T('signal · worse','señal · peor')};
  /* one strip per number: your average in the middle, 1σ and 2σ bands, your limits, and today as a dot. Better is always to the right */
  var strip=function(r){if(r.avg==null||!(r.sd>0))return '';var m=r.m,dir=m[2]===1?-1:1,Z=function(v){return (v-r.avg)/r.sd*dir;},zt=Z(r.today),zl=Z(r.lo),zh=Z(r.hi),zw=Math.min(zl,zh),zb=Math.max(zl,zh);
-   var W=560,X=function(z){return W/2+Math.max(-3.6,Math.min(3.6,z))*74;},dec=m[3]||1,sgn=m[0]==='stpNet'||m[0]==='sgtot';
+   var W=window.innerWidth<641?340:560,K=(W/2-14)/3.6,X=function(z){return W/2+Math.max(-3.6,Math.min(3.6,z))*K;},dec=m[3]||1,sgn=m[0]==='stpNet'||m[0]==='sgtot';
    var col=r.v==='sigB'||r.v==='b3'||r.v==='b2'||r.v==='b1'?'#1f7a4d':r.v==='sigW'||r.v==='w3'||r.v==='w2'||r.v==='w1'?'#c2502e':'#0f3a2c';
    var out=zt>3.6||zt<-3.6,cx=X(zt),tx=Math.max(14,Math.min(W-14,cx));
    /* reference values above the bar, today's value under its dot */
