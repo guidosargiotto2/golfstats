@@ -937,6 +937,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #parCard .rvSc,.rvInline .rvSc{width:78%;padding-top:4px!important;padding-bottom:2px!important}
 #parCard .rvSt,.rvInline .rvSt{font-family:var(--cond);font-size:13px;font-weight:700}
 #parCard .rvSa,.rvInline .rvSa{font-family:var(--cond);font-size:10px;font-weight:700;fill:#0f3a2c}
+#parCard .rvSf,.rvInline .rvSf{font-family:var(--cond);font-size:9px;fill:#9a958a}
 #parCard .rvSl,.rvInline .rvSl{font-family:var(--cond);font-size:9px;fill:#a8452c}
 #parCard .rvSh,.rvInline .rvSh{text-align:center!important;font-size:10px!important;letter-spacing:.04em!important;text-transform:none!important}
 @media (max-width:640px){#parCard .rvT td:last-child,#parCard .rvT th:last-child,.rvInline .rvT td:last-child,.rvInline .rvT th:last-child{display:none}#parCard .rvSc,.rvInline .rvSc{width:auto}#parCard .rvSh span,.rvInline .rvSh span{display:none}}
@@ -3586,7 +3587,7 @@ function reviewParts(rec,all){
      var CNT={putts:1,p3:1,db:1,pen:1,fw:1,gir:1,mtot:1},done0=false;
      if(typeof window.segLimits==='function'){try{var S=window.segLimits(hv,!!CNT[k]),g=S.segs[S.segs.length-1];if(g&&isFinite(g.u)&&isFinite(g.l)){var cur=hv.slice(g.start);row.typ=med(cur.length?cur:hv);row.avg=g.m;row.sd=(g.mrb/1.128)||0;row.lo=g.l;row.hi=g.u;row.n=cur.length;done0=true;}}catch(e){}}
      if(!done0){var hv2=hv.slice(-20),mean=hv2.reduce(function(a,b){return a+b;},0)/hv2.length,mr=0;for(var i=1;i<hv2.length;i++)mr+=Math.abs(hv2[i]-hv2[i-1]);mr=mr/(hv2.length-1);row.typ=med(hv2);row.avg=mean;row.sd=mr/1.128;row.lo=mean-2.66*mr;row.hi=mean+2.66*mr;row.n=hv2.length;}
-     if(CNT[k]&&row.lo<0)row.lo=0;   /* only counts cannot go below zero; score to par can */
+     if(CNT[k]&&row.lo<=0){row.lo=0;row.floor=true;}   /* only counts cannot go below zero; score to par can. Zero is a floor, not a limit */
      var out=row.today>row.hi?'up':row.today<row.lo?'down':'';
      if(out){var good=(out==='down')===(m[2]===1);row.v=good?'sigB':'sigW';(good?better:worse).push(m[1].toLowerCase());}
      else{var z=row.sd>0?(row.today-row.avg)/row.sd:0;if(m[2]===1)z=-z;row.z=z;   /* positive = better than your average */
@@ -3615,13 +3616,14 @@ function reviewParts(rec,all){
    /* reference values above the bar, today's value under its dot */
    return '<svg viewBox="0 0 '+W+' 50" class="rvS" role="img" aria-label="'+m[1]+'">'+
      '<text x="'+X(0)+'" y="9" text-anchor="middle" class="rvSa">'+sg(r.avg,dec,sgn)+'</text>'+
-     '<text x="'+X(zw)+'" y="9" text-anchor="middle" class="rvSl">'+sg(dir>0?r.lo:r.hi,dec,sgn)+'</text>'+
-     '<text x="'+X(zb)+'" y="9" text-anchor="middle" class="rvSl">'+sg(dir>0?r.hi:r.lo,dec,sgn)+'</text>'+
+     (function(){var fw=r.floor&&dir<0,fb=r.floor&&dir>0;   /* the zero floor sits on the better side when fewer is better */
+       return '<text x="'+X(zw)+'" y="9" text-anchor="middle" class="'+(fb?'rvSf':'rvSl')+'">'+(fb?'0':sg(dir>0?r.lo:r.hi,dec,sgn))+'</text>'+
+              '<text x="'+X(zb)+'" y="9" text-anchor="middle" class="'+(fw?'rvSf':'rvSl')+'">'+(fw?'0':sg(dir>0?r.hi:r.lo,dec,sgn))+'</text>';})()+
      '<rect x="'+X(-3)+'" y="14" width="'+(X(3)-X(-3))+'" height="14" rx="3" fill="#f3eee0"/>'+
      '<rect x="'+X(-2)+'" y="14" width="'+(X(2)-X(-2))+'" height="14" fill="#ebe3cc"/>'+
      '<rect x="'+X(-1)+'" y="14" width="'+(X(1)-X(-1))+'" height="14" fill="#e0d4b1"/>'+
-     '<line x1="'+X(zw)+'" y1="12" x2="'+X(zw)+'" y2="30" stroke="#c2502e" stroke-width="1.5" stroke-dasharray="3 2"/>'+
-     '<line x1="'+X(zb)+'" y1="12" x2="'+X(zb)+'" y2="30" stroke="#c2502e" stroke-width="1.5" stroke-dasharray="3 2"/>'+
+     '<line x1="'+X(zw)+'" y1="12" x2="'+X(zw)+'" y2="30" '+(r.floor&&dir>0?'stroke="#b9b4a3" stroke-width="2"':'stroke="#c2502e" stroke-width="1.5" stroke-dasharray="3 2"')+'/>'+
+     '<line x1="'+X(zb)+'" y1="12" x2="'+X(zb)+'" y2="30" '+(r.floor&&dir<0?'stroke="#b9b4a3" stroke-width="2"':'stroke="#c2502e" stroke-width="1.5" stroke-dasharray="3 2"')+'/>'+
      '<line x1="'+X(0)+'" y1="12" x2="'+X(0)+'" y2="30" stroke="#0f3a2c" stroke-width="2"/>'+
      (out?'<path d="M'+(zt>0?(cx-6)+' 15 L'+(cx+2)+' 21 L'+(cx-6)+' 27':(cx+6)+' 15 L'+(cx-2)+' 21 L'+(cx+6)+' 27')+'Z" fill="'+col+'"/>':'<circle cx="'+cx.toFixed(1)+'" cy="21" r="6.5" fill="'+col+'" stroke="#fff" stroke-width="2"/>')+
      '<text x="'+tx.toFixed(1)+'" y="45" text-anchor="middle" class="rvSt" fill="'+col+'">'+sg(r.today,m[3],sgn)+'</text>'+
