@@ -908,6 +908,8 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope .tournrow{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0 0 10px}
 .lgscope .tournrow label.tournchk{padding-bottom:0}
 .lgscope .scNoHcp{border:1px solid var(--line);color:var(--ink-soft);border-radius:999px;padding:1px 9px;font-family:var(--cond);font-weight:700;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase}
+.lgscope .scRev{border:1.5px solid var(--pine);background:transparent;color:var(--pine);border-radius:999px;padding:3px 12px;font-family:var(--cond);font-weight:700;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.lgscope .scRev:hover{background:var(--pine);color:#fff}
 .lgscope .scTourn{background:var(--sand-deep,#b89a52);color:#fff;border-radius:999px;padding:2px 10px;font-family:var(--cond);font-weight:700;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase}
 .lgscope td.clubc{text-align:center;}
 .lvCmp{margin-top:14px}
@@ -2972,13 +2974,15 @@ window.saveLoggedRounds=function(a){try{save(uckey(),a||[]);if(PLAYER===(localSt
        '<div class="ledR"><span class="ledsc">'+r.score+' <small>('+stp+')</small></span>'+
        '<span class="ledsg '+((sg!=null&&sg<0)?'sg-neg':'sg-pos')+'">SG '+(sg!=null?fmt(sg):'·')+'</span>'+
        '<span class="ledsrc '+(o.src==='logged'?'lg':'im')+'">'+T(o.src)+'</span>'+
+       (o.src==='logged'?'<span class="ledshare ledrev" data-rv="1" title="'+(window.__LANG==='es'?'Esta vuelta contra tu normalidad':'This round against your normal')+'">◎ '+(window.__LANG==='es'?'Revisión':'Review')+'</span>':'')+
        '<span class="ledshare" data-sh="1" title="WhatsApp · PNG">⤴ '+T('Share')+'</span>'+
        '<span class="ledgo">'+(card?T('Scorecard')+' ▶':(icard?T('Scorecard')+' ▾':T('Details')+' ▾'))+'</span></div>'+
        '<div class="leddet" id="leddet_'+i+'" style="display:none"></div></div>';
    }).join('');
    el.querySelectorAll('.ledrow').forEach(function(row){row.addEventListener('click',function(ev){
      var i=+row.getAttribute('data-li'),o=all[i],r=o.r;
-     if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.ledshare')){if(window.SHARE)window.SHARE.round(r,user);return;}
+     if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.ledrev')){if(window.LGR&&window.LGR.review)window.LGR.review(r.id);return;}
+      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.ledshare')){if(window.SHARE)window.SHARE.round(r,user);return;}
      if(o.src==='logged'&&r.holes){if(window.showView)window.showView('log');if(window.LGR&&window.LGR.openCard)window.LGR.openCard({id:r.id,course:r.courseCode||r.course,tee:r.tee,date:r.date,score:r.score,chcp:r.ph,notes:r.notes,lesson:r.lesson,holes:r.holes});return;}
      var dd=document.getElementById('leddet_'+i);if(!dd)return;var open=dd.style.display!=='none';
      if(!open){var ic=null;try{if(r.hl&&window.LGR&&window.LGR.importCard)ic=window.LGR.importCard(r.hl);}catch(e){ic=null;}
@@ -3395,7 +3399,8 @@ function renderLogged(){
  var el=document.getElementById('lgLoggedList'); if(!el)return;
  var arr=(window.getLoggedRounds?window.getLoggedRounds():[]);
  if(!arr.length){el.innerHTML='<div class="hisub" style="padding:6px 0">No rounds logged in this browser yet.</div>';return;}
- el.innerHTML=arr.slice().reverse().map(function(r){var id=r.id||'';return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><span style="flex:1;font-family:var(--cond);font-size:12.5px">'+(r.date||'?')+' · '+(r.course||'')+' · '+r.score+' ('+(r.stp>=0?'+':'')+r.stp+')'+(editRoundId&&editRoundId===id?' · editing…':'')+'</span><button class="pf_btn" data-edr="'+id+'" style="padding:5px 10px">Scorecard</button><button class="pf_btn" data-dlr="'+id+'" style="padding:5px 10px;background:var(--clay)">Delete</button></div>';}).join('');
+ el.innerHTML=arr.slice().reverse().map(function(r){var id=r.id||'';return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><span style="flex:1;font-family:var(--cond);font-size:12.5px">'+(r.date||'?')+' · '+(r.course||'')+' · '+r.score+' ('+(r.stp>=0?'+':'')+r.stp+')'+(editRoundId&&editRoundId===id?' · editing…':'')+'</span><button class="pf_btn frgrey" data-rvw="'+id+'" style="padding:5px 10px">'+(window.__LANG==='es'?'Revisión':'Review')+'</button><button class="pf_btn" data-edr="'+id+'" style="padding:5px 10px">Scorecard</button><button class="pf_btn" data-dlr="'+id+'" style="padding:5px 10px;background:var(--clay)">Delete</button></div>';}).join('');
+ el.querySelectorAll('[data-rvw]').forEach(function(b){b.onclick=function(){window.LGR.review(b.getAttribute('data-rvw'));};});
  el.querySelectorAll('[data-edr]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-edr');var r=(window.getLoggedRounds()||[]).find(function(x){return (x.id||'')===id;});if(!r||!r.holes){alert('This round was logged before editing existed, so it has no shot detail to reopen. Re-log it (or Load it) to make it editable.');return;}editRoundId=id;lgLoad({course:r.courseCode||r.course,tee:r.tee,date:r.date,notes:r.notes,lesson:r.lesson,holes:r.holes});scMode=true;render();renderLogged();window.scrollTo(0,0);};});
  el.querySelectorAll('[data-dlr]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-dlr');if(!confirm('Delete this logged round?'))return;var a2=(window.getLoggedRounds()||[]).filter(function(x){return (x.id||'')!==id;});if(window.saveLoggedRounds)window.saveLoggedRounds(a2);if(editRoundId===id||(R&&R._editId===id)){editRoundId=null;scMode=false;localStorage.removeItem(RKEY);var d0=loadDefault();R=newRound(d0.course,d0.tee);lgEntered=false;render();}renderLogged();};});
 }
@@ -3511,7 +3516,7 @@ var scMode=false;
 /* ===== after the round: today against your own normal. Typical = your median; normal range = natural process limits (XmR) of your previous rounds ===== */
 function showRoundReview(rec,all){
  var es=window.__LANG==='es',T=function(a,b){return es?b:a;},hp=rec.holesPlayed||18;
- var prev=(all||[]).filter(function(x){return x&&x.id!==rec.id&&(x.holesPlayed||18)===hp;}).sort(function(a,b){return String(a.date||'')<String(b.date||'')?-1:1;}).slice(-20);
+ var prev=(all||[]).filter(function(x){return x&&x.id!==rec.id&&(x.holesPlayed||18)===hp&&String(x.date||'')<=String(rec.date||'');}).sort(function(a,b){return String(a.date||'')<String(b.date||'')?-1:1;}).slice(-20);
  var M=[['score',T('Gross score','Score gross'),1,0],['stpNet',T('Against your par','Contra tu par'),1,0,true],['sgtot',T('Strokes gained','Strokes gained'),0,2],
    ['putts',T('Putts','Putts'),1,0],['p3',T('3-putts','3 putts'),1,0],['db',T('Double bogeys or worse','Dobles bogeys o peor'),1,0],['pen',T('Penalties','Penalidades'),1,0],
    ['fw',T('Fairways hit','Fairways'),0,0],['gir',T('Greens in regulation','Greens en regulación'),0,0],['mtot',T("Tiger 5 mistakes","Errores Tiger 5"),1,0]];
@@ -3527,7 +3532,7 @@ function showRoundReview(rec,all){
    rows.push(row);});
  var list=function(a){return a.length<2?a.join(''):a.slice(0,-1).join(', ')+T(' and ',' y ')+a[a.length-1];};
  var head,lead;
- if(!enough){head=T('Saved. Your normal comes next.','Guardada. Tu normalidad viene después.');lead=T('To tell you whether a round was normal for you, Golfimbul needs at least 5 rounds of the same length. You have '+(prev.length+1)+'. Keep logging: from round 5 every round gets measured against your own game.','Para decirte si una vuelta fue normal para vos, Golfimbul necesita al menos 5 vueltas del mismo largo. Tenés '+(prev.length+1)+'. Seguí cargando: desde la vuelta 5 cada vuelta se mide contra tu propio juego.');}
+ if(!enough){head=T('Saved. Your normal comes next.','Guardada. Tu normalidad viene después.');lead=T('To tell you whether a round was normal for you, Golfimbul needs at least 5 earlier rounds of the same length. This one has '+prev.length+'. Keep logging: from round 5 every round gets measured against your own game.','Para decirte si una vuelta fue normal para vos, Golfimbul necesita al menos 5 vueltas anteriores del mismo largo. Esta tiene '+prev.length+'. Seguí cargando: desde la vuelta 5 cada vuelta se mide contra tu propio juego.');}
  else if(!better.length&&!worse.length){head=T('This was your round.','Esta fue tu vuelta.');lead=T('Every number today sits inside your normal range. Not a bad day, not a good day: your game, exactly as it is. If you average two 3-putts and made two, there is nothing to be surprised about. Don\'t like the numbers? Don\'t blame today. Change the process and they will move, and the day they do, Golfimbul will tell you.','Todos los números de hoy están dentro de tu rango normal. Ni un mal día ni un buen día: tu juego, tal cual es. Si promediás dos 3 putts e hiciste dos, no hay nada de qué sorprenderse. ¿No te gustan los números? No le eches la culpa a hoy. Cambiá el proceso y se van a mover, y el día que lo hagan, Golfimbul te lo va a decir.');}
  else{head=worse.length&&better.length?T('A round with signals both ways.','Una vuelta con señales para los dos lados.'):worse.length?T('Something was off today.','Algo no anduvo hoy.'):T('Something was different today, for the better.','Algo fue distinto hoy, para bien.');
    lead=(better.length?T('Better than your normal range: <b>'+list(better)+'</b>. One round is not a trend: if it repeats, your charts will confirm it. ','Mejor que tu rango normal: <b>'+list(better)+'</b>. Una vuelta no es una tendencia: si se repite, tus gráficos lo van a confirmar. '):'')+
@@ -3538,7 +3543,7 @@ function showRoundReview(rec,all){
    rows.map(function(r){var m=r.m,sgn=m[0]==='stpNet'||m[0]==='sgtot';return '<tr><td>'+m[1]+'</td><td class="rvTd">'+sg(r.today,m[3],sgn)+'</td>'+(enough?(r.typ!=null?'<td>'+sg(r.typ,m[3]||(r.typ%1?1:0),sgn)+'</td><td class="rvRg">'+sg(r.lo,m[3]||1,sgn)+' – '+sg(r.hi,m[3]||1,sgn)+'</td><td><span class="rvV '+r.v+'">'+V[r.v]+'</span></td>':'<td>·</td><td>·</td><td></td>'):'')+'</tr>';}).join('')+'</tbody></table></div>';
  var ov=document.createElement('div');ov.id='parCard';ov.className='rvCard';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');
  ov.innerHTML='<div class="pcBox"><div class="pcKick">'+T('Your round, against your normal','Tu vuelta, contra tu normalidad')+'</div>'+
-   '<div class="pcHead"><div><h2>'+head+'</h2><p>'+(rec.course||'')+' · '+(rec.date||'')+(enough?' · '+T('compared with your last ','comparada con tus últimas ')+prev.length+T(' rounds',' vueltas'):'')+'</p></div><div class="pcBig">'+rec.score+'</div></div>'+
+   '<div class="pcHead"><div><h2>'+head+'</h2><p>'+(rec.course||'')+' · '+(rec.date||'')+(enough?' · '+T('compared with the ','comparada con las ')+prev.length+T(' rounds before it',' vueltas anteriores'):'')+'</p></div><div class="pcBig">'+rec.score+'</div></div>'+
    '<p class="pcLead">'+lead+'</p>'+tbl+
    (enough?'<p class="pcOpt">'+T('Your typical is your median: half your rounds are better, half worse. The normal range is where your rounds land when nothing has changed in your game; only a number outside it means something was different.','Lo tuyo es tu mediana: la mitad de tus vueltas son mejores y la mitad peores. El rango normal es donde caen tus vueltas cuando nada cambió en tu juego; solo un número fuera de él significa que algo fue distinto.')+'</p>':'')+
    '<div class="pcActs"><button type="button" class="pcBack rvStats">'+T('Open Statistics','Abrir Estadísticas')+'</button><button type="button" class="pcGo">'+T('Done','Listo')+'</button></div></div>';
@@ -3673,7 +3678,7 @@ function renderScorecard(){
  var head='<div class="scHead"><div class="scHeadL"><div class="scKick">'+(window.__LANG==='es'?'Tarjeta':'Scorecard')+(hdDate?' · '+hdDate:'')+'</div>'+
    '<div class="scCourse">'+esc(R.courseName||(COURSES[R.course]&&COURSES[R.course].name)||R.course||'')+'</div>'+
    '<div class="scMeta"><span class="scTee" style="'+teeStyle(R.course,R.tee)+'">'+esc(teeEN(R.course,R.tee))+'</span>'+
-   (R.tourn?'<span class="scTourn">'+t('Tournament')+'</span>':'')+(R.noHcp?'<span class="scNoHcp">'+t('Not for handicap')+'</span>':'')+'<span>'+(he-hs)+' '+(window.__LANG==='es'?'hoyos':'holes')+'</span><span>Par '+hdPar+'</span>'+(hdTee&&hdTee.cr?'<span>CR '+hdTee.cr+' / '+hdTee.slope+'</span>':'')+'</div></div>'+
+   (R.tourn?'<span class="scTourn">'+t('Tournament')+'</span>':'')+(R.noHcp?'<span class="scNoHcp">'+t('Not for handicap')+'</span>':'')+   '<span>'+(he-hs)+' '+(window.__LANG==='es'?'hoyos':'holes')+'</span><span>Par '+hdPar+'</span>'+(R._editId&&R._editId!=='dup'?'<button type="button" class="scRev" onclick="window.LGR&&LGR.review(\''+R._editId+'\')">◎ '+(window.__LANG==='es'?'Revisión contra tu normalidad':'Review against your normal')+'</button>':'')+(hdTee&&hdTee.cr?'<span>CR '+hdTee.cr+' / '+hdTee.slope+'</span>':'')+'</div></div>'+
    '</div>';
  {var sn=document.getElementById('snote');if(sn)sn.style.display='none';var tb=document.getElementById('totBox');if(tb)tb.style.display='none';}
  sv.innerHTML=head+'<div class="scWrap"><table class="scTbl"><tbody>'+
@@ -4396,7 +4401,7 @@ function demoCardHTML(){if(!demoAvailable())return '';var es=window.__LANG==='es
 /* shared with the other modules (setup wizard, Garmin import, course requests, profile cards) */
 setTimeout(prefPull,900);window.addEventListener('focus',function(){prefPull();});
 window.COURSES=COURSES;window.PROF=PROF;window.saveProf=saveProf;window.teeEN=teeEN;window.applyI18n=applyI18n;
-render();renderSel();applyI18n();window.LGR={demo:lgDemo,demoEnd:lgDemoEnd,demoOn:function(){return DEMO_ON;},card:function(){render();renderSel();},importCard:importCard,profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause,practice:lgPractice,practiceEnd:lgPracticeEnd,tourCard:function(){try{if(!R._tour)return;for(var i=R.hStart;i<R.hEnd;i++){var h=R.holes[i],y=h.yd;
+render();renderSel();applyI18n();window.LGR={review:function(id){var all=(window.getLoggedRounds?window.getLoggedRounds():[]),r=all.filter(function(x){return (x.id||'')===id;})[0];if(r)showRoundReview(r,all);},demo:lgDemo,demoEnd:lgDemoEnd,demoOn:function(){return DEMO_ON;},card:function(){render();renderSel();},importCard:importCard,profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause,practice:lgPractice,practiceEnd:lgPracticeEnd,tourCard:function(){try{if(!R._tour)return;for(var i=R.hStart;i<R.hEnd;i++){var h=R.holes[i],y=h.yd;
    h.shots=h.par===3?[{lie:'tee',dist:y,pen:0,conf:true},{lie:'putt',dist:22,pen:0,conf:true},{lie:'putt',dist:2,pen:0,conf:true}]
     :h.par===5?[{lie:'tee',dist:y,pen:0,conf:true},{lie:'fw',dist:Math.max(150,y-280),pen:0,conf:true},{lie:(i%3?'fw':'rough'),dist:70,pen:0,conf:true},{lie:'putt',dist:14,pen:0,conf:true},{lie:'putt',dist:2,pen:0,conf:true}]
     :[{lie:'tee',dist:y,pen:0,conf:true},{lie:(i%2?'fw':'rough'),dist:Math.max(60,y-275),pen:0,conf:true},{lie:'putt',dist:(i%4===0?9:20),pen:0,conf:true}].concat(i%4===0?[]:[{lie:'putt',dist:2,pen:0,conf:true}]);
