@@ -809,6 +809,19 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .dpLeg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:10px;font-size:12px;color:var(--ink-soft)}
 .dpLeg span{display:inline-flex;align-items:center;gap:5px}
 .dpLeg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+#panel_par{padding:16px 20px 18px}
+.plFlow{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;margin:4px 0 6px}
+.plStage{position:relative;flex:1 1 120px;min-width:110px;display:flex;flex-direction:column;gap:3px;padding:14px 12px 12px;border-radius:14px;background:rgba(15,58,44,.05);border:1.5px solid transparent;animation:dpIn .45s ease both}
+.plStage b{font-family:var(--serif);font-size:28px;font-weight:600;color:var(--pine);line-height:1.1}
+.plStage span{font-size:12.5px;line-height:1.35;color:var(--ink)}
+.plStage small{font-family:var(--cond);font-size:11.5px;color:var(--ink-soft)}
+.plStage.weak{border-color:var(--clay);background:rgba(194,80,46,.07)}
+.plStage.weak b{color:var(--clay)}
+.plStage em{position:absolute;top:-9px;left:10px;font-style:normal;font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--clay);color:#fff;padding:2px 8px;border-radius:999px}
+.plStage.out{background:var(--pine);border-color:var(--pine)}
+.plStage.out b,.plStage.out span{color:#fff}.plStage.out small{color:#cfe0d6}
+.plArr{align-self:center;font-family:var(--cond);font-weight:700;font-size:18px;color:var(--ink-soft)}
+@media (max-width:620px){.plArr{display:none}.plStage{flex:1 1 45%}}
 @keyframes dpIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes dpGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 @media (max-width:560px){#panel_dp{padding:4px 12px 12px}.dpGrid{grid-template-columns:repeat(3,minmax(64px,1fr));grid-auto-rows:66px}.dpGridWrap{display:flex}}
@@ -1557,6 +1570,12 @@ svg.tgSvg{width:100%;height:auto;display:block;}
     <div class="controls" id="ctrl_sh"></div>
     <div class="chtype"><span id="mlbl_sh">XmR</span> <span data-i18n="chart">chart</span></div>
     <div class="card" id="panel_sh"></div>
+  </section>
+
+  <section id="sec_par">
+    <h2><span class="n">⇢</span> <span data-i18n="Your par line">Your par line</span></h2>
+    <p class="lead" data-i18n="Every hole is a small production line: the tee shot, the approach, the first putt, the second. A clean par needs every step to work on the same hole. This shows how often each step works, and which one breaks the line most.">Every hole is a small production line: the tee shot, the approach, the first putt, the second. A clean par needs every step to work on the same hole. This shows how often each step works, and which one breaks the line most.</p>
+    <div class="card" id="panel_par"></div>
   </section>
 
   <section id="sec_dp">
@@ -2413,9 +2432,59 @@ function renderDisp(){var el=document.getElementById('panel_dp');if(!el)return;e
  el.querySelectorAll('[data-dpputt]').forEach(function(b){b.onclick=function(){DPF.putt=b.getAttribute('data-dpputt');renderDisp();};});
  el.querySelectorAll('[data-dpseg]').forEach(function(b){b.onclick=function(){DPF.seg=b.getAttribute('data-dpseg');renderDisp();};});
  var cs=el.querySelector('#dpClub');if(cs)cs.onchange=function(){DPF.club=cs.value;renderDisp();};}
+/* ===== The par line (rolled throughput yield): each hole as a production line; a clean par needs every step to work ===== */
+var PARF={p:'4'};
+var PAR_INPLAY={fw:1,rough:1,putt:1};
+function parStages(par){
+ var es=window.__LANG==='es',T=function(a,b){return es?b:a;};
+ var pre=par===3?[['green',T('Tee shot on the green','Salida al green')]]:
+         par===4?[['tee',T('Tee shot in play','Salida en juego')],['green',T('Approach on the green','Approach al green')]]:
+                 [['tee',T('Tee shot in play','Salida en juego')],['second',T('Second shot in play','Segundo tiro en juego')],['green',T('Third shot on the green','Tercer tiro al green')]];
+ return pre.concat([['p1',T('First putt holed or within 3 ft','Primer putt embocado o a menos de 3 ft')],['p2',T('Holed in two putts or fewer','Embocado en dos putts o menos')]]);}
+/* how far one hole got down the line: number of stages passed in a row (all = clean par or better) */
+function parPassed(par,S){
+ var n=S.length,fp=n;for(var i=0;i<n;i++){if(S[i].lie==='putt'){fp=i;break;}}
+ var pen=function(a,b){for(var i=a;i<b&&i<n;i++)if(S[i].pen)return true;return false;};
+ var inPlay=function(i){if(S[i].pen)return false;return i+1>=n||!!PAR_INPLAY[S[i+1].lie];};
+ var checks=[];
+ if(par>=4)checks.push(function(){return inPlay(0);});
+ if(par===5)checks.push(function(){return inPlay(1);});
+ checks.push(function(){return fp<=par-2&&!pen(0,fp);});
+ checks.push(function(){return fp>=n||fp+1>=n||+S[fp+1].dist<=3;});
+ checks.push(function(){return n-fp<=2;});
+ var k=0;for(;k<checks.length;k++){if(!checks[k]())break;}return k;}
+function parCollect(rows){
+ var D={3:{holes:0,reach:[],pass:[]},4:{holes:0,reach:[],pass:[]},5:{holes:0,reach:[],pass:[]}};
+ (rows||[]).forEach(function(r){var H=null;try{H=(typeof shotsOf==='function')?shotsOf(r):null;}catch(e){H=null;}if(!H)return;
+   H.forEach(function(h){var par=+h.par,S=h.shots||[];if(!D[par]||S.length<1)return;var d=D[par],st=parStages(par).length,k=parPassed(par,S);
+     d.holes++;for(var i=0;i<st;i++){d.reach[i]=(d.reach[i]||0)+(i<=k?1:0);d.pass[i]=(d.pass[i]||0)+(i<k?1:0);}});});
+ return D;}
+function parHTML(rows){
+ var es=window.__LANG==='es',T=function(a,b){return es?b:a;},D=parCollect(rows),MIN=20;
+ var tot=D[3].holes+D[4].holes+D[5].holes;
+ if(!tot)return '<div class="dpEmpty"><strong>'+T('No shot-by-shot rounds in this range yet.','Todavía no hay vueltas tiro a tiro en este rango.')+'</strong></div>';
+ var pc=function(x){return Math.round(x*100);};
+ var tabs='<div class="controls dpCtl">'+['3','4','5'].map(function(p){return '<button type="button" data-parf="'+p+'"'+(PARF.p===p?' class="on"':'')+'>Par '+p+' <small>('+D[p].holes+')</small></button>';}).join('')+'</div>';
+ var par=+PARF.p,d=D[par],ST=parStages(par);
+ if(!d.holes)return tabs+'<p class="dpMute">'+T('No par '+par+'s in this range.','No hay pares '+par+' en este rango.')+'</p>';
+ var rate=ST.map(function(s,i){return d.reach[i]?d.pass[i]/d.reach[i]:0;});
+ var rty=rate.reduce(function(a,b){return a*b;},1);
+ /* weakest link: the step whose +10 points would raise the line's yield the most */
+ var best=-1,gain=0;rate.forEach(function(r,i){var up=Math.min(1,r+0.10),g=rty/(r||1)*up-rty;if(r<1&&g>gain){gain=g;best=i;}});
+ var few=d.holes<MIN;
+ var flow='<div class="plFlow">'+ST.map(function(s,i){var r=rate[i],w=(i===best&&!few);
+   return (i?'<span class="plArr" aria-hidden="true">→</span>':'')+'<div class="plStage'+(w?' weak':'')+'"><b>'+(d.reach[i]?pc(r)+'%':'·')+'</b><span>'+s[1]+'</span><small>'+d.pass[i]+' / '+d.reach[i]+'</small>'+(w?'<em>'+T('weakest link','eslabón más débil')+'</em>':'')+'</div>';}).join('')+
+   '<span class="plArr" aria-hidden="true">=</span><div class="plStage out"><b>'+pc(rty)+'%</b><span>'+T('Clean par or better','Par limpio o mejor')+'</span><small>'+d.pass[ST.length-1]+' / '+d.holes+'</small></div></div>';
+ var read=few?'<p class="dpMute">'+T('Only '+d.holes+' par '+par+'s so far: read it as a first look. The verdict appears from '+MIN+'.','Solo '+d.holes+' pares '+par+' hasta ahora: tomalo como una primera mirada. El veredicto aparece desde '+MIN+'.')+'</p>':
+   (best>=0?'<p class="dpRead">'+T('Your line makes a clean par on <b>'+pc(rty)+'%</b> of par '+par+'s. The step that breaks it most is <b>'+ST[best][1].toLowerCase()+'</b>: raising it 10 points lifts your clean pars to <b>'+pc(rty+gain)+'%</b>, more than any other step.','Tu línea hace par limpio en el <b>'+pc(rty)+'%</b> de los pares '+par+'. El paso que más la corta es <b>'+ST[best][1].toLowerCase()+'</b>: subirlo 10 puntos lleva tus pares limpios al <b>'+pc(rty+gain)+'%</b>, más que cualquier otro paso.')+'</p>':'');
+ return tabs+flow+read+
+   '<p class="dpMute">'+T('Each percentage is measured only on the holes that got that far. Multiplied, they give the share of holes where the whole line worked. "In play" means fairway, rough or green with no penalty.','Cada porcentaje se mide solo sobre los hoyos que llegaron hasta ese paso. Multiplicados, dan el porcentaje de hoyos donde funcionó toda la línea. "En juego" significa fairway, rough o green, sin penalidad.')+'</p>';}
+function renderPar(){var el=document.getElementById('panel_par');if(!el)return;el.innerHTML=parHTML(R);
+ el.querySelectorAll('[data-parf]').forEach(function(b){b.onclick=function(){PARF.p=b.getAttribute('data-parf');renderPar();};});}
+
 function renderAll(){
  const FULL=BASE.concat(CUSTOM).map(sgView);
- R=filterRounds(FULL,kpiRange);try{renderDisp();}catch(e){} const N=R.length, idx=R.map((_,i)=>i+1);
+ R=filterRounds(FULL,kpiRange);try{renderDisp();}catch(e){}try{renderPar();}catch(e){} const N=R.length, idx=R.map((_,i)=>i+1);
  document.getElementById('customBadge').innerHTML=CUSTOM.length?`<span class="badge">${CUSTOM.length} ${LX('logged here','cargadas acá')}</span>`:'';
  {const rc=document.getElementById('kpiRange');if(rc)rc.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.r===kpiRange));}
  document.getElementById('foot').textContent=PLAYER+' · '+RANGE_LBL[kpiRange]+LX(' · showing ',' · mostrando ')+N+LX(' of ',' de ')+FULL.length+LX(' rounds · SG via Broadie benchmark tables',' vueltas · SG según tablas de referencia de Broadie');
@@ -3060,7 +3129,7 @@ function prefPull(){if(!localStorage.getItem('gs-token'))return;prefCall({action
    /* this device has never synced: the profile with more settings changed from the defaults wins the first time */
    if(sv._first&&prefDiff(PROF)>(+sv._diff||0))giveFirst();else take();}).catch(function(){});}
 /* ===== i18n (Stage 1: on-course flow) ===== */
-var I18N_ES={"Club":"Palo","Tournament round":"Vuelta de torneo","Counts for my handicap":"Cuenta para mi hándicap","Not for handicap":"No cuenta para hándicap","Tournament":"Torneo","Dispersion & process":"Dispersión y proceso","Where your shots finish and whether you did what you had decided to do. Built only from what you mark on each shot when you log a round.":"Dónde terminan tus tiros y si hiciste lo que habías decidido hacer. Se arma solo con lo que marcás en cada tiro al cargar una vuelta.","Compl.":"Cumpl.","Read":"Lectura","Disp.":"Disp.","My bag":"Mi bolsa","← Profile":"← Perfil","Plans":"Planes","Pricing":"Precios","Approach":"Approach","Around grn":"Juego corto","Copy for sheet":"Copiar para planilla","pen":"pen","Friends":"Amigos","Share":"Compartir","NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
+var I18N_ES={"Club":"Palo","Tournament round":"Vuelta de torneo","Counts for my handicap":"Cuenta para mi hándicap","Not for handicap":"No cuenta para hándicap","Tournament":"Torneo","Dispersion & process":"Dispersión y proceso","Your par line":"Tu línea de par","Every hole is a small production line: the tee shot, the approach, the first putt, the second. A clean par needs every step to work on the same hole. This shows how often each step works, and which one breaks the line most.":"Cada hoyo es una pequeña línea de producción: la salida, el approach, el primer putt, el segundo. Un par limpio necesita que todos los pasos funcionen en el mismo hoyo. Esto muestra cuántas veces funciona cada paso, y cuál corta más la línea.","Where your shots finish and whether you did what you had decided to do. Built only from what you mark on each shot when you log a round.":"Dónde terminan tus tiros y si hiciste lo que habías decidido hacer. Se arma solo con lo que marcás en cada tiro al cargar una vuelta.","Compl.":"Cumpl.","Read":"Lectura","Disp.":"Disp.","My bag":"Mi bolsa","← Profile":"← Perfil","Plans":"Planes","Pricing":"Precios","Approach":"Approach","Around grn":"Juego corto","Copy for sheet":"Copiar para planilla","pen":"pen","Friends":"Amigos","Share":"Compartir","NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
  "Log a round":"Cargar vuelta","Statistics":"Estadísticas","Round ledger":"Mis vueltas","Profile":"Perfil","Ideas":"Ideas","Log out":"Salir",
  "Course":"Cancha","Tee":"Tee","Holes":"Hoyos","Score":"Score","Playing HCP":"HCP de juego","Date":"Fecha",
  "18 holes":"18 hoyos","Front 9 (1–9)":"Primeros 9 (1–9)","Back 9 (10–18)":"Segundos 9 (10–18)",
