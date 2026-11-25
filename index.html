@@ -1865,7 +1865,7 @@ function segLimits(v,count){
  const r4=[]; mr.forEach((x,i)=>{const g=segOf(i+1);if(x>g.mrucl)r4.push(i+2);});
  const notes=[];
  return {segs,segOf,mr,r1,r4,breaks,notes,signals,sigSet};}
-function np(){return typeof PROF!=='undefined'&&PROF&&PROF.netPar;}
+function np(){return false;}   /* Statistics are always gross: a net figure follows the handicap, so it cannot show improvement over time. Net is for the round itself (scorecard, hole view). */
 const metrics={'SG: Total':r=>r.sgtot,'SG: Tee-to-green':r=>(r.ott==null||r.app==null||r.atg==null)?null:Math.round((r.ott+r.app+r.atg)*100)/100,'SG: Off tee':r=>r.ott,'SG: Approach':r=>r.app,'SG: Around green':r=>r.atg,'SG: Putting':r=>r.putt,'Mistakes: total':r=>(np()&&r.mtotNet!=null)?r.mtotNet:r.mtot,'Mistakes: 3-putts':r=>r.p3,'Mistakes: double bogeys':r=>(np()&&r.dbNet!=null)?r.dbNet:r.db,'Mistakes: bogey par-5':r=>(np()&&r.bp5Net!=null)?r.bp5Net:r.bp5,'Mistakes: 3+ from 150':r=>(np()&&r.f150Net!=null)?r.f150Net:r.f150,'Mistakes: 3+ from 40':r=>r.fx,'Fairways / round':r=>r.fw,'Driving accuracy %':r=>r.fw==null?null:Math.round(1000*r.fw/(r.fwAtt||14))/10,'Greens / round':r=>(np()&&r.girNet!=null)?r.girNet:r.gir,'GIR %':r=>{var g=(np()&&r.girNet!=null)?r.girNet:r.gir;return g==null?null:Math.round(1000*g/(r.holesPlayed||18))/10;},'Scrambling %':r=>r.scrmb==null?null:r.scrmb,'Putts per GIR':r=>r.pptgir==null?null:r.pptgir,'Short-game proximity (ft)':r=>r.sgprox==null?null:r.sgprox,'Greenside inside 6 ft %':r=>r.in6==null?null:r.in6,'Greenside outside 15 ft %':r=>r.out15==null?null:r.out15,'Putts / round':r=>r.putts,'Penalties / round':r=>r.pen,'Tee shot distance':r=>r.dist,'Bogey avoidance %':r=>r.bog==null?null:Math.round(1000*(r.bog+r.dbl)/18)/10,'Birdies / round':r=>r.bir==null?null:r.bir,'Score to par':r=>(np()&&r.stpNet!=null)?r.stpNet:r.stp};
 const TOURAVG={'Bogey avoidance %':15.77,'Birdies / round':3.79};
 const TRAD=['Fairways / round','Greens / round','Putts / round','Penalties / round','Birdies / round'];
@@ -2248,7 +2248,7 @@ function rawSG(r){                                         /* cached per record:
  H.forEach(h=>{const g=E.holeSG(h);o.ott+=g.ott;o.app+=g.app;o.atg+=g.atg;o.putt+=g.putt;o.tot+=g.tot;h.shots.forEach((x,i)=>{n[E.roleOf(h.shots,i,h.par)]++;});});
  Object.keys(o).forEach(k=>o[k]=Math.round(o[k]*100)/100);
  r._raw={sg:o,n:n,holes:H};return r._raw;}
-function sgBase(){return (typeof PROF!=='undefined'&&PROF&&PROF.sgBase==='hcp')?'hcp':'scratch';}
+function sgBase(){return 'scratch';}   /* strokes gained in Statistics always against scratch, for the same reason */
 function refHI(r){if(r.hi!=null&&!isNaN(+r.hi))return +r.hi;const h=window.SGE&&window.SGE.hi();return (h!=null&&h!==''&&!isNaN(+h))?+h:0;}
 function sgView(r,force){
  const raw=rawSG(r);
@@ -4012,16 +4012,13 @@ ${PROF.gender==='m'?`  <label class="chkrow" style="flex-direction:row;align-ite
   </div>
   <div class="hiblock">
     <div class="hirow"><span>${t('Net par')}</span></div>
-    <label>Score against your handicap<select id="pf_netpar">
-      <option value="on" ${PROF.netPar!==false?'selected':''}>On — judge to-par, GIR &amp; Tiger's 5 against your net par</option>
-      <option value="off" ${PROF.netPar===false?'selected':''}>Off — everything measured against scratch par</option></select></label>
-    <label>${window.__LANG==='es'?'Strokes gained contra':'Strokes gained against'}<select id="pf_sgbase">
-      <option value="scratch" ${PROF.sgBase!=='hcp'?'selected':''}>${window.__LANG==='es'?'Scratch — referencia de tour':'Scratch — tour benchmark'}</option>
-      <option value="hcp" ${PROF.sgBase==='hcp'?'selected':''}>${window.__LANG==='es'?'Mi hándicap — lo que gana un jugador de mi índice':'My handicap — what a player of my index usually gains'}</option></select></label>
+    <label>${window.__LANG==='es'?'Par neto en la tarjeta':'Net par on the scorecard'}<select id="pf_netpar">
+      <option value="on" ${PROF.netPar!==false?'selected':''}>${window.__LANG==='es'?'Sí — la tarjeta y cada hoyo muestran par neto y estado neto':'On — the scorecard and each hole show net par and net status'}</option>
+      <option value="off" ${PROF.netPar===false?'selected':''}>${window.__LANG==='es'?'No — par scratch en todos lados':'Off — scratch par everywhere'}</option></select></label>
+    <div class="hisub">${window.__LANG==='es'?'Neto es para el día a día: cómo jugaste hoy contra tu hándicap. Las Estadísticas siempre usan score bruto y strokes gained contra scratch, para que la mejora se vea aunque tu hándicap baje.':'Net is for the day: how you played today against your handicap. Statistics always use gross scores and strokes gained against scratch, so improvement shows even as your handicap drops.'}</div>
     <label>${window.__LANG==='es'?'Alrededor del green = a menos de (yd, 10–100)':'Around the green = within (yd, 10–100)'}<input id="pf_atg" type="number" min="10" max="100" step="5" value="${atgYd()}"></label>
     <div class="hisub">${window.__LANG==='es'?'Separa Approach de Juego corto en strokes gained. El PGA TOUR usa 30 yardas; el valor por defecto es 50.':'Splits Approach from Around the green in strokes gained. The PGA TOUR uses 30 yards; the default is 50.'}</div>
-    <div class="hisub">${window.__LANG==='es'?'Con “Mi hándicap”, 0 es tu vuelta típica: positivo es mejor que tu nivel. Usa la misma fórmula que la planilla. Los scorecards hoyo por hoyo siguen contra scratch.':'With “My handicap”, 0 is your typical round: positive means better than your level. Same formula as the spreadsheet. Hole-by-hole scorecards stay against scratch.'}</div>
-    <div class="hisub">Spreads your playing handicap by stroke index. Net par lifts to-par, GIR (allowance = par−2 + strokes received) and the score-relative Tiger's 5 (double, bogey par-5, bogey w/ 9-iron). 3-putts, short-game fails and strokes gained stay absolute.</div>
+    <div class="hisub">${window.__LANG==='es'?'El par neto reparte tu hándicap de juego según el hándicap de cada hoyo. Solo se ve cuando recibís golpes y la cancha tiene hándicap por hoyo.':'Net par spreads your playing handicap by stroke index. It only shows when you receive strokes and the course has a stroke index.'}</div>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>${t('Language')}</span></div>
