@@ -3491,7 +3491,7 @@ function showParCard(go){
  var close=function(){keep();document.removeEventListener('keydown',kd);if(timer)clearTimeout(timer);ov.remove();};
  ov.querySelector('.pcBack').onclick=function(){close();R.phase='setup';lgEntered=false;save();render();};   /* back to the round setup, scores typed so far are kept */
  ov.querySelector('.pcCancel').onclick=function(){var cb=document.getElementById('lgCancelBtn');var es5=window.__LANG==='es';if(!confirm(es5?'¿Cancelar esta vuelta? Se descarta todo lo cargado.':'Cancel this round? Everything entered will be discarded.'))return;close();editRoundId=null;localStorage.removeItem(RKEY);(function(){var d=loadDefault();R=newRound(d.course,d.tee);})();render();renderLogged();};
- document.addEventListener('keydown',kd);ov.querySelector('.pcGo').onclick=done;setTimeout(function(){var g=ov.querySelector('.pcGo');if(g)g.focus();},50);}
+ document.addEventListener('keydown',kd);ov.querySelector('.pcGo').onclick=done;setTimeout(function(){var f0=ins.filter(function(el){return !el.value;})[0]||ov.querySelector('.pcGo');if(f0){f0.focus({preventScroll:true});if(f0.select)f0.select();}},60);}   /* cursor in the first empty score box */
 function render(){
  var setup=document.getElementById('setupPanel'),play=document.getElementById('playPanel');
  if(R.phase!=='play'||!lgEntered){setup.style.display='';play.style.display='none';renderSetup();save();return;}
