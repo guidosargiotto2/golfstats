@@ -929,6 +929,13 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #parCard .rvV.w3,.rvInline .rvV.w3{border-color:#c2502e;background:#f1cfc4;color:#8f3418}
 #parCard .rvV.sigB,.rvInline .rvV.sigB{border-color:var(--fairway);background:var(--fairway);color:#fff}
 #parCard .rvV.sigW,.rvInline .rvV.sigW{border-color:var(--clay);background:var(--clay);color:#fff}
+#parCard .rvS,.rvInline .rvS{width:100%;max-width:340px;height:auto;display:block;margin-left:auto}
+#parCard .rvSc,.rvInline .rvSc{width:46%;padding-top:4px!important;padding-bottom:2px!important}
+#parCard .rvSa,.rvInline .rvSa{font-family:var(--cond);font-size:10px;font-weight:700;fill:#0f3a2c}
+#parCard .rvSl,.rvInline .rvSl{font-family:var(--cond);font-size:9px;fill:#a8452c}
+#parCard .rvSh,.rvInline .rvSh{text-align:center!important;font-size:10px!important;letter-spacing:.04em!important;text-transform:none!important}
+@media (max-width:640px){#parCard .rvT td:last-child,#parCard .rvT th:last-child,.rvInline .rvT td:last-child,.rvInline .rvT th:last-child{display:none}#parCard .rvSc,.rvInline .rvSc{width:auto}#parCard .rvSh span,.rvInline .rvSh span{display:none}}
+#parCard .rvSh span,.rvInline .rvSh span{color:var(--ink-soft);margin:0 8px;font-weight:400}
 @keyframes dpIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes dpGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 @media (max-width:560px){#panel_dp{padding:4px 12px 12px}.dpGrid{grid-template-columns:repeat(3,minmax(64px,1fr));grid-auto-rows:66px}.dpGridWrap{display:flex}}
@@ -3565,7 +3572,7 @@ function reviewParts(rec,all){
      var CNT={putts:1,p3:1,db:1,pen:1,fw:1,gir:1,mtot:1},done0=false;
      if(typeof window.segLimits==='function'){try{var S=window.segLimits(hv,!!CNT[k]),g=S.segs[S.segs.length-1];if(g&&isFinite(g.u)&&isFinite(g.l)){var cur=hv.slice(g.start);row.typ=med(cur.length?cur:hv);row.avg=g.m;row.sd=(g.mrb/1.128)||0;row.lo=g.l;row.hi=g.u;row.n=cur.length;done0=true;}}catch(e){}}
      if(!done0){var hv2=hv.slice(-20),mean=hv2.reduce(function(a,b){return a+b;},0)/hv2.length,mr=0;for(var i=1;i<hv2.length;i++)mr+=Math.abs(hv2[i]-hv2[i-1]);mr=mr/(hv2.length-1);row.typ=med(hv2);row.avg=mean;row.sd=mr/1.128;row.lo=mean-2.66*mr;row.hi=mean+2.66*mr;row.n=hv2.length;}
-     if(m[3]===0&&row.lo<0)row.lo=0;
+     if(CNT[k]&&row.lo<0)row.lo=0;   /* only counts cannot go below zero; score to par can */
      var out=row.today>row.hi?'up':row.today<row.lo?'down':'';
      if(out){var good=(out==='down')===(m[2]===1);row.v=good?'sigB':'sigW';(good?better:worse).push(m[1].toLowerCase());}
      else{var z=row.sd>0?(row.today-row.avg)/row.sd:0;if(m[2]===1)z=-z;row.z=z;   /* positive = better than your average */
@@ -3586,9 +3593,26 @@ function reviewParts(rec,all){
         (worse.length?T('Worse than your normal range: <b>'+list(worse)+'</b>. That is a real signal, not bad luck: ask yourself what was different today. ','Peor que tu rango normal: <b>'+list(worse)+'</b>. Es una señal real, no mala suerte: preguntate qué fue distinto hoy. '):'')+
         T('Everything else was your usual game.','Todo lo demás fue tu juego de siempre.');}
  var V={b3:T('very good · 2σ+','muy buena · 2σ+'),b2:T('good · 1σ+','buena · 1σ+'),b1:T('above avg','sobre el prom.'),avg:T('average','promedio'),w1:T('below avg','bajo el prom.'),w2:T('poor · 1σ+','mala · 1σ+'),w3:T('bad · 2σ+','muy mala · 2σ+'),sigB:T('signal · better','señal · mejor'),sigW:T('signal · worse','señal · peor')};
- var tbl='<div class="pcWrap"><table class="rvT"><thead><tr><th></th><th>'+T('Today','Hoy')+'</th>'+(enough?'<th>'+T('Your average','Tu promedio')+'</th><th>'+T('Normal range','Rango normal')+'</th><th></th>':'')+'</tr></thead><tbody>'+
-   rows.map(function(r){var m=r.m,sgn=m[0]==='stpNet'||m[0]==='sgtot';return '<tr><td>'+m[1]+'</td><td class="rvTd">'+sg(r.today,m[3],sgn)+'</td>'+(enough?(r.typ!=null?'<td>'+sg(r.avg!=null?r.avg:r.typ,m[3]||1,sgn)+'</td><td class="rvRg">'+sg(r.lo,m[3]||1,sgn)+' – '+sg(r.hi,m[3]||1,sgn)+'</td><td><span class="rvV '+r.v+'">'+V[r.v]+'</span></td>':'<td>·</td><td>·</td><td></td>'):'')+'</tr>';}).join('')+'</tbody></table></div>';
- var note=enough?'<p class="pcOpt">'+T('Grades compare today with your average in standard deviations: above average, then 1σ and 2σ better (good, very good), and the same on the bad side. The normal range is the same as in your control charts: where your rounds land in your current stage, since your game last changed. Only a number outside it means something was different.','Las notas comparan hoy con tu promedio en desviaciones estándar: sobre el promedio, después 1σ y 2σ mejor (buena, muy buena), y lo mismo del lado malo. El rango normal es el mismo de tus gráficos de control: donde caen tus vueltas en tu etapa actual, desde la última vez que tu juego cambió. Solo un número fuera de él significa que algo fue distinto.')+'</p>':'';
+ /* one strip per number: your average in the middle, 1σ and 2σ bands, your limits, and today as a dot. Better is always to the right */
+ var strip=function(r){if(r.avg==null||!(r.sd>0))return '';var m=r.m,dir=m[2]===1?-1:1,Z=function(v){return (v-r.avg)/r.sd*dir;},zt=Z(r.today),zl=Z(r.lo),zh=Z(r.hi),zw=Math.min(zl,zh),zb=Math.max(zl,zh);
+   var W=300,X=function(z){return W/2+Math.max(-3.6,Math.min(3.6,z))*38;},dec=m[3]||1,sgn=m[0]==='stpNet'||m[0]==='sgtot';
+   var col=r.v==='sigB'||r.v==='b3'||r.v==='b2'||r.v==='b1'?'#1f7a4d':r.v==='sigW'||r.v==='w3'||r.v==='w2'||r.v==='w1'?'#c2502e':'#0f3a2c';
+   var out=zt>3.6||zt<-3.6,cx=X(zt);
+   return '<svg viewBox="0 0 '+W+' 40" class="rvS" role="img" aria-label="'+m[1]+'">'+
+     '<rect x="'+X(-3)+'" y="8" width="'+(X(3)-X(-3))+'" height="14" rx="3" fill="#f3eee0"/>'+
+     '<rect x="'+X(-2)+'" y="8" width="'+(X(2)-X(-2))+'" height="14" fill="#ebe3cc"/>'+
+     '<rect x="'+X(-1)+'" y="8" width="'+(X(1)-X(-1))+'" height="14" fill="#e0d4b1"/>'+
+     '<line x1="'+X(zw)+'" y1="4" x2="'+X(zw)+'" y2="26" stroke="#c2502e" stroke-width="1.5" stroke-dasharray="3 2"/>'+
+     '<line x1="'+X(zb)+'" y1="4" x2="'+X(zb)+'" y2="26" stroke="#c2502e" stroke-width="1.5" stroke-dasharray="3 2"/>'+
+     '<line x1="'+X(0)+'" y1="5" x2="'+X(0)+'" y2="25" stroke="#0f3a2c" stroke-width="2"/>'+
+     '<text x="'+X(0)+'" y="37" text-anchor="middle" class="rvSa">'+sg(r.avg,dec,sgn)+'</text>'+
+     '<text x="'+X(zw)+'" y="37" text-anchor="middle" class="rvSl">'+sg(dir>0?r.lo:r.hi,dec,sgn)+'</text>'+
+     '<text x="'+X(zb)+'" y="37" text-anchor="middle" class="rvSl">'+sg(dir>0?r.hi:r.lo,dec,sgn)+'</text>'+
+     (out?'<path d="M'+(zt>0?(cx-6)+' 9 L'+(cx+2)+' 15 L'+(cx-6)+' 21':(cx+6)+' 9 L'+(cx-2)+' 15 L'+(cx+6)+' 21')+'Z" fill="'+col+'"/>':'<circle cx="'+cx.toFixed(1)+'" cy="15" r="6.5" fill="'+col+'" stroke="#fff" stroke-width="2"/>')+
+     '</svg>';};
+ var tbl='<div class="pcWrap"><table class="rvT"><thead><tr><th></th><th>'+T('Today','Hoy')+'</th>'+(enough?'<th class="rvSh"><span>← '+T('worse','peor')+'</span>'+T('your average · 1σ · 2σ · limits','tu promedio · 1σ · 2σ · límites')+'<span>'+T('better','mejor')+' →</span></th><th></th>':'')+'</tr></thead><tbody>'+
+   rows.map(function(r){var m=r.m,sgn=m[0]==='stpNet'||m[0]==='sgtot';return '<tr><td>'+m[1]+'</td><td class="rvTd">'+sg(r.today,m[3],sgn)+'</td>'+(enough?(r.avg!=null?'<td class="rvSc">'+strip(r)+'</td><td><span class="rvV '+r.v+'">'+V[r.v]+'</span></td>':'<td></td><td></td>'):'')+'</tr>';}).join('')+'</tbody></table></div>';
+ var note=enough?'<p class="pcOpt">'+T('Each strip shows your average (the dark line), the bands 1σ and 2σ either side, and your limits (red dashes); the dot is today, and better is always to the right. Inside the limits it is your normal variation; only a dot beyond them means something was different. The limits are the same as in your control charts: your current stage, since your game last changed.','Cada franja muestra tu promedio (la línea oscura), las bandas de 1σ y 2σ a cada lado y tus límites (rayas rojas); el punto es hoy, y mejor siempre está a la derecha. Dentro de los límites es tu variación normal; solo un punto más allá significa que algo fue distinto. Los límites son los mismos de tus gráficos de control: tu etapa actual, desde la última vez que tu juego cambió.')+'</p>':'';
  var sr=rows.filter(function(r){return r.m[0]==='score';})[0];
  return {head:head,lead:lead,tbl:tbl,note:note,enough:enough,n:(sr&&sr.n)||Math.min(prev.length,20)};}
 function reviewInline(rec,all){try{var p=reviewParts(rec,all),es=window.__LANG==='es';
