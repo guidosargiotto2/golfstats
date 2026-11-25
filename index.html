@@ -1532,7 +1532,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
  <div class="deskTxt">
  <div class="kick" data-l="Phone or laptop?|¿Teléfono o laptop?">Phone or laptop?</div>
  <h2 data-l="Best on your laptop.|Mejor en tu laptop.">Best on your laptop.</h2>
- <p class="sub" data-l="Be honest: you have answered work emails from the 7th tee. Your phone is great for taking the office to the course. For your golf, open the laptop: a bigger screen and a real keyboard make logging a round and reading your charts much faster. If you insist on the phone, there is an app you can install from this site.|Seamos honestos: ya contestaste mails del trabajo desde el tee del 7. El teléfono es ideal para llevar la oficina a la cancha. Para tu golf, abrí la laptop: una pantalla grande y un teclado de verdad hacen mucho más rápido cargar una vuelta y leer tus gráficos. Si insistís con el teléfono, hay una app que podés instalar desde este sitio.">Be honest: you have answered work emails from the 7th tee. Your phone is great for taking the office to the course. For your golf, open the laptop: a bigger screen and a real keyboard make logging a round and reading your charts much faster. If you insist on the phone, there is an app you can install from this site.</p>
+ <p class="sub" data-l="Be honest: you have answered work emails from the 7th tee. The last thing we want is to add one more distraction to your round. On the course, jot quick notes on the club scorecard and keep the phone in the bag. We hope to work with your club on a scorecard with room for exactly these notes. Afterwards, log the round on your laptop: a bigger screen and a real keyboard make it much faster. If you insist on the phone, there is an app you can install from this site.|Seamos honestos: ya contestaste mails del trabajo desde el tee del 7. Lo último que queremos es sumar otra distracción a tu vuelta. En la cancha, anotá lo justo en la tarjeta del club y dejá el teléfono en la bolsa. Ojalá pronto trabajemos con tu club en una tarjeta con lugar justo para estas notas. Después, cargá la vuelta en la laptop: una pantalla grande y un teclado de verdad lo hacen mucho más rápido. Si insistís con el teléfono, hay una app que podés instalar desde este sitio.">Be honest: you have answered work emails from the 7th tee. The last thing we want is to add one more distraction to your round. On the course, jot quick notes on the club scorecard and keep the phone in the bag. We hope to work with your club on a scorecard with room for exactly these notes. Afterwards, log the round on your laptop: a bigger screen and a real keyboard make it much faster. If you insist on the phone, there is an app you can install from this site.</p>
  </div>
  <svg class="deskArt" viewBox="0 0 440 300" role="img" aria-label="A phone buzzing with work email on the 7th tee, and a laptop showing a control chart">
   <defs><clipPath id="deskClip"><rect x="0" y="0" width="440" height="300" rx="22"/></clipPath><linearGradient id="deskSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#efe6cc"/><stop offset="1" stop-color="#f8f3e4"/></linearGradient></defs>
@@ -4928,6 +4928,30 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
 .tourrow .tstep{font-family:var(--cond,sans-serif);font-size:11px;color:#8a8471;letter-spacing:.05em;}
 .tourrow .tbtns button{font-family:var(--cond,sans-serif);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:12px;border:none;border-radius:8px;padding:7px 13px;cursor:pointer;margin-left:6px;}
 .tourrow .tnext{background:linear-gradient(160deg,#2e8650,#1c3d2e);color:#fff;}
+.tourcard.tpw{max-width:none;width:min(780px,95vw);max-height:92vh;overflow:auto;}
+.tourcard .ptw{overflow-x:auto;margin:4px 0 8px;}
+.tourcard .ptab{width:100%;border-collapse:collapse;font-family:var(--cond,sans-serif);font-size:13.5px;}
+.tourcard .ptab th{text-align:left;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:#8a8471;padding:5px 6px;border-bottom:1.5px solid #1c3d2e;white-space:nowrap;}
+.tourcard .ptab td{padding:6px;border-bottom:1px solid #e6dfcb;vertical-align:middle;white-space:nowrap;color:#20261f;font-weight:700;}
+.tourcard .ptab td.pn{color:#8a8471;width:18px;}
+.tourcard .ptab td.pst{white-space:normal;font-weight:400;color:#3a3a30;min-width:180px;line-height:1.35;}
+.tourcard .ptab td.plive{background:#fff7dc;}
+.tourcard .ptab td.pgood{background:#e3f1e6;}
+.tourcard .ptab td.pbad{background:#f8e4df;}
+.tourcard .ptab select,.tourcard .ptab input{font:inherit;font-weight:700;border:1.5px solid #d8c48c;border-radius:7px;padding:4px 6px;background:#fff;color:#1c3d2e;}
+.tourcard .ptab input{width:52px;text-align:right;}
+.tourcard .ptab small{font-weight:400;color:#8a8471;margin-left:3px;}
+.tourcard .ptab .pmute{color:#b6ae98;font-weight:400;}
+.tourcard .pyn button{border:1.5px solid #d8c48c;background:#fff;border-radius:7px;width:32px;height:28px;font-weight:700;cursor:pointer;margin-right:4px;color:#1f7a4d;}
+.tourcard .pyn button[data-yn="N"]{color:#c2502e;}
+.tourcard .pyn button.on{background:#1f7a4d;border-color:#1f7a4d;color:#fff;}
+.tourcard .pyn button.on.no{background:#c2502e;border-color:#c2502e;color:#fff;}
+.tourcard .pfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 10px;min-height:22px;}
+.tourcard .pmsg{font-size:13px;font-family:var(--cond,sans-serif);font-weight:700;}
+.tourcard .pmsg.ok{color:#1f7a4d;}.tourcard .pmsg.bad{color:#c2502e;}
+.tourcard .pfill{background:none;border:none;color:#8a6d2c;text-decoration:underline;cursor:pointer;font-size:12.5px;font-family:var(--cond,sans-serif);}
+.tourrow .tnext:disabled{opacity:.4;cursor:not-allowed;}
+
 .tourrow .tback{background:transparent;color:#8a8471;}
 .crLink{display:inline-block;margin-top:6px;font-size:12px;color:var(--fairway);font-weight:700;text-decoration:none}.crLink:hover{text-decoration:underline}
 .crModal{position:fixed;inset:0;z-index:9600;background:rgba(15,58,44,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px}
@@ -4988,9 +5012,11 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
  var steps=[
   {center:true,en:{h:"Golfimbul in two minutes",p:"Three things: <b>log</b> every shot in five minutes, <b>read</b> what is real and what is noise, and <b>improve</b> where the strokes are. Let's walk through the whole app with a demo round — nothing here is saved."},es:{h:"Golfimbul en dos minutos",p:"Tres cosas: <b>cargar</b> cada tiro en cinco minutos, <b>leer</b> qué es real y qué es ruido, y <b>mejorar</b> donde están los golpes. Recorramos toda la app con una vuelta de demostración — nada de esto se guarda."}},
   {pre:function(){go('log')();if(window.LGR&&window.LGR.demo)window.LGR.demo();},sel:'#scorecardView .scWrap',en:{h:"A complete round",p:"This is a real round, logged shot by shot: score per hole (birdies circled, bogeys boxed), strokes gained per hole and the Tiger 5 mistakes. Every number here comes from the shots — you never type a total."},es:{h:"Una vuelta completa",p:"Esta es una vuelta real, cargada tiro por tiro: score por hoyo (birdies en círculo, bogeys en cuadrado), strokes gained por hoyo y los errores del Tiger 5. Cada número sale de los tiros — nunca escribís un total."}},
-  {pre:function(){if(window.LGR&&window.LGR.demo)window.LGR.demo(0);},sel:'#lgBody',en:{h:"How a hole is logged",p:"Each row is one shot: <b>where it was played from</b> (tee, fairway, rough, sand, recovery, green) and <b>the distance to the hole</b>. When you log your own, the app predicts the next shot — press <span class='tk'>Enter</span> if it is right, type the real number if it is not."},es:{h:"Cómo se carga un hoyo",p:"Cada fila es un tiro: <b>desde dónde se jugó</b> (tee, fairway, rough, bunker, recuperación, green) y <b>la distancia al hoyo</b>. Cuando cargues las tuyas, la app predice el tiro siguiente — <span class='tk'>Enter</span> si está bien, escribí el número real si no."}},
-  {sel:'#holeacts',en:{h:"Hole by hole",p:"<b>Next hole →</b> moves on; the scorecard builds itself. Use it now to browse the demo round — or the hole numbers above."},es:{h:"Hoyo por hoyo",p:"<b>Siguiente hoyo →</b> avanza; la tarjeta se arma sola. Usalo ahora para recorrer la vuelta de demostración — o los números de hoyo de arriba."}},
-  {pre:function(){if(window.LGR&&window.LGR.demo)window.LGR.demo(0);},sel:'#lgTable',en:{h:"Go deeper, if you want",p:"Four optional columns, each switched on in <b>Profile → Round logging</b>: the <b>club</b> you hit, your <b>dispersion</b> (where it finished against your target), the <b>read</b> of each putt (uphill or downhill, and the break), and <b>compliance</b>: did you do what you had decided to do? The same screen tells you how many minutes each one adds."},es:{h:"Más profundo, si querés",p:"Cuatro columnas opcionales, cada una se activa en <b>Perfil → Carga de vueltas</b>: el <b>palo</b> que pegaste, tu <b>dispersión</b> (dónde terminó respecto de tu objetivo), la <b>lectura</b> de cada putt (subida o bajada, y la caída) y el <b>cumplimiento</b>: ¿hiciste lo que habías decidido hacer? La misma pantalla te dice cuántos minutos suma cada una."}},
+  {practice:1,center:true,en:{h:"Your turn: log a hole",p:"Here is what happened on one hole. For each shot, choose <b>where it was played from</b> and type <b>how far it was from the hole</b>: yards off the green, feet on it. The first row is done for you. In your own rounds the app predicts each next shot, so most of the time you only press <span class='tk'>Enter</span>."},es:{h:"Tu turno: cargá un hoyo",p:"Esto es lo que pasó en un hoyo. Para cada tiro, elegí <b>desde dónde se jugó</b> y escribí <b>a qué distancia estaba del hoyo</b>: yardas fuera del green, pies en el green. La primera fila ya está. En tus vueltas la app predice cada tiro siguiente, así que casi siempre solo apretás <span class='tk'>Enter</span>."}},
+  {practice:2,center:true,en:{h:"Add the club",p:"One more column: the <b>club</b> you hit. It is optional (switch it on in <b>Profile → Round logging</b>) and it turns your rounds into real club distances and sharper predictions."},es:{h:"Sumá el palo",p:"Una columna más: el <b>palo</b> que pegaste. Es opcional (se activa en <b>Perfil → Carga de vueltas</b>) y convierte tus vueltas en distancias reales por palo y predicciones más precisas."}},
+  {practice:3,center:true,en:{h:"Add dispersion",p:"Where did each shot finish <b>against your target</b>? Your target, not the flag. <b>L</b> / <b>R</b> left or right, <b>S</b> short, <b>LO</b> long, or both (<b>SR</b> = short right); <b>✓</b> on target. A tee shot in the fairway and a holed putt need nothing."},es:{h:"Sumá la dispersión",p:"¿Dónde terminó cada tiro <b>respecto de tu objetivo</b>? Tu objetivo, no la bandera. <b>L</b> / <b>R</b> izquierda o derecha, <b>S</b> corto, <b>LO</b> largo, o las dos (<b>SR</b> = corto a la derecha); <b>✓</b> en el objetivo. Una salida al fairway y un putt embocado no llevan nada."}},
+  {practice:4,center:true,en:{h:"Add compliance",p:"Before each shot you decided what to do. <b>Did you do it?</b> ✓ yes, ✕ no. Not whether it went well: whether you followed your plan. Over a season this shows whether your process pays."},es:{h:"Sumá el cumplimiento",p:"Antes de cada tiro decidiste qué hacer. <b>¿Lo hiciste?</b> ✓ sí, ✕ no. No si salió bien: si seguiste tu plan. En una temporada esto muestra si tu proceso rinde."}},
+  {pre:function(){if(window.LGR&&window.LGR.demo)window.LGR.demo(0);},sel:'#holeacts',en:{h:"Hole by hole",p:"<b>Next hole →</b> moves on; the scorecard builds itself. Use it now to browse the demo round — or the hole numbers above."},es:{h:"Hoyo por hoyo",p:"<b>Siguiente hoyo →</b> avanza; la tarjeta se arma sola. Usalo ahora para recorrer la vuelta de demostración — o los números de hoyo de arriba."}},
   {pre:function(){if(window.LGR&&window.LGR.demo)window.LGR.demo();},sel:'#scLesson',en:{h:"One lesson per round",p:"Every round ends with <b>what you learnt</b> — required to save. Over a season these lessons become your own playbook."},es:{h:"Un aprendizaje por vuelta",p:"Cada vuelta termina con <b>qué aprendiste</b> — obligatorio para guardar. En una temporada, esos aprendizajes se vuelven tu propio manual."}},
   {pre:go('stats'),sel:'#view-stats',en:{h:"Statistics: the truth",p:"Control charts for score, strokes gained and Tiger 5. Rounds inside your limits are <b>noise</b> — don't change anything because of them. A point outside the limits, or 8 in a row on one side, is a <b>real change</b>. Your priorities rank where the strokes are leaking."},es:{h:"Estadísticas: la verdad",p:"Gráficos de control de score, strokes gained y Tiger 5. Las vueltas dentro de tus límites son <b>ruido</b> — no cambies nada por ellas. Un punto fuera de los límites, u 8 seguidas del mismo lado, es un <b>cambio real</b>. Tus prioridades ordenan por dónde se escapan los golpes."}},
   {pre:go('stats'),sel:'#sec_dp',en:{h:"Dispersion and process",p:"What you mark on each shot comes back here: where your tee shots miss, where your approaches finish <b>against your target</b>, your putting by distance, by slope and break, and whether following your process pays. It needs your marks to fill up."},es:{h:"Dispersión y proceso",p:"Lo que marcás en cada tiro vuelve acá: hacia dónde fallás las salidas, dónde terminan tus approaches <b>respecto de tu objetivo</b>, tu putt por distancia, por pendiente y caída, y si cumplir tu proceso rinde. Necesita tus marcas para llenarse."}},
@@ -4999,6 +5025,79 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
   {pre:go('profile'),sel:'#view-profile',en:{h:"Profile",p:"Your settings (course, tees, index, distances, Tiger 5 rules), <b>My bag</b>, your plan, the AI assistant connection and your data — download it or delete it any time."},es:{h:"Perfil",p:"Tu configuración (cancha, tees, index, distancias, reglas del Tiger 5), <b>Mi bolsa</b>, tu plan, la conexión con el asistente de IA y tus datos — descargalos o borralos cuando quieras."}},
   {center:true,pre:go('log'),en:{h:"Your turn",p:"Log your next round right after you play — five minutes, before your drink arrives. The demo round stays in <b>Log a round</b> until you have 10 rounds of your own. Replay this tour any time with the <b>plane</b> button."},es:{h:"Tu turno",p:"Cargá tu próxima vuelta apenas termines — cinco minutos, antes de que llegue tu bebida. La vuelta de demostración queda en <b>Cargar vuelta</b> hasta que tengas 10 vueltas propias. Repetí este recorrido cuando quieras con el botón del <b>avión</b>."}}
  ];
+ /* ---- practice hole: the player fills one example hole, one column at a time (shots → club → dispersion → compliance) ---- */
+ var PH=[
+  {lie:'tee',d:380,club:'D',disp:'',comp:'Y',
+   s:["Drive on a 380-yard par 4","Desde el tee en un par 4 de 380 yardas"],
+   c:["You hit driver","Pegaste driver"],
+   x:["It found the fairway: nothing to mark","Quedó en el fairway: no hay nada que marcar"],
+   k:["Plan: driver down the left side. Done","Plan: driver por la izquierda. Hecho"]},
+  {lie:'fw',d:140,club:'7',disp:'SR',comp:'N',
+   s:["It found the fairway: approach from 140 yards","Quedó en el fairway: approach desde 140 yardas"],
+   c:["A 7-iron","Un hierro 7"],
+   x:["It finished short and right of your target","Terminó corto y a la derecha de tu objetivo"],
+   k:["Plan: centre of the green. You went at the pin","Plan: centro del green. Fuiste a la bandera"]},
+  {lie:'sand',d:15,club:'56',disp:'LO',comp:'Y',
+   s:["In the bunker: splash from 15 yards","En el bunker: salida desde 15 yardas"],
+   c:["Your 56°","Tu 56°"],
+   x:["It ran long of your target","Pasó largo de tu objetivo"],
+   k:["Plan: open face, splash out. Done","Plan: cara abierta, salir. Hecho"]},
+  {lie:'putt',d:8,club:'P',disp:'LO',comp:'Y',
+   s:["On the green: first putt from 8 feet","En el green: primer putt desde 8 pies"],
+   c:["Putter","Putter"],
+   x:["It slid past, long","Se pasó, largo"],
+   k:["Plan: your routine, die it at the hole. Done","Plan: tu rutina, que muera en el hoyo. Hecho"]},
+  {lie:'putt',d:2,club:'P',disp:'',comp:'Y',
+   s:["Second putt from 2 feet, holed","Segundo putt desde 2 pies, embocado"],
+   c:["Putter","Putter"],
+   x:["Holed: nothing to mark","Embocado: no hay nada que marcar"],
+   k:["Plan: your routine. Done","Plan: tu rutina. Hecho"]}
+ ];
+ var PLIE=[['tee','Tee','Tee'],['fw','Fairway','Fairway'],['rough','Rough','Rough'],['sand','Sand','Bunker'],['rec','Recovery','Recuperación'],['putt','Green','Green']];
+ var PCLUB=['D','3W','5W','4H','5','6','7','8','9','PW','50','56','60','P'];
+ var PDISP=['✓','L','R','S','LO','SL','SR','LL','LR'];
+ var PV={};   /* the player's answers: PV['lie1'], PV['d1'], PV['club2']... kept between stages */
+ var PCOL=[null,'shots','club','disp','comp'];
+ function pAns(r,f){var h=PH[r];return f==='lie'?h.lie:f==='d'?String(h.d):f==='club'?h.club:f==='disp'?h.disp:h.comp;}
+ function pOk(r,f){var v=PV[f+r];return v!=null&&String(v).trim().toUpperCase()===pAns(r,f).toUpperCase();}
+ function pFields(n){var F=[];PH.forEach(function(h,r){
+   if(n===1){if(r>0){F.push(['lie',r]);F.push(['d',r]);}}
+   else if(n===2)F.push(['club',r]);
+   else if(n===3){if(h.disp)F.push(['disp',r]);}
+   else F.push(['comp',r]);});return F;}
+ function pHTML(n){
+   var es=ES(),L=function(a){return es?a[1]:a[0];};
+   var head='<th>#</th><th>'+(es?'Qué pasó':'What happened')+'</th><th>'+(es?'Desde':'From')+'</th><th>'+(es?'Distancia':'Distance')+'</th>'+(n>=2?'<th>'+(es?'Palo':'Club')+'</th>':'')+(n>=3?'<th>'+(es?'Disp.':'Disp.')+'</th>':'')+(n>=4?'<th>✓ / ✕</th>':'');
+   var rows=PH.map(function(h,r){
+     var story=n===1?L(h.s):n===2?L(h.c):n===3?L(h.x):L(h.k);
+     var live=function(f){return pFields(n).some(function(a){return a[0]===f&&a[1]===r;});};
+     var val=function(f){return live(f)?(PV[f+r]||''):pAns(r,f);};
+     var cell=function(f,inner){return '<td class="pc'+(live(f)?' plive':'')+'" data-f="'+f+r+'">'+inner+'</td>';};
+     var lieC=live('lie')?'<select data-k="lie'+r+'"><option value=""></option>'+PLIE.map(function(o){return '<option value="'+o[0]+'"'+(val('lie')===o[0]?' selected':'')+'>'+(es?o[2]:o[1])+'</option>';}).join('')+'</select>':((PLIE.filter(function(o){return o[0]===h.lie;})[0]||[])[es?2:1]);
+     var unit=(live('lie')?(PV['lie'+r]==='putt'):h.lie==='putt')?'ft':'yd';
+     var dC=live('d')?'<input data-k="d'+r+'" inputmode="numeric" value="'+val('d')+'" maxlength="3"><small class="pu" data-u="'+r+'">'+unit+'</small>':(h.d+' <small>'+unit+'</small>');
+     var tr='<td class="pn">'+(r+1)+'</td><td class="pst">'+story+'</td>'+cell('lie',lieC)+cell('d',dC);
+     if(n>=2)tr+=cell('club',live('club')?'<select data-k="club'+r+'"><option value=""></option>'+PCLUB.map(function(c){return '<option'+(val('club')===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>':h.club);
+     if(n>=3)tr+=cell('disp',live('disp')?'<select data-k="disp'+r+'"><option value=""></option>'+PDISP.map(function(c){return '<option'+(val('disp')===c?' selected':'')+'>'+c+'</option>';}).join('')+'</select>':(h.disp||'<span class="pmute">—</span>'));
+     if(n>=4)tr+=cell('comp',live('comp')?'<span class="pyn"><button type="button" data-yn="Y" data-k="comp'+r+'"'+(val('comp')==='Y'?' class="on"':'')+'>✓</button><button type="button" data-yn="N" data-k="comp'+r+'"'+(val('comp')==='N'?' class="on no"':'')+'>✕</button></span>':(h.comp==='Y'?'✓':'✕'));
+     return '<tr>'+tr+'</tr>';}).join('');
+   return '<div class="ptw"><table class="ptab"><thead><tr>'+head+'</tr></thead><tbody>'+rows+'</tbody></table></div><div class="pfoot"><span class="pmsg"></span><button type="button" class="pfill">'+(es?'Completalo por mí':'Fill it for me')+'</button></div>';}
+ function pWire(card,n){
+   var nx=card.querySelector('.tnext'),msg=card.querySelector('.pmsg'),es=ES();
+   var check=function(final){var F=pFields(n),bad=0,empty=0;
+     F.forEach(function(a){var td=card.querySelector('[data-f="'+a[0]+a[1]+'"]');var v=PV[a[0]+a[1]];if(v==null||v===''){empty++;if(td)td.classList.remove('pgood','pbad');return;}var ok=pOk(a[1],a[0]);if(!ok)bad++;if(td){td.classList.toggle('pgood',ok);td.classList.toggle('pbad',!ok);}});
+     var done=!bad&&!empty;nx.disabled=!done;
+     msg.textContent=done?(es?'¡Perfecto! Score del hoyo: 5, un bogey.':'Spot on. Hole score: 5, a bogey.'):(bad?(es?'Algo no coincide con lo que pasó: revisá lo marcado en rojo.':'Something does not match what happened: check the red cells.'):'');
+     msg.className='pmsg'+(done?' ok':(bad?' bad':''));return done;};
+   card.querySelectorAll('[data-k]').forEach(function(el){
+     var k=el.getAttribute('data-k');
+     if(el.tagName==='BUTTON'){el.onclick=function(){PV[k]=el.getAttribute('data-yn');card.querySelectorAll('[data-k="'+k+'"]').forEach(function(b){b.className=(b===el)?('on'+(PV[k]==='N'?' no':'')):'';});check();};}
+     else{var up=function(){PV[k]=el.value;if(k.indexOf('lie')===0){var u=card.querySelector('[data-u="'+k.slice(3)+'"]');if(u)u.textContent=el.value==='putt'?'ft':'yd';}check();};el.oninput=up;el.onchange=up;
+       el.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();var all=[].slice.call(card.querySelectorAll('[data-k]')).filter(function(x){return x.tagName!=='BUTTON';});var i=all.indexOf(el);if(all[i+1])all[i+1].focus();else if(!nx.disabled)nx.click();}};}});
+   card.querySelector('.pfill').onclick=function(){pFields(n).forEach(function(a){PV[a[0]+a[1]]=pAns(a[1],a[0]);});var b=card.querySelector('.ptw');var w=document.createElement('div');w.innerHTML=pHTML(n);b.parentNode.replaceChild(w.firstChild,b);var f=card.querySelector('.pfoot');f.parentNode.replaceChild(w.lastChild,f);pWire(card,n);check();};
+   check();
+   var first=card.querySelector('.plive select,.plive input');if(first)setTimeout(function(){try{first.focus();}catch(e){}},60);
+ }
  var idx=0,els=[];
  function clear(){els.forEach(function(e){if(e&&e.parentNode)e.parentNode.removeChild(e);});els=[];}
  function end(save){clear();try{if(window.showView)window.showView('log');}catch(e){}try{if(window.LGR&&window.LGR.demoEnd)window.LGR.demoEnd();}catch(e){}if(save&&window.LGR&&window.LGR.setTourDone)window.LGR.setTourDone();}
@@ -5011,7 +5110,8 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
      var card=document.createElement('div');card.className='tourcard';els.push(card);
      var skip=document.createElement('button');skip.className='tourskip';skip.textContent=ES()?'Saltar':'Skip';skip.onclick=function(){end(true);};els.push(skip);document.body.appendChild(skip);
      var last=(idx===steps.length-1);
-     card.innerHTML='<h4>'+txt.h+'</h4><p>'+txt.p+'</p><div class="tourrow"><span class="tstep">'+(idx+1)+' / '+steps.length+'</span><span class="tbtns">'+(idx>0?'<button class="tback">'+(ES()?'Atrás':'Back')+'</button>':'')+'<button class="tnext">'+(last?(ES()?'Listo':'Done'):(ES()?'Siguiente':'Next'))+'</button></span></div>';
+     if(st.practice)card.classList.add('tpw');
+     card.innerHTML='<h4>'+txt.h+'</h4><p>'+txt.p+'</p>'+(st.practice?pHTML(st.practice):'')+'<div class="tourrow"><span class="tstep">'+(idx+1)+' / '+steps.length+'</span><span class="tbtns">'+(idx>0?'<button class="tback">'+(ES()?'Atrás':'Back')+'</button>':'')+'<button class="tnext">'+(last?(ES()?'Listo':'Done'):(ES()?'Siguiente':'Next'))+'</button></span></div>';
      document.body.appendChild(card);
      var tgt=st.sel?q(st.sel):null;
      if(tgt&&!st.center){try{tgt.scrollIntoView({block:'center'});}catch(e){}var r=tgt.getBoundingClientRect();
@@ -5025,9 +5125,10 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
      }
      card.querySelector('.tnext').onclick=function(){if(last){end(true);}else{idx++;show();}};
      var bk=card.querySelector('.tback');if(bk)bk.onclick=function(){idx=Math.max(0,idx-1);show();};
+     if(st.practice)pWire(card,st.practice);
    },st.pre?260:30);
  }
- window.TOUR={start:function(){idx=0;try{if(window.showView)window.showView('log');}catch(e){}show();}};
+ window.TOUR={start:function(){idx=0;PV={};try{if(window.showView)window.showView('log');}catch(e){}show();}};
  var tb=document.getElementById('tourBtn');if(tb)tb.onclick=function(){window.TOUR.start();};
  /* auto-start once for brand-new users (wait until the welcome / login overlays are gone) */
  var tries=0;function maybeAuto(){tries++;if(tries>40)return;try{
