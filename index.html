@@ -413,9 +413,11 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .resumecard .rcM{font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:3px 0 12px;}
 .lgscope .resumecard .rcB{display:flex;gap:10px;flex-wrap:wrap;}
 .lgscope .resumecard .startbtn{flex:1;min-width:180px;}
-.lgscope .setupgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:end;}
+.lgscope .setupgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
 .lgscope .setupgrid label{display:flex;flex-direction:column;gap:6px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft);font-weight:700;}
-.lgscope .setupgrid label:first-child{grid-column:1 / -1;}
+.lgscope .setupgrid .sgFull,.lgscope .setupgrid .sgTee,.lgscope .setupgrid .sgChecks{grid-column:1 / -1;}
+.lgscope .setupgrid .sgChecks{display:flex;flex-direction:column;gap:12px;padding-top:2px}
+.lgscope .setupgrid .sgChecks label.tournchk{padding-bottom:0;align-self:flex-start}
 .lgscope .setupgrid .lbls{text-transform:none;letter-spacing:0;font-weight:600;color:var(--amber);font-size:10px;}
 .lgscope .fielderr{text-transform:none;letter-spacing:0;font-weight:700;color:var(--clay);font-size:11px;min-height:13px;margin-top:2px;}
 .lgscope input.bad{border-color:var(--clay)!important;box-shadow:0 0 0 2px rgba(194,80,46,.18);}
@@ -521,7 +523,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
  /* setup form one column */
  /* start form fits one phone screen: Holes|Score and HCP|Date side by side, tighter spacing */
  .lgscope .setupgrid{grid-template-columns:1fr 1fr;gap:10px 10px;align-items:start;}
- .lgscope .setupgrid label:first-child,.lgscope .setupgrid label:nth-child(2){grid-column:1 / -1;}
+ .lgscope .setupgrid .sgFull,.lgscope .setupgrid .sgTee{grid-column:1 / -1;}
  .lgscope .setupgrid select,.lgscope .setupgrid input{padding:9px 10px;font-size:16px;}
  .lgscope .setupgrid label{gap:4px;}
  .lgscope .setup{margin-top:6px;}
@@ -1471,14 +1473,16 @@ svg.tgSvg{width:100%;height:auto;display:block;}
    <div id="resumeCard" class="resumecard" style="display:none"></div>
    <div id="newRoundForm">
    <div class="setupgrid">
-     <label><span data-i18n="Course">Course</span><select id="selCourse"></select></label>
-     <label><span data-i18n="Tee">Tee</span><div id="selTeeChips" class="teechips"></div></label>
+     <label><span data-i18n="Date">Date</span><input type="date" id="selDate"></label>
      <label><span data-i18n="Holes">Holes</span><select id="selHoles"><option value="18" data-i18n="18 holes">18 holes</option><option value="front" data-i18n="Front 9 (1–9)">Front 9 (1–9)</option><option value="back" data-i18n="Back 9 (10–18)">Back 9 (10–18)</option></select></label>
+     <label class="sgFull"><span data-i18n="Course">Course</span><select id="selCourse"></select></label>
+     <label class="sgTee"><span data-i18n="Tee">Tee</span><div id="selTeeChips" class="teechips"></div></label>
      <label><span data-i18n="Gross score">Gross score</span><input type="number" inputmode="numeric" id="selScore" min="59" max="200" placeholder="e.g. 76" required><span class="fielderr" id="err_score"></span></label>
      <label><span data-i18n="Playing HCP">Playing HCP</span><input type="text" inputmode="text" autocomplete="off" id="selChcp" placeholder="e.g. 12 · +3" required aria-required="true"><span class="fielderr" id="err_chcp"></span></label>
-     <label><span data-i18n="Date">Date</span><input type="date" id="selDate"></label>
-     <label class="tournchk"><input type="checkbox" id="selTourn"><span data-i18n="Tournament round">Tournament round</span></label>
-     <label class="tournchk"><input type="checkbox" id="selHcp" checked><span data-i18n="Counts for my handicap">Counts for my handicap</span></label>
+     <div class="sgChecks">
+       <label class="tournchk"><input type="checkbox" id="selTourn"><span data-i18n="Tournament round">Tournament round</span></label>
+       <label class="tournchk"><input type="checkbox" id="selHcp" checked><span data-i18n="Counts for my handicap">Counts for my handicap</span></label>
+     </div>
    </div>
    <div class="teeline"><span class="est" id="teeEst" style="display:none"></span><button class="star" id="starBtn" style="display:none">★ default</button></div>
    <div class="setupacts"><button class="startbtn" id="startBtn" data-i18n="Start round →">Start round →</button></div>
