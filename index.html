@@ -306,9 +306,8 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .lgtablewrap thead th:nth-child(9){width:64px;}
 .lgscope .lgtablewrap thead th:nth-child(10){width:66px;}
 .lgscope .lgtablewrap thead th:nth-child(11){width:104px;}
-.lgscope .lgtablewrap thead th:nth-child(12){width:62px;}
-.lgscope .lgtablewrap thead th:nth-child(13){width:60px;}
-.lgscope .lgtablewrap thead th:nth-child(14){width:58px;}
+.lgscope .lgtablewrap thead th:nth-child(12){width:60px;}
+.lgscope .lgtablewrap thead th:nth-child(13){width:58px;}
 .lgscope .lgtablewrap td input{max-width:100%;box-sizing:border-box;}
 .lgscope .lgtablewrap thead th{position:sticky;top:0;z-index:6;background:var(--pine);color:#fff;box-shadow:0 2px 0 rgba(0,0,0,.08);font-size:13px;padding:9px 4px;}
 /* bigger type on desktop; phones keep their own sizes below */
@@ -326,7 +325,7 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope tr.shot.conf input.lc.on{background:var(--paper);color:var(--ink);}
 .lgscope input.lc:focus{outline:2px solid var(--fairway);outline-offset:-2px;}
 .lgscope tr.teerow td{background:var(--cream);}
-.lgscope input.lc[data-ydtee]{background:var(--cream);border-color:var(--line);color:var(--pine);font-family:var(--sans);font-weight:600;display:block;width:auto;min-width:72px;max-width:110px;margin:0 auto;padding:6px 10px;}
+.lgscope input.lc[data-ydtee]{background:var(--cream);border-color:var(--line);color:var(--pine);font-family:var(--sans);font-weight:600;display:block;width:100%;min-width:0;max-width:110px;box-sizing:border-box;margin:0 auto;padding:6px 4px;text-align:center;border-radius:6px;}
 .lgscope input.lc[data-ydtee]:focus{outline:none;box-shadow:none;}
 .lgscope input.lc[data-ydtee]::selection{background:rgba(255,255,255,.28);color:inherit;}
 .lgscope td.t5c{text-align:center;vertical-align:middle;}
@@ -849,11 +848,9 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope select.dispsel{width:50px;border:1px dashed var(--line);border-radius:7px;background:transparent;font-family:var(--cond);font-weight:700;font-size:12.5px;color:var(--ink-soft);padding:5px 0 5px 9px;-webkit-appearance:none;appearance:none;overflow:hidden;white-space:nowrap;text-overflow:clip;cursor:pointer;}
 .lgscope select.dispsel.ok{border:1.5px solid #2e7d4f;background:#e3f1e6;color:#1f7a4d;}
 .lgscope select.dispsel.miss{border:1.5px solid var(--pine);background:#fff;color:var(--pine);}
-.lgscope td.readc{text-align:center;}
-.lgscope table.noread thead th:nth-child(12),.lgscope table.noread td.readc{display:none;}
-.lgscope select.readsel{width:50px;border:1px dashed var(--line);border-radius:7px;background:transparent;font-family:var(--cond);font-weight:700;font-size:12.5px;color:var(--ink-soft);padding:5px 0 5px 9px;-webkit-appearance:none;appearance:none;overflow:hidden;white-space:nowrap;text-overflow:clip;cursor:pointer;}
+.lgscope select.readsel{width:50px;margin-left:4px;border:1px dashed var(--line);border-radius:7px;background:transparent;font-family:var(--cond);font-weight:700;font-size:12.5px;color:var(--ink-soft);padding:5px 0 5px 9px;-webkit-appearance:none;appearance:none;overflow:hidden;white-space:nowrap;text-overflow:clip;cursor:pointer;}
 .lgscope select.readsel.set{border:1.5px solid var(--pine);background:#fff;color:var(--pine);}
-.lgscope table.nocomp thead th:nth-child(13),.lgscope table.nocomp td.compc{display:none;}
+.lgscope table.nocomp thead th:nth-child(12),.lgscope table.nocomp td.compc{display:none;}
 .lgscope button.compbtn{width:34px;height:30px;border-radius:8px;border:1px dashed var(--line);background:transparent;color:var(--ink-soft);font-size:16px;font-weight:800;line-height:1;cursor:pointer;padding:0;transition:transform .12s,background .15s,border-color .15s;}
 .lgscope button.compbtn:active{transform:scale(.88);}
 .lgscope button.compbtn.y{background:#e3f1e6;border:1.5px solid #2e7d4f;color:#1f7a4d;}
@@ -1405,7 +1402,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
    <div class="holebar" id="holebar"></div>
    <div class="holenav" id="holenav"></div>
    <div class="warn" id="warn"></div>
-   <div class="lgtablewrap"><table id="lgTable"><thead><tr><th class="lh">#</th><th data-i18n="Tee">Tee</th><th data-i18n="Fairway">Fairway</th><th data-i18n="Rough">Rough</th><th data-i18n="Sand">Sand</th><th data-i18n="Recovery">Recovery</th><th data-i18n="Green·ft">Green·ft</th><th data-i18n="Pen">Pen</th><th>SG</th><th data-i18n="Club" title="Club used — predicted from your bag and past rounds">Club</th><th data-i18n="Disp." title="Dispersion — where the shot finished against your target">Disp.</th><th data-i18n="Read" title="Putt read — slope and break">Read</th><th data-i18n="Compl." title="Compliance — did you follow your process on this shot?">Compl.</th><th></th></tr></thead>
+   <div class="lgtablewrap"><table id="lgTable"><thead><tr><th class="lh">#</th><th data-i18n="Tee">Tee</th><th data-i18n="Fairway">Fairway</th><th data-i18n="Rough">Rough</th><th data-i18n="Sand">Sand</th><th data-i18n="Recovery">Recovery</th><th data-i18n="Green·ft">Green·ft</th><th data-i18n="Pen">Pen</th><th>SG</th><th data-i18n="Club" title="Club used — predicted from your bag and past rounds">Club</th><th data-i18n="Disp." title="Dispersion — where the shot finished against your target. On putts, also the read: slope and break">Disp.</th><th data-i18n="Compl." title="Compliance — did you follow your process on this shot?">Compl.</th><th></th></tr></thead>
    <tbody id="lgBody"></tbody></table></div>
    <div class="holeacts" id="holeacts"></div>
    </div>
@@ -3517,14 +3514,14 @@ var READ_LBL={DL:['DL','Downhill, left-to-right','BI','Bajada, de izquierda a de
   L:['L','Flat, left-to-right','I','Plano, de izquierda a derecha'],F:['–','Flat and straight','–','Plano y recto'],R:['R','Flat, right-to-left','D','Plano, de derecha a izquierda'],
   UL:['UL','Uphill, left-to-right','SI','Subida, de izquierda a derecha'],U:['U','Uphill, straight','S','Subida, recto'],UR:['UR','Uphill, right-to-left','SD','Subida, de derecha a izquierda']};
 function readSel(hi,si,s){if(!s||s.lie!=='putt'||!(+s.dist>3))return '';var es=window.__LANG==='es'?2:0,codes=['DL','D','DR','L','F','R','UL','U','UR'],cur=READ_LBL[s.read]?s.read:'';
- return '<select class="readsel'+(cur?' set':'')+'" data-read="'+hi+':'+si+'" title="'+(cur?READ_LBL[cur][es+1]:(es?'Pendiente y caída del putt':'Slope and break of the putt'))+'"><option value="">·</option>'+
+ return '<select class="readsel'+(cur?' set':'')+'" data-read="'+hi+':'+si+'" title="'+(cur?READ_LBL[cur][es+1]:(es?'Lectura: pendiente y caída del putt':'Read: slope and break of the putt'))+'"><option value="">'+(es?'lect.':'read')+'</option>'+
    codes.map(function(c){return '<option value="'+c+'"'+(c===cur?' selected':'')+'>'+READ_LBL[c][es]+'\u2003\u2003\u2003'+READ_LBL[c][es+1]+'</option>';}).join('')+'</select>';}
 function compBtn(hi,si,s){var v=s.comp===true?'y':s.comp===false?'n':'',ES=window.__LANG==='es';
  return '<button type="button" class="compbtn'+(v?' '+v:'')+'" data-comp="'+hi+':'+si+'" title="'+(ES?'¿Cumpliste tu proceso en este tiro? Tocá: sí → no → sin respuesta':'Did you follow your process on this shot? Tap: yes → no → blank')+'">'+(v==='y'?'✓':v==='n'?'✕':'·')+'</button>';}
 function compTot(h){var a=confShots(h).filter(function(s){return s.comp===true||s.comp===false;});if(!a.length)return '';return a.filter(function(s){return s.comp;}).length+'/'+a.length;}
 function renderShots(hi){
  var h=R.holes[hi],body=document.getElementById('lgBody'),html='';
- var CLB=!!PROF.trackClubs,CMP=!!PROF.trackComp,tb=document.getElementById('lgTable');if(tb){tb.classList.toggle('noclub',!CLB);tb.classList.toggle('nocomp',!CMP);tb.classList.toggle('nodisp',!PROF.trackDisp);tb.classList.toggle('noread',!PROF.trackRead);}
+ var CLB=!!PROF.trackClubs,CMP=!!PROF.trackComp,tb=document.getElementById('lgTable');if(tb){tb.classList.toggle('noclub',!CLB);tb.classList.toggle('nocomp',!CMP);tb.classList.toggle('nodisp',!(PROF.trackDisp||PROF.trackRead));}
  var hm5=holeMistakes({par:h.par,yd:h.yd,hcp:h.hcp,shots:confShots(h)},hi);
  var t5tags=[hm5.p3?'3-putt':'',hm5.db?'double':'',hm5.bp5?'bogey P5':'',hm5.f150?'bogey w/ 9i or less':'',hm5.short?shortLabel():''].filter(Boolean);
  var t5ac=[hm5.p3?'3P':'',hm5.db?'D':'',hm5.bp5?'P5':'',hm5.f150?'B':'',hm5.short?'S':''].filter(Boolean);
@@ -3542,8 +3539,7 @@ function renderShots(hi){
      '<td><input class="p" type="number" inputmode="numeric" min="0" data-h="'+hi+'" data-s="'+si+'" value="'+(s.pen||'')+'" placeholder="0"></td>'+
      '<td class="sgc '+(sgv==null?'':(sgv<0?'sg-neg':'sg-pos'))+'">'+(sgv==null?'·':fmt(sgv))+'</td>'+
      '<td class="clubc">'+(CLB?clubSel(hi,si,s):'')+'</td>'+
-     '<td class="dispc">'+(PROF.trackDisp?dispSel(hi,si,s):'')+'</td>'+
-     '<td class="readc">'+(PROF.trackRead?readSel(hi,si,s):'')+'</td>'+
+     '<td class="dispc">'+(PROF.trackDisp?dispSel(hi,si,s):'')+(PROF.trackRead?readSel(hi,si,s):'')+'</td>'+
      '<td class="compc">'+(CMP?compBtn(hi,si,s):'')+'</td>'+
      '<td class="rm"><button class="insbtn" data-ins="'+hi+':'+si+'" title="insert a shot below this one">+</button>'+(locked?'':'<button data-del="'+hi+':'+si+'" title="delete">×</button>')+'</td></tr>';
  });
@@ -3558,7 +3554,7 @@ function renderShots(hi){
      var cells=LIECOLS.map(function(lc){var on=pr.lie===lc;var val=on?(lc==='putt'?pr.dist:Y2U(pr.dist)):'';
        return '<td class="liec"><input class="lc'+(on?' on':'')+'" type="text" inputmode="numeric" data-entry="'+hi+'" data-lie="'+lc+'" value="'+val+'" placeholder="·"></td>';}).join('');
      html+='<tr class="shot entry'+(isPred?' pred':'')+'"><td class="sidx">'+(confShots(h).length+1)+'</td>'+cells+
-       '<td></td><td class="sgc"></td><td class="clubc"><span class="clubpred">'+(!CLB||PROF.predict===false?'':isPred?(predictClub(hi,confShots(h).length,pr)||'·'):'·')+'</span></td><td class="dispc"></td><td class="readc"></td><td class="compc"></td><td class="rm"><button data-entryfin="1" title="Holed it — no more shots on this hole (or press Delete). Stays here so you can review.">×</button></td></tr>';
+       '<td></td><td class="sgc"></td><td class="clubc"><span class="clubpred">'+(!CLB||PROF.predict===false?'':isPred?(predictClub(hi,confShots(h).length,pr)||'·'):'·')+'</span></td><td class="dispc"></td><td class="compc"></td><td class="rm"><button data-entryfin="1" title="Holed it — no more shots on this hole (or press Delete). Stays here so you can review.">×</button></td></tr>';
    }
  }
  if(nshot>=1){var sgTot=holeSGlive(h).tot,penTot=confShots(h).reduce(function(a,s){return a+(s.pen||0);},0);
@@ -3566,7 +3562,7 @@ function renderShots(hi){
      '<td class="totpen">'+(penTot||0)+'</td>'+
      '<td class="sgc '+(sgTot<0?'sg-neg':'sg-pos')+'">'+fmt(sgTot)+'</td>'+
      '<td class="t5c" title="'+(t5n?t5tags.join(', '):'no Tiger’s-5 mistakes')+'">T5 '+(t5n?'<span class="t5bad">'+t5ac.join(' ')+'</span>':'<span class="t5ok">0</span>')+'</td>'+
-     '<td class="dispc"></td>'+'<td class="readc"></td>'+'<td class="compc" id="compTot">'+compTot(h)+'</td>'+
+     '<td class="dispc"></td>'+'<td class="compc" id="compTot">'+compTot(h)+'</td>'+
      '<td class="rm"></td></tr>';}
  body.innerHTML=html;
 }
@@ -3900,7 +3896,7 @@ function renderProf(){
     <div class="hirow"><span>${window.__LANG==='es'?'Lectura del putt':'Putt read'}</span><em class="estchip">+1 min</em></div>
     <label>${window.__LANG==='es'?'Registrar pendiente y caída de cada putt':'Record the slope and break of each putt'}<select id="pf_read">
       <option value="off" ${PROF.trackRead?'':'selected'}>${window.__LANG==='es'?'No':'Off'}</option>
-      <option value="on" ${PROF.trackRead?'selected':''}>${window.__LANG==='es'?'Sí — una celda en putts de más de 3 ft':'On — one cell on putts longer than 3 ft'}</option></select></label>
+      <option value="on" ${PROF.trackRead?'selected':''}>${window.__LANG==='es'?'Sí — en putts de más de 3 ft, junto a la dispersión':'On — on putts longer than 3 ft, next to dispersion'}</option></select></label>
     <div class="hisub">${window.__LANG==='es'?'Subida (S) o bajada (B), y hacia dónde cae: de izquierda a derecha (I) o de derecha a izquierda (D). Ej.: BI = bajada, de izquierda a derecha; – = plano y recto. Con esto, Estadísticas muestra qué tipo de putt te cuesta más. Opcional en cada putt.':'Uphill (U) or downhill (D), and which way it breaks: left-to-right (L) or right-to-left (R). E.g. DL = downhill, left-to-right; – = flat and straight. With this, Statistics shows which kind of putt costs you most. Optional on each putt.'}</div>
   </div>
   <div class="hiblock">
