@@ -872,6 +872,10 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #parCard .pcLegend i{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:5px;box-sizing:border-box}
 #parCard .pcOpt{font-size:13px;line-height:1.5;color:var(--ink-soft);margin:4px 0 0}
 #parCard .pcSum{display:inline-block;margin-left:6px;color:var(--pine);font-family:var(--cond);font-weight:700}
+.lgscope .limchip{font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.03em;border-radius:999px;padding:3px 10px;border:1.5px solid var(--line);color:var(--ink-soft)}
+.lgscope .limchip.ok{border-color:#9ccdb1;color:#1f7a4d}
+.lgscope .limchip.warn{border-color:#d9a441;color:#8a6a1e;background:#fbf3df}
+.lgscope .limchip.bad{border-color:var(--clay);color:#fff;background:var(--clay)}
 .lgscope .cardchip{font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;border:1.5px dashed var(--sand-deep,#b89a52);color:#8a6a1e;border-radius:999px;padding:3px 10px}
 .lgscope .cardchip.ok{border-style:solid;border-color:var(--fairway);color:var(--fairway)}
 #parCard .pcActs{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
@@ -1345,6 +1349,8 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 @media(max-width:820px){#landing .hero,#landing .two{grid-template-columns:1fr;gap:34px}#landing .grid3,#landing .tiers{grid-template-columns:1fr}.lteam{grid-column:auto}#landing .who{grid-template-columns:1fr}#landing .card{transform:none}#landing .lnav a.ll{display:none}#landing .hero{padding-top:48px}}
 
 #landing svg.lcc{width:100%;height:auto;display:block;}
+.xmrBreach,.xmrExc{margin-top:8px;font-size:13px;line-height:1.45;padding:7px 11px;border-left:3px solid var(--clay);background:rgba(194,80,46,.08);color:#8f3418}
+.xmrExc{border-left-color:var(--fairway);background:rgba(31,122,77,.08);color:#1f5c3c}
 .xmrNotes{display:flex;flex-direction:column;gap:4px;margin-top:8px}
 .xmrNotes span{font-size:13px;line-height:1.45;color:#8a6a1e;background:rgba(216,196,140,.18);border-left:3px solid var(--sand-deep,#b89a52);padding:6px 10px}
 #landing .lcct{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.04em;fill:#5c6357;}
@@ -1953,7 +1959,7 @@ function shiftIndex(v,foundFrom,searchStart,N,cnt){
 }
 function mk(v,start,end,cf,ct,count){return Object.assign({start,end,cf,ct,prov:(ct-cf+1)<12},limitsOf(v.slice(cf,ct+1),count));}
 function segLimits(v,count){
- const N=v.length; const segs=[]; const signals=[]; let foundFrom=0,dispStart=0,guard=0;
+ const N=v.length; const segs=[]; const signals=[]; const outs=[]; let foundFrom=0,dispStart=0,searchFrom=0,guard=0;
  // Stage/hunt signals only for continuous (strokes-gained, score) metrics. Small-integer COUNT data
  // (mistakes, fairways, greens, putts, penalties) is left as one whole-sample band: a flat opening run
  // otherwise founds an artificially tight band that then flags ordinary counts as signals.
@@ -1962,8 +1968,10 @@ function segLimits(v,count){
  // founded on the signal points themselves and the rounds after (never the old regime, never future beyond
  // the stage), giving a provisional band immediately that firms up toward ~20 rounds.
  while(stageOK && guard++<60){
-   const s=shiftIndex(v,foundFrom,dispStart,N,count);
+   const s=shiftIndex(v,foundFrom,searchFrom,N,count);
    if(!s){ segs.push(mk(v,dispStart,N-1,foundFrom,Math.min(foundFrom+19,N-1),count)); break; }
+   /* one round beyond the limits is a breach (or an exceptional day), not a new normal: flag it, keep the limits, look further */
+   if(s.type==='out'){ outs.push(s); searchFrom=s.at+1; if(searchFrom>N-1){ segs.push(mk(v,dispStart,N-1,foundFrom,Math.min(foundFrom+19,N-1),count)); break; } continue; }
    const o=s.at, win=({run:8,trend:6,out:1,zone:4,alt:14,strat:15,mix:8})[s.type]||4, w=Math.min(o+win-1,N-1);
    if(N-o < 8){   // fewer than 8 new-regime rounds — hold the old limits, flag the signal as a watch, don't draw shaky new limits
      segs.push(mk(v,dispStart,N-1,foundFrom,Math.min(foundFrom+19,o-1),count));
@@ -1972,7 +1980,7 @@ function segLimits(v,count){
    }
    segs.push(mk(v,dispStart,w,foundFrom,Math.min(foundFrom+19,o-1),count));   // old stage: pre-signal rounds
    signals.push(s);
-   foundFrom=o; dispStart=w+1;                                                // new stage founded on the signal points onward
+   foundFrom=o; dispStart=w+1; searchFrom=dispStart;                          // new stage founded on the signal points onward
    if(dispStart>N-1) break;
  }
  if(!segs.length) segs.push(mk(v,0,N-1,0,count?N-1:Math.min(19,N-1),count));
@@ -1983,7 +1991,7 @@ function segLimits(v,count){
  const r1=[]; v.forEach((x,i)=>{const g=segOf(i);if(x>g.u||x<g.l)r1.push(i+1);});
  const r4=[]; mr.forEach((x,i)=>{const g=segOf(i+1);if(x>g.mrucl)r4.push(i+2);});
  const notes=[];
- return {segs,segOf,mr,r1,r4,breaks,notes,signals,sigSet};}
+ return {segs,segOf,mr,r1,r4,breaks,notes,signals,sigSet,outs};}
 function np(){return false;}   /* Statistics are always gross: a net figure follows the handicap, so it cannot show improvement over time. Net is for the round itself (scorecard, hole view). */
 const metrics={'SG: Total':r=>r.sgtot,'SG: Tee-to-green':r=>(r.ott==null||r.app==null||r.atg==null)?null:Math.round((r.ott+r.app+r.atg)*100)/100,'SG: Off tee':r=>r.ott,'SG: Approach':r=>r.app,'SG: Around green':r=>r.atg,'SG: Putting':r=>r.putt,'Mistakes: total':r=>(np()&&r.mtotNet!=null)?r.mtotNet:r.mtot,'Mistakes: 3-putts':r=>r.p3,'Mistakes: double bogeys':r=>(np()&&r.dbNet!=null)?r.dbNet:r.db,'Mistakes: bogey par-5':r=>(np()&&r.bp5Net!=null)?r.bp5Net:r.bp5,'Mistakes: 3+ from 150':r=>(np()&&r.f150Net!=null)?r.f150Net:r.f150,'Mistakes: 3+ from 40':r=>r.fx,'Fairways / round':r=>r.fw,'Driving accuracy %':r=>r.fw==null?null:Math.round(1000*r.fw/(r.fwAtt||14))/10,'Greens / round':r=>(np()&&r.girNet!=null)?r.girNet:r.gir,'GIR %':r=>{var g=(np()&&r.girNet!=null)?r.girNet:r.gir;return g==null?null:Math.round(1000*g/(r.holesPlayed||18))/10;},'Scrambling %':r=>r.scrmb==null?null:r.scrmb,'Putts per GIR':r=>r.pptgir==null?null:r.pptgir,'Short-game proximity (ft)':r=>r.sgprox==null?null:r.sgprox,'Greenside inside 6 ft %':r=>r.in6==null?null:r.in6,'Greenside outside 15 ft %':r=>r.out15==null?null:r.out15,'Putts / round':r=>r.putts,'Penalties / round':r=>r.pen,'Tee shot distance':r=>r.dist,'Bogey avoidance %':r=>r.bog==null?null:Math.round(1000*(r.bog+r.dbl)/18)/10,'Birdies / round':r=>r.bir==null?null:r.bir,'Score to par':r=>(np()&&r.stpNet!=null)?r.stpNet:r.stp};
 const TOURAVG={'Bogey avoidance %':15.77,'Birdies / round':3.79};
@@ -2792,8 +2800,13 @@ function drawXmr(sfx){
    let mhi=Math.max(...S.mr,...mrUcl,0.5)*1.1;
    xmrLine('mr_'+sfx,{v:S.mr,cenA:mrCen,upA:mrUcl,loA:mrUcl,cols:mrC,pbc:mrC,pbw:S.mr.map(()=>0),rad:mrR,lo:0,hi:mhi,cnt:true,breaks:[]});
  }
- {const sig=document.getElementById('sig_'+sfx);if(sig){const SLBL={run:LX('8 rounds one side','8 vueltas de un mismo lado'),out:LX('a round outside the limits','una vuelta fuera de los límites'),zone:LX('3 of 4 near a limit','3 de 4 cerca de un límite'),trend:LX('6-round trend','tendencia de 6 vueltas'),alt:LX('14 rounds alternating up and down','14 vueltas alternando arriba y abajo'),strat:LX('15 rounds within 1σ of the centre — more consistent','15 vueltas dentro de 1σ del centro — más consistente'),mix:LX('8 rounds beyond 1σ on either side — less consistent, or mixed courses','8 vueltas fuera de 1σ a cualquier lado — menos consistente, o canchas mezcladas')};const conf=(S.signals||[]).filter(s=>!s.pending);sig.innerHTML=conf.length?(LX('<b>Limit resets:</b> ','<b>Reinicios de límites:</b> ')+conf.map((s,i)=>`#${i+1} — ${SLBL[s.type]||s.type} (${LX('rounds','vueltas')} ${s.pts[0]+1}–${s.pts[s.pts.length-1]+1})`).join(' &nbsp;·&nbsp; ')):'<span style="color:var(--ink-soft)">'+LX('One stable stage — no resets yet.','Una sola etapa estable — sin reinicios todavía.')+'</span>';
+ {const sig=document.getElementById('sig_'+sfx);if(sig){const SLBL={run:LX('8 rounds one side','8 vueltas de un mismo lado'),out:LX('a round outside the limits','una vuelta fuera de los límites'),zone:LX('3 of 4 near a limit','3 de 4 cerca de un límite'),trend:LX('6-round trend','tendencia de 6 vueltas'),alt:LX('14 rounds alternating up and down','14 vueltas alternando arriba y abajo'),strat:LX('15 rounds within 1σ of the centre — more consistent','15 vueltas dentro de 1σ del centro — más consistente'),mix:LX('8 rounds beyond 1σ on either side — less consistent, or mixed courses','8 vueltas fuera de 1σ a cualquier lado — menos consistente, o canchas mezcladas')};const conf=(S.signals||[]).filter(s=>!s.pending);
+   const lb=lowerBetter(key),brW=[],brB=[];v.forEach((x,i)=>{const g=S.segOf(i);if(x>g.u)(lb?brW:brB).push(i+1);else if(x<g.l)(lb?brB:brW).push(i+1);});
+   const brTxt=(brW.length?'<div class="xmrBreach">⛔ '+LX('<b>Limit breached</b> in round'+(brW.length>1?'s ':' ')+brW.join(', ')+'. A breach is never accepted as your new normal: the limits stay where they are. Find what was different and remove it.','<b>Límite superado</b> en la'+(brW.length>1?'s vueltas ':' vuelta ')+brW.join(', ')+'. Un límite superado nunca se acepta como tu nueva normalidad: los límites quedan donde están. Encontrá qué fue distinto y eliminalo.')+'</div>':'')+
+     (brB.length?'<div class="xmrExc">★ '+LX('<b>Exceptional round'+(brB.length>1?'s':'')+'</b>: '+brB.join(', ')+'. One round is not a new level; repeat it and a run will confirm it.','<b>Vuelta'+(brB.length>1?'s':'')+' excepcional'+(brB.length>1?'es':'')+'</b>: '+brB.join(', ')+'. Una vuelta no es un nivel nuevo; repetila y una racha lo va a confirmar.')+'</div>':'');
+   sig.innerHTML=conf.length?(LX('<b>Limit resets:</b> ','<b>Reinicios de límites:</b> ')+conf.map((s,i)=>`#${i+1} — ${SLBL[s.type]||s.type} (${LX('rounds','vueltas')} ${s.pts[0]+1}–${s.pts[s.pts.length-1]+1})`).join(' &nbsp;·&nbsp; ')):'<span style="color:var(--ink-soft)">'+LX('One stable stage — no resets yet.','Una sola etapa estable — sin reinicios todavía.')+'</span>';
    /* the three pattern rules that describe the data rather than a change in the game: shown, never used to reset the limits */
+   sig.innerHTML+=brTxt;
    if(S.notes&&S.notes.length)sig.innerHTML+='<div class="xmrNotes">'+S.notes.map(function(n){return '<span>⚠ '+n+'</span>';}).join('')+'</div>';}}
  const lv=v.slice(last.start,last.end+1),sg1=(last.mrb/1.128)||1;
  const w1=lv.filter(x=>Math.abs(x-last.m)<=sg1).length/lv.length*100,w2=lv.filter(x=>Math.abs(x-last.m)<=2*sg1).length/lv.length*100;
@@ -3839,6 +3852,16 @@ function pinColName(course,pos){var pc=(COURSES[course]&&COURSES[course].pins)||
 function pinBtn(course,pos,on){var hx=PINHEX[pinColName(course,pos)];if(!hx)return {st:'',dot:''};
  return on?{st:'background:'+hx[0]+';color:'+hx[1]+';',dot:''}:{st:'',dot:'<i class="pindot" style="background:'+hx[0]+'"></i>'};}
 function teeStyle(course,tee){var c=teeColor(course,tee);return 'background:'+c.bg+';color:'+c.fg+';border-color:'+c.bd+';';}
+/* the upper limit of your gross score (current stage), so a bad day still has a line not to cross */
+var LIMW={k:null,v:null};
+function limitWatch(){var hp=(R.hEnd-R.hStart)||18,key=R.course+'|'+hp+'|'+R.date;if(LIMW.k===key)return LIMW.v;LIMW.k=key;LIMW.v=null;
+ try{var all=window.ALLROUNDS?window.ALLROUNDS():[],v=all.filter(function(x){return (x.holesPlayed||18)===hp&&x.score!=null&&String(x.date||'')<=String(R.date||'9999')&&(!R._editId||x.id!==R._editId);}).sort(function(a,b){return String(a.date)<String(b.date)?-1:1;}).map(function(x){return +x.score;});
+   if(v.length>=5&&typeof window.segLimits==='function'){var S=window.segLimits(v,false),g=S.segs[S.segs.length-1];if(g&&isFinite(g.u))LIMW.v={u:Math.floor(g.u),avg:g.m};}}catch(e){}
+ return LIMW.v;}
+function limitChip(){var L=limitWatch();if(!L)return '';var es=window.__LANG==='es',st=0,left=0,lp=0;for(var i=R.hStart;i<R.hEnd;i++){var h=R.holes[i];if(h.done){st+=holeSG(holeView(h)).strokes;}else{left++;lp+=h.par;}}
+ var room=L.u-st,cls=room<lp?'bad':room<lp+left?'warn':'ok';
+ var txt=room<0?(es?'Límite '+L.u+' superado':'Limit '+L.u+' breached'):!left?(es?'Dentro de tu límite ('+L.u+')':'Inside your limit ('+L.u+')'):(es?'Límite '+L.u+': te quedan '+room+' en '+left+' hoyos (par '+lp+')':'Limit '+L.u+': '+room+' strokes left for '+left+' holes (par '+lp+')');
+ return '<span class="limchip '+(room<0?'bad':cls)+'" title="'+(es?'El límite superior de tu score gross, de tus gráficos de control. Aunque el día venga mal, no lo cruces.':'The upper limit of your gross score, from your control charts. Even on a bad day, do not cross it.')+'">'+txt+'</span>';}
 function renderHoleBar(hi){
  var h=R.holes[hi],hv=holeView(h),sg=holeSGlive(h),m=holeMistakes(hv,hi);
  var flags=[m.p3?'3-putt':'',m.db?'double':'',m.bp5?'bogey P5':'',m.f150?'bogey w/ 9i or less':'',m.short?shortLabel():''].filter(Boolean).join(' · ');
@@ -3856,7 +3879,7 @@ function renderHoleBar(hi){
    '<div class="hbL"><span class="hn">'+t('Hole')+' '+(hi+1)+'</span>'+
    '<span class="parchip">'+t('Par')+' '+h.par+'</span>'+
    ((PROF.netPar&&netParOf(hi)!==h.par)?'<span class="netchip" title="Net par — '+(netParOf(hi)-h.par>0?'+':'')+(netParOf(hi)-h.par)+' stroke">'+t('Net')+' '+netParOf(hi)+'</span>':'')+
-   '<span class="sichip" title="Stroke index / hole handicap">SI '+(h.hcp||'—')+'</span>'+
+   '<span class="sichip" title="Stroke index / hole handicap">SI '+(h.hcp||'—')+'</span>'+(DEMO_ON?'':limitChip())+
    (h.card?(function(){var lg=confShots(h).reduce(function(n,x){return n+1+(x.pen||0);},0),ok=(h.done||h._sank)&&lg===h.card;return '<span class="cardchip'+(ok?' ok':'')+'" title="'+(window.__LANG==='es'?'Score de tu tarjeta':'Score from your card')+'">'+(window.__LANG==='es'?'Tarjeta ':'Card ')+h.card+'</span>';})():'')+
    (hstr?'<span class="holescore" title="Hole score">'+hstr+' <small>'+hdt+'</small></span>':'')+'</div>'+
    '<div class="hbR"><span class="sgmini"><span class="ydchip">'+Y2U(h.yd)+' '+PROF.units+'</span> · <span class="'+(sg.tot<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg.tot)+'</span>'+(flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':'')+'</span></div>'+
