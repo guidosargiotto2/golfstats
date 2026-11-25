@@ -45,7 +45,6 @@ async function init() {
       await s`create table if not exists gs_settings (k text primary key, v text)`;
       await s`create table if not exists gs_teams (code text primary key, owner text not null, seats int not null default 4, paid boolean not null default false, created timestamptz default now())`;
       await s`alter table gs_teams add column if not exists plan text not null default 'lite'`;
-      await s`alter table gs_teams add column if not exists perk text not null default 'seat'`;   // seat = 4 for the price of 3 · upgrade = pay 4, get the next plan (as a group call)
       await s`create table if not exists gs_team_members (username text primary key, code text not null, joined timestamptz default now())`;
       await s`create table if not exists gs_reviews (username text primary key, contact text, note text, status text not null default 'requested', recommendation text, requested timestamptz default now(), done timestamptz)`;
       await s`create table if not exists gs_bags (username text primary key, data jsonb not null, upd bigint not null default 0)`;
@@ -78,10 +77,8 @@ async function effectivePlan(sql, user, plan) {
   const p = planOf(user, plan);
   if (p === 'pro') return p;
   if (await inTrial(sql, user, plan)) return 'pro';
-  const t = await sql`select t.paid, t.plan, t.perk from gs_team_members m join gs_teams t on t.code = m.code where m.username = ${user}`;
-  const base = t.length ? (t[0].plan === 'pro' ? 'pro' : (t[0].plan === 'plus' ? 'plus' : 'lite')) : 'lite';
-  const up = t.length && t[0].perk === 'upgrade' && base !== 'pro' ? ({ lite: 'plus', plus: 'pro' })[base] : base;   // free upgrade: the next plan (Pro teams only get the free seat)
-  const tp = (t.length && t[0].paid) ? up : 'free';
+  const t = await sql`select t.paid, t.plan from gs_team_members m join gs_teams t on t.code = m.code where m.username = ${user}`;
+  const tp = (t.length && t[0].paid) ? (t[0].plan === 'pro' ? 'pro' : (t[0].plan === 'plus' ? 'plus' : 'lite')) : 'free';
   return rank(tp) > rank(p) ? tp : p;
 }
 const rank = p => ({ free: 0, lite: 1, plus: 2, pro: 3 })[p] || 0;
