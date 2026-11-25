@@ -836,9 +836,17 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #parCard .pcT th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);padding:6px 8px;white-space:nowrap;width:74px}
 #parCard .pcT td{text-align:center;padding:6px 2px;font-weight:700;font-size:14px;border-bottom:1px solid var(--line)}
 #parCard .pcH td{color:var(--ink-soft);font-size:12px}
-#parCard .pcK td{height:22px}
-#parCard .pcPlus{font-style:normal;color:var(--sand-deep,#b89a52);font-size:16px;letter-spacing:1px}
-#parCard .pcMinus{font-style:normal;color:var(--clay);font-size:14px}
+#parCard .pcX td span{position:relative;display:inline-block;padding:0 4px;color:var(--ink-soft);font-weight:700}
+#parCard .pcX td.pcScan{background:rgba(15,58,44,.07);border-radius:6px}
+#parCard .pcX td.pcCross span::after,#parCard .pcX td.pcGive span::after{content:'';position:absolute;left:-3px;right:-3px;top:50%;height:2.4px;background:var(--clay);border-radius:2px;transform:rotate(-24deg) scaleX(1);transform-origin:left center;animation:pcStrike .22s ease-out both}
+#parCard .pcX td.pcTwice span::before{content:'';position:absolute;left:-3px;right:-3px;top:50%;height:2.4px;background:var(--clay);border-radius:2px;transform:rotate(24deg);animation:pcStrike2 .22s .12s ease-out both}
+#parCard .pcX td.pcGive span::after{background:var(--pine)}
+#parCard .pcM td.pcWrite{animation:pcInk .32s cubic-bezier(.2,.9,.3,1.3) both}
+#parCard .pcBig.pcDone{animation:pcPop .4s cubic-bezier(.2,.9,.3,1.4) both}
+@keyframes pcStrike{from{transform:rotate(-24deg) scaleX(0)}to{transform:rotate(-24deg) scaleX(1)}}
+@keyframes pcStrike2{from{transform:rotate(24deg) scaleX(0)}to{transform:rotate(24deg) scaleX(1)}}
+@keyframes pcInk{from{opacity:0;transform:translateY(-8px) scale(1.5)}to{opacity:1;transform:none}}
+@keyframes pcPop{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
 #parCard .pcM td{font-size:17px;color:var(--pine);border-bottom:none}
 #parCard .pcM td.up{background:rgba(216,196,140,.22)}
 #parCard .pcM th{color:var(--pine)}
@@ -3412,22 +3420,33 @@ function showParCard(go){
  var es=window.__LANG==='es',T=function(a,b){return es?b:a;},noSI=!!c.noSI,sr=srMap(),a=R.hStart,b=R.hEnd;
  var par=0,mine=0;for(var i=a;i<b;i++){par+=R.holes[i].par;mine+=R.holes[i].par+(sr[i]||0);}
  if(noSI)mine=par+PH;
- var dots=function(n){if(!n)return '';var x=Math.abs(n);return '<i class="'+(n>0?'pcPlus':'pcMinus')+'">'+(x>3?(n>0?'+':'−')+x:Array(x+1).join(n>0?'•':'−'))+'</i>';};
- var nine=function(s0,s1,lbl){var h='<tr class="pcH"><th>'+T('Hole','Hoyo')+'</th>',p='<tr><th>Par</th>',k='<tr class="pcK"><th>'+T('Strokes','Golpes')+'</th>',m='<tr class="pcM"><th>'+T('Your par','Tu par')+'</th>',tp=0,tm=0;
-   for(var i=s0;i<s1;i++){var hh=R.holes[i],st=noSI?0:(sr[i]||0),my=hh.par+st;tp+=hh.par;tm+=my;
-     h+='<td>'+(i+1)+'</td>';p+='<td>'+hh.par+'</td>';k+='<td>'+(noSI?'·':dots(st))+'</td>';m+='<td class="'+(st?'up':'')+'">'+(noSI?'·':my)+'</td>';}
-   return '<table class="pcT"><tbody>'+h+'<td class="pcTot">'+lbl+'</td></tr>'+p+'<td class="pcTot">'+tp+'</td></tr>'+k+'<td class="pcTot"></td></tr>'+m+'<td class="pcTot">'+(noSI?'·':tm)+'</td></tr></tbody></table>';};
- var tables=(b-a===18)?nine(0,9,T('OUT','IDA'))+nine(9,18,T('IN','VUELTA')):nine(a,b,T('TOT','TOT'));
+ /* the card is filled in the way a golfer does it with a pen: hole by hole, read the index, cross it if you get a stroke there, write your par below */
+ var nine=function(s0,s1,lbl,key){var h='<tr class="pcH"><th>'+T('Hole','Hoyo')+'</th>',p='<tr><th>Par</th>',x='<tr class="pcX"><th>'+T('Index','Hándicap')+'</th>',m='<tr class="pcM"><th>'+T('Your par','Tu par')+'</th>',tp=0;
+   for(var i=s0;i<s1;i++){var hh=R.holes[i];tp+=hh.par;
+     h+='<td>'+(i+1)+'</td>';p+='<td>'+hh.par+'</td>';x+='<td data-x="'+i+'"><span>'+(noSI?'·':(hh.hcp||'·'))+'</span></td>';m+='<td data-m="'+i+'"></td>';}
+   return '<table class="pcT"><tbody>'+h+'<td class="pcTot">'+lbl+'</td></tr>'+p+'<td class="pcTot">'+tp+'</td></tr>'+x+'<td class="pcTot"></td></tr>'+m+'<td class="pcTot" data-t="'+key+'"></td></tr></tbody></table>';};
+ var tables=(b-a===18)?nine(0,9,T('OUT','IDA'),'o')+nine(9,18,T('IN','VUELTA'),'i'):nine(a,b,T('TOT','TOT'),'o');
  var ov=document.createElement('div');ov.id='parCard';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');
  ov.innerHTML='<div class="pcBox"><div class="pcKick">'+T('Before the first tee','Antes del primer tee')+'</div>'+
-   '<div class="pcHead"><div><h2>'+T('Your par today','Tu par de hoy')+'</h2><p>'+T('Course par','Par de la cancha')+' <b>'+par+'</b> + '+T('your playing handicap','tu hándicap de juego')+' <b>'+(PH>0?PH:'−'+(-PH))+'</b></p></div><div class="pcBig">'+mine+'</div></div>'+
-   '<p class="pcLead">'+(PH>0?T('Par '+par+' is a scratch player\'s target, not yours. A bogey on a hole where you get a stroke is your par. This card is what playing to your handicap looks like today.','El par '+par+' es el objetivo de un jugador scratch, no el tuyo. Un bogey en un hoyo donde recibís golpe es tu par. Esta tarjeta es lo que significa jugar a tu hándicap hoy.')
-                       :T('You give strokes back today: on the marked holes your par is one less than the card.','Hoy devolvés golpes: en los hoyos marcados tu par es uno menos que el de la tarjeta.'))+'</p>'+
+   '<div class="pcHead"><div><h2>'+T('Your par today','Tu par de hoy')+'</h2><p>'+T('Course par','Par de la cancha')+' <b>'+par+'</b> + '+T('your playing handicap','tu hándicap de juego')+' <b>'+(PH>0?PH:'−'+(-PH))+'</b></p></div><div class="pcBig">'+par+'</div></div>'+
+   '<p class="pcLead">'+(PH>0?T('Par '+par+' is a scratch player\'s target, not yours. On every hole whose index is '+Math.min(PH,18)+' or lower you get a stroke, so a bogey there is your par.','El par '+par+' es el objetivo de un jugador scratch, no el tuyo. En cada hoyo con hándicap '+Math.min(PH,18)+' o menor recibís un golpe, así que ahí un bogey es tu par.')
+                       :T('You give strokes back today: on the crossed holes your par is one less than the card.','Hoy devolvés golpes: en los hoyos tachados tu par es uno menos que el de la tarjeta.'))+'</p>'+
    (noSI?'<p class="pcWarn">'+T('This course has no stroke index yet, so your strokes cannot be placed hole by hole. Your total par still applies.','Esta cancha todavía no tiene hándicap por hoyo, así que tus golpes no se pueden ubicar hoyo por hoyo. Tu par total igual vale.')+'</p>':'')+
    '<div class="pcWrap">'+tables+'</div>'+
    '<div class="pcActs"><button type="button" class="pcGo">'+T('Start hole '+(a+1),'Empezar hoyo '+(a+1))+' →</button></div></div>';
  document.body.appendChild(ov);
- var done=function(){document.removeEventListener('keydown',kd);ov.remove();go();};
+ var big=ov.querySelector('.pcBig'),run=par,tot={o:0,i:0},timer=null,k=a,fin=false;
+ var fill=function(i,anim){var hh=R.holes[i],st=noSI?0:(sr[i]||0),xc=ov.querySelector('[data-x="'+i+'"]'),mc=ov.querySelector('[data-m="'+i+'"]');
+   ov.querySelectorAll('.pcScan').forEach(function(e){e.classList.remove('pcScan');});
+   if(anim&&xc)xc.classList.add('pcScan');
+   if(st&&xc){xc.classList.add(st>0?'pcCross':'pcGive');if(Math.abs(st)>1)xc.classList.add('pcTwice');}
+   if(mc){mc.textContent=noSI?'·':(hh.par+st);mc.className=(st?'up ':'')+(anim?'pcWrite':'');}
+   var key=(b-a===18&&i>=9)?'i':'o';tot[key]+=hh.par+st;var tc=ov.querySelector('[data-t="'+key+'"]');if(tc)tc.textContent=noSI?'·':tot[key];
+   run+=st;if(!noSI)big.textContent=run;};
+ var finish=function(){if(fin)return;fin=true;if(timer)clearTimeout(timer);for(;k<b;k++)fill(k,false);ov.querySelectorAll('.pcScan').forEach(function(e){e.classList.remove('pcScan');});big.textContent=mine;big.classList.add('pcDone');};
+ var step=function(){if(fin)return;if(k>=b){finish();return;}fill(k,true);k++;timer=setTimeout(step,(sr[k-1]&&!noSI)?330:200);};
+ if(noSI){finish();}else timer=setTimeout(step,500);
+ var done=function(){if(!fin){finish();return;}document.removeEventListener('keydown',kd);ov.remove();go();};   /* first press finishes the card, second starts the round */
  var kd=function(e){if(e.key==='Enter'||e.key==='Escape'){e.preventDefault();done();}};
  document.addEventListener('keydown',kd);ov.querySelector('.pcGo').onclick=done;setTimeout(function(){var g=ov.querySelector('.pcGo');if(g)g.focus();},50);}
 function render(){
