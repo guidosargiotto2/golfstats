@@ -1228,6 +1228,8 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 @media(max-width:820px){#landing .hero,#landing .two{grid-template-columns:1fr;gap:34px}#landing .grid3,#landing .tiers{grid-template-columns:1fr}.lteam{grid-column:auto}#landing .who{grid-template-columns:1fr}#landing .card{transform:none}#landing .lnav a.ll{display:none}#landing .hero{padding-top:48px}}
 
 #landing svg.lcc{width:100%;height:auto;display:block;}
+.xmrNotes{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.xmrNotes span{font-size:13px;line-height:1.45;color:#8a6a1e;background:rgba(216,196,140,.18);border-left:3px solid var(--sand-deep,#b89a52);padding:6px 10px}
 #landing .lcct{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.04em;fill:#5c6357;}
 #landing .lcca{font-family:var(--cond);font-size:10px;fill:#8a8f84;}
 #landing .lccn{font-size:13.5px;line-height:1.5;color:var(--ink-soft);margin:10px 0 0;}
@@ -2633,7 +2635,9 @@ function drawXmr(sfx){
    let mhi=Math.max(...S.mr,...mrUcl,0.5)*1.1;
    xmrLine('mr_'+sfx,{v:S.mr,cenA:mrCen,upA:mrUcl,loA:mrUcl,cols:mrC,pbc:mrC,pbw:S.mr.map(()=>0),rad:mrR,lo:0,hi:mhi,cnt:true,breaks:[]});
  }
- {const sig=document.getElementById('sig_'+sfx);if(sig){const SLBL={run:LX('8 rounds one side','8 vueltas de un mismo lado'),out:LX('a round outside the limits','una vuelta fuera de los límites'),zone:LX('3 of 4 near a limit','3 de 4 cerca de un límite'),trend:LX('6-round trend','tendencia de 6 vueltas')};const conf=(S.signals||[]).filter(s=>!s.pending);sig.innerHTML=conf.length?(LX('<b>Limit resets:</b> ','<b>Reinicios de límites:</b> ')+conf.map((s,i)=>`#${i+1} — ${SLBL[s.type]||s.type} (${LX('rounds','vueltas')} ${s.pts[0]+1}–${s.pts[s.pts.length-1]+1})`).join(' &nbsp;·&nbsp; ')):'<span style="color:var(--ink-soft)">'+LX('One stable stage — no resets yet.','Una sola etapa estable — sin reinicios todavía.')+'</span>';}}
+ {const sig=document.getElementById('sig_'+sfx);if(sig){const SLBL={run:LX('8 rounds one side','8 vueltas de un mismo lado'),out:LX('a round outside the limits','una vuelta fuera de los límites'),zone:LX('3 of 4 near a limit','3 de 4 cerca de un límite'),trend:LX('6-round trend','tendencia de 6 vueltas')};const conf=(S.signals||[]).filter(s=>!s.pending);sig.innerHTML=conf.length?(LX('<b>Limit resets:</b> ','<b>Reinicios de límites:</b> ')+conf.map((s,i)=>`#${i+1} — ${SLBL[s.type]||s.type} (${LX('rounds','vueltas')} ${s.pts[0]+1}–${s.pts[s.pts.length-1]+1})`).join(' &nbsp;·&nbsp; ')):'<span style="color:var(--ink-soft)">'+LX('One stable stage — no resets yet.','Una sola etapa estable — sin reinicios todavía.')+'</span>';
+   /* the three pattern rules that describe the data rather than a change in the game: shown, never used to reset the limits */
+   if(S.notes&&S.notes.length)sig.innerHTML+='<div class="xmrNotes">'+S.notes.map(function(n){return '<span>⚠ '+n+'</span>';}).join('')+'</div>';}}
  const lv=v.slice(last.start,last.end+1),sg1=(last.mrb/1.128)||1;
  const w1=lv.filter(x=>Math.abs(x-last.m)<=sg1).length/lv.length*100,w2=lv.filter(x=>Math.abs(x-last.m)<=2*sg1).length/lv.length*100;
  const near=Math.abs(w1-68)<10&&Math.abs(w2-95)<8;
