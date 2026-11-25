@@ -890,6 +890,16 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .cuList{margin:0 0 10px;padding-left:20px;font-size:14px;line-height:1.55;color:var(--ink)}
 .cuList li{margin-bottom:6px}
 .cuFine{font-size:12px;color:var(--ink-soft);margin:6px 0 0}
+#parCard .rvT{width:100%;border-collapse:collapse;font-family:var(--cond);margin:4px 0 8px}
+#parCard .rvT th{text-align:right;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);padding:6px 8px;border-bottom:1.5px solid var(--pine);white-space:nowrap}
+#parCard .rvT td{text-align:right;padding:8px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px;color:var(--ink);white-space:nowrap}
+#parCard .rvT th:first-child,#parCard .rvT td:first-child{text-align:left;font-weight:400;font-family:var(--sans);white-space:normal}
+#parCard .rvT td.rvTd{font-size:17px;color:var(--pine)}
+#parCard .rvT td.rvRg{color:var(--ink-soft);font-weight:400}
+#parCard .rvV{display:inline-block;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;padding:2px 9px;border-radius:999px;border:1.5px solid var(--line);color:var(--ink-soft)}
+#parCard .rvV.better{border-color:var(--fairway);color:#fff;background:var(--fairway)}
+#parCard .rvV.worse{border-color:var(--clay);color:#fff;background:var(--clay)}
+@media (max-width:560px){#parCard .rvT td,#parCard .rvT th{padding:6px 4px;font-size:12px}#parCard .rvT td.rvTd{font-size:15px}}
 @keyframes dpIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes dpGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 @media (max-width:560px){#panel_dp{padding:4px 12px 12px}.dpGrid{grid-template-columns:repeat(3,minmax(64px,1fr));grid-auto-rows:66px}.dpGridWrap{display:flex}}
@@ -3498,6 +3508,45 @@ function startRound(){var sc=document.getElementById('selScore'),ch=document.get
 var scMode=false;
 /* ===== "Your par today": before hole 1, the card with the player's own par on every hole (par + handicap strokes).
    Gross par is a scratch player's target; this makes the player's real target visible from the first tee. ===== */
+/* ===== after the round: today against your own normal. Typical = your median; normal range = natural process limits (XmR) of your previous rounds ===== */
+function showRoundReview(rec,all){
+ var es=window.__LANG==='es',T=function(a,b){return es?b:a;},hp=rec.holesPlayed||18;
+ var prev=(all||[]).filter(function(x){return x&&x.id!==rec.id&&(x.holesPlayed||18)===hp;}).sort(function(a,b){return String(a.date||'')<String(b.date||'')?-1:1;}).slice(-20);
+ var M=[['score',T('Gross score','Score gross'),1,0],['stpNet',T('Against your par','Contra tu par'),1,0,true],['sgtot',T('Strokes gained','Strokes gained'),0,2],
+   ['putts',T('Putts','Putts'),1,0],['p3',T('3-putts','3 putts'),1,0],['db',T('Double bogeys or worse','Dobles bogeys o peor'),1,0],['pen',T('Penalties','Penalidades'),1,0],
+   ['fw',T('Fairways hit','Fairways'),0,0],['gir',T('Greens in regulation','Greens en regulación'),0,0],['mtot',T("Tiger 5 mistakes","Errores Tiger 5"),1,0]];
+ var med=function(a){var b=a.slice().sort(function(x,y){return x-y;}),n=b.length;return n?(n%2?b[(n-1)/2]:(b[n/2-1]+b[n/2])/2):null;};
+ var f=function(v,d){if(v==null||isNaN(v))return '·';var r=d?(+v).toFixed(d):String(Math.round(v*10)/10);return r;};
+ var sg=function(v,d,signed){var t=f(v,d);return (signed&&v>0?'+':'')+t;};
+ var rows=[],better=[],worse=[],enough=prev.length>=5;
+ M.forEach(function(m){var k=m[0],today=rec[k];if(today==null||isNaN(today))return;if(m[4]&&!(rec.ph))return;
+   var hv=prev.map(function(x){return x[k];}).filter(function(v){return v!=null&&!isNaN(v);});var row={m:m,today:+today};
+   if(enough&&hv.length>=5){var mean=hv.reduce(function(a,b){return a+b;},0)/hv.length,mr=0;for(var i=1;i<hv.length;i++)mr+=Math.abs(hv[i]-hv[i-1]);mr=mr/(hv.length-1);
+     row.typ=med(hv);row.lo=mean-2.66*mr;row.hi=mean+2.66*mr;if(m[3]===0&&row.lo<0)row.lo=0;
+     var out=row.today>row.hi?'up':row.today<row.lo?'down':'';if(out){var good=(out==='down')===(m[2]===1);row.v=good?'better':'worse';(good?better:worse).push(m[1].toLowerCase());}else row.v='normal';}
+   rows.push(row);});
+ var list=function(a){return a.length<2?a.join(''):a.slice(0,-1).join(', ')+T(' and ',' y ')+a[a.length-1];};
+ var head,lead;
+ if(!enough){head=T('Saved. Your normal comes next.','Guardada. Tu normalidad viene después.');lead=T('To tell you whether a round was normal for you, Golfimbul needs at least 5 rounds of the same length. You have '+(prev.length+1)+'. Keep logging: from round 5 every round gets measured against your own game.','Para decirte si una vuelta fue normal para vos, Golfimbul necesita al menos 5 vueltas del mismo largo. Tenés '+(prev.length+1)+'. Seguí cargando: desde la vuelta 5 cada vuelta se mide contra tu propio juego.');}
+ else if(!better.length&&!worse.length){head=T('This was your round.','Esta fue tu vuelta.');lead=T('Every number today sits inside your normal range. Not a bad day, not a good day: your game, exactly as it is. If you average two 3-putts and made two, there is nothing to be surprised about. Don\'t like the numbers? Don\'t blame today. Change the process and they will move, and the day they do, Golfimbul will tell you.','Todos los números de hoy están dentro de tu rango normal. Ni un mal día ni un buen día: tu juego, tal cual es. Si promediás dos 3 putts e hiciste dos, no hay nada de qué sorprenderse. ¿No te gustan los números? No le eches la culpa a hoy. Cambiá el proceso y se van a mover, y el día que lo hagan, Golfimbul te lo va a decir.');}
+ else{head=worse.length&&better.length?T('A round with signals both ways.','Una vuelta con señales para los dos lados.'):worse.length?T('Something was off today.','Algo no anduvo hoy.'):T('Something was different today, for the better.','Algo fue distinto hoy, para bien.');
+   lead=(better.length?T('Better than your normal range: <b>'+list(better)+'</b>. One round is not a trend: if it repeats, your charts will confirm it. ','Mejor que tu rango normal: <b>'+list(better)+'</b>. Una vuelta no es una tendencia: si se repite, tus gráficos lo van a confirmar. '):'')+
+        (worse.length?T('Worse than your normal range: <b>'+list(worse)+'</b>. That is a real signal, not bad luck: ask yourself what was different today. ','Peor que tu rango normal: <b>'+list(worse)+'</b>. Es una señal real, no mala suerte: preguntate qué fue distinto hoy. '):'')+
+        T('Everything else was your usual game.','Todo lo demás fue tu juego de siempre.');}
+ var V={normal:T('normal','normal'),better:T('better','mejor'),worse:T('worse','peor')};
+ var tbl='<div class="pcWrap"><table class="rvT"><thead><tr><th></th><th>'+T('Today','Hoy')+'</th>'+(enough?'<th>'+T('Your typical','Lo tuyo')+'</th><th>'+T('Normal range','Rango normal')+'</th><th></th>':'')+'</tr></thead><tbody>'+
+   rows.map(function(r){var m=r.m,sgn=m[0]==='stpNet'||m[0]==='sgtot';return '<tr><td>'+m[1]+'</td><td class="rvTd">'+sg(r.today,m[3],sgn)+'</td>'+(enough?(r.typ!=null?'<td>'+sg(r.typ,m[3]||(r.typ%1?1:0),sgn)+'</td><td class="rvRg">'+sg(r.lo,m[3]||1,sgn)+' – '+sg(r.hi,m[3]||1,sgn)+'</td><td><span class="rvV '+r.v+'">'+V[r.v]+'</span></td>':'<td>·</td><td>·</td><td></td>'):'')+'</tr>';}).join('')+'</tbody></table></div>';
+ var ov=document.createElement('div');ov.id='parCard';ov.className='rvCard';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');
+ ov.innerHTML='<div class="pcBox"><div class="pcKick">'+T('Your round, against your normal','Tu vuelta, contra tu normalidad')+'</div>'+
+   '<div class="pcHead"><div><h2>'+head+'</h2><p>'+(rec.course||'')+' · '+(rec.date||'')+(enough?' · '+T('compared with your last ','comparada con tus últimas ')+prev.length+T(' rounds',' vueltas'):'')+'</p></div><div class="pcBig">'+rec.score+'</div></div>'+
+   '<p class="pcLead">'+lead+'</p>'+tbl+
+   (enough?'<p class="pcOpt">'+T('Your typical is your median: half your rounds are better, half worse. The normal range is where your rounds land when nothing has changed in your game; only a number outside it means something was different.','Lo tuyo es tu mediana: la mitad de tus vueltas son mejores y la mitad peores. El rango normal es donde caen tus vueltas cuando nada cambió en tu juego; solo un número fuera de él significa que algo fue distinto.')+'</p>':'')+
+   '<div class="pcActs"><button type="button" class="pcBack rvStats">'+T('Open Statistics','Abrir Estadísticas')+'</button><button type="button" class="pcGo">'+T('Done','Listo')+'</button></div></div>';
+ document.body.appendChild(ov);
+ var close=function(){document.removeEventListener('keydown',kd);ov.remove();},kd=function(e){if(e.key==='Escape'||e.key==='Enter'){e.preventDefault();close();}};
+ document.addEventListener('keydown',kd);ov.querySelector('.pcGo').onclick=close;ov.querySelector('.rvStats').onclick=function(){close();if(window.showView)window.showView('stats');};
+ setTimeout(function(){var g=ov.querySelector('.pcGo');if(g)g.focus();},60);}
+
 function showParCard(go){
  var PH=parseInt(R.chcp,10)||0,c=COURSES[R.course]||{},STK=!!(PROF.netPar&&PH);
  var es=window.__LANG==='es',T=function(a,b){return es?b:a;},noSI=!!(c.noSI&&STK),sr=srMap(),a=R.hStart,b=R.hEnd;
@@ -4059,8 +4108,9 @@ document.getElementById('lgSaveBtn').onclick=()=>{
  const hi=effHI();const m=roundMistakes();
  var stp=t.strokes-t.par;
  lgToast('<b>'+(replaced?'Round updated':'Saved')+'</b> · '+t.strokes+' ('+(stp>=0?'+':'')+stp+')'+(nine?' · 9 holes':' · diff '+diff)+'<br><span class="tsg">SG '+fmt(t.tot)+' · Tiger\'s 5: '+m.total+((hi!=null&&!editRoundId)?' · HI ≈ '+hi:'')+' · ✓ in Statistics</span>');
- editRoundId=null;
+ var wasEdit=!!editRoundId;editRoundId=null;
  localStorage.removeItem(RKEY);(function(){var d=loadDefault();R=newRound(d.course,d.tee);})();lgEntered=false;render();renderLogged();
+ if(!wasEdit){try{showRoundReview(rec,arr);}catch(e){}}
 };
 /* ---- course / tee selector ---- */
 function anyConfirmed(){return R.holes.some(h=>h.shots.some(s=>s.conf));}
