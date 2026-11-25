@@ -890,6 +890,23 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .cuList{margin:0 0 10px;padding-left:20px;font-size:14px;line-height:1.55;color:var(--ink)}
 .cuList li{margin-bottom:6px}
 .cuFine{font-size:12px;color:var(--ink-soft);margin:6px 0 0}
+.rvInline .rvT{width:100%;border-collapse:collapse;font-family:var(--cond);margin:4px 0 8px}
+.rvInline .rvT th{text-align:right;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);padding:6px 8px;border-bottom:1.5px solid var(--pine);white-space:nowrap}
+.rvInline .rvT td{text-align:right;padding:8px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px;color:var(--ink);white-space:nowrap}
+.rvInline .rvT th:first-child,.rvInline .rvT td:first-child{text-align:left;font-weight:400;font-family:var(--sans);white-space:normal}
+.rvInline .rvT td.rvTd{font-size:17px;color:var(--pine)}
+.rvInline .rvT td.rvRg{color:var(--ink-soft);font-weight:400}
+.rvInline .rvV{display:inline-block;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;padding:2px 9px;border-radius:999px;border:1.5px solid var(--line);color:var(--ink-soft)}
+.rvInline .rvV.better{border-color:var(--fairway);color:#fff;background:var(--fairway)}
+.rvInline .rvV.worse{border-color:var(--clay);color:#fff;background:var(--clay)}
+.rvInline .rvT td,.rvInline .rvT th{padding:6px 4px;font-size:12px}
+.rvInline .rvT td.rvTd{font-size:15px}
+.rvInline{margin:20px 0 6px;padding:16px 18px;border-radius:14px;background:#fffdf7;border:1px solid var(--line)}
+.rvInline .rvKick{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--sand-deep)}
+.rvInline h3{font-family:var(--serif);font-weight:600;font-size:20px;color:var(--pine);margin:4px 0 6px}
+.rvInline .rvLead{font-size:14px;line-height:1.55;color:var(--ink);margin:0 0 8px}
+.rvInline .pcWrap{overflow-x:auto}
+.rvInline .pcOpt{font-size:12.5px;color:var(--ink-soft);margin:6px 0 0}
 #parCard .rvT{width:100%;border-collapse:collapse;font-family:var(--cond);margin:4px 0 8px}
 #parCard .rvT th{text-align:right;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);padding:6px 8px;border-bottom:1.5px solid var(--pine);white-space:nowrap}
 #parCard .rvT td{text-align:right;padding:8px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px;color:var(--ink);white-space:nowrap}
@@ -2991,7 +3008,7 @@ window.saveLoggedRounds=function(a){try{save(uckey(),a||[]);if(PLAYER===(localSt
      if(o.src==='logged'&&r.holes){if(window.showView)window.showView('log');if(window.LGR&&window.LGR.openCard)window.LGR.openCard({id:r.id,course:r.courseCode||r.course,tee:r.tee,date:r.date,score:r.score,chcp:r.ph,notes:r.notes,lesson:r.lesson,holes:r.holes});return;}
      var dd=document.getElementById('leddet_'+i);if(!dd)return;var open=dd.style.display!=='none';
      if(!open){var ic=null;try{if(r.hl&&window.LGR&&window.LGR.importCard)ic=window.LGR.importCard(r.hl);}catch(e){ic=null;}
-       dd.innerHTML=(ic?'<div style="margin-top:10px">'+ic.html+'</div>':'')+detail(r);
+       dd.innerHTML=(ic?'<div style="margin-top:10px">'+ic.html+'</div>':'')+(r.putts!=null&&window.REVIEWINLINE?window.REVIEWINLINE(r):'')+detail(r);
        if(ic){dd.onclick=function(ev){ev.stopPropagation();var td=ev.target.closest?ev.target.closest('[data-ih]'):null;if(!td)return;var k=+td.getAttribute('data-ih'),box=dd.querySelector('.ihShots');if(box)box.innerHTML='<b>'+T('HOLE')+' '+(k+1)+' · '+T('PAR')+' '+ic.pars[k]+'</b> — '+ic.shots[k];};}
        else dd.onclick=null;}
      dd.style.display=open?'none':'';
@@ -3519,7 +3536,7 @@ var scMode=false;
 /* ===== "Your par today": before hole 1, the card with the player's own par on every hole (par + handicap strokes).
    Gross par is a scratch player's target; this makes the player's real target visible from the first tee. ===== */
 /* ===== after the round: today against your own normal. Typical = your median; normal range = natural process limits (XmR) of your previous rounds ===== */
-function showRoundReview(rec,all){
+function reviewParts(rec,all){
  var es=window.__LANG==='es',T=function(a,b){return es?b:a;},hp=rec.holesPlayed||18;
  var prev=(all||[]).filter(function(x){return x&&x.id!==rec.id&&(x.holesPlayed||18)===hp&&String(x.date||'')<=String(rec.date||'');}).sort(function(a,b){return String(a.date||'')<String(b.date||'')?-1:1;}).slice(-20);
  var M=[['score',T('Gross score','Score gross'),1,0],['stpNet',T('Against your par','Contra tu par'),1,0,true],['sgtot',T('Strokes gained','Strokes gained'),0,2],
@@ -3546,11 +3563,17 @@ function showRoundReview(rec,all){
  var V={normal:T('normal','normal'),better:T('better','mejor'),worse:T('worse','peor')};
  var tbl='<div class="pcWrap"><table class="rvT"><thead><tr><th></th><th>'+T('Today','Hoy')+'</th>'+(enough?'<th>'+T('Your typical','Lo tuyo')+'</th><th>'+T('Normal range','Rango normal')+'</th><th></th>':'')+'</tr></thead><tbody>'+
    rows.map(function(r){var m=r.m,sgn=m[0]==='stpNet'||m[0]==='sgtot';return '<tr><td>'+m[1]+'</td><td class="rvTd">'+sg(r.today,m[3],sgn)+'</td>'+(enough?(r.typ!=null?'<td>'+sg(r.typ,m[3]||(r.typ%1?1:0),sgn)+'</td><td class="rvRg">'+sg(r.lo,m[3]||1,sgn)+' – '+sg(r.hi,m[3]||1,sgn)+'</td><td><span class="rvV '+r.v+'">'+V[r.v]+'</span></td>':'<td>·</td><td>·</td><td></td>'):'')+'</tr>';}).join('')+'</tbody></table></div>';
+ var note=enough?'<p class="pcOpt">'+T('Your typical is your median: half your rounds are better, half worse. The normal range is where your rounds land when nothing has changed in your game; only a number outside it means something was different.','Lo tuyo es tu mediana: la mitad de tus vueltas son mejores y la mitad peores. El rango normal es donde caen tus vueltas cuando nada cambió en tu juego; solo un número fuera de él significa que algo fue distinto.')+'</p>':'';
+ return {head:head,lead:lead,tbl:tbl,note:note,enough:enough,n:prev.length};}
+function reviewInline(rec,all){try{var p=reviewParts(rec,all),es=window.__LANG==='es';
+  return '<div class="rvInline"><div class="rvKick">'+(es?'Tu vuelta, contra tu normalidad':'Your round, against your normal')+(p.enough?' · '+(es?'comparada con las ':'compared with the ')+p.n+(es?' vueltas anteriores':' rounds before it'):'')+'</div><h3>'+p.head+'</h3><p class="rvLead">'+p.lead+'</p>'+p.tbl+p.note+'</div>';}catch(e){return '';}}
+window.REVIEWINLINE=function(rec){var all=[];try{all=window.ALLROUNDS?window.ALLROUNDS():[];}catch(e){}var r=all.filter(function(x){return x.date===rec.date&&x.score===rec.score&&(x.course===rec.course||!rec.course);})[0]||rec;return reviewInline(r,all);};
+function showRoundReview(rec,all){
+ var es=window.__LANG==='es',T=function(a,b){return es?b:a;},p=reviewParts(rec,all),head=p.head,lead=p.lead,tbl=p.tbl,enough=p.enough,prev={length:p.n};
  var ov=document.createElement('div');ov.id='parCard';ov.className='rvCard';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');
  ov.innerHTML='<div class="pcBox"><div class="pcKick">'+T('Your round, against your normal','Tu vuelta, contra tu normalidad')+'</div>'+
    '<div class="pcHead"><div><h2>'+head+'</h2><p>'+(rec.course||'')+' · '+(rec.date||'')+(enough?' · '+T('compared with the ','comparada con las ')+prev.length+T(' rounds before it',' vueltas anteriores'):'')+'</p></div><div class="pcBig">'+rec.score+'</div></div>'+
-   '<p class="pcLead">'+lead+'</p>'+tbl+
-   (enough?'<p class="pcOpt">'+T('Your typical is your median: half your rounds are better, half worse. The normal range is where your rounds land when nothing has changed in your game; only a number outside it means something was different.','Lo tuyo es tu mediana: la mitad de tus vueltas son mejores y la mitad peores. El rango normal es donde caen tus vueltas cuando nada cambió en tu juego; solo un número fuera de él significa que algo fue distinto.')+'</p>':'')+
+   '<p class="pcLead">'+lead+'</p>'+tbl+p.note+
    '<div class="pcActs"><button type="button" class="pcBack rvStats">'+T('Open Statistics','Abrir Estadísticas')+'</button><button type="button" class="pcGo">'+T('Done','Listo')+'</button></div></div>';
  document.body.appendChild(ov);
  var close=function(){document.removeEventListener('keydown',kd);ov.remove();},kd=function(e){if(e.key==='Escape'||e.key==='Enter'){e.preventDefault();close();}};
@@ -3683,13 +3706,14 @@ function renderScorecard(){
  var head='<div class="scHead"><div class="scHeadL"><div class="scKick">'+(window.__LANG==='es'?'Tarjeta':'Scorecard')+(hdDate?' · '+hdDate:'')+'</div>'+
    '<div class="scCourse">'+esc(R.courseName||(COURSES[R.course]&&COURSES[R.course].name)||R.course||'')+'</div>'+
    '<div class="scMeta"><span class="scTee" style="'+teeStyle(R.course,R.tee)+'">'+esc(teeEN(R.course,R.tee))+'</span>'+
-   (R.tourn?'<span class="scTourn">'+t('Tournament')+'</span>':'')+(R.noHcp?'<span class="scNoHcp">'+t('Not for handicap')+'</span>':'')+   '<span>'+(he-hs)+' '+(window.__LANG==='es'?'hoyos':'holes')+'</span><span>Par '+hdPar+'</span>'+(R._editId&&R._editId!=='dup'?'<button type="button" class="scRev" onclick="window.LGR&&LGR.review(\''+R._editId+'\')">◎ '+(window.__LANG==='es'?'Revisión contra tu normalidad':'Review against your normal')+'</button>':'')+(hdTee&&hdTee.cr?'<span>CR '+hdTee.cr+' / '+hdTee.slope+'</span>':'')+'</div></div>'+
+   (R.tourn?'<span class="scTourn">'+t('Tournament')+'</span>':'')+(R.noHcp?'<span class="scNoHcp">'+t('Not for handicap')+'</span>':'')+   '<span>'+(he-hs)+' '+(window.__LANG==='es'?'hoyos':'holes')+'</span><span>Par '+hdPar+'</span>'+(hdTee&&hdTee.cr?'<span>CR '+hdTee.cr+' / '+hdTee.slope+'</span>':'')+'</div></div>'+
    '</div>';
  {var sn=document.getElementById('snote');if(sn)sn.style.display='none';var tb=document.getElementById('totBox');if(tb)tb.style.display='none';}
  sv.innerHTML=head+'<div class="scWrap"><table class="scTbl"><tbody>'+
    '<tr class="scRh">'+rowsHole+'</tr><tr class="scRp">'+rowsPar+'</tr>'+(netOn?'<tr class="scRp">'+rowsNP+'</tr>':'')+'<tr class="scRs">'+rowsSc+'</tr><tr class="scRst">'+(netOn?rowsSt.replace('>'+t('STATUS')+'<','>'+t('NET STATUS')+'<'):rowsSt)+'</tr><tr class="scRsg">'+rowsSg+'</tr><tr class="scRt5">'+rowsT5+'</tr></tbody></table></div>'+
    (netOn?'<div class="scHint">'+t('Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).')+'</div>':'')+
    catRow+
+   ((R._editId&&R._editId!=='dup')?(function(){try{var all=window.ALLROUNDS?window.ALLROUNDS():(window.getLoggedRounds?window.getLoggedRounds():[]),rc=all.filter(function(x){return x.id===R._editId;})[0];return rc?reviewInline(rc,all):'';}catch(e){return '';}})():'')+
    (function(){var ES=(window.__LANG==='es'),K=[['3P',ES?'3 putts':'3-putt'],['D',ES?'doble bogey':'double bogey'],['P5',ES?'bogey en par 5':'bogey on a par 5'],['B',ES?'bogey con hierro 9 o menos':'bogey with 9-iron or less'],['S',ES?'salvada desperdiciada':'blow-out save']];
    return '<div class="scHint">'+(ES?'Tocá cualquier hoyo para editarlo.':'Tap any hole to edit it.')+'</div>'+
      '<div class="scLegend"><div class="scLegRow"><span class="scLegT">SG</span><span>'+(ES?'strokes gained por hoyo, contra scratch':'strokes gained per hole, against scratch')+'</span></div>'+
