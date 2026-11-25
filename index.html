@@ -1971,8 +1971,7 @@ function segLimits(v,count){
  while(stageOK && guard++<60){
    const s=shiftIndex(v,foundFrom,searchFrom,N,count);
    if(!s){ segs.push(mk(v,dispStart,N-1,foundFrom,Math.min(foundFrom+19,N-1),count)); break; }
-   /* one round beyond the limits is a breach (or an exceptional day), not a new normal: flag it, keep the limits, look further */
-   if(s.type==='out'){ outs.push(s); searchFrom=s.at+1; if(searchFrom>N-1){ segs.push(mk(v,dispStart,N-1,foundFrom,Math.min(foundFrom+19,N-1),count)); break; } continue; }
+   if(s.type==='out')outs.push(s);   /* a round beyond the limits is a signal like any other: it re-founds the baseline too (user choice) */
    const o=s.at, win=({run:8,trend:6,out:1,zone:4,alt:14,strat:15,mix:8})[s.type]||4, w=Math.min(o+win-1,N-1);
    if(N-o < 8){   // fewer than 8 new-regime rounds — hold the old limits, flag the signal as a watch, don't draw shaky new limits
      segs.push(mk(v,dispStart,N-1,foundFrom,Math.min(foundFrom+19,o-1),count));
@@ -2803,8 +2802,8 @@ function drawXmr(sfx){
  }
  {const sig=document.getElementById('sig_'+sfx);if(sig){const SLBL={run:LX('8 rounds one side','8 vueltas de un mismo lado'),out:LX('a round outside the limits','una vuelta fuera de los límites'),zone:LX('3 of 4 near a limit','3 de 4 cerca de un límite'),trend:LX('6-round trend','tendencia de 6 vueltas'),alt:LX('14 rounds alternating up and down','14 vueltas alternando arriba y abajo'),strat:LX('15 rounds within 1σ of the centre — more consistent','15 vueltas dentro de 1σ del centro — más consistente'),mix:LX('8 rounds beyond 1σ on either side — less consistent, or mixed courses','8 vueltas fuera de 1σ a cualquier lado — menos consistente, o canchas mezcladas')};const conf=(S.signals||[]).filter(s=>!s.pending);
    const lb=lowerBetter(key),brW=[],brB=[];v.forEach((x,i)=>{const g=S.segOf(i);if(x>g.u)(lb?brW:brB).push(i+1);else if(x<g.l)(lb?brB:brW).push(i+1);});
-   const brTxt=(brW.length?'<div class="xmrBreach">⛔ '+LX('<b>Limit breached</b> in round'+(brW.length>1?'s ':' ')+brW.join(', ')+'. A breach is never accepted as your new normal: the limits stay where they are. Find what was different and remove it.','<b>Límite superado</b> en la'+(brW.length>1?'s vueltas ':' vuelta ')+brW.join(', ')+'. Un límite superado nunca se acepta como tu nueva normalidad: los límites quedan donde están. Encontrá qué fue distinto y eliminalo.')+'</div>':'')+
-     (brB.length?'<div class="xmrExc">★ '+LX('<b>Exceptional round'+(brB.length>1?'s':'')+'</b>: '+brB.join(', ')+'. One round is not a new level; repeat it and a run will confirm it.','<b>Vuelta'+(brB.length>1?'s':'')+' excepcional'+(brB.length>1?'es':'')+'</b>: '+brB.join(', ')+'. Una vuelta no es un nivel nuevo; repetila y una racha lo va a confirmar.')+'</div>':'');
+   const brTxt=(brW.length?'<div class="xmrBreach">⛔ '+LX('<b>Limit breached</b> in round'+(brW.length>1?'s ':' ')+brW.join(', ')+'. That is a signal and your limits were recalculated from it. Find what was different and remove it.','<b>Límite superado</b> en la'+(brW.length>1?'s vueltas ':' vuelta ')+brW.join(', ')+'. Es una señal y tus límites se recalcularon desde ahí. Encontrá qué fue distinto y eliminalo.')+'</div>':'')+
+     (brB.length?'<div class="xmrExc">★ '+LX('<b>Exceptional round'+(brB.length>1?'s':'')+'</b>: '+brB.join(', ')+'. A signal on the good side: your limits were recalculated. Find what you did differently and repeat it.','<b>Vuelta'+(brB.length>1?'s':'')+' excepcional'+(brB.length>1?'es':'')+'</b>: '+brB.join(', ')+'. Una señal del lado bueno: tus límites se recalcularon. Encontrá qué hiciste distinto y repetilo.')+'</div>':'');
    sig.innerHTML=conf.length?(LX('<b>Limit resets:</b> ','<b>Reinicios de límites:</b> ')+conf.map((s,i)=>`#${i+1} — ${SLBL[s.type]||s.type} (${LX('rounds','vueltas')} ${s.pts[0]+1}–${s.pts[s.pts.length-1]+1})`).join(' &nbsp;·&nbsp; ')):'<span style="color:var(--ink-soft)">'+LX('One stable stage — no resets yet.','Una sola etapa estable — sin reinicios todavía.')+'</span>';
    /* the three pattern rules that describe the data rather than a change in the game: shown, never used to reset the limits */
    sig.innerHTML+=brTxt;
