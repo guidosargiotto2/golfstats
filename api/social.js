@@ -46,6 +46,7 @@ module.exports = async (req, res) => {
         out.team = { code: tm[0].code, owner: tm[0].owner, paid: tm[0].paid, plan: tm[0].plan || 'lite', seats: tm[0].seats, members: mem, isOwner: tm[0].owner === me };
       }
       out.upgradeFrom = new Date(created.getTime() + 30 * 864e5).toISOString();
+      out.trial = await L.inTrial(sql, me, p.plan);   // first month: Pro, free, until the review meeting or day 30
       const rc = await sql`select count(*)::int as n from gs_rounds where username = ${me} and deleted = false`;
       out.roundsLogged = rc[0].n || 0;
       const rv = await sql`select status, recommendation, requested, done from gs_reviews where username = ${me}`;
@@ -136,7 +137,7 @@ module.exports = async (req, res) => {
     if (action === 'reviewRequest') {
       const cu = await sql`select created from gs_users where username = ${me}`;
       const created = cu.length && cu[0].created ? new Date(cu[0].created) : new Date();
-      if (Date.now() < created.getTime() + 30 * 864e5 && !L.LEGACY[me]) return bad(409, 'too-early');
+      if (Date.now() < created.getTime() + 21 * 864e5 && !L.LEGACY[me]) return bad(409, 'too-early');   // from day 21, so the meeting happens before the free Pro month ends
       const rc = await sql`select count(*)::int as n from gs_rounds where username = ${me} and deleted = false`;
       if ((rc[0].n || 0) < 5) return bad(409, 'few-rounds');
       const contact = String(b.contact || '').trim().slice(0, 120), note = String(b.note || '').trim().slice(0, 500);

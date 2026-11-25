@@ -63,9 +63,20 @@ async function init() {
 // Plans: free | lite | pro. The four founders default to pro; everyone else to free until a plan is set.
 const planOf = (user, plan) => user === ADMIN ? 'pro' : (plan === 'free' || plan === 'lite' || plan === 'pro') ? plan : (LEGACY[user] ? 'pro' : 'free');
 // a member of a paid team gets the team's plan (Lite or Pro), if it is higher than their own
+// First month: every new account is on Pro, free. It ends 30 days after the account was created, or as soon as a plan is
+// set for the player (after the review meeting with Guido), whichever comes first.
+const TRIAL_DAYS = 30;
+async function inTrial(sql, user, plan) {
+  if (plan === 'free' || plan === 'lite' || plan === 'pro') return false;      // a plan was decided: no trial
+  if (user === ADMIN || LEGACY[user]) return false;                             // founders are simply Pro
+  const cu = await sql`select created from gs_users where username = ${user}`;
+  if (!cu.length || !cu[0].created) return false;
+  return Date.now() < new Date(cu[0].created).getTime() + TRIAL_DAYS * 864e5;
+}
 async function effectivePlan(sql, user, plan) {
   const p = planOf(user, plan);
   if (rank(p) >= 2) return p;
+  if (await inTrial(sql, user, plan)) return 'pro';
   const t = await sql`select t.paid, t.plan from gs_team_members m join gs_teams t on t.code = m.code where m.username = ${user}`;
   const tp = (t.length && t[0].paid) ? (t[0].plan === 'pro' ? 'pro' : 'lite') : 'free';
   return rank(tp) > rank(p) ? tp : p;
@@ -127,4 +138,4 @@ function fail(res, e) {
   return res.status(500).json({ error: 'server' });
 }
 
-module.exports = { alive, effectivePlan, signBlob, verifyBlob, PROVIDERS, providersOn, planOf, rank, dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };
+module.exports = { alive, effectivePlan, inTrial, TRIAL_DAYS, signBlob, verifyBlob, PROVIDERS, providersOn, planOf, rank, dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };
