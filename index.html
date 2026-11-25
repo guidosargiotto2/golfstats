@@ -814,6 +814,9 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 @media (max-width:560px){#panel_dp{padding:4px 12px 12px}.dpGrid{grid-template-columns:repeat(3,minmax(64px,1fr));grid-auto-rows:66px}.dpGridWrap{display:flex}}
 .lgscope label.tournchk{display:flex!important;flex-direction:row!important;align-items:center;gap:9px;cursor:pointer;font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--pine);align-self:end;padding-bottom:10px}
 .lgscope label.tournchk input{width:20px!important;height:20px;margin:0;accent-color:var(--pine);flex:none}
+.lgscope .tournrow{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0 0 10px}
+.lgscope .tournrow label.tournchk{padding-bottom:0}
+.lgscope .scNoHcp{border:1px solid var(--line);color:var(--ink-soft);border-radius:999px;padding:1px 9px;font-family:var(--cond);font-weight:700;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase}
 .lgscope .scTourn{background:var(--sand-deep,#b89a52);color:#fff;border-radius:999px;padding:2px 10px;font-family:var(--cond);font-weight:700;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase}
 .lgscope td.clubc{text-align:center;}
 .lvCmp{margin-top:14px}
@@ -1412,6 +1415,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
      <label><span data-i18n="Playing HCP">Playing HCP</span><input type="number" inputmode="numeric" id="selChcp" min="-10" max="54" placeholder="e.g. 2" required aria-required="true"><span class="fielderr" id="err_chcp"></span></label>
      <label><span data-i18n="Date">Date</span><input type="date" id="selDate"></label>
      <label class="tournchk"><input type="checkbox" id="selTourn"><span data-i18n="Tournament round">Tournament round</span></label>
+     <label class="tournchk"><input type="checkbox" id="selHcp" checked><span data-i18n="Counts for my handicap">Counts for my handicap</span></label>
    </div>
    <div class="teeline"><span class="est" id="teeEst" style="display:none"></span><button class="star" id="starBtn" style="display:none">★ default</button></div>
    <div class="setupacts"><button class="startbtn" id="startBtn" data-i18n="Start round →">Start round →</button></div>
@@ -2991,7 +2995,7 @@ function roundRecord(){
    ph:phForRound(),netpar:netpar,stpNet:strokes-netpar,girNet:girNet,
    p3Net:net.p3,dbNet:net.db,bp5Net:net.bp5,f150Net:net.f150,fxNet:net.short,mtotNet:mtotN,
    ott:r2(sg.ott),app:r2(sg.app),atg:r2(sg.atg),putt:r2(sg.putt),sgtot:r2(sg.tot),bir:bir,bog:bog,dbl:dbl,
-   courseCode:R.course,tee:R.tee,notes:R.notes||'',lesson:R.lesson||'',tourn:!!R.tourn,holes:JSON.parse(JSON.stringify(R.holes))};
+   courseCode:R.course,tee:R.tee,notes:R.notes||'',lesson:R.lesson||'',tourn:!!R.tourn,noHcp:!!R.noHcp,holes:JSON.parse(JSON.stringify(R.holes))};
 }
 /* ===== detail levels: one recommendation instead of five switches. Strokes gained, prediction and compliance are in every level ===== */
 var LOGLVL={order:['ess','ply','plus','ana'],
@@ -3061,7 +3065,7 @@ function prefPull(){if(!localStorage.getItem('gs-token'))return;prefCall({action
    /* this device has never synced: the profile with more settings changed from the defaults wins the first time */
    if(sv._first&&prefDiff(PROF)>(+sv._diff||0))giveFirst();else take();}).catch(function(){});}
 /* ===== i18n (Stage 1: on-course flow) ===== */
-var I18N_ES={"Club":"Palo","Tournament round":"Vuelta de torneo","Tournament":"Torneo","Dispersion & process":"Dispersión y proceso","Where your shots finish and whether you did what you had decided to do. Built only from what you mark on each shot when you log a round.":"Dónde terminan tus tiros y si hiciste lo que habías decidido hacer. Se arma solo con lo que marcás en cada tiro al cargar una vuelta.","Compl.":"Cumpl.","Read":"Lectura","Disp.":"Disp.","My bag":"Mi bolsa","← Profile":"← Perfil","Plans":"Planes","Pricing":"Precios","Approach":"Approach","Around grn":"Juego corto","Copy for sheet":"Copiar para planilla","pen":"pen","Friends":"Amigos","Share":"Compartir","NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
+var I18N_ES={"Club":"Palo","Tournament round":"Vuelta de torneo","Counts for my handicap":"Cuenta para mi hándicap","Not for handicap":"No cuenta para hándicap","Tournament":"Torneo","Dispersion & process":"Dispersión y proceso","Where your shots finish and whether you did what you had decided to do. Built only from what you mark on each shot when you log a round.":"Dónde terminan tus tiros y si hiciste lo que habías decidido hacer. Se arma solo con lo que marcás en cada tiro al cargar una vuelta.","Compl.":"Cumpl.","Read":"Lectura","Disp.":"Disp.","My bag":"Mi bolsa","← Profile":"← Perfil","Plans":"Planes","Pricing":"Precios","Approach":"Approach","Around grn":"Juego corto","Copy for sheet":"Copiar para planilla","pen":"pen","Friends":"Amigos","Share":"Compartir","NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
  "Log a round":"Cargar vuelta","Statistics":"Estadísticas","Round ledger":"Mis vueltas","Profile":"Perfil","Ideas":"Ideas","Log out":"Salir",
  "Course":"Cancha","Tee":"Tee","Holes":"Hoyos","Score":"Score","Playing HCP":"HCP de juego","Date":"Fecha",
  "18 holes":"18 hoyos","Front 9 (1–9)":"Primeros 9 (1–9)","Back 9 (10–18)":"Segundos 9 (10–18)",
@@ -3290,7 +3294,7 @@ function finishHole(adv){var h=R.holes[R.cur];if(confShots(h).length===0){alert(
  if(R.holes.slice(R.hStart,R.hEnd).every(function(x){return x.done;})&&!(adv&&R.cur<R.hEnd-1)){scMode=true;render();return;}
  if(adv&&R.cur<R.hEnd-1)gotoHole(R.cur+1);else render();}
 function startRound(){var sc=document.getElementById('selScore'),ch=document.getElementById('selChcp'),hm=document.getElementById('selHoles'),tn=document.getElementById('selTourn');
- R.tourn=!!(tn&&tn.checked);
+ R.tourn=!!(tn&&tn.checked);{var hc=document.getElementById('selHcp');R.noHcp=!!(hc&&!hc.checked);}
  R.holesMode=hm?hm.value:'18';if(R.holesMode==='front'){R.hStart=0;R.hEnd=9;}else if(R.holesMode==='back'){R.hStart=9;R.hEnd=18;}else{R.hStart=0;R.hEnd=18;}
  var nine=(R.hEnd-R.hStart)===9,minSc=nine?27:59,maxSc=nine?110:200;
  var sv=sc?String(sc.value).trim():'',cv=ch?String(ch.value).trim():'';
@@ -3371,7 +3375,7 @@ function renderScorecard(){
  var catRow='<h3 style="font-family:var(--serif);font-weight:600;font-size:17px;color:var(--pine);margin:18px 0 6px">'+(window.__LANG==='es'?'Categorías de strokes gained':'Strokes gained categories')+'</h3><div class="sgcats2">'+chip('Off tee',cat.ott)+chip('Approach',cat.app)+chip('Around grn',cat.atg)+chip('Putting',cat.putt)+chip('Total',cat.tot)+'</div>';
  var esc=function(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');};
  var notesBlk='<h3 style="font-family:var(--serif);font-weight:600;font-size:17px;color:var(--pine);margin:20px 0 4px">'+t('Round journal')+'</h3>'+
-   '<label class="tournchk" style="margin:0 0 10px"><input type="checkbox" id="scTourn"'+(R.tourn?' checked':'')+'><span>'+t('Tournament round')+'</span></label>'+'<div class="scNotes"><label>'+t('Notes')+'<textarea id="scNotes" rows="2" placeholder="'+(window.__LANG==='es'?'Cómo fue, condiciones, algo para recordar…':'How it went, conditions, anything worth remembering…')+'">'+esc(R.notes)+'</textarea></label>'+
+   '<div class="tournrow"><label class="tournchk"><input type="checkbox" id="scTourn"'+(R.tourn?' checked':'')+'><span>'+t('Tournament round')+'</span></label><label class="tournchk"><input type="checkbox" id="scHcp"'+(R.noHcp?'':' checked')+'><span>'+t('Counts for my handicap')+'</span></label></div>'+'<div class="scNotes"><label>'+t('Notes')+'<textarea id="scNotes" rows="2" placeholder="'+(window.__LANG==='es'?'Cómo fue, condiciones, algo para recordar…':'How it went, conditions, anything worth remembering…')+'">'+esc(R.notes)+'</textarea></label>'+
    '<label>'+t('What I learnt')+' <span class="lbls" style="color:var(--clay)">'+t('required')+'</span><textarea id="scLesson" rows="2" placeholder="'+(window.__LANG==='es'?'Un aprendizaje de esta vuelta…':'One takeaway from this round…')+'">'+esc(R.lesson)+'</textarea></label></div>';
  var hdTot=0,hdPar=0;for(var q=hs;q<he;q++){hdTot+=holeSG(holeView(R.holes[q])).strokes;hdPar+=R.holes[q].par;}
  var hdTp=hdTot-hdPar,hdTee=COURSES[R.course]&&COURSES[R.course].tees[R.tee],hdDate='';
@@ -3379,7 +3383,7 @@ function renderScorecard(){
  var head='<div class="scHead"><div class="scHeadL"><div class="scKick">'+(window.__LANG==='es'?'Tarjeta':'Scorecard')+(hdDate?' · '+hdDate:'')+'</div>'+
    '<div class="scCourse">'+esc(R.courseName||(COURSES[R.course]&&COURSES[R.course].name)||R.course||'')+'</div>'+
    '<div class="scMeta"><span class="scTee" style="'+teeStyle(R.course,R.tee)+'">'+esc(teeEN(R.course,R.tee))+'</span>'+
-   (R.tourn?'<span class="scTourn">'+t('Tournament')+'</span>':'')+'<span>'+(he-hs)+' '+(window.__LANG==='es'?'hoyos':'holes')+'</span><span>Par '+hdPar+'</span>'+(hdTee&&hdTee.cr?'<span>CR '+hdTee.cr+' / '+hdTee.slope+'</span>':'')+'</div></div>'+
+   (R.tourn?'<span class="scTourn">'+t('Tournament')+'</span>':'')+(R.noHcp?'<span class="scNoHcp">'+t('Not for handicap')+'</span>':'')+'<span>'+(he-hs)+' '+(window.__LANG==='es'?'hoyos':'holes')+'</span><span>Par '+hdPar+'</span>'+(hdTee&&hdTee.cr?'<span>CR '+hdTee.cr+' / '+hdTee.slope+'</span>':'')+'</div></div>'+
    '</div>';
  {var sn=document.getElementById('snote');if(sn)sn.style.display='none';var tb=document.getElementById('totBox');if(tb)tb.style.display='none';}
  sv.innerHTML=head+'<div class="scWrap"><table class="scTbl"><tbody>'+
@@ -3395,6 +3399,7 @@ function renderScorecard(){
  var bsh=document.getElementById('btnShareCard');if(bsh)bsh.onclick=function(){try{var rr=roundRecord();rr.lesson=R.lesson;if(window.SHARE)window.SHARE.round(rr,localStorage.getItem('app-user')||'');}catch(e){}};
  var cbs=document.getElementById('btnCopySheet');if(cbs)cbs.onclick=copyForSheet;
  var stn=document.getElementById('scTourn');if(stn)stn.addEventListener('change',function(){R.tourn=stn.checked;save();render();});
+ var shc=document.getElementById('scHcp');if(shc)shc.addEventListener('change',function(){R.noHcp=!shc.checked;save();render();});
  var nt=document.getElementById('scNotes');if(nt)nt.addEventListener('input',function(){R.notes=nt.value;save();});
  var ls=document.getElementById('scLesson');if(ls)ls.addEventListener('input',function(){R.lesson=ls.value;ls.classList.remove('bad');save();});
  sv.querySelectorAll('[data-sc]').forEach(function(td){td.onclick=function(){scMode=false;gotoHole(+td.getAttribute('data-sc'));};});
@@ -3805,7 +3810,10 @@ document.getElementById('lgSaveBtn').onclick=()=>{
  var cnt=0;try{if(window.saveLoggedRounds)cnt=window.saveLoggedRounds(arr)||0;}catch(e){}
  /* once there are logged rounds, drive distance follows the real data */
  try{var dd=arr.map(function(x){return x.dist;}).filter(function(x){return x;});if(dd.length){PROF.driveYd=Math.round(dd.reduce(function(a,b){return a+b;},0)/dd.length);PROF.driveFromData=true;saveProf();}}catch(e){}
- if(!editRoundId&&!nine){HIST.push({date:R.date,course:R.course,tee:R.tee,score:t.strokes,par:t.par,diff});saveHist();}
+ /* handicap history: one entry per round. Only rounds marked "counts for my handicap" (the default) are kept; edits update it */
+ if(!nine){var hid=rec.id;HIST=HIST.filter(function(x){return x.id?x.id!==hid:!(editRoundId&&x.date===R.date&&x.course===R.course&&x.tee===R.tee);});
+   if(!R.noHcp)HIST.push({id:hid,date:R.date,course:R.course,tee:R.tee,score:t.strokes,par:t.par,diff});
+   HIST.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});saveHist();}
  const hi=effHI();const m=roundMistakes();
  var stp=t.strokes-t.par;
  lgToast('<b>'+(replaced?'Round updated':'Saved')+'</b> · '+t.strokes+' ('+(stp>=0?'+':'')+stp+')'+(nine?' · 9 holes':' · diff '+diff)+'<br><span class="tsg">SG '+fmt(t.tot)+' · Tiger\'s 5: '+m.total+((hi!=null&&!editRoundId)?' · HI ≈ '+hi:'')+' · ✓ in Statistics</span>');
@@ -3819,7 +3827,7 @@ function switchTo(course,tee){
  localStorage.removeItem(RKEY);R=newRound(course,tee);render();
 }
 function renderSel(){
- {const tn=document.getElementById('selTourn');if(tn&&R.phase!=='play')tn.checked=!!R.tourn;}
+ {const tn=document.getElementById('selTourn');if(tn&&R.phase!=='play')tn.checked=!!R.tourn;const hc=document.getElementById('selHcp');if(hc&&R.phase!=='play')hc.checked=!R.noHcp;}
  const cs=document.getElementById('selCourse');
  cs.innerHTML=favOptsHTML(R.course);
  const tees=COURSES[R.course].tees,ts=document.getElementById('selTeeChips');
@@ -3838,7 +3846,7 @@ document.getElementById('selCourse').onchange=e=>{let c=e.target.value;const go=
 document.getElementById('starBtn').onclick=()=>{setDefault(R.course,R.tee);renderSel();};
 document.getElementById('startBtn').onclick=()=>startRound();
 document.getElementById('lgCancelBtn').onclick=()=>{if(!confirm('Cancel this round? Everything entered will be discarded.'))return;editRoundId=null;localStorage.removeItem(RKEY);(function(){var d=loadDefault();R=newRound(d.course,d.tee);})();render();renderLogged();};
-{const tn=document.getElementById('selTourn');if(tn)tn.addEventListener('change',()=>{R.tourn=tn.checked;save();});}
+{const tn=document.getElementById('selTourn');if(tn)tn.addEventListener('change',()=>{R.tourn=tn.checked;save();});const hc=document.getElementById('selHcp');if(hc)hc.addEventListener('change',()=>{R.noHcp=!hc.checked;save();});}
 document.getElementById('selScore').addEventListener('input',()=>{R.scoreAuto=false;});
 document.getElementById('selScore').addEventListener('change',e=>{R.score=e.target.value;R.scoreAuto=false;save();});
 document.getElementById('selScore').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key==='Tab')&&!e.shiftKey){e.preventDefault();R.score=e.target.value;save();var ch=document.getElementById('selChcp');if(ch){ch.focus();ch.select();}}});
@@ -4017,7 +4025,7 @@ function lgLoad(o){
  if(!o||!o.holes)return;
  var c=COURSES[o.course]||COURSES.CGC, t=(c.tees[o.tee]||c.tees[Object.keys(c.tees)[0]]);
  R={course:(COURSES[o.course]?o.course:R.course),tee:(c.tees[o.tee]?o.tee:R.tee),courseName:c.name,cr:t.cr,slope:t.slope,date:o.date||new Date().toISOString().slice(0,10),
-   score:o.score||'',chcp:o.chcp||'',notes:o.notes||'',lesson:o.lesson||'',tourn:!!o.tourn,phase:'play',cur:0,holesMode:(o.holes.length===9?'front':'18'),hStart:0,hEnd:o.holes.length,
+   score:o.score||'',chcp:o.chcp||'',notes:o.notes||'',lesson:o.lesson||'',tourn:!!o.tourn,noHcp:!!o.noHcp,phase:'play',cur:0,holesMode:(o.holes.length===9?'front':'18'),hStart:0,hEnd:o.holes.length,
    holes:o.holes.map(function(h,i){return {par:h.par,yd:h.yd||((h.shots&&h.shots[0])?h.shots[0].dist:0),hcp:(c.hcp?c.hcp[i]:0),pin:h.pin||'M',teeOv:h.teeOv||null,done:true,shots:(h.shots||[]).map(function(s){return {lie:s.lie,dist:s.dist,pen:s.pen||0,conf:true,club:s.club,clubSet:s.clubSet,comp:s.comp,disp:s.disp,dispYd:s.dispYd,read:s.read};})};})};
  lgEntered=true;save();render();renderSel();
 }
@@ -4049,7 +4057,7 @@ function importCard(hl){
    '<div class="sgcats2">'+chip('Off tee',cat.ott)+chip('Approach',cat.app)+chip('Around grn',cat.atg)+chip('Putting',cat.putt)+chip('Total',cat.tot)+'</div>'+
    '<div class="scHint ihShots">'+t('Tap any hole to see its shots.')+'</div>',shots:shots,pars:H.map(function(h){return h.par;})};
 }
-function lgSnap(){try{return JSON.stringify([R.notes||'',R.lesson||'',!!R.tourn,R.holes.map(function(h){return [h.pin||'M',h.teeOv||'',(h.shots||[]).filter(function(x){return x.conf!==false;}).map(function(x){return [x.lie,+x.dist,x.pen||0,x.club||'',x.comp===true?1:x.comp===false?0:'',(x.disp||'')+(x.dispYd!=null?x.dispYd:''),x.read||''];})];})]);}catch(e){return '';}}
+function lgSnap(){try{return JSON.stringify([R.notes||'',R.lesson||'',!!R.tourn,!!R.noHcp,R.holes.map(function(h){return [h.pin||'M',h.teeOv||'',(h.shots||[]).filter(function(x){return x.conf!==false;}).map(function(x){return [x.lie,+x.dist,x.pen||0,x.club||'',x.comp===true?1:x.comp===false?0:'',(x.disp||'')+(x.dispYd!=null?x.dispYd:''),x.read||''];})];})]);}catch(e){return '';}}
 function lgOpenCard(o){if(!o||!o.holes)return;editRoundId=o.id||null;lgLoad(o);R._editId=o.id||null;R._snap=lgSnap();save();scMode=true;render();renderLogged();}
 /* new user with no imported and no logged rounds → ask for a realistic average drive */
 (function(){try{var u=localStorage.getItem('app-user')||'';
