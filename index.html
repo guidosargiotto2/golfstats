@@ -1473,7 +1473,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
      <label><span data-i18n="Tee">Tee</span><div id="selTeeChips" class="teechips"></div></label>
      <label><span data-i18n="Holes">Holes</span><select id="selHoles"><option value="18" data-i18n="18 holes">18 holes</option><option value="front" data-i18n="Front 9 (1–9)">Front 9 (1–9)</option><option value="back" data-i18n="Back 9 (10–18)">Back 9 (10–18)</option></select></label>
      <label><span data-i18n="Score">Score</span><input type="number" inputmode="numeric" id="selScore" min="59" max="200" placeholder="e.g. 76" required><span class="fielderr" id="err_score"></span></label>
-     <label><span data-i18n="Playing HCP">Playing HCP</span><input type="number" inputmode="numeric" id="selChcp" min="-10" max="54" placeholder="e.g. 2" required aria-required="true"><span class="fielderr" id="err_chcp"></span></label>
+     <label><span data-i18n="Playing HCP">Playing HCP</span><input type="text" inputmode="text" autocomplete="off" id="selChcp" placeholder="e.g. 12 · +3" required aria-required="true"><span class="fielderr" id="err_chcp"></span></label>
      <label><span data-i18n="Date">Date</span><input type="date" id="selDate"></label>
      <label class="tournchk"><input type="checkbox" id="selTourn"><span data-i18n="Tournament round">Tournament round</span></label>
      <label class="tournchk"><input type="checkbox" id="selHcp" checked><span data-i18n="Counts for my handicap">Counts for my handicap</span></label>
@@ -3053,6 +3053,9 @@ function driveYd(){var x=parseInt(PROF.driveYd,10);if(isNaN(x))x=250;return Math
 function t5x(){var x=parseInt(PROF.t5x,10);if(isNaN(x))x=30;return Math.min(50,Math.max(10,x));}
 /* ===== Net par (handicap strokes spread by stroke index) ===== */
 function phForRound(){var v=parseInt(R.chcp,10);return isNaN(v)?0:v;}
+/* playing handicap as golfers write it: "+3" is a plus handicap (stored as -3, gives strokes back on the easiest holes) */
+function chcpParse(x){var t=String(x==null?'':x).trim().replace(',','.');if(!t)return NaN;var plus=t.charAt(0)==='+';if(plus)t=t.slice(1);var v=parseFloat(t);if(isNaN(v))return NaN;v=Math.round(v);return plus?-Math.abs(v):v;}
+function chcpShow(x){var v=parseInt(x,10);if(isNaN(v))return '';return v<0?'+'+(-v):String(v);}
 function srMap(){ /* holeIndex -> strokes received, over the active holes */
  var a=(R.hStart!=null?R.hStart:0),b=(R.hEnd!=null?R.hEnd:18),hs=[],map={};
  for(var i=a;i<b;i++){hs.push(i);map[i]=0;}
@@ -3431,9 +3434,9 @@ function startRound(){var sc=document.getElementById('selScore'),ch=document.get
  if(sv===''){if(es)es.textContent='Enter your score to start the round.';if(sc){sc.classList.add('bad');sc.focus();}return;}
  if(+sv<minSc||+sv>maxSc){if(es)es.textContent='Enter '+minSc+'–'+maxSc+'.';if(sc){sc.classList.add('bad');sc.focus();}return;}
  var ES0=(window.__LANG==='es');
- if(cv===''||isNaN(+cv)){if(ec)ec.textContent=ES0?'Ingresá tu hándicap de juego para empezar la vuelta.':'Enter your playing handicap to start the round.';if(ch){ch.classList.add('bad');ch.focus();}return;}
- if(+cv<-10||+cv>54){if(ec)ec.textContent=ES0?'Ingresá entre −10 y 54.':'Enter −10 to 54.';if(ch){ch.classList.add('bad');ch.focus();}return;}
- R.score=sv;R.chcp=cv;R.phase='play';lgEntered=true;showParCard(function(){gotoHole(R.hStart);});}
+ var cn=chcpParse(cv);if(cv===''||isNaN(cn)){if(ec)ec.textContent=ES0?'Ingresá tu hándicap de juego para empezar la vuelta.':'Enter your playing handicap to start the round.';if(ch){ch.classList.add('bad');ch.focus();}return;}
+ if(cn<-10||cn>54){if(ec)ec.textContent=ES0?'Ingresá entre −10 y 54.':'Enter −10 to 54.';if(ch){ch.classList.add('bad');ch.focus();}return;}
+ R.score=sv;R.chcp=String(cn);R.phase='play';lgEntered=true;showParCard(function(){gotoHole(R.hStart);});}
 var scMode=false;
 /* ===== "Your par today": before hole 1, the card with the player's own par on every hole (par + handicap strokes).
    Gross par is a scratch player's target; this makes the player's real target visible from the first tee. ===== */
@@ -3605,7 +3608,7 @@ function renderSetup(){
  if(rc)rc.style.display='none';if(nf)nf.style.display='';
  var ti=document.getElementById('lgTitle');if(ti)ti.textContent=editRoundId?t('Edit round'):t('Start a round');var mt0=document.getElementById('meta');if(mt0)mt0.style.display='none';
  var sc=document.getElementById('selScore');if(sc&&document.activeElement!==sc)sc.value=R.score||'';
- var ch=document.getElementById('selChcp');if(ch&&document.activeElement!==ch)ch.value=R.chcp||'';
+ var ch=document.getElementById('selChcp');if(ch&&document.activeElement!==ch)ch.value=chcpShow(R.chcp);
  var sh=document.getElementById('selHoles');if(sh)sh.value=R.holesMode||'18';
  document.getElementById('meta').textContent=(R.courseName||R.course)+' · '+teeEN(R.course,R.tee);
  renderSel();
@@ -4013,7 +4016,7 @@ function renderSel(){
  ts.querySelectorAll('[data-teechip]').forEach(b=>{b.onclick=()=>switchTo(R.course,b.getAttribute('data-teechip'));});
  const t=tees[R.tee];const totY=R.holes.reduce((a,h)=>a+(h.yd||0),0);
  document.getElementById('teeEst').textContent=Y2U(totY)+' '+PROF.units+' · CR '+t.cr+' · Slope '+t.slope+(t.est?' · est.':'');
- var ci=document.getElementById('selChcp');if(ci&&document.activeElement!==ci&&((R.chcp==null||R.chcp==='')||R.chcpAuto)){var sug=suggestChcp();if(sug!=null){R.chcp=String(sug);ci.value=sug;R.chcpAuto=true;}}
+ var ci=document.getElementById('selChcp');if(ci&&document.activeElement!==ci&&((R.chcp==null||R.chcp==='')||R.chcpAuto)){var sug=suggestChcp();if(sug!=null){R.chcp=String(sug);ci.value=chcpShow(sug);R.chcpAuto=true;}}
  var si=document.getElementById('selScore');if(si&&document.activeElement!==si&&((R.score==null||R.score==='')||R.scoreAuto)){var ssug=suggestScore();if(ssug!=null){R.score=String(ssug);si.value=ssug;R.scoreAuto=true;}}
  const dEl=document.getElementById('selDate');if(dEl){dEl.value=R.date||new Date().toISOString().slice(0,10);if(!dEl.dataset.init){dEl.dataset.init='1';dEl.addEventListener('change',function(){R.date=dEl.value||R.date;save();});}}
  const d=loadDefault(),isd=d.course===R.course&&d.tee===R.tee,sb=document.getElementById('starBtn');
@@ -4028,10 +4031,10 @@ document.getElementById('lgCancelBtn').onclick=()=>{if(!confirm('Cancel this rou
 document.getElementById('selScore').addEventListener('input',()=>{R.scoreAuto=false;});
 document.getElementById('selScore').addEventListener('change',e=>{R.score=e.target.value;R.scoreAuto=false;save();});
 document.getElementById('selScore').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key==='Tab')&&!e.shiftKey){e.preventDefault();R.score=e.target.value;save();var ch=document.getElementById('selChcp');if(ch){ch.focus();ch.select();}}});
-document.getElementById('selChcp').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key==='Tab')&&!e.shiftKey){e.preventDefault();R.chcp=e.target.value;R.chcpAuto=false;save();var sb=document.getElementById('startBtn');if(sb)sb.focus();}});
+document.getElementById('selChcp').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key==='Tab')&&!e.shiftKey){e.preventDefault();{var cn2=chcpParse(e.target.value);R.chcp=isNaN(cn2)?e.target.value:String(cn2);}R.chcpAuto=false;save();var sb=document.getElementById('startBtn');if(sb)sb.focus();}});
 document.getElementById('selHoles').addEventListener('change',e=>{R.holesMode=e.target.value;save();renderSel();});
 document.getElementById('selChcp').addEventListener('input',()=>{R.chcpAuto=false;});
-document.getElementById('selChcp').addEventListener('change',e=>{R.chcp=e.target.value;R.chcpAuto=false;save();});
+document.getElementById('selChcp').addEventListener('change',e=>{var cn3=chcpParse(e.target.value);R.chcp=isNaN(cn3)?e.target.value:String(cn3);R.chcpAuto=false;save();});
 /* ---- player profile ---- */
 function renderProf(){
  /* the cards hold the previous render's fields; clear them first, or the old copies keep the ids and get the new listeners */
@@ -5940,7 +5943,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
 <script>
 /* phones: the number keypad has no minus, so plus handicaps (entered as negative) get a ± button */
 (function(){function addPM(id){var i=document.getElementById(id);if(!i||i._pm)return;i._pm=1;var b=document.createElement('button');b.type='button';b.className='pmBtn';
-   b.textContent='± '+(window.__LANG==='es'?'hándicap plus':'plus handicap');b.onclick=function(){var v=parseFloat(String(i.value).replace(',','.'));if(isNaN(v)||v===0)return;i.value=-v;i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}));};
+   b.textContent='± '+(window.__LANG==='es'?'hándicap plus':'plus handicap');b.onclick=function(){if(id==='selChcp'){var t=String(i.value).trim();if(!t||t==='0')return;i.value=t.charAt(0)==='+'?t.slice(1):'+'+t.replace(/^-/,'');i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}));return;}var v=parseFloat(String(i.value).replace(',','.'));if(isNaN(v)||v===0)return;i.value=-v;i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}));};
    i.parentNode.insertBefore(b,i.nextSibling);}
  setInterval(function(){addPM('selChcp');addPM('pf_himan');},1200);})();
 </script>
