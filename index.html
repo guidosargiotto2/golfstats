@@ -716,7 +716,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope .plTeam{display:flex;align-items:center;gap:16px;margin-top:14px;border:1px dashed var(--sand-deep);border-radius:14px;padding:14px 18px;background:rgba(216,196,140,.14);font-family:var(--cond);}
 .lgscope .plTeam b{display:block;font-family:var(--serif);font-size:17px;color:var(--pine);margin-bottom:2px;}
 .lgscope .plTeam span{font-size:13.5px;line-height:1.5;color:var(--ink-soft);}
-.lgscope .plTeamB{flex:none;width:56px;height:56px;border-radius:50%;background:var(--pine);color:var(--sand);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:16px;}
+.lgscope .plTeamB{flex:none;width:56px;height:56px;border-radius:50%;background:var(--pine);color:var(--sand);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:19px;}
 .lgscope .tmCode{font-family:var(--serif);font-weight:700;font-size:24px;letter-spacing:.06em;color:var(--pine);margin:4px 0 6px;}
 
 /* tables outside the logger: no sticky header (it was overlapping the first row) */
@@ -1362,7 +1362,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #landing .lteam{grid-column:2/4;display:flex;align-items:center;gap:18px;margin-top:0;border:1px dashed var(--sand-deep);border-radius:16px;padding:16px 20px;background:rgba(216,196,140,.14);}
 #landing .lteam b{display:block;font-family:var(--serif);font-size:19px;color:var(--pine);margin-bottom:3px;}
 #landing .lteam span{font-size:14.5px;line-height:1.5;color:var(--ink-soft);}
-#landing .lteamB{flex:none;width:64px;height:64px;border-radius:50%;background:var(--pine);color:var(--sand);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:18px;}
+#landing .lteamB{flex:none;width:64px;height:64px;border-radius:50%;background:var(--pine);color:var(--sand);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:22px;}
 #landing .tinv{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--pine);background:var(--sand);border-radius:999px;padding:3px 10px;margin:0 0 10px;}
 #landing .tier p{font-size:14px;line-height:1.5;margin:0;color:inherit;opacity:.88;}
 #landing .final{text-align:center;padding:52px 0;}
@@ -1520,7 +1520,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
   <div class="tier lite"><div class="tn">Lite</div><div class="tp" data-l="1 ball / month|1 pelota / mes">1 ball / month</div><div class="tu" data-l="≈ US$4.92 a month|≈ US$4,92 por mes">≈ US$4.92 a month</div><p data-l="The control charts across all your rounds, your priorities, friends, your coach — and your Garmin rounds imported in a minute. Save one ball a month with better strategy and it pays for itself.|Los gráficos de control de todas tus vueltas, tus prioridades, amigos, tu profesor — y tus vueltas de Garmin importadas en un minuto. Ahorrá una pelota por mes con mejor estrategia y se paga sola.">The control charts across all your rounds, your priorities, friends, your coach — and your Garmin rounds imported in a minute. Save one ball a month with better strategy and it pays for itself.</p></div>
   <div class="tier plus"><div class="tn">Plus</div><div class="tp" data-l="3 balls / month|3 pelotas / mes">3 balls / month</div><div class="tu" data-l="≈ US$14.75 a month|≈ US$14,75 por mes">≈ US$14.75 a month</div><p data-l="Everything in Lite, plus a 30-minute call with me every quarter, prepared from your numbers.|Todo lo de Lite, más una llamada de 30 minutos conmigo cada trimestre, preparada con tus números.">Everything in Lite, plus a 30-minute call with me every quarter, prepared from your numbers.</p></div>
   <div class="tier pro"><div class="tn">Pro</div><div class="tp" data-l="6 balls / month|6 pelotas / mes">6 balls / month</div><div class="tu" data-l="≈ US$29.50 a month|≈ US$29,50 por mes">≈ US$29.50 a month</div><p data-l="Everything in Plus, with the call every month instead of every quarter.|Todo lo de Plus, con la llamada todos los meses en lugar de cada trimestre.">Everything in Plus, with the call every month instead of every quarter.</p></div>
- <div class="lteam"><div class="lteamB">−25%</div><div><b data-l="Teams of four: 25% off any plan.|Equipos de cuatro: 25% de descuento en cualquier plan.">Teams of four: 25% off any plan.</b><span data-l="One of you creates the team and shares a code.|Uno crea el equipo y comparte un código.">One of you creates the team and shares a code.</span></div></div>
+ <div class="lteam"><div class="lteamB">4×3</div><div><b data-l="Teams of four: 25% off any plan.|Equipos de cuatro: 25% de descuento en cualquier plan.">Teams of four: 25% off any plan.</b><span data-l="One of you creates the team and shares a code.|Uno crea el equipo y comparte un código.">One of you creates the team and shares a code.</span></div></div>
  </div>
 </div></section>
 
@@ -5082,7 +5082,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    return h+'</div>';
  }
  function teamHTML(){
-   var t=ME.team,h='<div class="plTeam" style="align-items:flex-start"><div class="plTeamB">−25%</div><div style="flex:1">';
+   var t=ME.team,h='<div class="plTeam" style="align-items:flex-start"><div class="plTeamB">4×3</div><div style="flex:1">';
    if(!t){
      h+='<b>'+T('Teams of four: 25% off any plan','Equipos de cuatro: 25% de descuento en cualquier plan')+'</b><span>'+T('Create the team and share the code; your friends join on their own.','Creá el equipo y compartí el código; tus amigos se suman solos.')+'</span>'+
        '<div class="frline" style="margin-top:8px"><button class="pf_btn" id="tmNew">'+T('Create a team','Crear un equipo')+'</button></div>'+
