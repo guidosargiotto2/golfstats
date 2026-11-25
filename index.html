@@ -856,6 +856,14 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #parCard .pcS input{width:100%;max-width:38px;box-sizing:border-box;text-align:center;font-family:var(--cond);font-weight:700;font-size:16px;color:var(--ink);background:#fff;border:1.5px dashed var(--line);border-radius:8px;padding:6px 0}
 #parCard .pcS input:focus{outline:none;border:1.5px solid var(--pine)}
 #parCard .pcS input:not(:placeholder-shown){border-style:solid}
+#parCard .pcS input.scP{border:1.5px solid var(--line);background:#fff}
+#parCard .pcS input.scB{border:1.8px solid var(--pine);border-radius:999px;color:var(--pine)}
+#parCard .pcS input.scE{border:1.8px solid var(--pine);border-radius:999px;color:var(--pine);box-shadow:0 0 0 2.5px #fffdf7,0 0 0 4.3px var(--pine)}
+#parCard .pcS input.scO{border:1.8px solid var(--clay);border-radius:3px;color:var(--clay)}
+#parCard .pcS input.scD{border:1.8px solid var(--clay);border-radius:3px;color:var(--clay);box-shadow:0 0 0 2.5px #fffdf7,0 0 0 4.3px var(--clay)}
+#parCard .pcS input:focus{box-shadow:none}
+#parCard .pcLegend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--ink-soft);margin:6px 0 0}
+#parCard .pcLegend i{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:5px;box-sizing:border-box}
 #parCard .pcOpt{font-size:13px;line-height:1.5;color:var(--ink-soft);margin:4px 0 0}
 #parCard .pcSum{display:inline-block;margin-left:6px;color:var(--pine);font-family:var(--cond);font-weight:700}
 .lgscope .cardchip{font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;border:1.5px dashed var(--sand-deep,#b89a52);color:#8a6a1e;border-radius:999px;padding:3px 10px}
@@ -3449,6 +3457,7 @@ function showParCard(go){
    (noSI?'<p class="pcWarn">'+T('This course has no stroke index yet, so your strokes cannot be placed hole by hole. Your total par still applies.','Esta cancha todavía no tiene hándicap por hoyo, así que tus golpes no se pueden ubicar hoyo por hoyo. Tu par total igual vale.')+'</p>':'')+
    '<div class="pcWrap">'+tables+'</div>'+
    '<p class="pcOpt"><b>'+T('Optional:','Opcional:')+'</b> '+T('type your score on each hole now, straight from your card. Then log the shots whenever you like; Golfimbul checks every hole adds up.','escribí ahora tu score de cada hoyo, directo de la tarjeta. Después cargá los tiros cuando quieras; Golfimbul controla que cada hoyo coincida.')+' <span class="pcSum"></span></p>'+
+   '<div class="pcLegend"><span><i style="border:1.6px solid var(--pine);border-radius:50%;box-shadow:0 0 0 1.5px #fffdf7,0 0 0 2.8px var(--pine)"></i>'+T('Eagle or better','Águila o mejor')+'</span><span><i style="border:1.6px solid var(--pine);border-radius:50%"></i>'+T('Birdie','Birdie')+'</span><span><i style="border:1.6px solid var(--line)"></i>'+T('Your par','Tu par')+'</span><span><i style="border:1.6px solid var(--clay)"></i>'+T('Bogey','Bogey')+'</span><span><i style="border:1.6px solid var(--clay);box-shadow:0 0 0 1.5px #fffdf7,0 0 0 2.8px var(--clay)"></i>'+T('Double or worse','Doble o peor')+'</span><span>'+T('— all against your par','— todo contra tu par')+'</span></div>'+
    '<div class="pcActs"><button type="button" class="pcGo">'+T('Log the shots, hole '+(a+1),'Cargar los tiros, hoyo '+(a+1))+' →</button></div></div>';
  document.body.appendChild(ov);
  var big=ov.querySelector('.pcBig'),run=par,tot={o:0,i:0},timer=null,k=a,fin=false;
@@ -3463,7 +3472,8 @@ function showParCard(go){
  var step=function(){if(fin)return;if(k>=b){finish();return;}fill(k,true);k++;timer=setTimeout(step,(sr[k-1]&&!noSI)?330:200);};
  if(noSI){finish();}else timer=setTimeout(step,500);
  var ins=[].slice.call(ov.querySelectorAll('[data-sc]'));
- var sums=function(){var t={o:0,i:0},n=0,all=0;ins.forEach(function(el){var i=+el.getAttribute('data-sc'),v=parseInt(el.value,10),key=(b-a===18&&i>=9)?'i':'o';if(v>0){t[key]+=v;n++;all+=v;}});
+ var mark=function(el){var i=+el.getAttribute('data-sc'),v=parseInt(el.value,10),np=R.holes[i].par+(noSI?0:(sr[i]||0)),d=v-np;el.className=!(v>0)?'':(d<=-2?'scE':d===-1?'scB':d===0?'scP':d===1?'scO':'scD');el.title=v>0?(d===0?T('Your par','Tu par'):(d>0?'+'+d:d)+' '+T('against your par','contra tu par')):'';};
+ var sums=function(){var t={o:0,i:0},n=0,all=0;ins.forEach(function(el){var i=+el.getAttribute('data-sc'),v=parseInt(el.value,10),key=(b-a===18&&i>=9)?'i':'o';mark(el);if(v>0){t[key]+=v;n++;all+=v;}});
    ['o','i'].forEach(function(k2){var c2=ov.querySelector('[data-st="'+k2+'"]');if(c2)c2.textContent=t[k2]||'';});
    var sm=ov.querySelector('.pcSum');if(sm){if(n===ins.length){var d=all-mine;sm.innerHTML='<b>'+all+'</b> · '+(d===0?T('exactly your par','justo tu par'):(d>0?'+'+d:'−'+(-d))+' '+T('against your par','contra tu par'))+(String(all)!==String(R.score)?' · '+T('your round score is set to '+all,'tu score de la vuelta pasa a '+all):'');}else sm.textContent=n?n+' / '+ins.length+' '+T('holes','hoyos'):'';}
    return {n:n,all:all};};
