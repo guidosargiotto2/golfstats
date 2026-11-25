@@ -60,14 +60,14 @@ async function init() {
   return ready;
 }
 
-// Plans: free | lite | pro. The four founders default to pro; everyone else to free until a plan is set.
-const planOf = (user, plan) => user === ADMIN ? 'pro' : (plan === 'free' || plan === 'lite' || plan === 'pro') ? plan : (LEGACY[user] ? 'pro' : 'free');
-// a member of a paid team gets the team's plan (Lite or Pro), if it is higher than their own
+// Plans: free | lite | plus | pro. The four founders default to pro; everyone else to free until a plan is set.
+const planOf = (user, plan) => user === ADMIN ? 'pro' : (plan === 'free' || plan === 'lite' || plan === 'plus' || plan === 'pro') ? plan : (LEGACY[user] ? 'pro' : 'free');
+// a member of a paid team gets the team's plan (Lite, Plus or Pro), if it is higher than their own
 // First month: every new account is on Pro, free. It ends 30 days after the account was created, or as soon as a plan is
 // set for the player (after the review meeting with Guido), whichever comes first.
 const TRIAL_DAYS = 30;
 async function inTrial(sql, user, plan) {
-  if (plan === 'free' || plan === 'lite' || plan === 'pro') return false;      // a plan was decided: no trial
+  if (plan === 'free' || plan === 'lite' || plan === 'plus' || plan === 'pro') return false;      // a plan was decided: no trial
   if (user === ADMIN || LEGACY[user]) return false;                             // founders are simply Pro
   const cu = await sql`select created from gs_users where username = ${user}`;
   if (!cu.length || !cu[0].created) return false;
@@ -75,13 +75,13 @@ async function inTrial(sql, user, plan) {
 }
 async function effectivePlan(sql, user, plan) {
   const p = planOf(user, plan);
-  if (rank(p) >= 2) return p;
+  if (p === 'pro') return p;
   if (await inTrial(sql, user, plan)) return 'pro';
   const t = await sql`select t.paid, t.plan from gs_team_members m join gs_teams t on t.code = m.code where m.username = ${user}`;
-  const tp = (t.length && t[0].paid) ? (t[0].plan === 'pro' ? 'pro' : 'lite') : 'free';
+  const tp = (t.length && t[0].paid) ? (t[0].plan === 'pro' ? 'pro' : (t[0].plan === 'plus' ? 'plus' : 'lite')) : 'free';
   return rank(tp) > rank(p) ? tp : p;
 }
-const rank = p => ({ free: 0, lite: 1, pro: 2 })[p] || 0;
+const rank = p => ({ free: 0, lite: 1, plus: 2, pro: 3 })[p] || 0;
 const validUser = u => /^[a-z0-9_.]{3,20}$/.test(u);
 
 // Token = base64url("user.expiry.hmac"); the signing key is derived from the database URL, so no extra secret to configure.

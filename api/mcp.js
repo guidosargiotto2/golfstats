@@ -1,4 +1,4 @@
-// Golfimbul MCP server (read-only) — lets a player's own AI assistant read their game. Lite and Pro.
+// Golfimbul MCP server (read-only) — lets a player's own AI assistant read their game. Lite, Plus and Pro.
 //   Endpoint: POST /api/mcp?key=gk_...   (or Authorization: Bearer gk_...)
 //   Transport: MCP Streamable HTTP, JSON responses (no sessions, no streaming needed).
 // Keys are created and revoked by the player in Profile → AI assistant. Only a SHA-256 of each key is stored.
@@ -147,7 +147,7 @@ module.exports = async (req, res) => {
       } else if (m.method === 'ping') ok({});
       else if (m.method === 'tools/list') ok({ tools: TOOLS });
       else if (m.method === 'tools/call') {
-        if (L.rank(plan) < 1) { ok({ isError: true, content: [{ type: 'text', text: 'The AI assistant connection is part of Golfimbul Lite and Pro.' }] }); continue; }
+        if (L.rank(plan) < 1) { ok({ isError: true, content: [{ type: 'text', text: 'The AI assistant connection is part of Golfimbul Lite, Plus and Pro.' }] }); continue; }
         const name = m.params && m.params.name;
         if (!TOOLS.some(t => t.name === name)) { out.push({ jsonrpc: '2.0', id: m.id, error: { code: -32602, message: 'Unknown tool: ' + name } }); continue; }
         const data = await callTool(sql, user, name, m.params.arguments);

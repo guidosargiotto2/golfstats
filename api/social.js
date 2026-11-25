@@ -175,7 +175,7 @@ module.exports = async (req, res) => {
     }
     if (action === 'reviewDone') {
       if (me !== L.ADMIN) return bad(403, 'admin');
-      const rec = ['free', 'lite', 'pro'].includes(b.recommendation) ? b.recommendation : null;
+      const rec = ['free', 'lite', 'plus', 'pro'].includes(b.recommendation) ? b.recommendation : null;
       await sql`update gs_reviews set status = 'done', recommendation = ${rec}, done = now() where username = ${target}`;
       if (rec) await sql`update gs_profiles set plan = ${rec} where username = ${target}`;
       return ok();
@@ -214,7 +214,7 @@ module.exports = async (req, res) => {
     if (action === 'teamSetPaid') {   // until payments are connected, the admin confirms a team was paid
       if (me !== L.ADMIN) return bad(403, 'admin');
       await sql`update gs_teams set paid = ${!!b.paid} where code = ${String(b.code || '').toUpperCase()}`;
-      if (b.plan === 'lite' || b.plan === 'pro') await sql`update gs_teams set plan = ${b.plan} where code = ${String(b.code || '').toUpperCase()}`;
+      if (b.plan === 'lite' || b.plan === 'plus' || b.plan === 'pro') await sql`update gs_teams set plan = ${b.plan} where code = ${String(b.code || '').toUpperCase()}`;
       return ok();
     }
     if (action === 'members') {
@@ -228,7 +228,7 @@ module.exports = async (req, res) => {
     if (action === 'setPlan') {
       if (me !== L.ADMIN) return bad(403, 'admin');
       const plan = String(b.plan || '');
-      if (!['free', 'lite', 'pro'].includes(plan) || !L.validUser(target)) return bad(400, 'bad-plan');
+      if (!['free', 'lite', 'plus', 'pro'].includes(plan) || !L.validUser(target)) return bad(400, 'bad-plan');
       await sql`update gs_profiles set plan = ${plan} where username = ${target}`;
       return ok();
     }
