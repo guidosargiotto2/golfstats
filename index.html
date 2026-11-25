@@ -638,12 +638,14 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .plBtn{border:none;border-radius:10px;padding:10px 14px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;background:var(--cream);color:var(--ink-soft);cursor:not-allowed;}
 .lgscope .plBtn.plGo{cursor:pointer;background:var(--pine);color:#fff;}
 .lgscope .plCard.pl-pro .plBtn.plGo{background:var(--sand);color:var(--pine);}
-.pl-lite{background:linear-gradient(170deg,#f7eed4,#efe2bb);border-color:var(--sand);}
-.pl-plus{background:linear-gradient(170deg,var(--fairway),#2b8a5b);color:#fff;border-color:var(--fairway);}
-.pl-plus .plName,.lgscope .plCard.pl-plus .plQty{color:#fff;}
-.pl-plus .plUsd,.lgscope .plCard.pl-plus li,.pl-plus .plNote{color:rgba(255,255,255,.85);}
-.pl-plus .plIcons{color:#f3e6bd;}.pl-plus .plCur{color:#f3e6bd;}
-.pl-plus .plBtn.plGo{background:#f3e6bd;color:var(--pine);}
+.lgscope .plCard.pl-free{background:#fbfaf6;border-color:#e6e2d6;}
+.lgscope .plCard.pl-lite{background:linear-gradient(170deg,#f8efd6,#efe1b8);border-color:var(--sand);}
+.lgscope .plCard.pl-plus{background:linear-gradient(170deg,var(--fairway),#2b8a5b);color:#fff;border-color:var(--fairway);box-shadow:0 14px 34px -14px rgba(31,122,77,.55);}
+.lgscope .plCard .plBadge{position:absolute;top:-11px;right:16px;background:var(--sand);color:var(--pine);font-family:var(--cond);font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:999px;}
+.lgscope .plCard.pl-plus .plName,.lgscope .plCard.pl-plus .plQty{color:#fff;}
+.lgscope .plCard.pl-plus .plUsd,.lgscope .plCard.pl-plus li,.lgscope .plCard.pl-plus .plNote{color:rgba(255,255,255,.85);}
+.lgscope .plCard.pl-plus .plIcons,.lgscope .plCard.pl-plus .plCur{color:#f3e6bd;}
+.lgscope .plCard.pl-plus .plBtn.plGo{background:#f3e6bd;color:var(--pine);}
 .lgscope .plFoot{font-family:var(--cond);font-size:12px;color:var(--ink-soft);margin:14px 0 0;}
 .tabnav button.pllocked::after{content:' 🔒';font-size:10px;}
 .lgscope .plNote{font-family:var(--serif);font-style:italic;font-size:14.5px;line-height:1.45;color:var(--pine);background:rgba(216,196,140,.18);border-left:3px solid var(--sand-deep);border-radius:0 10px 10px 0;padding:10px 12px;margin:0 0 14px;}
@@ -1355,11 +1357,19 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #landing .tier.pro .tp{color:#fff;} #landing .tier.pro .tn{color:var(--sand);}
 #landing .tier .tu{font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--ink-soft);margin:-4px 0 12px;}
 #landing .tier.pro .tu{color:rgba(255,255,255,.75);}
-.tier.lite{background:linear-gradient(170deg,#f7eed4,#efe2bb);border-color:var(--sand);}
-.tier.lite .tn{color:#8a6d2c;}
-.tier.plus{background:linear-gradient(170deg,var(--fairway),#2b8a5b);color:#fff;border-color:var(--fairway);}
-.tier.plus .tp{color:#fff;}.tier.plus .tn{color:#f3e6bd;}.tier.plus .tu{color:rgba(255,255,255,.8);}
-#landing .lteam{grid-column:2/4;display:flex;align-items:center;gap:18px;margin-top:0;border:1px dashed var(--sand-deep);border-radius:16px;padding:16px 20px;background:rgba(216,196,140,.14);}
+#landing .tier{position:relative;}
+#landing .tier.free{background:#fbfaf6;border-color:#e6e2d6;}
+#landing .tier.lite{background:linear-gradient(170deg,#f8efd6,#efe1b8);border-color:var(--sand);}
+#landing .tier.lite .tn{color:#8a6d2c;}
+#landing .tier.plus{background:linear-gradient(170deg,var(--fairway),#2b8a5b);color:#fff;border-color:var(--fairway);box-shadow:0 14px 34px -14px rgba(31,122,77,.55);transform:translateY(-8px);}
+#landing .tier.plus .tp{color:#fff;}#landing .tier.plus .tn{color:#f3e6bd;}#landing .tier.plus .tu{color:rgba(255,255,255,.82);}
+#landing .tier .tbadge{position:absolute;top:-12px;right:18px;background:var(--sand);color:var(--pine);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 11px;border-radius:999px;box-shadow:0 4px 10px -4px rgba(0,0,0,.3);}
+#landing .tier ul{list-style:none;margin:0;padding:0;}
+#landing .tier li{position:relative;font-size:14px;line-height:1.45;padding:5px 0 5px 18px;}
+#landing .tier li::before{content:'';position:absolute;left:1px;top:12px;width:7px;height:7px;border-radius:50%;background:var(--sand-deep);}
+#landing .tier.plus li::before,#landing .tier.pro li::before{background:var(--sand);}
+#landing .tier li:first-child{font-weight:700;}
+#landing .lteam{grid-column:2/5;display:flex;align-items:center;gap:18px;margin-top:0;border:1px dashed var(--sand-deep);border-radius:16px;padding:16px 20px;background:rgba(216,196,140,.14);}
 #landing .lteam b{display:block;font-family:var(--serif);font-size:19px;color:var(--pine);margin-bottom:3px;}
 #landing .lteam span{font-size:14.5px;line-height:1.5;color:var(--ink-soft);}
 #landing .lteamB{flex:none;width:64px;height:64px;border-radius:50%;background:var(--pine);color:var(--sand);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:22px;}
@@ -1516,10 +1526,10 @@ svg.tgSvg{width:100%;height:auto;display:block;}
  <h2 data-l="Pricing|Precios">Pricing</h2>
  <p class="sub" data-l="Priced in golf balls. Everyone starts with a free month on Pro, the full app. Before it ends you get a 30-minute meeting with Guido to go through your numbers. He will tell you honestly which plan fits you, even if that is Free, and then you decide.|Precios en pelotas de golf. Todos empiezan con un mes gratis en Pro, la app completa. Antes de que termine tenés una reunión de 30 minutos con Guido para revisar tus números. Te va a decir con honestidad qué plan te conviene, aunque sea Free, y después decidís vos.">Priced in golf balls. Everyone starts with a free month on Pro, the full app. Before it ends you get a 30-minute meeting with Guido to go through your numbers. He will tell you honestly which plan fits you, even if that is Free, and then you decide.</p>
  <div class="tiers">
-  <div class="tier"><div class="tn">Free</div><div class="tp" data-l="Free|Gratis">Free</div><div class="tu">US$0</div><p data-l="Log every shot. Every round's scorecard and analysis, one round at a time.|Cargá cada tiro. La tarjeta y el análisis de cada vuelta, de a una vuelta.">Log every shot. Every round's scorecard and analysis, one round at a time.</p></div>
-  <div class="tier lite"><div class="tn">Lite</div><div class="tp" data-l="1 ball / month|1 pelota / mes">1 ball / month</div><div class="tu" data-l="≈ US$4.92 a month|≈ US$4,92 por mes">≈ US$4.92 a month</div><p data-l="The control charts across all your rounds, your priorities, friends, your coach — and your Garmin rounds imported in a minute. Save one ball a month with better strategy and it pays for itself.|Los gráficos de control de todas tus vueltas, tus prioridades, amigos, tu profesor — y tus vueltas de Garmin importadas en un minuto. Ahorrá una pelota por mes con mejor estrategia y se paga sola.">The control charts across all your rounds, your priorities, friends, your coach — and your Garmin rounds imported in a minute. Save one ball a month with better strategy and it pays for itself.</p></div>
-  <div class="tier plus"><div class="tn">Plus</div><div class="tp" data-l="3 balls / month|3 pelotas / mes">3 balls / month</div><div class="tu" data-l="≈ US$14.75 a month|≈ US$14,75 por mes">≈ US$14.75 a month</div><p data-l="Everything in Lite, plus a 30-minute call with me every quarter, prepared from your numbers.|Todo lo de Lite, más una llamada de 30 minutos conmigo cada trimestre, preparada con tus números.">Everything in Lite, plus a 30-minute call with me every quarter, prepared from your numbers.</p></div>
-  <div class="tier pro"><div class="tn">Pro</div><div class="tp" data-l="6 balls / month|6 pelotas / mes">6 balls / month</div><div class="tu" data-l="≈ US$29.50 a month|≈ US$29,50 por mes">≈ US$29.50 a month</div><p data-l="Everything in Plus, with the call every month instead of every quarter.|Todo lo de Plus, con la llamada todos los meses en lugar de cada trimestre.">Everything in Plus, with the call every month instead of every quarter.</p></div>
+  <div class="tier free"><div class="tn">Free</div><div class="tp" data-l="Free|Gratis">Free</div><div class="tu">US$0</div><ul><li data-l="Log every shot, with predictions|Cargá cada tiro, con predicciones">Log every shot, with predictions</li><li data-l="Scorecard, strokes gained and Tiger 5 for each round|Tarjeta, strokes gained y Tiger 5 de cada vuelta">Scorecard, strokes gained and Tiger 5 for each round</li><li data-l="One round at a time|De a una vuelta">One round at a time</li></ul></div>
+  <div class="tier lite"><div class="tn">Lite</div><div class="tp" data-l="1 ball / month|1 pelota / mes">1 ball / month</div><div class="tu" data-l="≈ US$4.92 a month|≈ US$4,92 por mes">≈ US$4.92 a month</div><ul><li data-l="Everything in Free|Todo lo de Free">Everything in Free</li><li data-l="Control charts across all your rounds|Gráficos de control de todas tus vueltas">Control charts across all your rounds</li><li data-l="Your practice priorities|Tus prioridades de práctica">Your practice priorities</li><li data-l="Friends and your coach|Amigos y tu profesor">Friends and your coach</li><li data-l="Garmin rounds imported in a minute|Vueltas de Garmin importadas en un minuto">Garmin rounds imported in a minute</li></ul></div>
+  <div class="tier plus"><div class="tbadge" data-l="Recommended|Recomendado">Recommended</div><div class="tn">Plus</div><div class="tp" data-l="3 balls / month|3 pelotas / mes">3 balls / month</div><div class="tu" data-l="≈ US$14.75 a month|≈ US$14,75 por mes">≈ US$14.75 a month</div><ul><li data-l="Everything in Lite|Todo lo de Lite">Everything in Lite</li><li data-l="A 30-minute call with me every quarter, prepared from your numbers|Una llamada de 30 minutos conmigo cada trimestre, preparada con tus números">A 30-minute call with me every quarter, prepared from your numbers</li><li data-l="Early access to new features|Acceso anticipado a funciones nuevas">Early access to new features</li></ul></div>
+  <div class="tier pro"><div class="tn">Pro</div><div class="tp" data-l="6 balls / month|6 pelotas / mes">6 balls / month</div><div class="tu" data-l="≈ US$29.50 a month|≈ US$29,50 por mes">≈ US$29.50 a month</div><ul><li data-l="Everything in Plus|Todo lo de Plus">Everything in Plus</li><li data-l="The call with me every month|La llamada conmigo todos los meses">The call with me every month</li><li data-l="Priority support|Soporte prioritario">Priority support</li></ul></div>
  <div class="lteam"><div class="lteamB">4×3</div><div><b data-l="Teams of four: 25% off any plan.|Equipos de cuatro: 25% de descuento en cualquier plan.">Teams of four: 25% off any plan.</b><span data-l="One of you creates the team and shares a code.|Uno crea el equipo y comparte un código.">One of you creates the team and shares a code.</span></div></div>
  </div>
 </div></section>
@@ -5323,7 +5333,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    h+='<div class="plGrid">';
    PLANS.forEach(function(p){var me=cur===p.k,usd=p.balls*BALL_USD;
      h+='<div class="plCard pl-'+p.k+(me?' on':'')+'">'+
-       '<div class="plName">'+p.name+'</div>'+
+       (p.k==='plus'?'<div class="plBadge">'+T('Recommended','Recomendado')+'</div>':'')+'<div class="plName">'+p.name+'</div>'+
        '<div class="plBalls">'+(p.balls?('<span class="plIcons">'+(p.balls<=3?Array(p.balls+1).join(ball(26)):ball(26)+'<b>×'+p.balls+'</b>')+'</span><span class="plQty">'+(p.balls===1?T('1 ball','1 pelota'):(p.balls===6?T('6 balls','6 pelotas'):(p.balls===12?T('12 balls','12 pelotas'):p.balls+T(' balls',' pelotas'))))+'<small>'+T(' / month',' / mes')+'</small></span>'):'<span class="plQty">'+T('Free','Gratis')+'</span>')+'</div>'+
        '<div class="plUsd">'+(p.balls?'≈ US$'+usd.toFixed(2)+T(' a month · annual: 10 months',' por mes · anual: 10 meses'):'&nbsp;')+'</div>'+
        '<ul>'+(ES()?p.es:p.en).map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+(p.note?'<div class="plNote">'+(ES()?p.note[1]:p.note[0])+'</div>':'')+
