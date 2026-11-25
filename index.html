@@ -2950,6 +2950,11 @@ window.saveLoggedRounds=function(a){try{save(uckey(),a||[]);if(PLAYER===(localSt
    ((r.holes||r.hl)?'':'<div style="color:var(--ink-soft);font-size:12px;grid-column:1/-1">'+T('Imported summary — no shot-by-shot detail, so no hole-by-hole scorecard.')+'</div>')+
    (r.hlx?'<div style="color:var(--clay);font-size:12px;grid-column:1/-1">'+T('Shot detail in the sheet is one stroke short of the recorded score.')+'</div>':'')+
    '</div>';}
+ /* every round of the player, imported sheet history included, each with an id (used by the round review) */
+ window.ALLROUNDS=function(){var user=localStorage.getItem('app-user')||'Guido',SV=function(r){return window.SGVIEW?window.SGVIEW(r,'scratch'):r;};
+   return (PLAYERS[user]||[]).map(function(r,i){var o=SV(r);return Object.assign({},o,{id:'imp'+i+'-'+(r.date||'')});})
+     .concat((window.getLoggedRounds?window.getLoggedRounds():[]).map(function(r){return SV(r);})).filter(function(r){return r&&r.date;})
+     .filter(function(r,i,arr){if(String(r.id).indexOf('imp')!==0)return true;return !arr.some(function(x){return String(x.id).indexOf('imp')!==0&&x.date===r.date&&x.score===r.score;});});};   /* a round both imported and logged counts once */
  window.LEDGER={render:function(){
    var el=document.getElementById('ledgerList');if(!el)return;
    var user=localStorage.getItem('app-user')||'Guido';
@@ -2974,14 +2979,14 @@ window.saveLoggedRounds=function(a){try{save(uckey(),a||[]);if(PLAYER===(localSt
        '<div class="ledR"><span class="ledsc">'+r.score+' <small>('+stp+')</small></span>'+
        '<span class="ledsg '+((sg!=null&&sg<0)?'sg-neg':'sg-pos')+'">SG '+(sg!=null?fmt(sg):'·')+'</span>'+
        '<span class="ledsrc '+(o.src==='logged'?'lg':'im')+'">'+T(o.src)+'</span>'+
-       (o.src==='logged'?'<span class="ledshare ledrev" data-rv="1" title="'+(window.__LANG==='es'?'Esta vuelta contra tu normalidad':'This round against your normal')+'">◎ '+(window.__LANG==='es'?'Revisión':'Review')+'</span>':'')+
+       ((o.src==='logged'||r.putts!=null)?'<span class="ledshare ledrev" data-rv="1" title="'+(window.__LANG==='es'?'Esta vuelta contra tu normalidad':'This round against your normal')+'">◎ '+(window.__LANG==='es'?'Revisión':'Review')+'</span>':'')+
        '<span class="ledshare" data-sh="1" title="WhatsApp · PNG">⤴ '+T('Share')+'</span>'+
        '<span class="ledgo">'+(card?T('Scorecard')+' ▶':(icard?T('Scorecard')+' ▾':T('Details')+' ▾'))+'</span></div>'+
        '<div class="leddet" id="leddet_'+i+'" style="display:none"></div></div>';
    }).join('');
    el.querySelectorAll('.ledrow').forEach(function(row){row.addEventListener('click',function(ev){
      var i=+row.getAttribute('data-li'),o=all[i],r=o.r;
-     if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.ledrev')){if(window.LGR&&window.LGR.review)window.LGR.review(r.id);return;}
+     if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.ledrev')){if(window.LGR&&window.LGR.review)window.LGR.review(o.src==='logged'?r.id:{date:r.date,score:r.score,course:r.course});return;}
       if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.ledshare')){if(window.SHARE)window.SHARE.round(r,user);return;}
      if(o.src==='logged'&&r.holes){if(window.showView)window.showView('log');if(window.LGR&&window.LGR.openCard)window.LGR.openCard({id:r.id,course:r.courseCode||r.course,tee:r.tee,date:r.date,score:r.score,chcp:r.ph,notes:r.notes,lesson:r.lesson,holes:r.holes});return;}
      var dd=document.getElementById('leddet_'+i);if(!dd)return;var open=dd.style.display!=='none';
@@ -4115,7 +4120,7 @@ document.getElementById('lgSaveBtn').onclick=()=>{
  lgToast('<b>'+(replaced?'Round updated':'Saved')+'</b> · '+t.strokes+' ('+(stp>=0?'+':'')+stp+')'+(nine?' · 9 holes':' · diff '+diff)+'<br><span class="tsg">SG '+fmt(t.tot)+' · Tiger\'s 5: '+m.total+((hi!=null&&!editRoundId)?' · HI ≈ '+hi:'')+' · ✓ in Statistics</span>');
  var wasEdit=!!editRoundId;editRoundId=null;
  localStorage.removeItem(RKEY);(function(){var d=loadDefault();R=newRound(d.course,d.tee);})();lgEntered=false;render();renderLogged();
- if(!wasEdit){try{showRoundReview(rec,arr);}catch(e){}}
+ if(!wasEdit){try{var allR=window.ALLROUNDS?window.ALLROUNDS():arr;if(!allR.some(function(x){return x.id===rec.id;}))allR=allR.concat([rec]);showRoundReview(rec,allR);}catch(e){try{showRoundReview(rec,arr);}catch(e2){}}}
 };
 /* ---- course / tee selector ---- */
 function anyConfirmed(){return R.holes.some(h=>h.shots.some(s=>s.conf));}
@@ -4401,7 +4406,7 @@ function demoCardHTML(){if(!demoAvailable())return '';var es=window.__LANG==='es
 /* shared with the other modules (setup wizard, Garmin import, course requests, profile cards) */
 setTimeout(prefPull,900);window.addEventListener('focus',function(){prefPull();});
 window.COURSES=COURSES;window.PROF=PROF;window.saveProf=saveProf;window.teeEN=teeEN;window.applyI18n=applyI18n;
-render();renderSel();applyI18n();window.LGR={review:function(id){var all=(window.getLoggedRounds?window.getLoggedRounds():[]),r=all.filter(function(x){return (x.id||'')===id;})[0];if(r)showRoundReview(r,all);},demo:lgDemo,demoEnd:lgDemoEnd,demoOn:function(){return DEMO_ON;},card:function(){render();renderSel();},importCard:importCard,profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause,practice:lgPractice,practiceEnd:lgPracticeEnd,tourCard:function(){try{if(!R._tour)return;for(var i=R.hStart;i<R.hEnd;i++){var h=R.holes[i],y=h.yd;
+render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{all=window.ALLROUNDS?window.ALLROUNDS():[];}catch(e){}if(!all.length)all=(window.getLoggedRounds?window.getLoggedRounds():[]);var r=all.filter(function(x){return typeof id==='string'?(x.id||'')===id:(x.date===id.date&&x.score===id.score&&x.course===id.course);})[0];if(r)showRoundReview(r,all);},demo:lgDemo,demoEnd:lgDemoEnd,demoOn:function(){return DEMO_ON;},card:function(){render();renderSel();},importCard:importCard,profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause,practice:lgPractice,practiceEnd:lgPracticeEnd,tourCard:function(){try{if(!R._tour)return;for(var i=R.hStart;i<R.hEnd;i++){var h=R.holes[i],y=h.yd;
    h.shots=h.par===3?[{lie:'tee',dist:y,pen:0,conf:true},{lie:'putt',dist:22,pen:0,conf:true},{lie:'putt',dist:2,pen:0,conf:true}]
     :h.par===5?[{lie:'tee',dist:y,pen:0,conf:true},{lie:'fw',dist:Math.max(150,y-280),pen:0,conf:true},{lie:(i%3?'fw':'rough'),dist:70,pen:0,conf:true},{lie:'putt',dist:14,pen:0,conf:true},{lie:'putt',dist:2,pen:0,conf:true}]
     :[{lie:'tee',dist:y,pen:0,conf:true},{lie:(i%2?'fw':'rough'),dist:Math.max(60,y-275),pen:0,conf:true},{lie:'putt',dist:(i%4===0?9:20),pen:0,conf:true}].concat(i%4===0?[]:[{lie:'putt',dist:2,pen:0,conf:true}]);
