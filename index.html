@@ -3538,7 +3538,7 @@ var scMode=false;
 /* ===== after the round: today against your own normal. Typical = your median; normal range = natural process limits (XmR) of your previous rounds ===== */
 function reviewParts(rec,all){
  var es=window.__LANG==='es',T=function(a,b){return es?b:a;},hp=rec.holesPlayed||18;
- var prev=(all||[]).filter(function(x){return x&&x.id!==rec.id&&(x.holesPlayed||18)===hp&&String(x.date||'')<=String(rec.date||'');}).sort(function(a,b){return String(a.date||'')<String(b.date||'')?-1:1;}).slice(-20);
+ var prev=(all||[]).filter(function(x){return x&&x.id!==rec.id&&(x.holesPlayed||18)===hp&&String(x.date||'')<=String(rec.date||'');}).sort(function(a,b){return String(a.date||'')<String(b.date||'')?-1:1;}).slice(-80);   /* enough history for the charts' stages */
  var M=[['score',T('Gross score','Score gross'),1,0],['stpNet',T('Against your par','Contra tu par'),1,0,true],['sgtot',T('Strokes gained','Strokes gained'),0,2],
    ['putts',T('Putts','Putts'),1,0],['p3',T('3-putts','3 putts'),1,0],['db',T('Double bogeys or worse','Dobles bogeys o peor'),1,0],['pen',T('Penalties','Penalidades'),1,0],
    ['fw',T('Fairways hit','Fairways'),0,0],['gir',T('Greens in regulation','Greens en regulación'),0,0],['mtot',T("Tiger 5 mistakes","Errores Tiger 5"),1,0]];
@@ -3548,8 +3548,12 @@ function reviewParts(rec,all){
  var rows=[],better=[],worse=[],enough=prev.length>=5;
  M.forEach(function(m){var k=m[0],today=rec[k];if(today==null||isNaN(today))return;if(m[4]&&!(rec.ph))return;
    var hv=prev.map(function(x){return x[k];}).filter(function(v){return v!=null&&!isNaN(v);});var row={m:m,today:+today};
-   if(enough&&hv.length>=5){var mean=hv.reduce(function(a,b){return a+b;},0)/hv.length,mr=0;for(var i=1;i<hv.length;i++)mr+=Math.abs(hv[i]-hv[i-1]);mr=mr/(hv.length-1);
-     row.typ=med(hv);row.lo=mean-2.66*mr;row.hi=mean+2.66*mr;if(m[3]===0&&row.lo<0)row.lo=0;
+   if(enough&&hv.length>=5){
+     /* the same limits as the control charts: the current stage, i.e. the rounds since this number last changed */
+     var CNT={putts:1,p3:1,db:1,pen:1,fw:1,gir:1,mtot:1},done0=false;
+     if(typeof window.segLimits==='function'){try{var S=window.segLimits(hv,!!CNT[k]),g=S.segs[S.segs.length-1];if(g&&isFinite(g.u)&&isFinite(g.l)){var cur=hv.slice(g.start);row.typ=med(cur.length?cur:hv);row.lo=g.l;row.hi=g.u;row.n=cur.length;done0=true;}}catch(e){}}
+     if(!done0){var hv2=hv.slice(-20),mean=hv2.reduce(function(a,b){return a+b;},0)/hv2.length,mr=0;for(var i=1;i<hv2.length;i++)mr+=Math.abs(hv2[i]-hv2[i-1]);mr=mr/(hv2.length-1);row.typ=med(hv2);row.lo=mean-2.66*mr;row.hi=mean+2.66*mr;row.n=hv2.length;}
+     if(m[3]===0&&row.lo<0)row.lo=0;
      var out=row.today>row.hi?'up':row.today<row.lo?'down':'';if(out){var good=(out==='down')===(m[2]===1);row.v=good?'better':'worse';(good?better:worse).push(m[1].toLowerCase());}else row.v='normal';}
    rows.push(row);});
  var list=function(a){return a.length<2?a.join(''):a.slice(0,-1).join(', ')+T(' and ',' y ')+a[a.length-1];};
@@ -3563,16 +3567,17 @@ function reviewParts(rec,all){
  var V={normal:T('normal','normal'),better:T('better','mejor'),worse:T('worse','peor')};
  var tbl='<div class="pcWrap"><table class="rvT"><thead><tr><th></th><th>'+T('Today','Hoy')+'</th>'+(enough?'<th>'+T('Your typical','Lo tuyo')+'</th><th>'+T('Normal range','Rango normal')+'</th><th></th>':'')+'</tr></thead><tbody>'+
    rows.map(function(r){var m=r.m,sgn=m[0]==='stpNet'||m[0]==='sgtot';return '<tr><td>'+m[1]+'</td><td class="rvTd">'+sg(r.today,m[3],sgn)+'</td>'+(enough?(r.typ!=null?'<td>'+sg(r.typ,m[3]||(r.typ%1?1:0),sgn)+'</td><td class="rvRg">'+sg(r.lo,m[3]||1,sgn)+' – '+sg(r.hi,m[3]||1,sgn)+'</td><td><span class="rvV '+r.v+'">'+V[r.v]+'</span></td>':'<td>·</td><td>·</td><td></td>'):'')+'</tr>';}).join('')+'</tbody></table></div>';
- var note=enough?'<p class="pcOpt">'+T('Your typical is your median: half your rounds are better, half worse. The normal range is where your rounds land when nothing has changed in your game; only a number outside it means something was different.','Lo tuyo es tu mediana: la mitad de tus vueltas son mejores y la mitad peores. El rango normal es donde caen tus vueltas cuando nada cambió en tu juego; solo un número fuera de él significa que algo fue distinto.')+'</p>':'';
- return {head:head,lead:lead,tbl:tbl,note:note,enough:enough,n:prev.length};}
+ var note=enough?'<p class="pcOpt">'+T('Your typical is your median: half your rounds are better, half worse. The normal range is the same as in your control charts: where your rounds land in your current stage, since your game last changed. Only a number outside it means something was different.','Lo tuyo es tu mediana: la mitad de tus vueltas son mejores y la mitad peores. El rango normal es el mismo de tus gráficos de control: donde caen tus vueltas en tu etapa actual, desde la última vez que tu juego cambió. Solo un número fuera de él significa que algo fue distinto.')+'</p>':'';
+ var sr=rows.filter(function(r){return r.m[0]==='score';})[0];
+ return {head:head,lead:lead,tbl:tbl,note:note,enough:enough,n:(sr&&sr.n)||Math.min(prev.length,20)};}
 function reviewInline(rec,all){try{var p=reviewParts(rec,all),es=window.__LANG==='es';
-  return '<div class="rvInline"><div class="rvKick">'+(es?'Tu vuelta, contra tu normalidad':'Your round, against your normal')+(p.enough?' · '+(es?'comparada con las ':'compared with the ')+p.n+(es?' vueltas anteriores':' rounds before it'):'')+'</div><h3>'+p.head+'</h3><p class="rvLead">'+p.lead+'</p>'+p.tbl+p.note+'</div>';}catch(e){return '';}}
+  return '<div class="rvInline"><div class="rvKick">'+(es?'Tu vuelta, contra tu normalidad':'Your round, against your normal')+(p.enough?' · '+(es?'contra tu etapa actual: ':'against your current stage: ')+p.n+(es?' vueltas':' rounds'):'')+'</div><h3>'+p.head+'</h3><p class="rvLead">'+p.lead+'</p>'+p.tbl+p.note+'</div>';}catch(e){return '';}}
 window.REVIEWINLINE=function(rec){var all=[];try{all=window.ALLROUNDS?window.ALLROUNDS():[];}catch(e){}var r=all.filter(function(x){return x.date===rec.date&&x.score===rec.score&&(x.course===rec.course||!rec.course);})[0]||rec;return reviewInline(r,all);};
 function showRoundReview(rec,all){
  var es=window.__LANG==='es',T=function(a,b){return es?b:a;},p=reviewParts(rec,all),head=p.head,lead=p.lead,tbl=p.tbl,enough=p.enough,prev={length:p.n};
  var ov=document.createElement('div');ov.id='parCard';ov.className='rvCard';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');
  ov.innerHTML='<div class="pcBox"><div class="pcKick">'+T('Your round, against your normal','Tu vuelta, contra tu normalidad')+'</div>'+
-   '<div class="pcHead"><div><h2>'+head+'</h2><p>'+(rec.course||'')+' · '+(rec.date||'')+(enough?' · '+T('compared with the ','comparada con las ')+prev.length+T(' rounds before it',' vueltas anteriores'):'')+'</p></div><div class="pcBig">'+rec.score+'</div></div>'+
+   '<div class="pcHead"><div><h2>'+head+'</h2><p>'+(rec.course||'')+' · '+(rec.date||'')+(enough?' · '+T('against your current stage: ','contra tu etapa actual: ')+p.n+T(' rounds',' vueltas'):'')+'</p></div><div class="pcBig">'+rec.score+'</div></div>'+
    '<p class="pcLead">'+lead+'</p>'+tbl+p.note+
    '<div class="pcActs"><button type="button" class="pcBack rvStats">'+T('Open Statistics','Abrir Estadísticas')+'</button><button type="button" class="pcGo">'+T('Done','Listo')+'</button></div></div>';
  document.body.appendChild(ov);
