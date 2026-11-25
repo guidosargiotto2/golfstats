@@ -13,7 +13,13 @@
 <meta http-equiv="Expires" content="0">
 <title>Golfimbul — every shot, the truth</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20116%20116%22%3E%3Cdefs%3E%3CclipPath%20id%3D%22o%22%3E%3Ccircle%20cx%3D%2258%22%20cy%3D%2258%22%20r%3D%2252%22/%3E%3C/clipPath%3E%3C/defs%3E%3Ccircle%20cx%3D%2258%22%20cy%3D%2258%22%20r%3D%2252%22%20fill%3D%22%23123f31%22/%3E%3Cg%20clip-path%3D%22url%28%23o%29%22%3E%3Cpolyline%20points%3D%2210%2C46%2024%2C34%2038%2C54%2052%2C38%2066%2C46%22%20fill%3D%22none%22%20stroke%3D%22%23d8c48c%22%20stroke-width%3D%228%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M66%2046%20C%2074%2056%2078%2072%2082%2084%22%20fill%3D%22none%22%20stroke%3D%22%23d8c48c%22%20stroke-width%3D%228%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M0%20116%20V%2098%20C%2030%2098%2046%2080%2076%2080%20C%2098%2080%20110%2090%20116%2096%20V%20116%20Z%22%20fill%3D%22%235f8a52%22/%3E%3Ccircle%20cx%3D%2282%22%20cy%3D%2290%22%20r%3D%229%22%20fill%3D%22%23fff%22/%3E%3C/g%3E%3Ccircle%20cx%3D%2258%22%20cy%3D%2258%22%20r%3D%2252%22%20fill%3D%22none%22%20stroke%3D%22%23d8c48c%22%20stroke-width%3D%225%22/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20116%20116%22%3E%3Cdefs%3E%3CclipPath%20id%3D%22o%22%3E%3Ccircle%20cx%3D%2258%22%20cy%3D%2258%22%20r%3D%2252%22/%3E%3C/clipPath%3E%3C/defs%3E%3Ccircle%20cx%3D%2258%22%20cy%3D%2258%22%20r%3D%2252%22%20fill%3D%22%23123f31%22/%3E%3Cg%20clip-path%3D%22url%28%23o%29%22%3E%3Cpolyline%20points%3D%2210%2C46%2024%2C34%2038%2C54%2052%2C38%2066%2C46%22%20fill%3D%22none%22%20stroke%3D%22%23d8c48c%22%20stroke-width%3D%228%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M66%2046%20C%2074%2056%2078%2072%2082%2084%22%20fill%3D%22none%22%20stroke%3D%22%23d8c48c%22%20stroke-width%3D%228%22%20stroke-linecap%3D%22round%22/%3E%3Cpath%20d%3D%22M0%20116%20V%2098%20C%2030%2098%2046%2080%2076%2080%20C%2098%2080%20110%2090%20116%2096%20V%20116%20Z%22%20fill%3D%22%235f8a52%22/%3E%3Ccircle%20cx%3D%2282%22%20cy%3D%2290%22%20r%3D%229%22%20fill%3D%22%23fff%22/%3E%3C/g%3E%3Ccircle%20cx%3D%2258%22%20cy%3D%2258%22%20r%3D%2252%22%20fill%3D%22none%22%20stroke%3D%22%23d8c48c%22%20stroke-width%3D%225%22/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Golfimbul">
+<meta name="application-name" content="Golfimbul">
 <meta name="theme-color" content="#0f3a2c">
 <style>
 :root{
@@ -5737,6 +5743,47 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
  document.getElementById('rhGo').onclick=function(){document.body.classList.add('rotOk');try{sessionStorage.setItem('gs-rotok','1');}catch(e){}};
  document.getElementById('lgMenuBtn').onclick=function(){document.body.classList.toggle('lgNavOpen');window.scrollTo(0,0);};
  setInterval(tick,400);tick();})();
+</script>
+
+<style id="pwacss">
+#pwaBar{position:fixed;left:12px;right:12px;bottom:12px;z-index:8000;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:#0f3a2c;color:#f4f1e6;box-shadow:0 14px 40px rgba(15,58,44,.35);font-family:'Trebuchet MS',sans-serif;animation:pwaUp .45s cubic-bezier(.2,.9,.3,1.2) both}
+#pwaBar img{width:42px;height:42px;border-radius:10px;flex:none}
+#pwaBar .t{flex:1;min-width:0;font-size:13.5px;line-height:1.35}
+#pwaBar .t b{display:block;font-family:Georgia,serif;font-size:16px;font-weight:600;color:#fff}
+#pwaBar button{border:none;cursor:pointer;font:700 12.5px 'Trebuchet MS',sans-serif;letter-spacing:.05em;text-transform:uppercase;border-radius:10px;padding:10px 14px}
+#pwaBar .go{background:#d8c48c;color:#0f3a2c}
+#pwaBar .no{background:transparent;color:#cfd8cf;padding:10px 6px}
+@keyframes pwaUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@media print{#pwaBar{display:none}}
+</style>
+<script>
+/* ===== installable app (PWA): offline shell + a discreet "install" bar for signed-in players on phones ===== */
+(function(){
+ if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
+ try{if(/[?&]go=log\b/.test(location.search))window.addEventListener('load',function(){setTimeout(function(){if(localStorage.getItem('gs-token')&&window.showView)window.showView('log');},300);});}catch(e){}
+ var standalone=function(){return (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;};
+ var ES=function(){return window.__LANG==='es';},KEY='gs-pwa-later',deferred=null;
+ var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ function snoozed(){try{var t=+localStorage.getItem(KEY)||0;return t&&(Date.now()-t)<14*864e5;}catch(e){return false;}}
+ function bar(){
+   if(document.getElementById('pwaBar')||standalone()||snoozed())return;
+   try{if(!localStorage.getItem('gs-token'))return;}catch(e){return;}
+   if(document.getElementById('obWiz')||document.querySelector('.tourcard'))return;   /* never on top of the wizard or the tour */
+   if(!deferred&&!isIOS)return;
+   var b=document.createElement('div');b.id='pwaBar';b.setAttribute('role','dialog');
+   b.innerHTML='<img src="/icons/icon-192.png" alt=""><div class="t"><b>'+(ES()?'Golfimbul en tu teléfono':'Golfimbul on your phone')+'</b>'+
+     (deferred?(ES()?'Instalala: abre a pantalla completa y funciona sin señal en la cancha.':'Install it: opens full screen and works with no signal on the course.')
+              :(ES()?'Tocá <b style="display:inline;font:inherit;font-weight:700">Compartir</b> y después “Agregar a inicio”.':'Tap <b style="display:inline;font:inherit;font-weight:700">Share</b>, then “Add to Home Screen”.'))+'</div>'+
+     (deferred?'<button class="go">'+(ES()?'Instalar':'Install')+'</button>':'')+'<button class="no" aria-label="'+(ES()?'Cerrar':'Close')+'">'+(deferred?(ES()?'Ahora no':'Not now'):'OK')+'</button>';
+   document.body.appendChild(b);
+   b.querySelector('.no').onclick=function(){try{localStorage.setItem(KEY,String(Date.now()));}catch(e){}b.remove();};
+   var g=b.querySelector('.go');if(g)g.onclick=function(){var d=deferred;deferred=null;b.remove();if(d){d.prompt();if(d.userChoice)d.userChoice.then(function(c){if(c&&c.outcome!=='accepted'){try{localStorage.setItem(KEY,String(Date.now()));}catch(e){}}}).catch(function(){});}};
+ }
+ window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;setTimeout(bar,2500);});
+ window.addEventListener('appinstalled',function(){deferred=null;var b=document.getElementById('pwaBar');if(b)b.remove();});
+ window.addEventListener('load',function(){if(isIOS)setTimeout(bar,6000);});
+ window.PWA={bar:bar,installed:standalone};
+})();
 </script>
 </body>
 </html>
