@@ -1374,6 +1374,22 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 @keyframes deskDraw{0%{stroke-dashoffset:140}45%,100%{stroke-dashoffset:0}}
 @media(max-width:820px){#landing .deskWrap{grid-template-columns:1fr;gap:18px}#landing .deskArt{max-width:360px;margin:0 auto}}
 @media(prefers-reduced-motion:reduce){#landing .deskPhone,#landing .deskBuzz,#landing .deskFlag,#landing .deskLine{animation:none}#landing .deskLine{stroke-dashoffset:0}}
+#landing .valWrap{display:grid;grid-template-columns:1fr 1.05fr;gap:34px;align-items:center;}
+#landing .valArt{width:100%;height:auto;display:block;}
+#landing .valArt .vq{font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;fill:#1f7a4d;}
+#landing .valArt .vax{font-family:var(--cond);font-size:13px;font-weight:700;fill:#20261f;}
+#landing .valArt .vax2{font-family:var(--cond);font-size:11.5px;fill:#5c6357;}
+#landing .valArt .vl{font-family:var(--cond);font-size:13px;font-weight:700;fill:#5c6357;}
+#landing .valArt .vs{font-family:var(--cond);font-size:11px;fill:#8a8471;}
+#landing .valArt .vlg{font-family:var(--serif);font-size:19px;font-weight:700;fill:#0f3a2c;}
+#landing .valArt .vdot{opacity:0;transform:translateY(8px);transition:opacity .6s ease,transform .6s ease;}
+#landing .rv.in .valArt .vdot{opacity:1;transform:none;}
+#landing .rv.in .valArt .v2{transition-delay:.15s}#landing .rv.in .valArt .v3{transition-delay:.3s}#landing .rv.in .valArt .v4{transition-delay:.6s}
+#landing .valArt .vpulse{transform-origin:200px 72px;animation:valPulse 2.4s ease-out infinite;}
+@keyframes valPulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(2.4);opacity:0}}
+#landing .valNote{font-size:12.5px;color:#8a8471;line-height:1.5;margin:6px 0 0;}
+@media(max-width:820px){#landing .valWrap{grid-template-columns:1fr;gap:16px}}
+@media(prefers-reduced-motion:reduce){#landing .valArt .vpulse{animation:none}#landing .valArt .vdot{opacity:1;transform:none}}
 #landing .tier{position:relative;}
 #landing .tier.free{background:#fbfaf6;border-color:#e6e2d6;}
 #landing .tier.lite{background:linear-gradient(170deg,#f8efd6,#efe1b8);border-color:var(--sand);}
@@ -1533,6 +1549,35 @@ svg.tgSvg{width:100%;height:auto;display:block;}
  <p class="sub" data-l="Already have years of rounds on a Garmin? Import them and start with your history on day one.|¿Ya tenés años de vueltas en un Garmin? Importalas y empezá con tu historia desde el primer día.">Already have years of rounds on a Garmin? Import them and start with your history on day one.</p>
 </div></section>
 
+<section class="blk" id="l-value"><div class="lw rv valWrap">
+ <div class="valTxt">
+ <div class="kick" data-l="Value vs. effort|Valor vs. esfuerzo">Value vs. effort</div>
+ <h2 data-l="Stats that pay for the time they take.|Estadísticas que valen el tiempo que llevan.">Stats that pay for the time they take.</h2>
+ <p class="sub" data-l="From experience, we know the main reason golfers stop logging their rounds: it takes too long, and the process feels complicated.|Por experiencia sabemos por qué los golfistas dejan de cargar sus vueltas: lleva demasiado tiempo y el proceso parece complicado.">From experience, we know the main reason golfers stop logging their rounds: it takes too long, and the process feels complicated.</p>
+ <p class="sub" data-l="From process analysis, we know the other half: a metric is only worth collecting when the value it gives you is far greater than what it costs to produce. Most golf stats fail that test.|Por el análisis de procesos sabemos la otra mitad: una métrica solo vale la pena si el valor que te da es mucho mayor que lo que cuesta producirla. La mayoría de las estadísticas de golf no pasan esa prueba.">From process analysis, we know the other half: a metric is only worth collecting when the value it gives you is far greater than what it costs to produce. Most golf stats fail that test.</p>
+ <p class="sub"><span data-l="Golfimbul tackles both. More insight into your game, and above all |Golfimbul ataca las dos. Más claridad sobre tu juego, y sobre todo ">Golfimbul tackles both. More insight into your game, and above all </span><b data-l="how and where to improve it|cómo y dónde mejorarlo">how and where to improve it</b><span data-l=", for less of your time.|, con menos de tu tiempo.">, for less of your time.</span></p>
+ <p class="valNote" data-l="Positions are our own assessment of each type of tool, not measurements. Golfimbul's time: about 7 minutes a round at Essentials, up to 10.5 at Analyst.|Las posiciones son nuestra propia evaluación de cada tipo de herramienta, no mediciones. El tiempo de Golfimbul: unos 7 minutos por vuelta en Esencial, hasta 10,5 en Analista.">Positions are our own assessment of each type of tool, not measurements. Golfimbul's time: about 7 minutes a round at Essentials, up to 10.5 at Analyst.</p>
+ </div>
+ <svg class="valArt" viewBox="0 0 560 400" role="img" aria-label="Time spent logging versus what you learn: Golfimbul asks for less time and gives more">
+  <defs><linearGradient id="valZone" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#1f7a4d" stop-opacity="0"/><stop offset="1" stop-color="#1f7a4d" stop-opacity=".13"/></linearGradient>
+  <marker id="valArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#5c6357"/></marker></defs>
+  <rect x="70" y="20" width="460" height="300" rx="10" fill="#fffdf7" stroke="#e2ddcc"/>
+  <path d="M70 20 H300 V170 H70 Z" fill="url(#valZone)" transform="translate(0,0)"/>
+  <text x="84" y="42" class="vq" data-l="Worth it: more value, less time|Vale la pena: más valor, menos tiempo">Worth it: more value, less time</text>
+  <text x="516" y="306" text-anchor="end" class="vq" data-l="Costs more than it gives|Cuesta más de lo que da">Costs more than it gives</text>
+  <line x1="300" y1="20" x2="300" y2="320" stroke="#e2ddcc" stroke-dasharray="4 5"/><line x1="70" y1="170" x2="530" y2="170" stroke="#e2ddcc" stroke-dasharray="4 5"/>
+  <path d="M70 336 H530" stroke="#5c6357" stroke-width="1.3" marker-end="url(#valArr)"/>
+  <path d="M54 320 V20" stroke="#5c6357" stroke-width="1.3" marker-end="url(#valArr)"/>
+  <text x="300" y="362" text-anchor="middle" class="vax" data-l="Your time logging each round|Tu tiempo cargando cada vuelta">Your time logging each round</text>
+  <text x="76" y="352" class="vax2" data-l="less|menos">less</text><text x="530" y="352" text-anchor="end" class="vax2" data-l="more|más">more</text>
+  <text x="30" y="170" text-anchor="middle" class="vax" transform="rotate(-90 30 170)" data-l="What it tells you about how to improve|Lo que te dice sobre cómo mejorar">What it tells you about how to improve</text>
+  <g class="vdot v1"><circle cx="420" cy="250" r="9" fill="#c9c3b0"/><text x="420" y="276" text-anchor="middle" class="vl" data-l="Stats by hand|Estadísticas a mano">Stats by hand</text><text x="420" y="291" text-anchor="middle" class="vs" data-l="totals, no causes|totales, sin causas">totals, no causes</text></g>
+  <g class="vdot v2"><circle cx="470" cy="150" r="9" fill="#a9a28c"/><text x="470" y="128" text-anchor="middle" class="vl" data-l="Detailed stat apps|Apps de estadísticas detalladas">Detailed stat apps</text><text x="470" y="113" text-anchor="middle" class="vs" data-l="lots of numbers, lots of typing|muchos números, mucho tipeo">lots of numbers, lots of typing</text></g>
+  <g class="vdot v3"><circle cx="150" cy="215" r="9" fill="#a9a28c"/><text x="150" y="241" text-anchor="middle" class="vl" data-l="Sensor trackers|Sensores automáticos">Sensor trackers</text><text x="150" y="256" text-anchor="middle" class="vs" data-l="automatic, but miss short shots|automáticos, pero pierden tiros cortos">automatic, but miss short shots</text></g>
+  <g class="vdot v4"><circle cx="200" cy="72" r="13" fill="#1f7a4d" stroke="#0f3a2c" stroke-width="2"/><circle class="vpulse" cx="200" cy="72" r="13" fill="none" stroke="#1f7a4d" stroke-width="2"/>
+    <text x="222" y="70" class="vlg">Golfimbul</text><text x="222" y="88" class="vs" data-l="predictions do most of the typing|las predicciones tipean por vos">predictions do most of the typing</text><text x="222" y="103" class="vs" data-l="tells you where and how to improve|te dice dónde y cómo mejorar">tells you where and how to improve</text></g>
+</svg>
+</div></section>
 <section class="blk" id="l-desk"><div class="lw rv deskWrap">
  <div class="deskTxt">
  <div class="kick" data-l="Phone or laptop?|¿Teléfono o laptop?">Phone or laptop?</div>
