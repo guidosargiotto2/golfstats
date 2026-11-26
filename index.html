@@ -2857,11 +2857,12 @@ function cusumHelp(key){
  m.addEventListener('click',function(e){if(e.target===m||e.target.classList.contains('cuX'))close();});document.addEventListener('keydown',kd);}
 
 function renderAll(){
- const FULL=BASE.concat(CUSTOM).map(sgView);
+ const ALL0=BASE.concat(CUSTOM),FULL=ALL0.filter(r=>!(r&&r.holesPlayed!=null&&r.holesPlayed<18)).map(sgView),N9=ALL0.length-FULL.length;   /* 9-hole rounds stay out of the charts: a 42 is not a score next to 80s */
  R=filterRounds(FULL,kpiRange);try{renderDisp();}catch(e){}try{renderPar();}catch(e){} const N=R.length, idx=R.map((_,i)=>i+1);
  document.getElementById('customBadge').innerHTML=CUSTOM.length?`<span class="badge">${CUSTOM.length} ${LX('logged here','cargadas acá')}</span>`:'';
  {const rc=document.getElementById('kpiRange');if(rc)rc.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.r===kpiRange));}
  document.getElementById('foot').textContent=PLAYER+' · '+RANGE_LBL[kpiRange]+LX(' · showing ',' · mostrando ')+N+LX(' of ',' de ')+FULL.length+LX(' rounds · SG via Broadie benchmark tables',' vueltas · SG según tablas de referencia de Broadie');
+ if(N9){const ft9=document.getElementById('foot');if(ft9)ft9.textContent+=LX(' · '+N9+' nine-hole round'+(N9>1?'s':'')+' not included (see them in Rounds)',' · '+N9+' vuelta'+(N9>1?'s':'')+' de 9 hoyos no incluida'+(N9>1?'s':'')+' (están en Vueltas)');}
  if(N===0){
    const empty=FULL.length? LX('No rounds in this range — pick a wider window.','Sin vueltas en este rango — elegí una ventana más amplia.') : LX('No rounds yet — log your first one in “Log a round”.','Todavía no hay vueltas — cargá la primera en “Cargar vuelta”.');
    document.getElementById('kpis').innerHTML=`<div class="kpi"><div class="lbl">${FULL.length?LX('No rounds in range','Sin vueltas en el rango'):LX('Rounds logged','Vueltas cargadas')}</div><div class="val">${FULL.length?'—':'0'}</div></div>`;
