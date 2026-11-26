@@ -3342,10 +3342,7 @@ var LOGLVL={order:['ess','ply','plus','ana'],
  recommend:function(o){o=o||{};var h=parseFloat(o.hi),i=(isNaN(h)?0:h>=20?0:h>=10?1:h>=5?2:3);
    if(!isNaN(h)){if(o.lessons==='month'||o.lessons==='week')i++;if(o.golfHrs==='0-4')i--;if(o.recall==='little'&&o.live!=='yes')i--;}
    return this.order[Math.max(0,Math.min(3,i))];},
- mine:function(){var hi=null;try{hi=effHI();}catch(e){}
-   /* no index from logged rounds or typed in: use the latest index on the player's imported rounds */
-   if(hi==null||hi===''||isNaN(+hi)){try{var u=(localStorage.getItem('app-user')||'').toLowerCase(),P=(typeof PLAYERS!=='undefined')?PLAYERS:{},k=Object.keys(P).filter(function(x){return x.toLowerCase()===u;})[0];
-     if(k){var rs=P[k].filter(function(r){return r&&r.hi!=null&&!isNaN(+r.hi);});if(rs.length)hi=+rs[rs.length-1].hi;}}catch(e){}}
+ mine:function(){var hi=playerHI();
    if(hi==null||hi===''||isNaN(+hi))return null;   /* unknown handicap: no recommendation rather than a wrong one */
    var a=PROF.about||{};return this.recommend({hi:+hi,lessons:a.lessons,golfHrs:a.golfHrs,recall:a.recall,live:a.live});},
  current:function(){var k=null,me=this;this.order.forEach(function(x){var l=me.L[x];if(PROF.predict!==false&&!!PROF.trackComp&&!!PROF.trackClubs===l.clubs&&!!PROF.trackRead===l.read&&(l.disp==='off'?!PROF.trackDisp:(!!PROF.trackDisp&&(PROF.dispMode||'all')===l.disp)))k=x;});return k;},
@@ -3416,7 +3413,7 @@ document.addEventListener('change',function(e){var t=e.target;if(t&&/^pf_(predic
 /* ===== Printable shot-by-shot scorecard: generic for any course (hole numbers only), shot rows sized by handicap,
    second line per shot only for the columns the player logs (club · dispersion · compliance) ===== */
 function cardRows(hi){if(hi==null||isNaN(hi))return 8;return hi<=5?6:hi<=12?7:hi<=20?8:hi<=28?9:10;}
-function cardHI(){try{var h=window.SGE&&window.SGE.hi?window.SGE.hi():null;return (h==null||h===''||isNaN(+h))?null:+h;}catch(e){return null;}}
+function cardHI(){try{return playerHI();}catch(e){return null;}}
 function cardInfoHTML(){var es=window.__LANG==='es',hi=cardHI(),n=cardRows(hi),bits=[];
  if(PROF.trackClubs)bits.push(es?'palo':'club');if(PROF.trackDisp||PROF.trackRead)bits.push(es?'dispersión':'dispersion');if(PROF.trackComp)bits.push('✓ / ✕');
  return (es?'<b>'+n+' filas de tiros por hoyo</b>'+(hi!=null?' para tu índice '+(hi<0?'+'+(-hi):hi):' (sin índice cargado)')+'. Cada tiro: desde dónde y distancia'+(bits.length?'; abajo, '+bits.join(', '):'')+'.'
@@ -3565,6 +3562,12 @@ function adjForN(n){return n===3?-2:((n===4||n===6)?-1:0);}
 function computeHI(){const d=HIST.slice(-20).map(r=>r.diff).filter(x=>typeof x==='number');const n=d.length;if(n<3)return null;
  const k=kForN(n);const low=d.slice().sort((a,b)=>a-b).slice(0,k);return Math.round((low.reduce((s,x)=>s+x,0)/k+adjForN(n))*10)/10;}
 function effHI(){const auto=computeHI();if(PROF.hiMode==='manual')return PROF.hiManual!==''?+PROF.hiManual:auto;if(PROF.hiMode==='auto')return auto;return PROF.hiManual!==''?+PROF.hiManual:auto;}
+/* the player's index for recommendations: from logged rounds or typed in, else the latest index on their imported rounds; null when unknown */
+function playerHI(){var hi=null;try{hi=effHI();}catch(e){}
+ if(hi==null||hi===''||isNaN(+hi)){try{var u=(localStorage.getItem('app-user')||'').toLowerCase(),P=(typeof PLAYERS!=='undefined')?PLAYERS:{},k=Object.keys(P).filter(function(x){return x.toLowerCase()===u;})[0];
+   if(k){var rs=P[k].filter(function(r){return r&&r.hi!=null&&!isNaN(+r.hi);});if(rs.length)hi=+rs[rs.length-1].hi;}}catch(e){}}
+ return (hi==null||hi===''||isNaN(+hi))?null:+hi;}
+window.playerHI=playerHI;
 /* Course/Playing handicap = HI × (Slope/113) + (CR − Par); halved for a 9-hole round */
 function suggestChcp(){var hi=effHI();if(hi==null||isNaN(hi))return null;var c=COURSES[R.course],t=c&&c.tees[R.tee];if(!t)return null;
  var par=c.par.reduce(function(a,b){return a+b;},0);var ch=hi*(t.slope/113)+(t.cr-par);
