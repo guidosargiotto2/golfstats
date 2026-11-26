@@ -1111,6 +1111,7 @@ html.rsOpen{overflow:hidden}
 @keyframes pReady{50%{transform:scale(1.06)}}
 .pmsg.pflash{animation:pFlash .9s ease}
 @keyframes pFlash{0%,60%{background:#fbe3c0;box-shadow:0 0 0 4px #fbe3c0}100%{background:transparent;box-shadow:none}}
+.hpin:focus-visible,.hpin:focus{outline:3px solid var(--sand-deep,#b9a66a);outline-offset:2px}
 </style>
 <style id="gimcss">
 .gimTag{font:600 10px/1 var(--sans,inherit);letter-spacing:.08em;background:var(--pine);color:#fff;border-radius:20px;padding:4px 8px;vertical-align:3px;margin-left:6px}
@@ -4313,8 +4314,9 @@ function renderHoleBar(hi){
    (hstr?'<span class="holescore" title="Hole score">'+hstr+' <small>'+hdt+'</small></span>':'')+'</div>'+
    '<div class="hbR"><span class="sgmini"><span class="ydchip">'+Y2U(h.yd)+' '+PROF.units+'</span> · <span class="'+(sg.tot<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg.tot)+'</span>'+(flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':'')+'</span></div>'+
    '<div class="holeadj">'+teeSel+pinSeg+'</div>';
- document.querySelectorAll('[data-hatee][data-tk]').forEach(function(b){b.onclick=function(){h.teeOv=b.getAttribute('data-tk');recomputeHoleYd(hi);render();};});
- document.querySelectorAll('[data-hpin]').forEach(function(b){b.onclick=function(){var a=b.dataset.hpin.split(':');h.pin=a[1];h.pinSet=true;recomputeHoleYd(hi);render();};});
+ document.querySelectorAll('[data-hatee][data-tk]').forEach(function(b){b.onclick=function(){h.teeOv=b.getAttribute('data-tk');recomputeHoleYd(hi);render();var pf=document.querySelector('[data-hpin="'+hi+':F"]');if(pf)pf.focus();};});   /* markers chosen → cursor on the flag, front first */
+ document.querySelectorAll('[data-hpin]').forEach(function(b){b.onclick=function(){var a=b.dataset.hpin.split(':');h.pin=a[1];h.pinSet=true;recomputeHoleYd(hi);render();var tc=document.querySelector('input[data-ydtee="'+hi+'"]');if(tc){tc.focus();if(tc.select)tc.select();}};   /* flag confirmed → cursor on the tee cell */
+   b.onkeydown=function(e){if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft'&&e.key!=='Tab')return;var O=['F','M','B'],k=O.indexOf(b.dataset.hpin.split(':')[1]),n=O[(k+((e.key==='ArrowLeft'||(e.key==='Tab'&&e.shiftKey))?2:1))%3],nb=document.querySelector('[data-hpin="'+hi+':'+n+'"]');if(nb){e.preventDefault();nb.focus();}};});
 }
 function recomputeHoleYd(hi){var h=R.holes[hi];var base=stdYd(R.course,h.teeOv||R.markers||R.tee,hi);var off=h.pin==='F'?-10:h.pin==='B'?10:0;h.yd=Math.max(20,base+off);if(h.shots&&h.shots[0]&&h.shots[0].lie==='tee')h.shots[0].dist=h.yd;}
 /* ===== club per shot: predicted from My bag distances, your past rounds on this hole, and the shot type ===== */
@@ -4500,6 +4502,7 @@ function focusTee(){setTimeout(function(){try{var hh=R.holes[R.cur];if(hh&&hh.do
 function focusEntry(){setTimeout(function(){try{var fb=document.getElementById('btnHoled');var hh=R.holes[R.cur];var cs=hh?confShots(hh):[],l=cs[cs.length-1];var holed=(PROF.predict&&l&&l.lie==='putt'&&l.dist<=4)||(hh&&hh._sank);if(fb&&holed){fb.focus();return;}var on=document.querySelector('#lgBody tr.entry input.lc.on');var el=on||document.querySelector('#lgBody tr.entry input.lc[data-lie="fw"]')||document.querySelector('#lgBody tr.entry input.lc');if(el){el.focus({preventScroll:false});if(el.select)el.select();}}catch(e){}},0);}
 /* ← → move between category cells in the same row (once the caret is at the edge) */
 function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input.p').forEach(function(el){el.addEventListener('keydown',function(e){
+   if(e.key==='Enter'&&el.dataset.ydtee!=null&&!R.holes[+el.dataset.ydtee].pinSet){e.preventDefault();var pf=document.querySelector('[data-hpin="'+el.dataset.ydtee+':F"]');if(pf){pf.focus();return;}}
    if(e.key==='Enter'){e.preventDefault();
      var isEntry=el.closest('tr').classList.contains('entry');
      if(isEntry){
@@ -5596,7 +5599,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
         exactly as the four detail levels in Profile → Round logging: Essentials → Player → Player+ → Analyst. Nothing is saved. ---- */
  var PLV=['ess','ply','plus','ana'];
  var PSTORY={
-  ess:[["Tee: markers were on <b>blue</b>, <b>red</b> flag at the <b>front</b>. Press <span class='tk'>Tab</span> to blue, then tap <b>Front −10</b>","Tee: las marcas estaban en <b>azul</b>, bandera <b>roja, adelante</b>. Apretá <span class='tk'>Tab</span> hasta azul y tocá <b>Adelante −10</b>"],
+  ess:[["Tee: markers were on <b>blue</b>, <b>red</b> flag at the <b>front</b>. <span class='tk'>Tab</span> to blue, <span class='tk'>Enter</span>; the cursor lands on <b>Front −10</b>: <span class='tk'>Enter</span>","Tee: las marcas estaban en <b>azul</b>, bandera <b>roja, adelante</b>. <span class='tk'>Tab</span> hasta azul, <span class='tk'>Enter</span>; el cursor cae en <b>Adelante −10</b>: <span class='tk'>Enter</span>"],
        ["Drive: rough, 140 yards. Prediction says 150: type <b>140</b>, then <span class='tk'>Enter</span>","Salida: rough, a 140 yardas. La predicción dice 150: escribí <b>140</b> y <span class='tk'>Enter</span>"],
        ["Approach: bunker, 15 yards. Right distance, wrong lie: <span class='tk'>Tab</span> to <b>Sand</b>, then <span class='tk'>Enter</span>","Approach: bunker, a 15 yardas. Distancia bien, lie mal: <span class='tk'>Tab</span> hasta <b>Bunker</b> y <span class='tk'>Enter</span>"],
        ["Bunker shot: to <b>8 feet</b>. Type <b>8</b> under Green, then <span class='tk'>Enter</span>","Salida del bunker: a <b>8 pies</b>. Escribí <b>8</b> en Green y <span class='tk'>Enter</span>"],
