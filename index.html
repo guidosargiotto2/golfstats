@@ -1068,6 +1068,17 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope .rvSteps{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px;}
 .lgscope .rvSteps span{font-size:12px;font-weight:700;letter-spacing:.03em;border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--ink-soft);}
 .lgscope .rvSteps span.ok{color:var(--fairway);border-color:var(--fairway);background:rgba(31,122,77,.07);}
+.obClub{position:relative;display:block}
+.obSug{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:30;background:#fffdf7;border:1px solid #e2ddcc;border-radius:12px;box-shadow:0 10px 24px rgba(15,58,44,.14);overflow:hidden;text-transform:none;letter-spacing:0}
+.obSug:empty{display:none}
+.obSug button{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;background:none;border:none;border-top:1px solid #efe9d8;padding:10px 14px;cursor:pointer;font:14.5px 'Trebuchet MS',sans-serif;color:#20261f}
+.obSug button:first-child{border-top:none}.obSug button:hover{background:#f3efe3}
+.obSug button span{color:#8a8471;font-size:12.5px}.obSug .obSugMore{color:#1f7a4d;font-weight:700;font-size:13px}
+.nearFav{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px}
+.nearFav button{border:1px solid var(--line,#e2ddcc);background:#fff;color:var(--pine,#0f3a2c);border-radius:18px;padding:5px 12px;font-size:13px;cursor:pointer;transition:background .15s,transform .15s}
+.nearFav button:hover{transform:translateY(-1px)}.nearFav button.on{background:var(--pine,#0f3a2c);color:#fff;border-color:var(--pine,#0f3a2c)}
+.pfAbout{display:flex;flex-direction:column;gap:10px}.pfAbout textarea{width:100%;box-sizing:border-box;font:15px/1.5 'Trebuchet MS',sans-serif;border:1px solid var(--line,#e2ddcc);border-radius:10px;padding:10px;background:var(--cream,#f6f2e7);resize:vertical}
+.noFit{border:1px solid #e3b9ac;border-left:4px solid #a23b2a;background:#fbefe9;border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.5;color:#3a2a24;margin:0 0 8px}.noFit b{color:#a23b2a}
 </style>
 <style id="gimcss">
 .gimTag{font:600 10px/1 var(--sans,inherit);letter-spacing:.08em;background:var(--pine);color:#fff;border-radius:20px;padding:4px 8px;vertical-align:3px;margin-left:6px}
@@ -3302,6 +3313,48 @@ function favCourses(extra){var set={},add=function(k){if(k&&COURSES[k])set[k]=1;
  return Object.keys(set).sort(function(a,b){return COURSES[a].name.localeCompare(COURSES[b].name,'es',{sensitivity:'base'});});}
 function isFav(k){return (PROF.favCourses||[]).indexOf(k)>=0;}
 function toggleFav(k){var a=(PROF.favCourses||[]).slice(),i=a.indexOf(k);if(i>=0)a.splice(i,1);else a.push(k);PROF.favCourses=a;saveProf();}
+/* ---- Profile: home club typed with suggestions; a pick sets the default course and its tee ---- */
+function nkS(x){return String(x||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+function clubHits(q){var out=[],seen={};Object.keys(COURSES).forEach(function(k){var nm=clubOf(k),l=courseLoc(k);if(seen[nm])return;
+  if(nkS(nm+' '+(l.city||'')+' '+(l.state||'')).indexOf(nkS(q))>=0){seen[nm]=1;out.push({n:nm,k:k,w:[l.city,l.state,l.country].filter(function(x){return x&&x!=='—';}).join(', ')});}});
+ out.sort(function(a,b){return (nkS(a.n).indexOf(nkS(q))===0?0:1)-(nkS(b.n).indexOf(nkS(q))===0?0:1)||a.n.localeCompare(b.n,'es');});return out.slice(0,8);}
+document.addEventListener('input',function(e){var i=e.target;if(!i||i.id!=='pf_homeclubT')return;var box=document.getElementById('pf_clubsug'),q=i.value.trim(),es=window.__LANG==='es',E=function(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+ if(!box)return;if(!q){box.innerHTML='';return;}
+ box.innerHTML=clubHits(q).map(function(h){return '<button type="button" data-pickclub="'+E(h.k)+'"><b>'+E(h.n)+'</b><span>'+E(h.w)+'</span></button>';}).join('')+'<button type="button" class="obSugMore" data-morecl>'+(es?'¿No está? Buscar entre todas las canchas':'Not here? Search all courses')+'</button>';});
+function setHomeClub(k){if(!k||!COURSES[k])return;PROF.homeClub=clubOf(k);PROF.homeCourse=k;PROF.defaultTee=teeFor(k,PROF.defaultTee);saveProf();renderProf();try{renderSel();}catch(_){}}
+document.addEventListener('mousedown',function(e){var b=e.target&&e.target.closest&&e.target.closest('#pf_clubsug button');if(!b)return;e.preventDefault();
+ if(b.hasAttribute('data-morecl')){coursePicker(function(k){setHomeClub(k);});return;}setHomeClub(b.getAttribute('data-pickclub'));});
+document.addEventListener('focusout',function(e){if(e.target&&e.target.id==='pf_homeclubT')setTimeout(function(){var b=document.getElementById('pf_clubsug');if(b)b.innerHTML='';},150);});
+/* the 10 courses nearest the home course: distance when both have coordinates, else same club → city → state */
+function nearCourses(home,max){var h=COURSES[home]||{},hl=h.loc||{},b=courseLoc(home),club=clubOf(home);
+ var km=function(a,c){var r=Math.PI/180,dl=(c.lat-a.lat)*r,dn=(c.lng-a.lng)*r,x=Math.sin(dl/2)*Math.sin(dl/2)+Math.cos(a.lat*r)*Math.cos(c.lat*r)*Math.sin(dn/2)*Math.sin(dn/2);return 12742*Math.asin(Math.sqrt(x));};
+ return Object.keys(COURSES).filter(function(k){return k!==home;}).map(function(k){var l=COURSES[k].loc||{},a=courseLoc(k),sc;
+   if(hl.lat!=null&&l.lat!=null)sc=km(hl,l);else sc=clubOf(k)===club?0:(a.country!==b.country)?1e6:(a.state!==b.state)?1e5:(a.city&&a.city===b.city)?10:1e3;return {k:k,sc:sc};})
+  .filter(function(o){return o.sc<1e6;}).sort(function(x,y){return x.sc-y.sc||COURSES[x.k].name.localeCompare(COURSES[y.k].name,'es');}).slice(0,max).map(function(o){return o.k;});}
+window.nearCourses=nearCourses;
+function nearFavHTML(){if(!PROF.homeClub||!COURSES[PROF.homeCourse])return '';var es=window.__LANG==='es',L=nearCourses(PROF.homeCourse,10);if(!L.length)return '';
+ return '<div class="hisub" style="margin:4px 0 6px">'+(es?'Cerca de tu cancha — tocá para marcar favorita:':'Near your course — tap to star:')+'</div><div class="nearFav">'+L.map(function(k){return '<button type="button" data-nfav="'+k+'" class="'+(isFav(k)?'on':'')+'">'+(isFav(k)?'★ ':'☆ ')+COURSES[k].name+'</button>';}).join('')+'</div>';}
+document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('[data-nfav]');if(!b)return;var k=b.getAttribute('data-nfav');toggleFav(k);b.classList.toggle('on',isFav(k));b.textContent=(isFav(k)?'★ ':'☆ ')+COURSES[k].name;try{renderSel();}catch(_){}});
+/* ---- About your game: what the setup questions asked, kept in Profile ---- */
+function aboutHTML(){var es=window.__LANG==='es',a=PROF.about||{},T=function(x,y){return es?y:x;},E=function(x){return String(x||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+ var sel=function(k,lbl,O){return '<label>'+lbl+'<select data-ab="'+k+'"><option value="">'+T('— Choose —','— Elegí —')+'</option>'+O.map(function(o){return '<option value="'+o[0]+'"'+((a[k]||'')===o[0]?' selected':'')+'>'+(es?o[2]:o[1])+'</option>';}).join('')+'</select></label>';};
+ return '<div id="pf_about" class="pfAbout"><label>'+T('Why do you play the game? The real answer, in your own words','¿Por qué jugás al golf? La respuesta verdadera, con tus palabras')+'<textarea data-ab="why" rows="3" maxlength="600" placeholder="'+T('I play because…','Juego porque…')+'">'+E(a.why)+'</textarea></label>'+
+  '<div class="hisub" style="margin:-4px 0 6px">'+T('It decides what “better” means for you, and after each round you are asked whether you got it.','Define qué significa “mejorar” para vos, y después de cada vuelta se te pregunta si lo conseguiste.')+'</div>'+
+  sel('years',T('Playing for','Jugás hace'),[['lt1','Less than a year','Menos de un año'],['1-3','1–3 years','1–3 años'],['3-10','3–10 years','3–10 años'],['10+','More than 10 years','Más de 10 años']])+
+  sel('lessons',T('Lessons','Clases'),[['never','Never','Nunca'],['year','A few times a year','Algunas veces al año'],['month','About once a month','Una vez por mes'],['week','Every week or more','Todas las semanas o más']])+
+  sel('range',T('Driving range','Driving range'),[['never','Rarely or never','Casi nunca'],['month','A few times a month','Algunas veces por mes'],['week','Once a week','Una vez por semana'],['week2','Several times a week','Varias veces por semana']])+
+  sel('golfHrs',T('Playing, hours a week','Jugando, horas por semana'),[['0-4','Up to 4 h','Hasta 4 h'],['4-8','4–8 h','4–8 h'],['8-16','8–16 h','8–16 h'],['16+','16 h or more','16 h o más']])+
+  sel('practiceHrs',T('Practising, hours a week','Practicando, horas por semana'),[['0','None','Nada'],['lt1','Under 1 h','Menos de 1 h'],['1-3','1–3 h','1–3 h'],['3-6','3–6 h','3–6 h'],['6+','6 h or more','6 h o más']])+
+  sel('recall',T('After a round, can you remember it shot by shot?','Después de una vuelta, ¿la recordás tiro por tiro?'),[['all','Every shot','Cada tiro'],['most','Most of it','Casi toda'],['little','Only the score, more or less','Solo el score, más o menos']])+
+  sel('sit',T('Will you sit down for a few minutes after each round to log it?','¿Te vas a sentar unos minutos después de cada vuelta a cargarla?'),[['yes','Yes','Sí'],['no','No','No']])+
+  (a.sit==='no'?sel('live',T('Would you jot notes or log on your phone during the round instead?','¿Anotarías o cargarías en el teléfono durante la vuelta?'),[['yes','Yes','Sí'],['no','No','No']]):'')+
+  (a.sit==='no'&&a.live==='no'?'<div class="noFit"><b>'+T('Honestly, Golfimbul is not for you. Not yet.','Con honestidad: Golfimbul no es para vos. Todavía no.')+'</b> '+T('Everything here is built from your shots. If you will not enter them after the round and will not note them as you play, we would be showing you charts made of guesses, and your handicap does not change that. Two ways this changes: log on your phone as you play (seconds per hole), or jot the distances on your scorecard and enter them at home.','Todo acá se arma con tus tiros. Si no los vas a cargar después de la vuelta ni anotarlos mientras jugás, te mostraríamos gráficos hechos de suposiciones, y tu hándicap no cambia eso. Dos formas de cambiarlo: cargá en el teléfono mientras jugás (segundos por hoyo), o anotá las distancias en la tarjeta y cargalas en tu casa.')+'</div>':'')+
+  '<div class="hisub">'+T('These answers set the detail level we recommend in Round logging.','Estas respuestas definen el nivel de detalle que te recomendamos en Carga de vueltas.')+'</div></div>';}
+var ABOUT_T=null;
+document.addEventListener('change',function(e){var t=e.target,k=t&&t.getAttribute&&t.getAttribute('data-ab');if(!k)return;abSet(k,t.value);if(k==='sit'||k==='live'){var bx=document.getElementById('pf_about');if(bx){var w=document.createElement('div');w.innerHTML=aboutHTML();bx.replaceWith(w.firstChild);}}try{var lv=document.getElementById('pf_level');if(lv&&window.LOGLVL)lv.innerHTML=LOGLVL.html();}catch(_){}});
+document.addEventListener('input',function(e){var t=e.target,k=t&&t.getAttribute&&t.getAttribute('data-ab');if(k==='why')abSet(k,t.value);});
+function abSet(k,v){PROF.about=PROF.about||{};PROF.about[k]=(k==='why'?String(v).trim():v);if(!PROF.about.at)PROF.about.at=new Date().toISOString().slice(0,10);saveProf();
+ clearTimeout(ABOUT_T);ABOUT_T=setTimeout(function(){try{var tok=localStorage.getItem('gs-token');if(tok)fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({action:'setAbout',about:Object.assign({name:PROF.name,hand:PROF.hand||null,drive:PROF.driveYd,nine:PROF.nineIron,homeClub:PROF.homeClub,home:PROF.homeCourse,tee:PROF.defaultTee},PROF.about)})}).catch(function(){});}catch(_){}},1200);}
 function favOptsHTML(sel){var E=function(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});},es=window.__LANG==='es';
  return favCourses(sel).map(function(k){return '<option value="'+k+'"'+(k===sel?' selected':'')+'>'+(isFav(k)?'★ ':'')+E(COURSES[k].name)+'</option>';}).join('')+'<option value="__more">🔍 '+(es?'Buscar otra cancha…':'Search another course…')+'</option>';}
 /* course finder: search by name or city, filter by province, star favourites, pick one */
@@ -3436,12 +3489,15 @@ var LOGLVL={order:['ess','ply','plus','ana'],
     plus:{n:['Player+','Jugador+'],d:['Adds where every approach and short shot finishes against your target.','Suma dónde termina cada approach y tiro corto respecto de tu objetivo.'],clubs:true,disp:'app',read:false},
     ana:{n:['Analyst','Analista'],d:['Adds missed putts and the read of each putt: slope and break.','Suma los putts errados y la lectura de cada putt: pendiente y caída.'],clubs:true,disp:'all',read:true}},
  /* handicap sets the level; a coach moves it up one, very little golf time moves it down one */
- recommend:function(o){o=o||{};var h=parseFloat(o.hi),i=(isNaN(h)?0:h>=20?0:h>=10?1:h>=5?2:3);
+ /* willingness first: no logging after the round and none during it = no level (the app is not for them yet); can't recall or logs on the phone = Essentials, whatever the index */
+ nofit:function(o){o=o||{};return o.sit==='no'&&o.live==='no';},
+ recommend:function(o){o=o||{};if(this.nofit(o))return null;if(o.recall==='little'||o.sit==='no')return 'ess';var h=parseFloat(o.hi),i=(isNaN(h)?0:h>=20?0:h>=10?1:h>=5?2:3);
    if(!isNaN(h)){if(o.lessons==='month'||o.lessons==='week')i++;if(o.golfHrs==='0-4')i--;if(o.recall==='little'&&o.live!=='yes')i--;}
    return this.order[Math.max(0,Math.min(3,i))];},
- mine:function(){var hi=playerHI();
+ mine:function(){var hi=playerHI(),a0=PROF.about||{};
+   if(this.nofit(a0))return null;if(a0.recall==='little'||a0.sit==='no')return 'ess';
    if(hi==null||hi===''||isNaN(+hi))return null;   /* unknown handicap: no recommendation rather than a wrong one */
-   var a=PROF.about||{};return this.recommend({hi:+hi,lessons:a.lessons,golfHrs:a.golfHrs,recall:a.recall,live:a.live});},
+   var a=PROF.about||{};return this.recommend({hi:+hi,lessons:a.lessons,golfHrs:a.golfHrs,recall:a.recall,sit:a.sit,live:a.live});},
  current:function(){var k=null,me=this;this.order.forEach(function(x){var l=me.L[x];if(PROF.predict!==false&&!!PROF.trackComp&&!!PROF.trackClubs===l.clubs&&!!PROF.trackRead===l.read&&(l.disp==='off'?!PROF.trackDisp:(!!PROF.trackDisp&&(PROF.dispMode||'all')===l.disp)))k=x;});return k;},
  apply:function(k){var l=this.L[k];if(!l)return;PROF.predict=true;PROF.trackComp=true;PROF.trackClubs=l.clubs;PROF.trackRead=l.read;PROF.trackDisp=l.disp!=='off';if(l.disp!=='off')PROF.dispMode=l.disp;PROF.logLevel=k;saveProf();},
  mins:function(k){var l=this.L[k];return 5+2+(l.clubs?1:0)+(l.disp==='tee'?0.5:l.disp==='app'?1.2:l.disp==='all'?1.5:0)+(l.read?1:0);},
@@ -3464,7 +3520,8 @@ var LOGLVL={order:['ess','ply','plus','ana'],
  html:function(){var es=window.__LANG==='es'?1:0,rec=this.mine(),cur=this.current(),me=this;
    var cm=5+(PROF.predict===false?3:0)+(PROF.trackClubs?1:0)+(PROF.trackDisp?((PROF.dispMode==='tee')?0.5:(PROF.dispMode==='app')?1.2:1.5):0)+(PROF.trackRead?1:0)+(PROF.trackComp?2:0),ca=accCeil();
    var custom=cur?'':'<div class="lvCard on lvCustom"><b>'+(es?'Personalizado':'Custom')+'</b><span>'+(es?'Tu propia combinación de columnas.':'Your own mix of columns.')+'</span><small>≈ '+(cm%1?cm.toFixed(1):cm)+' min · '+ca+'% '+(es?'precisión':'accuracy')+'</small><i class="lvAcc"><i style="width:'+ca+'%"></i></i></div>';
-   var nohi=rec?'':'<p class="hisub" style="margin:0 0 8px">'+(es?'Cargá tu hándicap index en <b>Mi juego y hándicap</b> y te recomendamos un nivel.':'Add your handicap index in <b>My game &amp; handicap</b> and we will recommend a level.')+'</p>';
+   var nofit=this.nofit(PROF.about||{});
+   var nohi=nofit?'<div class="noFit"><b>'+(es?'Con honestidad: hoy Golfimbul no te va a servir.':'Honestly, Golfimbul will not help you yet.')+'</b> '+(es?'Dijiste que no vas a cargar después de la vuelta ni anotar mientras jugás. Sin tus tiros solo podríamos mostrarte gráficos hechos de suposiciones, sea cual sea tu hándicap. Si cambiás de idea, actualizá tus respuestas en <b>Sobre tu juego</b>.':'You said you will not log after the round or note anything as you play. Without your shots we could only show you charts made of guesses, whatever your handicap. If that changes, update your answers in <b>About your game</b>.')+'</div>':rec?'':'<p class="hisub" style="margin:0 0 8px">'+(es?'Cargá tu hándicap index en <b>Mi juego y hándicap</b> y te recomendamos un nivel.':'Add your handicap index in <b>My game &amp; handicap</b> and we will recommend a level.')+'</p>';
    return nohi+'<div class="lvGrid">'+this.order.map(function(k){var l=me.L[k],m=me.mins(k);return '<button type="button" class="lvCard'+(cur===k?' on':'')+'" data-lvl="'+k+'">'+(rec===k?'<em>'+(es?'Recomendado':'Recommended')+'</em>':'')+'<b>'+l.n[es]+'</b><span>'+l.d[es]+'</span><small>≈ '+(m%1?m.toFixed(1):m)+' min · '+accLvl(k)+'% '+(es?'precisión':'accuracy')+'</small><i class="lvAcc"><i style="width:'+accLvl(k)+'%"></i></i></button>';}).join('')+custom+'</div>'+
      '<details class="lvCmp"><summary>'+(es?'Comparar los niveles':'Compare the levels')+'</summary>'+this.table(es,rec,cur)+'</details>'+
      (cur?'':'<p class="hisub" style="margin-top:8px">'+(es?'Tus opciones no coinciden con ningún nivel, así que estás en <b>Personalizado</b>. Tocá un nivel para volver a uno estándar.':'Your settings match no level, so you are on <b>Custom</b>. Tap a level to go back to a standard one.')+'</p>');}};
@@ -4631,17 +4688,19 @@ function renderProf(){
   <label>${window.__LANG==='es'?'Fecha de nacimiento':'Birthday'}<input type="date" id="pf_birth" value="${PROF.birthday||''}" max="${new Date().toISOString().slice(0,10)}"></label>
   <label>${window.__LANG==='es'?'Género':'Gender'}<select id="pf_gender">${[['',window.__LANG==='es'?'— Elegí —':'— Choose —'],['m',window.__LANG==='es'?'Masculino':'Male'],['f',window.__LANG==='es'?'Femenino':'Female'],['x',window.__LANG==='es'?'Otro':'Other'],['n',window.__LANG==='es'?'Prefiero no decirlo':'Prefer not to say']].map(o=>`<option value="${o[0]}" ${(PROF.gender||'')===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></label>
   <label>${window.__LANG==='es'?'Juega':'Plays'}<select id="pf_hand">${[['',window.__LANG==='es'?'— Elegí —':'— Choose —'],['R',window.__LANG==='es'?'Diestro':'Right-handed'],['L',window.__LANG==='es'?'Zurdo':'Left-handed']].map(o=>`<option value="${o[0]}" ${(PROF.hand||'')===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></label>
+  ${aboutHTML()}
   <label>Units<select id="pf_units"><option value="yd" ${PROF.units==='yd'?'selected':''}>Yards</option><option value="m" ${PROF.units==='m'?'selected':''}>Meters</option></select></label>
-  <label>${window.__LANG==='es'?'Club de pertenencia':'Home club'}<select id="pf_homeclub">${clubOptsHTML(PROF.homeClub||'')}</select></label>
-<label>${window.__LANG==='es'?'Cancha por defecto (la que se abre al cargar una vuelta)':'Default course (opens when you log a round)'}<select id="pf_course">${courseOpts}</select></label>
-  <div class="hiblock" id="pf_favbox"><div class="hirow"><span>${window.__LANG==='es'?'Canchas favoritas':'Favourite courses'}</span></div><div class="hisub" style="margin:4px 0 8px">${favCourses().map(k=>(isFav(k)?'★ ':'')+COURSES[k].name).join(' · ')}</div><button type="button" class="pf_btn" id="pf_favbtn">${window.__LANG==='es'?'Elegir favoritas':'Choose favourites'}</button><div class="hisub" style="margin-top:8px">${window.__LANG==='es'?'Al cargar una vuelta solo ves tus favoritas, tu cancha principal y las canchas donde ya jugaste. Las demás se buscan.':'When you log a round you only see your favourites, your home course and courses you have already played. The rest are one search away.'}</div></div>
+  <label id="pf_homeclub">${window.__LANG==='es'?'Club de pertenencia — donde sos socio o tenés tu hándicap':'Home club — where you are a member or hold your handicap'}<span class="obClub"><input type="text" id="pf_homeclubT" autocomplete="off" value="${(PROF.homeClub||'').replace(/"/g,'&quot;')}" placeholder="${window.__LANG==='es'?'Escribí tu club o ciudad…':'Type your club or city…'}"><span class="obSug" id="pf_clubsug"></span></span></label>
+<label>${window.__LANG==='es'?'Cancha por defecto (la que se abre al cargar una vuelta)':'Default course (opens when you log a round)'}<select id="pf_course">${PROF.homeClub?'':'<option value="" selected>'+(window.__LANG==='es'?'— primero elegí tu club —':'— pick your club first —')+'</option>'}${courseOpts}</select></label>
+  <div class="hiblock" id="pf_favbox"><div class="hirow"><span>${window.__LANG==='es'?'Canchas favoritas':'Favourite courses'}</span></div>${nearFavHTML()}<div class="hisub" style="margin:4px 0 8px">${favCourses().map(k=>(isFav(k)?'★ ':'')+COURSES[k].name).join(' · ')}</div><button type="button" class="pf_btn" id="pf_favbtn">${window.__LANG==='es'?'Elegir favoritas':'Choose favourites'}</button><div class="hisub" style="margin-top:8px">${window.__LANG==='es'?'Al cargar una vuelta solo ves tus favoritas, tu cancha principal y las canchas donde ya jugaste. Las demás se buscan.':'When you log a round you only see your favourites, your home course and courses you have already played. The rest are one search away.'}</div></div>
   <label>Default tee<select id="pf_tee">${teeOpts}</select></label>
   <label>${window.__LANG==='es'?'Tees a mostrar':'Tees to show'}<select id="pf_teeset">
     <option value="all" ${PROF.teeSet!=='back2'&&PROF.teeSet!=='front2'?'selected':''}>${window.__LANG==='es'?'Todos':'All'}</option>
     <option value="back2" ${PROF.teeSet==='back2'?'selected':''}>${window.__LANG==='es'?'Los dos más largos':'The two longest'}</option>
     <option value="front2" ${PROF.teeSet==='front2'?'selected':''}>${window.__LANG==='es'?'Los dos más cortos':'The two shortest'}</option></select></label>
 ${PROF.gender==='m'?`  <label class="chkrow" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="pf_hidered" ${PROF.hideRed?'checked':''} style="width:auto"> ${window.__LANG==='es'?'Ocultar los tees rojos (en general, de damas)':'Hide red tees (usually the women\'s tees)'}</label>`:''}
-  <label>Average drive (yards)<input id="pf_drive" type="number" min="100" max="400" step="5" value="${driveYd()}"></label>
+  <label>${window.__LANG==='es'?'Driver, total (yardas · 50–400)':'Driver, total (yards · 50–400)'}<input id="pf_drive" type="number" min="50" max="400" step="5" value="${driveYd()}"></label>
+  <label>${window.__LANG==='es'?'Hierro 9 (yardas · 30–250)':'9 iron (yards · 30–250)'}<input id="pf_nine" type="number" min="30" max="250" step="5" value="${nineIron()}"></label>
   <div class="hiblock">
     <div class="hirow"><span>${t("Tiger\'s 5")}</span></div>
     <div class="hisub">The two configurable mistakes in your Tiger's 5.</div>
@@ -4651,7 +4710,7 @@ ${PROF.gender==='m'?`  <label class="chkrow" style="flex-direction:row;align-ite
       <option value="dchip" ${PROF.t5mode==='dchip'?'selected':''}>Double chip — chipped twice inside X yards</option></select></label>
     <label>Short distance X (yd, 10–50)<input id="pf_t5x" type="number" min="10" max="50" step="5" value="${t5x()}"></label>
     <div class="hisub2" style="margin-top:8px">Bogey with a 9-iron or less — a dropped shot (bogey+) when your closest approach was within X yards (set X to your 9-iron carry).</div>
-    <label>Your 9-iron carry (yd)<input id="pf_nine" type="number" min="80" max="200" step="5" value="${nineIron()}"></label>
+    
     <label>X — 9-iron-or-less distance (yd, 50–150)<input id="pf_bogeyx" type="number" min="50" max="150" step="5" value="${bogeyXyd()}"></label>
   </div>
   <div class="hiblock">
@@ -4751,7 +4810,7 @@ ${PROF.gender==='m'?`  <label class="chkrow" style="flex-direction:row;align-ite
      avatarFromFile(f).then(d=>setAvatar(d)).then(j=>{renderProf();if(!(j&&j.ok))alert(es?'La foto quedó en este dispositivo, pero no se pudo subir. Probá de nuevo.':'The photo is saved on this device but could not be uploaded. Please try again.');}).catch(()=>said(es?'No se pudo leer esa imagen.':'That image could not be read.',true));};}
    if(rm)rm.onclick=()=>{setAvatar('').then(()=>renderProf()).catch(()=>renderProf());};})();
  /* picking the home club also makes its course the default course; the default can still be changed below */
- document.getElementById('pf_homeclub').addEventListener('change',e=>{const done=()=>{saveProf();renderProf();try{renderSel();}catch(_){}};
+ (document.getElementById('pf_homeclub_old')||{addEventListener:function(){}}).addEventListener('change',e=>{const done=()=>{saveProf();renderProf();try{renderSel();}catch(_){}};
    const toCourse=k=>{if(k&&COURSES[k]){PROF.homeCourse=k;PROF.defaultTee=teeFor(k,PROF.defaultTee);}};
    if(e.target.value==='__more'){e.target.value=PROF.homeClub||'';coursePicker(k=>{PROF.homeClub=clubOf(k);toCourse(k);done();});return;}
    PROF.homeClub=e.target.value;toCourse(clubCourse(e.target.value));done();});
@@ -4759,10 +4818,10 @@ ${PROF.gender==='m'?`  <label class="chkrow" style="flex-direction:row;align-ite
  document.getElementById('pf_course').addEventListener('change',e=>{const set=k=>{PROF.homeCourse=k;PROF.defaultTee=Object.keys(COURSES[k].tees)[0];saveProf();renderProf();try{renderSel();}catch(_){}};if(e.target.value==='__more'){e.target.value=PROF.homeCourse;coursePicker(set);return;}set(e.target.value);});
  document.getElementById('pf_tee').addEventListener('change',e=>{PROF.defaultTee=e.target.value;saveProf();});
  var pfb=document.getElementById('pf_favbtn');if(pfb)pfb.onclick=function(){coursePicker(function(k){if(!isFav(k))toggleFav(k);try{renderProf();renderSel();}catch(_){}});var mo=new MutationObserver(function(){if(!document.querySelector('.cpBox')){mo.disconnect();try{renderProf();renderSel();}catch(_){}}});mo.observe(document.body,{childList:true});};
- document.getElementById('pf_drive').addEventListener('change',e=>{PROF.driveYd=Math.min(400,Math.max(100,parseInt(e.target.value||'250',10)||250));saveProf();reseedPredicted();render();});
+ document.getElementById('pf_drive').addEventListener('change',e=>{PROF.driveYd=Math.min(400,Math.max(50,parseInt(e.target.value||'250',10)||250));e.target.value=PROF.driveYd;saveProf();reseedPredicted();render();});
  document.getElementById('pf_t5mode').addEventListener('change',e=>{PROF.t5mode=e.target.value;saveProf();});
  document.getElementById('pf_t5x').addEventListener('change',e=>{PROF.t5x=Math.min(50,Math.max(10,parseInt(e.target.value||'30',10)||30));saveProf();renderProf();});
- document.getElementById('pf_nine').addEventListener('change',e=>{var n=Math.min(200,Math.max(80,parseInt(e.target.value||'140',10)||140));PROF.nineIron=n;if(!PROF.bogeyX||PROF.bogeyX==='')PROF.bogeyX=Math.min(150,n);saveProf();renderProf();});
+ document.getElementById('pf_nine').addEventListener('change',e=>{var n=Math.min(250,Math.max(30,parseInt(e.target.value||'140',10)||140));e.target.value=n;PROF.nineIron=n;if(!PROF.bogeyX||PROF.bogeyX==='')PROF.bogeyX=Math.min(150,n);saveProf();renderProf();});
  document.getElementById('pf_bogeyx').addEventListener('change',e=>{PROF.bogeyX=Math.min(150,Math.max(50,parseInt(e.target.value||'140',10)||140));saveProf();renderProf();});
  document.getElementById('pf_predict').addEventListener('change',e=>{PROF.predict=(e.target.value!=='off');saveProf();try{render();}catch(_){}} );
  
@@ -5457,7 +5516,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    card.querySelector('.pfill').onclick=function(){if(window.LGR&&window.LGR.practiceFill)window.LGR.practiceFill(level);tick();};}
  var idx=0,els=[],PMODE=false;
  function clear(){els.forEach(function(e){if(e&&e.parentNode)e.parentNode.removeChild(e);});els=[];}
- function end(save){if(PMODE){PMODE=false;save=false;}clear();pStop();try{if(window.LGR&&window.LGR.practiceOn&&window.LGR.practiceOn())window.LGR.practiceEnd();}catch(e){}try{if(window.showView)window.showView('log');}catch(e){}try{if(window.LGR&&window.LGR.demoEnd)window.LGR.demoEnd();}catch(e){}if(save&&window.LGR&&window.LGR.setTourDone)window.LGR.setTourDone();}
+ function end(save){if(PMODE){PMODE=false;save=false;}clear();pStop();try{if(window.LGR&&window.LGR.practiceOn&&window.LGR.practiceOn())window.LGR.practiceEnd();}catch(e){}try{if(window.showView)window.showView('log');}catch(e){}try{if(window.LGR&&window.LGR.demoEnd)window.LGR.demoEnd();}catch(e){}if(save&&window.LGR&&window.LGR.setTourDone)window.LGR.setTourDone();if(window.__onbAfterTour){window.__onbAfterTour=false;setTimeout(function(){try{window.showView('profile');if(window.ONB)window.ONB.paint();}catch(e){}},250);}}
  function show(){
    clear();pStop();var st=steps[idx];if(!st)return end(true);
    if(PMODE&&!st.practice&&!st.pintro)return end(false);
@@ -6299,12 +6358,13 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
  var G=[
   {head:['Settings','Configuración']},
   {k:'personal',t:['Personal','Personal'],ids:['pf_avatar','pf_name','pf_nick','pf_birth','pf_gender','pf_hand']},
+  {k:'about',t:['About your game','Sobre tu juego'],ids:['pf_about']},
   {k:'course',t:['Course & tees','Cancha y tees'],ids:['pf_homeclub','pf_course','pf_favbtn','pf_tee','pf_teeset','pf_hidered']},
-  {k:'game',t:['My game & handicap','Mi juego y hándicap'],ids:['pf_drive','pf_himode','pf_impbtn','pf_imphbtn']},
+  {k:'game',t:['My game & handicap','Mi juego y hándicap'],ids:['pf_himode','pf_drive','pf_nine','pf_impbtn','pf_imphbtn']},
   {k:'bag',t:['My bag','Mi bolsa'],link:'bag',sub:['Distance and dispersion for every club · Garmin import','Distancia y dispersión de cada palo · importación de Garmin']},
   {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_level','pf_logest','pf_predict','pf_clubs','pf_disp','pf_read','pf_comp','pf_printcard']},
   {k:'analysis',t:['Scoring & analysis','Score y análisis'],ids:['pf_netpar','pf_sgbase','pf_atg']},
-  {k:'t5',t:["Tiger's 5",'Tiger 5'],ids:['pf_t5mode','pf_t5x','pf_nine','pf_bogeyx']},
+  {k:'t5',t:["Tiger's 5",'Tiger 5'],ids:['pf_t5mode','pf_t5x','pf_bogeyx']},
   {k:'app',t:['App preferences','Preferencias de la app'],ids:['pf_units','pf_lang']},
   {k:'other',t:['Other','Otros'],ids:[]},
   {head:['Account','Cuenta'],forExt:'acctBody'},
@@ -6390,9 +6450,9 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
    if(localStorage.getItem('gs-ob-tour')){localStorage.removeItem('gs-ob-tour');setTimeout(function(){if(window.TOUR)window.TOUR.start();},900);}
    var tries=0;(function wait(){tries++;var L=document.getElementById('landing'),ov=document.getElementById('loginOverlay');
      var hidden=function(e){return !e||getComputedStyle(e).display==='none';};
-     if(window.OBOARD.pending&&localStorage.getItem('app-user')&&hidden(L)&&hidden(ov)){openNow();return;}
+     if(window.OBOARD.pending&&localStorage.getItem('app-user')&&hidden(L)&&hidden(ov)){window.OBOARD.pending=false;window.__onbAfterTour=true;try{window.PROF.askedDrive=true;window.saveProf();}catch(e){}if(window.TOUR&&window.TOUR.start)setTimeout(window.TOUR.start,300);else if(window.showView)window.showView('profile');return;}   /* new players: the tour first, then the setup in Profile */   /* setup happens in Profile, guided by the strip on top */
      if(tries<60)setTimeout(wait,500);})();
-   var pv=document.getElementById('view-profile');if(pv&&!document.getElementById('obRedo')){var b=document.createElement('button');b.id='obRedo';b.type='button';b.className='pf_btn frgrey';b.style.cssText='float:right;padding:6px 12px;font-size:11px;margin-top:6px';
+   var pv=null;if(pv&&!document.getElementById('obRedo')){var b=document.createElement('button');b.id='obRedo';b.type='button';b.className='pf_btn frgrey';b.style.cssText='float:right;padding:6px 12px;font-size:11px;margin-top:6px';
      b.textContent=window.__LANG==='es'?'Repetir preguntas iniciales':'Redo setup questions';b.onclick=function(){window.OBOARD.open({name:localStorage.getItem('app-user')||''});};
      var h2=pv.querySelector('h2');if(h2)h2.parentNode.insertBefore(b,h2);}
  }
@@ -6908,9 +6968,10 @@ window.IMPMAP=(function(){
  var ES=function(){return window.__LANG==='es';},T=function(a,b){return ES()?b:a;};
  var P=function(){return window.PROF||{};},O=function(){var p=P();p.onb=p.onb||{};return p.onb;};
  var STEPS=[
-  {k:'personal',t:['Your name','Tu nombre'],ok:function(){return !!(P().name||'').trim();}},
-  {k:'course',t:['Home course & tees','Cancha y tees'],ok:function(){return !!O().course;}},
-  {k:'game',t:['Handicap index','Hándicap index'],ok:function(){try{return window.playerHI&&window.playerHI()!=null;}catch(e){return false;}}},
+  {k:'personal',t:['Name & hand','Nombre y mano'],ok:function(){return !!(P().name||'').trim()&&!!P().hand;}},
+  {k:'about',t:['About your game','Sobre tu juego'],ok:function(){var a=P().about||{};return String(a.why||'').trim().length>=15&&!!a.years&&!!a.lessons&&!!a.golfHrs&&!!a.recall&&(a.sit==='yes'||a.live==='yes');}},
+  {k:'course',t:['Home club & tees','Club y tees'],ok:function(){return !!(P().homeClub||'').trim()&&!!O().course;}},
+  {k:'game',t:['Handicap & distances','Hándicap y distancias'],ok:function(){var hi=false;try{hi=window.playerHI&&window.playerHI()!=null;}catch(e){}return hi&&!!O().dist;}},
   {k:'bag',t:['My bag','Mi bolsa'],ok:function(){var p=P();try{if(window.gsBag&&window.gsBag())return true;}catch(e){}return !!(p.bagManual&&p.bagManual.length)||!!O().bag;}},
   {k:'logging',t:['Detail level','Nivel de detalle'],ok:function(){return !!P().logLevel||!!O().logging;}},
   {k:'app',t:['Language & units','Idioma y unidades'],ok:function(){return !!O().app;}}];
@@ -6923,20 +6984,20 @@ window.IMPMAP=(function(){
  function go(k){if(k==='bag'){mark('bag');if(window.showView)window.showView('bag');return;}
    if(window.showView)window.showView('profile');setTimeout(function(){if(window.PGRP)window.PGRP.open(k);},80);}
  function paint(){var bar=document.getElementById('onbBar');
-   if(hidden||!inApp()||(!isNew()&&!shownDone)){if(bar)bar.remove();return;}
+   if(hidden||window.__onbAfterTour||document.querySelector('.tourcard,.tourmask')&&false||!inApp()||(!isNew()&&!shownDone)){if(bar)bar.remove();return;}
    var done=STEPS.filter(function(x){return x.ok();}).length,n=STEPS.length,all=done===n;
    if(all&&!shownDone){shownDone=true;P().onbDone=true;try{window.saveProf();}catch(e){}}
    if(!bar){bar=document.createElement('div');bar.id='onbBar';var nav=document.getElementById('tabnav');nav.parentNode.insertBefore(bar,nav.nextSibling);
-     bar.addEventListener('click',function(e){var c=e.target.closest('[data-onb]');if(c){go(c.getAttribute('data-onb'));return;}if(e.target.closest('.onbX')){hidden=true;paint();}});}
+     bar.addEventListener('click',function(e){var c=e.target.closest('[data-onb]');if(c){go(c.getAttribute('data-onb'));return;}if(e.target.closest('.onbX')){hidden=true;paint();}if(e.target.closest('.onbTour')){hidden=true;paint();try{window.TOUR.start();}catch(_){}}});}
    var key=done+'|'+(window.__LANG||'');if(bar._k===key)return;bar._k=key;
    bar.className=all?'onbAll':'';
    bar.innerHTML='<div class="onbIn"><div class="onbHd"><b>'+(all?T('You are all set.','Ya está todo listo.'):T('Finish setting up Golfimbul','Terminá de configurar Golfimbul'))+'</b><span>'+(all?T('Every setting is done: predictions, scorecard and statistics now fit your game.','Todo configurado: predicciones, tarjeta y estadísticas ya se ajustan a tu juego.'):T('A few minutes now, and every prediction, scorecard and statistic fits your game.','Unos minutos ahora, y cada predicción, tarjeta y estadística se ajusta a tu juego.'))+'</span></div>'+
      '<div class="onbProg"><i style="width:'+Math.round(100*done/n)+'%"></i></div><span class="onbN">'+done+' / '+n+'</span>'+
      '<div class="onbSteps">'+STEPS.map(function(x){var ok=x.ok();return '<button type="button" class="onbS'+(ok?' ok':'')+'" data-onb="'+x.k+'"><em>'+(ok?'✓':'')+'</em>'+x.t[ES()?1:0]+'</button>';}).join('')+'</div>'+
-     '<button type="button" class="onbX" title="'+T('Hide for now','Ocultar por ahora')+'">×</button></div>';}
+     (all&&window.TOUR&&window.TOUR.start?'<button type="button" class="onbTour">'+T('Take the 2-minute tour →','Hacé el recorrido de 2 minutos →')+'</button>':'')+'<button type="button" class="onbX" title="'+T('Hide for now','Ocultar por ahora')+'">×</button></div>';}
  /* opening a card in Profile counts as reviewing it (course, logging, app) */
  document.addEventListener('toggle',function(e){var d=e.target;if(d&&d.classList&&d.classList.contains('pgrp')&&d.open&&d.dataset.k)mark(d.dataset.k);},true);
- document.addEventListener('change',function(){setTimeout(paint,60);});
+ document.addEventListener('change',function(e){var id=e.target&&e.target.id;if(id==='pf_drive'||id==='pf_nine')mark('dist');setTimeout(paint,60);});
  document.addEventListener('click',function(){setTimeout(paint,120);});
  setInterval(paint,2000);
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(paint,800);});else setTimeout(paint,800);
@@ -6957,7 +7018,7 @@ window.IMPMAP=(function(){
 #onbBar .onbS em{width:17px;height:17px;border-radius:50%;border:1.5px dashed rgba(246,242,231,.55);display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:11px}
 #onbBar .onbS.ok{opacity:.72}#onbBar .onbS.ok em{border:none;background:var(--sand,#d8c48c);color:var(--pine,#0f3a2c);animation:onbPop .4s ease}
 #onbBar .onbX{position:absolute;right:10px;top:9px;background:none;border:none;color:#f6f2e7;opacity:.6;font-size:20px;cursor:pointer;line-height:1}#onbBar .onbX:hover{opacity:1}
-#onbBar.onbAll .onbIn{background:var(--fairway,#1f7a4d)}#onbBar.onbAll .onbSteps{display:none}
+#onbBar.onbAll .onbIn{background:var(--fairway,#1f7a4d)}#onbBar.onbAll .onbSteps{display:none}#onbBar .onbTour{grid-column:1/-1;justify-self:start;border:none;background:var(--sand,#d8c48c);color:var(--pine,#0f3a2c);border-radius:20px;padding:7px 16px;font-family:var(--cond);font-weight:700;cursor:pointer}
 @keyframes onbIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 @keyframes onbPop{0%{transform:scale(.3)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
 @media(max-width:700px){#onbBar .onbIn{grid-template-columns:1fr auto}#onbBar .onbProg{grid-column:1/-1;grid-row:2}}
