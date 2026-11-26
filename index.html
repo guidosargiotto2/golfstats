@@ -1918,7 +1918,7 @@ let PLAYER='Guido';
 let BASE=PLAYERS[PLAYER];
 const ckey=()=>'golf-ledger-custom-'+PLAYER, dkey=()=>'golf-ledger-draft2-'+PLAYER;
 /* logged rounds belong to the logged-in user, NOT the dashboard player being viewed */
-const uckey=()=>'golf-ledger-custom-'+(localStorage.getItem('app-user')||'Guido');
+const uckey=()=>'golf-ledger-custom-'+(localStorage.getItem('app-user')||'anon');
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}};
 const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 let CUSTOM=load(ckey(),[]), R=[];
@@ -3124,8 +3124,8 @@ function setPlayer(p){
 }
 document.getElementById('playertabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.p)setPlayer(b.dataset.p);});
 // receive a round logged in the Log tab -> append to this user's rounds -> refresh Statistics
-window.addLoggedRound=function(rec){try{const a=load(uckey(),[]);a.push(rec);save(uckey(),a);if(PLAYER===(localStorage.getItem('app-user')||'Guido'))CUSTOM=a;renderAll();renderTabs();return a.length;}catch(e){return 0;}};
-window.getLoggedRounds=function(){try{return load(uckey(),[]);}catch(e){return [];}};
+window.addLoggedRound=function(rec){try{const a=load(uckey(),[]);if(rec&&!rec.owner)rec.owner=localStorage.getItem('app-user')||'';a.push(rec);save(uckey(),a);if(PLAYER===(localStorage.getItem('app-user')||'Guido'))CUSTOM=a;renderAll();renderTabs();return a.length;}catch(e){return 0;}};
+window.getLoggedRounds=function(){try{var me=localStorage.getItem('app-user')||'';return load(uckey(),[]).filter(function(r){return !r||!r.owner||r.owner===me;});}catch(e){return [];}};   /* a round stamped with another owner never shows */
 window.saveLoggedRounds=function(a){try{save(uckey(),a||[]);if(PLAYER===(localStorage.getItem('app-user')||'Guido'))CUSTOM=a||[];renderAll();renderTabs();return (a||[]).length;}catch(e){return 0;}};
 /* ===== Round ledger ===== */
 (function(){
@@ -3303,7 +3303,7 @@ function coursePicker(onPick){var es=window.__LANG==='es',T=function(a,b){return
  function cnt(){var c=m.querySelector('#cpCnt');if(c)c.textContent=(PROF.favCourses||[]).length?'★ '+(PROF.favCourses||[]).length:'';}
  draw();cnt();setTimeout(function(){qi.focus();},60);}
 window.coursePicker=coursePicker;window.favCourses=favCourses;
-const LU=(localStorage.getItem('app-user')||'Guido')+'::';  // per-user namespace
+const LU=(localStorage.getItem('app-user')||'anon')+'::';  // per-user namespace (never another player's data when nobody is signed in)
 const PKEY=LU+'scard-profile-v4',RKEY=LU+'scard-round-v4',DKEY=LU+'scard-default-v1';
 function loadDefault(){return {course:PROF.homeCourse||'CGC',tee:PROF.defaultTee||'Negras'};}
 function setDefault(course,tee){PROF.homeCourse=course;PROF.defaultTee=tee;saveProf();}
@@ -3717,13 +3717,15 @@ function newRound(course,tee,markers){const c=COURSES[course],t=c.tees[tee];mark
   holes:c.par.map((par,i)=>{const yd=stdYd(course,markers,i);return{par,yd,hcp:c.hcp[i],shots:[],done:false};})};}
 let DEFT=loadDefault();
 let R=(function(){try{const r=JSON.parse(localStorage.getItem(RKEY));
+  if(r&&r._owner&&r._owner!==(localStorage.getItem('app-user')||''))throw 0;   /* another player's round: never show it */
+  if(r&&r._editId){var mine=[];try{mine=JSON.parse(localStorage.getItem('golf-ledger-custom-'+(localStorage.getItem('app-user')||''))||'[]')||[];}catch(_){}if(!mine.some(function(x){return x&&x.id===r._editId;}))throw 0;}   /* editing a round this player does not own */
   /* only restore rounds created by the guided wizard (they carry a phase); discard older formats */
   /* restore only an actually-started round; a fresh/unstarted setup defaults to the home course */
   var started=r&&r.holes&&Array.isArray(r.holes)&&r.holes.some(function(h){return h.shots&&h.shots.some(function(s){return s.conf&&s.lie!=='tee';})||(h.shots&&h.shots.length>1);});
   if(r&&r.holes&&r.tee&&r.phase==='play'&&started&&Array.isArray(r.holes)&&r.holes.length===18){if(r.cur==null)r.cur=0;if(!r.markers)r.markers=r.tee;if(r.hStart==null){r.hStart=0;r.hEnd=18;r.holesMode='18';}r.holes.forEach(function(h){if(h.done==null)h.done=false;if(!Array.isArray(h.shots))h.shots=[];});return r;}}catch(e){}
   localStorage.removeItem(RKEY);return newRound(DEFT.course,DEFT.tee);})();
 var DEMO_ON=false;   /* demo round open: never persisted, never saved as a round */
-function save(){if(DEMO_ON)return;localStorage.setItem(RKEY,JSON.stringify(R));}
+function save(){if(DEMO_ON)return;R._owner=localStorage.getItem('app-user')||'';localStorage.setItem(RKEY,JSON.stringify(R));}
 var lgEntered=false; /* false until the user explicitly continues/starts, so a saved round shows a resume screen first */
 function reseedPredicted(){/* wizard predicts shot-by-shot; no bulk pre-seed */}
 var editRoundId=null;
@@ -5432,7 +5434,10 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    var av=function(k){var v=rs.map(function(r){return num(r[k]);}).filter(function(x){return x!=null;});return v.length?v.reduce(function(s,x){return s+x;},0)/v.length:null;};
    return {n:rs.length,total:all.length,stp:av('stp'),sg:av('sgtot'),ott:av('ott'),app:av('app'),atg:av('atg'),putt:av('putt'),t5:av('mtot'),last:rs.length?rs[0].date:''};
  }
- function friendRounds(f){var srv=[];FEED.forEach(function(x){if(x.username===f.username)srv=x.rounds||[];});return SVx(embedded(f.display)).concat(srv);}
+ function friendRounds(f){var srv=[];FEED.forEach(function(x){if(x.username===f.username)srv=x.rounds||[];});
+   var emb=embedded(f.display);if(!emb.length&&f.username){try{var k=Object.keys(PLAYERS).filter(function(n){return n.toLowerCase()===String(f.username).toLowerCase();})[0];if(k)emb=PLAYERS[k];}catch(e){}}
+   srv=srv.map(function(r){if(r&&r.mtot==null&&['p3','db','bp5','f150','fx'].some(function(k){return r[k]!=null;})){var o=Object.assign({},r);o.mtot=['p3','db','bp5','f150','fx'].reduce(function(a,k){return a+(+r[k]||0);},0);return o;}return r;});
+   return SVx(emb).concat(srv);}
  function sec(title,body,sub){return '<div class="frsec"><h3>'+title+'</h3>'+(sub?'<p class="frsub">'+sub+'</p>':'')+body+'</div>';}
 
  function compareHTML(){
