@@ -3442,7 +3442,7 @@ function cardDoc(lv){
    return h+'</table>';};
  var cellH=two?Math.min(10,86/N):6.6;
  var css='@page{size:A4 portrait;margin:0}*{box-sizing:border-box}body{font-family:"Trebuchet MS",Arial,sans-serif;color:#20261f;margin:0;padding:9mm}'+   /* no page margin = no browser header/footer (date, title, address) */
-  'h1{font-family:Georgia,serif;font-size:17px;color:#0f3a2c;margin:0}.top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #0f3a2c;padding-bottom:4px;margin-bottom:5px}.lvl{font-size:9px;color:#5c6357}.lvl b{color:#0f3a2c;font-size:10.5px}'+
+  'h1{font-family:Georgia,serif;font-size:17px;color:#0f3a2c;margin:0}.top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #0f3a2c;padding-bottom:4px;margin-bottom:5px}.lvl{font-size:9px;color:#5c6357}.tier{font-family:Georgia,serif;font-weight:700;font-size:15px;color:#fff;background:#0f3a2c;border-radius:6px;padding:3px 10px;letter-spacing:.04em;text-transform:uppercase}.tier small{font-family:Arial,sans-serif;font-weight:400;font-size:8.5px;text-transform:none;letter-spacing:0;margin-left:5px;color:#d8c48c}'+
   '.f{display:flex;gap:14px;font-size:10px;color:#5c6357;margin:0 0 6px}.f span{flex:1;border-bottom:1px solid #b9b3a2;padding-bottom:9px}'+
   'table{width:100%;border-collapse:collapse;table-layout:fixed;margin-bottom:6px}th,td{border:1px solid #9a947f;text-align:center;font-size:9px;padding:0}'+
   'th{background:#0f3a2c;color:#fff;font-size:11px;height:6mm}th.lb,td.lb{width:17mm;text-align:left;padding:0 1.5mm;font-size:8.5px;color:#5c6357}th.lb{color:#fff}'+
@@ -3460,9 +3460,10 @@ function cardDoc(lv){
  if(S.disp==='tee')lines.push('<b>L/R</b>: '+T('only on the tee shot, when it missed the fairway: left or right.','solo en la salida, si falló el fairway: izquierda o derecha.'));
  else if(S.disp!=='off')lines.push('<b>Disp</b>: '+T('where it finished against your target','dónde terminó respecto de tu objetivo')+' — L R S LO SL SR LL LR ✓'+(S.disp==='all'?T(', missed putts too.',', también putts errados.'):T(' (not on putts).',' (no en putts).')));
  if(S.read)lines.push('<b>'+T('Read','Lect.')+'</b>: '+T('putts over 3 ft: uphill U / downhill D, break L or R (e.g. DL); – flat and straight.','putts de más de 3 pies: subida S / bajada B, caída I o D (ej. BI); – plano y recto.'));
+ lines.push('<b>'+T('Level','Nivel')+'</b>: '+T('this card is for the level printed at the top. Log a round shows your current level: if it is different, print a new card.','esta tarjeta es para el nivel impreso arriba. Cargar vuelta muestra tu nivel actual: si es distinto, imprimí una tarjeta nueva.'));
  lines.push(T('Shot 1 is the tee: the distance is the hole length. Putts come from the G shots and par from the course, so there is no row for them; Pen is for penalty strokes. Log the round in Golfimbul afterwards, one column per hole.','El tiro 1 es el tee: la distancia es el largo del hoyo. Los putts salen de los tiros G y el par de la cancha, así que no tienen fila; Pen es para golpes de penalidad. Después cargá la vuelta en Golfimbul, una columna por hoyo.'));
  return '<!doctype html><html><head><meta charset="utf-8"><title> </title><style>'+css+'</style></head><body>'+
-  '<div class="top"><h1>Golfimbul</h1><span class="lvl">'+T('Level','Nivel')+' <b>'+S.name[es?1:0]+'</b> · '+N+' '+T('shot rows','filas de tiros')+'</span></div>'+
+  '<div class="top"><h1>Golfimbul</h1><span class="tier">'+S.name[es?1:0]+'<small>'+T('scorecard','tarjeta')+'</small></span><span class="lvl">'+T('Printed','Impresa')+' '+new Date().toLocaleDateString(es?'es-AR':'en-GB',{day:'numeric',month:'short',year:'numeric'})+' · '+N+' '+T('shot rows','filas de tiros')+'</span></div>'+
   '<div class="f"><span>'+T('Player','Jugador')+'</span><span>'+T('Date','Fecha')+'</span><span>'+T('Course','Cancha')+'</span><span>Tees</span><span>'+T('Playing hcp','Hcp de juego')+'</span></div>'+
   panel(1,'Out')+panel(10,'In')+'<div class="leg">'+lines.join('<br>')+'</div></body></html>';}
 function printCard(lv){var html=cardDoc(lv),fr=document.createElement('iframe');fr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(fr);
@@ -4007,7 +4008,7 @@ function renderSetup(){
    var ds0=document.getElementById('demoSlot');if(ds0)ds0.innerHTML='';
    renderSel();return;
  }
- if(!DEMO_ON){var dc=document.getElementById('demoSlot');if(!dc){var nf0=document.getElementById('newRoundForm');if(nf0){dc=document.createElement('div');dc.id='demoSlot';nf0.parentNode.insertBefore(dc,nf0);}}if(dc){dc.innerHTML=demoCardHTML()+practiceCardHTML();var dob=document.getElementById('demoOpen');if(dob)dob.onclick=function(){lgEntered=true;lgDemo();};var pob=document.getElementById('practiceOpen');if(pob)pob.onclick=function(){if(window.TOUR&&window.TOUR.practice)window.TOUR.practice();};}}
+ if(!DEMO_ON){var dc=document.getElementById('demoSlot');if(!dc){var nf0=document.getElementById('newRoundForm');if(nf0){dc=document.createElement('div');dc.id='demoSlot';nf0.parentNode.insertBefore(dc,nf0);}}if(dc){dc.innerHTML=demoCardHTML()+practiceCardHTML()+scorecardCardHTML();var spo=document.getElementById('scPrintOpen');if(spo)spo.onclick=function(){if(window.CARD)window.CARD.print();};var dob=document.getElementById('demoOpen');if(dob)dob.onclick=function(){lgEntered=true;lgDemo();};var pob=document.getElementById('practiceOpen');if(pob)pob.onclick=function(){if(window.TOUR&&window.TOUR.practice)window.TOUR.practice();};}}
  if(rc)rc.style.display='none';if(nf)nf.style.display='';
  var ti=document.getElementById('lgTitle');if(ti)ti.textContent=editRoundId?t('Edit round'):t('Start a round');var mt0=document.getElementById('meta');if(mt0)mt0.style.display='none';
  var sc=document.getElementById('selScore');if(sc&&document.activeElement!==sc)sc.value=R.score||'';
@@ -4739,6 +4740,8 @@ function demoBanner(){var v=document.getElementById('view-log');if(!v)return;var
  if(!b){b=document.createElement('div');b.id='demoBar';v.insertBefore(b,v.firstChild);}
  b.innerHTML='<span><b>'+(es?'VUELTA DE DEMOSTRACIÓN':'DEMO ROUND')+'</b> · '+(es?'recorrela hoyo por hoyo — nada se guarda.':'explore it hole by hole — nothing is saved.')+'</span><button type="button" id="demoExit">'+(es?'Salir de la demo':'Exit demo')+'</button>';
  document.getElementById('demoExit').onclick=lgDemoEnd;}
+function scorecardCardHTML(){var es=window.__LANG==='es',lv='custom',nm=es?'Personalizado':'Custom',n=8;try{lv=LOGLVL.current()||'custom';if(LOGLVL.L[lv])nm=LOGLVL.L[lv].n[es?1:0];n=cardRows(playerHI());}catch(e){}
+ return '<div class="demoCard practiceCard scCardPrint"><div><b>'+(es?'Tu tarjeta para la cancha':'Your scorecard for the course')+'</b> '+(es?'Nivel <b class="scTier">'+nm+'</b> · '+n+' filas de tiros por hoyo. Imprimila antes de jugar y anotá en la cancha sin el teléfono. Si cambiás de nivel, imprimí una nueva: la tarjeta trae su nivel arriba.':'Level <b class="scTier">'+nm+'</b> · '+n+' shot rows per hole. Print it before you play and note on the course, phone in the bag. If you change level, print a new one: the card shows its level at the top.')+'</div><button type="button" id="scPrintOpen">'+(es?'Imprimir':'Print')+'</button></div>';}
 function practiceCardHTML(){var es=window.__LANG==='es';
  return '<div class="demoCard practiceCard"><div><b>'+(es?'Practicá un hoyo':'Practise a hole')+'</b> '+(es?'Cargá un hoyo de ejemplo en los cuatro niveles de detalle y mirá cómo sube la precisión de tus datos. Nada se guarda.':'Log a sample hole at the four detail levels and watch the accuracy of your data grow. Nothing is saved.')+'</div><button type="button" id="practiceOpen">'+(es?'Practicar':'Practise')+'</button></div>';}
 function demoCardHTML(){if(!demoAvailable())return '';var es=window.__LANG==='es';
@@ -5116,6 +5119,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
 .accLine{font-size:12.5px;color:var(--ink-soft);font-family:var(--cond);}
 .accCell{color:var(--pine);}
 .practiceCard{margin-top:10px;}
+.scTier{display:inline-block;background:var(--pine);color:var(--sand);border-radius:6px;padding:0 7px;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
 .tourcard .pacc{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-family:var(--cond,sans-serif);font-size:12px;font-weight:700;color:#5c6357;}
 .tourcard .pacc span{text-transform:uppercase;letter-spacing:.06em;font-size:10.5px;white-space:nowrap;}
 .tourcard .paccBar{flex:1;height:9px;border-radius:6px;background:#eee9da;overflow:hidden;}
