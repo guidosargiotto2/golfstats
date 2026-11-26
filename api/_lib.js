@@ -18,6 +18,9 @@ const URL = findUrl();
 const dbVarNames = () => Object.keys(process.env).filter(k => /(DATABASE|POSTGRES|NEON|PG(HOST|USER|DATABASE))/.test(k)).sort();
 // The four original players: they claim their username on first sign-in, no invite code needed.
 const LEGACY = { guido: 'Guido', manuel: 'Manuel', nicolas: 'Nicolas', diego: 'Diego', enrique: 'Enrique', mauricio: 'Mauricio' };
+/* test accounts: first login with password = username (then forced change), but they are normal new users — trial, plans, onboarding — not founders */
+const TESTERS = { test1: 'Test One', test2: 'Test Two' };
+const FIRST = Object.assign({}, LEGACY, TESTERS);
 const ADMIN = 'guido';
 
 let sql = null, ready = null;
@@ -138,4 +141,4 @@ function fail(res, e) {
   return res.status(500).json({ error: 'server' });
 }
 
-module.exports = { alive, effectivePlan, inTrial, TRIAL_DAYS, signBlob, verifyBlob, PROVIDERS, providersOn, planOf, rank, dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };
+module.exports = { TESTERS, FIRST, alive, effectivePlan, inTrial, TRIAL_DAYS, signBlob, verifyBlob, PROVIDERS, providersOn, planOf, rank, dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };

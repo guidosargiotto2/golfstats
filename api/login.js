@@ -46,14 +46,14 @@ module.exports = async (req, res) => {
     const pass = String(b.pass || '');
     if (!L.validUser(user)) return res.status(b.register ? 400 : 401).json({ error: b.register ? 'bad-username' : 'bad-login' });
     const rows = await sql`select salt, hash, must_change, gone from gs_users where username = ${user}`;
-    let created = false, mustChange = false, display = L.LEGACY[user] || null;
+    let created = false, mustChange = false, display = L.FIRST[user] || null;
 
     if (rows.length) {
       if (b.register) return res.status(409).json({ error: 'user-taken' });
       if (rows[0].gone) return res.status(401).json({ error: 'bad-login' });
       if (!L.safeEq(L.hashPass(pass, rows[0].salt), rows[0].hash)) return res.status(401).json({ error: 'bad-login' });
       mustChange = !!rows[0].must_change;
-    } else if (L.LEGACY[user] && !b.register) {
+    } else if (L.FIRST[user] && !b.register) {
       // original player, first time on the synced site: old password (= username), then forced change
       if (pass.trim().toLowerCase() !== user) return res.status(401).json({ error: 'bad-login' });
       const salt = L.crypto.randomBytes(16).toString('hex');
@@ -63,7 +63,7 @@ module.exports = async (req, res) => {
       mustChange = !!again[0].must_change; created = true;
     } else {
       if (!b.register) return res.status(401).json({ error: 'bad-login' });
-      if (L.LEGACY[user]) return res.status(409).json({ error: 'user-taken' });
+      if (L.FIRST[user]) return res.status(409).json({ error: 'user-taken' });
       const inv = await sql`select v from gs_settings where k = 'invite'`;
       const want = inv.length ? String(inv[0].v || '') : '';
       if (!want || String(b.code || '').trim() !== want) return res.status(403).json({ error: 'bad-invite' });
@@ -71,7 +71,7 @@ module.exports = async (req, res) => {
       if (display.length < 2 || display.length > 24 || /[<>&"']/.test(display)) return res.status(400).json({ error: 'bad-name' });
       const low = display.toLowerCase();
       const clash = await sql`select 1 as x from gs_profiles where lower(display) = ${low}`;
-      if (clash.length || Object.values(L.LEGACY).some(n => n.toLowerCase() === low)) return res.status(409).json({ error: 'name-taken' });
+      if (clash.length || Object.values(L.FIRST).some(n => n.toLowerCase() === low)) return res.status(409).json({ error: 'name-taken' });
       if (pass.length < 6) return res.status(400).json({ error: 'short-password' });
       const salt = L.crypto.randomBytes(16).toString('hex');
       await sql`insert into gs_users (username, salt, hash) values (${user}, ${salt}, ${L.hashPass(pass, salt)}) on conflict (username) do nothing`;
