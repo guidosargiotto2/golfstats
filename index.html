@@ -5286,9 +5286,9 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
  var SVx=function(a){return window.SGVIEW?a.map(function(r){return window.SGVIEW(r,'scratch');}):a;};
  function myRounds(){var a=embedded(meName()).slice();try{a=a.concat(window.getLoggedRounds?window.getLoggedRounds():[]);}catch(e){}return SVx(a);}
  function agg(rounds,n){
-   var rs=(rounds||[]).filter(function(r){return r&&r.date&&(r.holesPlayed==null||r.holesPlayed>=18);}).sort(function(a,b){return a.date<b.date?1:(a.date>b.date?-1:0);}).slice(0,n||10);
+   var all=(rounds||[]).filter(function(r){return r&&r.date&&(r.holesPlayed==null||r.holesPlayed>=18);}).sort(function(a,b){return a.date<b.date?1:(a.date>b.date?-1:0);}),rs=all.slice(0,n||10);
    var av=function(k){var v=rs.map(function(r){return num(r[k]);}).filter(function(x){return x!=null;});return v.length?v.reduce(function(s,x){return s+x;},0)/v.length:null;};
-   return {n:rs.length,stp:av('stp'),sg:av('sgtot'),ott:av('ott'),app:av('app'),atg:av('atg'),putt:av('putt'),t5:av('mtot'),last:rs.length?rs[0].date:''};
+   return {n:rs.length,total:all.length,stp:av('stp'),sg:av('sgtot'),ott:av('ott'),app:av('app'),atg:av('atg'),putt:av('putt'),t5:av('mtot'),last:rs.length?rs[0].date:''};
  }
  function friendRounds(f){var srv=[];FEED.forEach(function(x){if(x.username===f.username)srv=x.rounds||[];});return SVx(embedded(f.display)).concat(srv);}
  function sec(title,body,sub){return '<div class="frsec"><h3>'+title+'</h3>'+(sub?'<p class="frsub">'+sub+'</p>':'')+body+'</div>';}
@@ -5300,13 +5300,13 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    var best={};cols.forEach(function(c){var b=null;rows.forEach(function(r){var v=r.a[c[0]];if(v==null)return;if(b==null||(c[2]>0?v>b:v<b))b=v;});best[c[0]]=b;});
    var h='<div class="frscroll"><table class="frtbl"><thead><tr><th style="text-align:left">'+T('Player','Jugador')+'</th><th>'+T('Rounds','Vueltas')+'</th>'+cols.map(function(c){return '<th>'+c[1]+'</th>';}).join('')+'<th>'+T('Last','Última')+'</th><th></th></tr></thead><tbody>';
    rows.forEach(function(r){
-     h+='<tr'+(r.me?' class="frme"':'')+'><td style="text-align:left;font-weight:700">'+esc(r.name)+(r.me?' <small>'+T('(you)','(vos)')+'</small>':'')+'</td><td>'+(r.a.n||'·')+'</td>'+
+     h+='<tr'+(r.me?' class="frme"':'')+'><td style="text-align:left;font-weight:700">'+esc(r.name)+(r.me?' <small>'+T('(you)','(vos)')+'</small>':'')+'</td><td>'+(r.a.total?(r.a.total+(r.a.total>r.a.n?' <small class="frsub" style="display:inline">('+T('avg. of last ','prom. últimas ')+r.a.n+')</small>':'')):'·')+'</td>'+
        cols.map(function(c){var v=r.a[c[0]];var cls=(v!=null&&rows.length>1&&v===best[c[0]])?' class="frbest"':'';return '<td'+cls+'>'+(c[0]==='t5'?(v==null?'·':v.toFixed(1)):sgn(v,1))+'</td>';}).join('')+
        '<td>'+(r.a.last||'·')+'</td><td>'+(r.me?'':'<button class="frx" data-unf="'+esc(r.username)+'" title="'+T('Unfollow','Dejar de seguir')+'">✕</button>')+'</td></tr>';
    });
    h+='</tbody></table></div>';
    if(rows.length===1)h+='<p class="frsub">'+T('Follow a friend below to compare.','Seguí a un amigo abajo para comparar.')+'</p>';
-   return sec(T('You vs. friends','Vos vs. amigos'),h,T('Average of each player\'s last 10 full rounds. Best in each column is highlighted.','Promedio de las últimas 10 vueltas completas de cada jugador. Se resalta el mejor de cada columna.'));
+   return sec(T('You vs. friends','Vos vs. amigos'),h,T('Rounds = full 18-hole rounds each player has. The other columns average the last 10 of them (or all, if fewer). Best in each column is highlighted.','Vueltas = vueltas completas de 18 hoyos de cada jugador. Las demás columnas promedian las últimas 10 (o todas, si tiene menos). Se resalta el mejor de cada columna.'));
  }
  function feedHTML(){
    var all=[];FEED.forEach(function(f){(f.rounds||[]).forEach(function(r){all.push({n:f.name,av:f.avatar,r:r});});});
