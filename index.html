@@ -4400,6 +4400,8 @@ function dispKind(hi,si,s){var h=R.holes[hi],DM=PROF.dispMode||'all';if(!s)retur
  if(si===0&&s.lie==='tee'&&h.par!==3){var n=h.shots[si+1];return (n&&n.lie!=='fw'&&n.lie!=='putt')?'tee':'';}   /* fairway hit = nothing to ask */
  return DM==='tee'?'':'app';}   /* every other non-putt shot, short game included */
 function dispSel(hi,si,s){var k=dispKind(hi,si,s);if(!k)return '';var es=window.__LANG==='es'?2:0;
+ /* a pre-filled long/short miss follows the next shot: change that distance (or delete the shot) and the miss distance changes with it */
+ if(s.dispAuto){var nx0=R.holes[hi].shots[si+1],pure=(s.disp==='S'||s.disp==='G')&&k!=='putt';if(pure&&nx0&&nx0.conf!==false&&+nx0.dist>0){var y0=nx0.lie==='putt'?Math.max(1,Math.round(+nx0.dist/3)):Math.round(+nx0.dist);if(y0<=150)s.dispYd=y0;else{delete s.dispYd;delete s.dispAuto;}}else{delete s.dispYd;delete s.dispAuto;}}
  var codes=k==='tee'?['L','R']:k==='putt'?['L','R','S','G','SL','SR','GL','GR']:['ok','L','R','S','G','SL','SR','GL','GR'],cur=(s.disp&&codes.indexOf(s.disp)>=0)?s.disp:'';
  return '<select class="dispsel'+(cur==='ok'?' ok':cur?' miss':'')+'" data-disp="'+hi+':'+si+'" data-kind="'+k+'" title="'+(cur?DISP_LBL[cur][es+1]:(es?'¿Dónde terminó respecto de tu objetivo?':'Where did it finish against your target?'))+'"><option value="">·</option>'+
    codes.map(function(c){return '<option value="'+c+'"'+(c===cur?' selected':'')+'>'+DISP_LBL[c][es]+'\u2003\u2003\u2003'+DISP_LBL[c][es+1]+'</option>';}).join('')+'</select>'+
