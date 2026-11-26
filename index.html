@@ -741,9 +741,9 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #view-profile.pgFocus .pgCur>.pgB{border-top:none;padding:6px 2px 30px}
 #view-profile.pgFocus .pgCur>.pgB.pform{max-width:920px}
 @keyframes pgIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
-#pgBack:empty{display:none}#pgBack{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:2px 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
-#pgBackBtn{border:1px solid var(--line);background:var(--paper);color:var(--pine);border-radius:20px;padding:7px 14px;font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.05em;cursor:pointer;transition:border-color .15s,transform .15s}
-#pgBackBtn:hover{border-color:var(--pine);transform:translateX(-2px)}
+#pgBack:empty{display:none}#pgBack,.pgBackBar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:2px 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+#pgBackBtn,.pgBackB{border:1px solid var(--line);background:var(--paper);color:var(--pine);border-radius:20px;padding:7px 14px;font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.05em;cursor:pointer;transition:border-color .15s,transform .15s}
+#pgBackBtn:hover,.pgBackB:hover{border-color:var(--pine);transform:translateX(-2px)}
 .pgBackT{font-family:var(--serif);font-weight:600;font-size:22px;color:var(--pine)}
 .lgscope .pgHead{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sand-deep);margin:20px 2px 8px}
 .lgscope #profGroups>.pgHead:first-child{margin-top:4px}
@@ -1015,6 +1015,17 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lgscope button.compbtn:active{transform:scale(.88);}
 .lgscope button.compbtn.y{background:#e3f1e6;border:1.5px solid #2e7d4f;color:#1f7a4d;}
 .lgscope button.compbtn.n{background:#f8e4df;border:1.5px solid #b5452f;color:#b5452f;}
+#bagEdit .beHd,#bagEdit .beRow{display:grid;grid-template-columns:minmax(120px,1.4fr) 64px 110px 34px;gap:10px;align-items:center;max-width:520px;}
+#bagEdit .beHd{font-family:var(--cond);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:10px 0 4px;}
+#bagEdit .beRow{padding:5px 0;border-top:1px solid var(--line);}
+#bagEdit .beN{font-size:14px;}
+#bagEdit .pf_cs{width:56px;text-align:center;font-family:var(--cond);font-weight:700;padding:6px 2px;border:1px solid var(--line);border-radius:7px;background:#fff;}
+#bagEdit .beD{display:flex;align-items:center;gap:5px;margin:0;}#bagEdit .beD input{width:70px;padding:6px;border:1px solid var(--line);border-radius:7px;background:#fff;font-family:var(--cond);font-weight:700;text-align:right;}#bagEdit .beD i{font-style:normal;font-size:12px;color:var(--ink-soft);}
+#bagEdit .be_x{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:#fff;color:#a23b2a;font-size:17px;line-height:1;cursor:pointer;transition:background .15s,transform .15s;}#bagEdit .be_x:hover{background:#fbe9e4;transform:rotate(90deg);}
+#bagEdit .beFoot{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:12px;max-width:640px;}
+#bagEdit .be_add{padding:7px 10px;border:1px dashed var(--fairway);border-radius:8px;background:#fff;color:var(--pine);font-weight:600;}
+#bagEdit .beCnt{font-family:var(--cond);font-size:13px;color:var(--ink-soft);}#bagEdit .beCnt.over{color:#a23b2a;font-weight:700;}
+#bagEdit .be_reset{margin-left:auto;background:none;border:none;color:var(--ink-soft);text-decoration:underline;cursor:pointer;font-size:12.5px;}
 .clubshorts{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin-top:8px;}
 .clubshorts label{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:12.5px;margin:0;}
 .clubshorts input{width:46px;text-align:center;font-family:var(--cond);font-weight:700;padding:5px 2px;border:1px solid var(--line);border-radius:7px;background:#fff;}
@@ -1735,7 +1746,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
     <div id="friendsBody"></div>
   </div></div>
   <div id="view-bag" class="lgscope" style="display:none"><div style="max-width:1100px;margin:0 auto;padding-top:4px">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 12px"><h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:0" data-i18n="My bag">My bag</h2><button class="pf_btn" style="background:var(--sand-deep)" onclick="window.showView&&window.showView('profile')" data-i18n="← Profile">← Profile</button></div>
+    <div class="pgBackBar"><button type="button" class="pgBackB" onclick="window.showView&&window.showView('profile')" data-i18n="← Profile">← Profile</button><h2 class="pgBackT" style="margin:0" data-i18n="My bag">My bag</h2></div>
     <div id="bagBody"></div>
   </div></div>
   <div id="view-plans" class="lgscope" style="display:none"><div style="max-width:980px;margin:0 auto;padding-top:4px">
@@ -4211,10 +4222,35 @@ window.CLUBSHORT={html:function(){var es=window.__LANG==='es',NM={Dr:'Driver',Pt
   return '<div class="frsec"><h3>'+(es?'Abreviatura de cada palo':'Short name for each club')+'</h3><p class="frsub">'+(es?'Así aparece cada palo al cargar una vuelta: una o dos letras o un número (D, 3W, 2H, 7, 54, 60).':'How each club appears when you log a round: a letter or two, or a number (D, 3W, 2H, 7, 54, 60).')+'</p><div class="clubshorts">'+
    myClubs().map(function(x){var n=NM[x.c]||x.c.replace(/^(\d)i$/,es?'Hierro $1':'$1 Iron').replace(/^(\d)W$/,es?'Madera $1':'$1 Wood').replace(/^(\d)H$/,es?'Híbrido $1':'$1 Hybrid');return '<label><span>'+n+'</span><input class="pf_cs" data-c="'+x.c+'" maxlength="3" value="'+clubLbl(x.c)+'"></label>';}).join('')+'</div></div>';},
  wire:function(root){(root||document).querySelectorAll('.pf_cs').forEach(function(el){el.addEventListener('change',function(){var v=el.value.trim().slice(0,3),c=el.getAttribute('data-c');PROF.clubShort=PROF.clubShort||{};if(v)PROF.clubShort[c]=v;else delete PROF.clubShort[c];el.value=clubLbl(c);saveProf();});});}};
+/* ===== My bag, by hand: for players without a Garmin import — pick the clubs you carry, their short name and how far each goes ===== */
+var CLUBALL=[['Dr','Driver','Driver',1],['3W','3 Wood','Madera 3',.92],['5W','5 Wood','Madera 5',.86],['7W','7 Wood','Madera 7',.82],['2H','2 Hybrid','Híbrido 2',.84],['3H','3 Hybrid','Híbrido 3',.81],['4H','4 Hybrid','Híbrido 4',.77],['5H','5 Hybrid','Híbrido 5',.73],['Hy','Hybrid','Híbrido',.8],
+ ['2i','2 Iron','Hierro 2',.8],['3i','3 Iron','Hierro 3',.77],['4i','4 Iron','Hierro 4',.74],['5i','5 Iron','Hierro 5',.7],['6i','6 Iron','Hierro 6',.66],['7i','7 Iron','Hierro 7',.62],['8i','8 Iron','Hierro 8',.58],['9i','9 Iron','Hierro 9',.54],
+ ['PW','Pitching Wedge','Pitching Wedge',.49],['GW','Gap Wedge','Gap Wedge',.44],['SW','Sand Wedge','Sand Wedge',.38],['LW','Lob Wedge','Lob Wedge',.31],
+ ['48','48° wedge','Wedge 48°',.47],['50','50° wedge','Wedge 50°',.45],['52','52° wedge','Wedge 52°',.43],['54','54° wedge','Wedge 54°',.4],['56','56° wedge','Wedge 56°',.38],['58','58° wedge','Wedge 58°',.34],['60','60° wedge','Wedge 60°',.31],['64','64° wedge','Wedge 64°',.27]];
+function clubFull(c){var es=window.__LANG==='es';for(var i=0;i<CLUBALL.length;i++)if(CLUBALL[i][0]===c)return CLUBALL[i][es?2:1];return c==='Pt'?'Putter':c;}
+window.BAGEDIT={
+ rows:function(){return myClubs().filter(function(x){return x.c!=='Pt';}).map(function(x){return {c:x.c,d:x.d};});},
+ save:function(L){PROF.bagManual=L.map(function(o){return {c:o.c,d:Math.max(0,Math.round(+o.d||0))};});saveProf();},
+ html:function(){var es=window.__LANG==='es',L=this.rows(),have={};L.forEach(function(o){have[o.c]=1;});var n=L.length+1;
+  var rows=L.map(function(x){return '<div class="beRow"><span class="beN">'+clubFull(x.c)+'</span><input class="pf_cs" data-c="'+x.c+'" maxlength="3" value="'+clubLbl(x.c)+'" title="'+(es?'Abreviatura':'Short name')+'"><label class="beD"><input type="number" class="be_d" data-c="'+x.c+'" min="0" max="400" step="5" value="'+(x.d||'')+'"><i>yd</i></label><button type="button" class="be_x" data-c="'+x.c+'" title="'+(es?'Sacar de la bolsa':'Remove from the bag')+'">×</button></div>';}).join('')+
+   '<div class="beRow bePt"><span class="beN">Putter</span><input class="pf_cs" data-c="Pt" maxlength="3" value="'+clubLbl('Pt')+'"><span class="beD"></span><span></span></div>';
+  var add='<option value="">'+(es?'+ Agregar un palo':'+ Add a club')+'</option>'+CLUBALL.filter(function(x){return !have[x[0]];}).map(function(x){return '<option value="'+x[0]+'">'+x[es?2:1]+'</option>';}).join('');
+  return '<div class="frsec" id="bagEdit"><h3>'+(es?'Mi bolsa':'My bag')+'</h3><p class="frsub">'+(es?'Los palos que llevás, cómo aparece cada uno al cargar una vuelta (D, 3W, 4H, 7, 56) y su distancia habitual, carry más rodada. Con esto se predice el palo de cada tiro y se arma la tarjeta impresa. Si importás tu Garmin, las distancias salen de tus tiros reales.':'The clubs you carry, how each appears when you log a round (D, 3W, 4H, 7, 56), and its usual distance, carry plus roll. This predicts the club on each shot and builds your printed scorecard. Import your Garmin and distances come from your real shots.')+'</p>'+
+   '<div class="beHd"><span>'+(es?'Palo':'Club')+'</span><span>'+(es?'Abrev.':'Short')+'</span><span>'+(es?'Distancia':'Distance')+'</span><span></span></div>'+rows+
+   '<div class="beFoot"><select class="be_add">'+add+'</select><span class="beCnt'+(n>14?' over':'')+'">'+n+' / 14 '+(es?'palos':'clubs')+(n>14?(es?' · las reglas permiten 14':' · the rules allow 14'):'')+'</span><button type="button" class="be_reset">'+(es?'Volver a la bolsa estándar':'Reset to a standard bag')+'</button></div></div>';},
+ wire:function(root){var me=this,box=(root||document).querySelector('#bagEdit');if(!box)return;
+  var redo=function(){var nw=document.createElement('div');nw.innerHTML=me.html();box.replaceWith(nw.firstChild);me.wire(root);};
+  window.CLUBSHORT.wire(box);
+  box.querySelectorAll('.be_d').forEach(function(el){el.addEventListener('change',function(){var L=me.rows(),c=el.getAttribute('data-c');L.forEach(function(o){if(o.c===c)o.d=+el.value||0;});me.save(L);redo();});});
+  box.querySelectorAll('.be_x').forEach(function(b){b.onclick=function(){var c=b.getAttribute('data-c');me.save(me.rows().filter(function(o){return o.c!==c;}));redo();};});
+  var ad=box.querySelector('.be_add');if(ad)ad.onchange=function(){var c=ad.value;if(!c)return;var x=CLUBALL.filter(function(z){return z[0]===c;})[0],L=me.rows();L.push({c:c,d:Math.round(driveYd()*(x?x[3]:.5)/5)*5});me.save(L);redo();};
+  var rs=box.querySelector('.be_reset');if(rs)rs.onclick=function(){delete PROF.bagManual;saveProf();redo();};}
+};
 function myClubs(){ /* [{c:code,d:typical total yards}] longest first */
  try{var u=localStorage.getItem('app-user')||'',B=window.gsBag?window.gsBag():((typeof BAG!=='undefined'&&BAG[u])?BAG[u]:null);
    if(B&&B.clubs&&B.clubs.length){var L=B.clubs.map(function(k){var v=k.d.map(function(x){return x[0];}).sort(function(a,b){return a-b;});return {c:clubCode(k.name),d:v.length?v[Math.floor(v.length/2)]:0};}).filter(function(o){return o.d>0;});
      L.sort(function(a,b){return b.d-a.d;});L.push({c:'Pt',d:0});return L;}}catch(e){}
+ if(PROF.bagManual&&PROF.bagManual.length){var M=PROF.bagManual.filter(function(o){return o&&o.c&&o.c!=='Pt';}).map(function(o){return {c:o.c,d:+o.d||0};});M.sort(function(a,b){return b.d-a.d;});M.push({c:'Pt',d:0});return M;}
  var dr=driveYd();return CLUBDEF.map(function(x){return {c:x[0],d:Math.round(dr*x[2])};});}
 function predictClub(hi,si,s){
  if(!s)return '';if(s.lie==='putt')return 'Pt';
@@ -5906,7 +5942,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
    return h;}
  function render(){
    var el=document.getElementById('bagBody');if(!el)return;var d=data();
-   if(!d){el.innerHTML='<div id="gimBox"></div>'+(window.CLUBSHORT?window.CLUBSHORT.html():'');if(window.GIMPORT)window.GIMPORT.paint(document.getElementById('gimBox'));if(window.CLUBSHORT)window.CLUBSHORT.wire(el);return;}
+   if(!d){el.innerHTML=(window.BAGEDIT?window.BAGEDIT.html():(window.CLUBSHORT?window.CLUBSHORT.html():''))+'<div id="gimBox"></div>';if(window.GIMPORT)window.GIMPORT.paint(document.getElementById('gimBox'));if(window.BAGEDIT)window.BAGEDIT.wire(el);else if(window.CLUBSHORT)window.CLUBSHORT.wire(el);return;}
    var L=clubs();if(!SEL||!L.some(function(o){return o.c.name===SEL;}))SEL=(L.find(function(o){return /7 Iron/.test(o.c.name);})||L[0]||{c:{}}).c.name;
    var tot=L.reduce(function(a,o){return a+o.n;},0);
    el.innerHTML='<div id="gimBox"></div><div class="controls" id="bagPeriod" style="margin:0 0 12px">'+[['all',T('All','Todo')],['2y','2025–26'],['1y','2026']].map(function(b){return '<button data-p="'+b[0]+'"'+(PERIOD===b[0]?' class="on"':'')+'>'+b[1]+'</button>';}).join('')+'</div>'+
@@ -6849,6 +6885,66 @@ window.IMPMAP=(function(){
 .acctDd .logoutbtn{border-top:1px solid var(--line-soft);border-radius:0 0 9px 9px;margin-top:4px;color:var(--clay)}
 .ledLog{margin:0 0 12px!important}
 @media (max-width:699px){.tabnav .navsp{display:none}.tabnav button.navlog{padding:8px 12px;margin:2px 4px}.acct .whoami{display:none!important}}
+</style>
+<script>
+/* ===== onboarding strip for new accounts: a link on top to finish the settings, progress as each one is done, then "all set" ===== */
+(function(){
+ var ES=function(){return window.__LANG==='es';},T=function(a,b){return ES()?b:a;};
+ var P=function(){return window.PROF||{};},O=function(){var p=P();p.onb=p.onb||{};return p.onb;};
+ var STEPS=[
+  {k:'personal',t:['Your name','Tu nombre'],ok:function(){return !!(P().name||'').trim();}},
+  {k:'course',t:['Home course & tees','Cancha y tees'],ok:function(){return !!O().course;}},
+  {k:'game',t:['Handicap index','Hándicap index'],ok:function(){try{return window.playerHI&&window.playerHI()!=null;}catch(e){return false;}}},
+  {k:'bag',t:['My bag','Mi bolsa'],ok:function(){var p=P();try{if(window.gsBag&&window.gsBag())return true;}catch(e){}return !!(p.bagManual&&p.bagManual.length)||!!O().bag;}},
+  {k:'logging',t:['Detail level','Nivel de detalle'],ok:function(){return !!P().logLevel||!!O().logging;}},
+  {k:'app',t:['Language & units','Idioma y unidades'],ok:function(){return !!O().app;}}];
+ var shownDone=false,hidden=false;
+ function isNew(){var p=P(),u=localStorage.getItem('app-user')||'';if(!u||p.onbDone)return false;
+   try{var PL=(typeof PLAYERS!=='undefined')?PLAYERS:null;if(PL&&Object.keys(PL).some(function(n){var r=PL[n];return n.toLowerCase()===u.toLowerCase()&&r&&r.length>0;}))return false;   /* players with embedded history are not new */}catch(e){}
+   return true;}
+ function inApp(){var n=document.getElementById('tabnav');return !!(n&&n.offsetParent);}
+ function mark(k){var o=O();if(o[k])return;o[k]=1;try{window.saveProf();}catch(e){}paint();}
+ function go(k){if(k==='bag'){mark('bag');if(window.showView)window.showView('bag');return;}
+   if(window.showView)window.showView('profile');setTimeout(function(){if(window.PGRP)window.PGRP.open(k);},80);}
+ function paint(){var bar=document.getElementById('onbBar');
+   if(hidden||!inApp()||(!isNew()&&!shownDone)){if(bar)bar.remove();return;}
+   var done=STEPS.filter(function(x){return x.ok();}).length,n=STEPS.length,all=done===n;
+   if(all&&!shownDone){shownDone=true;P().onbDone=true;try{window.saveProf();}catch(e){}}
+   if(!bar){bar=document.createElement('div');bar.id='onbBar';var nav=document.getElementById('tabnav');nav.parentNode.insertBefore(bar,nav.nextSibling);
+     bar.addEventListener('click',function(e){var c=e.target.closest('[data-onb]');if(c){go(c.getAttribute('data-onb'));return;}if(e.target.closest('.onbX')){hidden=true;paint();}});}
+   var key=done+'|'+(window.__LANG||'');if(bar._k===key)return;bar._k=key;
+   bar.className=all?'onbAll':'';
+   bar.innerHTML='<div class="onbIn"><div class="onbHd"><b>'+(all?T('You are all set.','Ya está todo listo.'):T('Finish setting up Golfimbul','Terminá de configurar Golfimbul'))+'</b><span>'+(all?T('Every setting is done: predictions, scorecard and statistics now fit your game.','Todo configurado: predicciones, tarjeta y estadísticas ya se ajustan a tu juego.'):T('A few minutes now, and every prediction, scorecard and statistic fits your game.','Unos minutos ahora, y cada predicción, tarjeta y estadística se ajusta a tu juego.'))+'</span></div>'+
+     '<div class="onbProg"><i style="width:'+Math.round(100*done/n)+'%"></i></div><span class="onbN">'+done+' / '+n+'</span>'+
+     '<div class="onbSteps">'+STEPS.map(function(x){var ok=x.ok();return '<button type="button" class="onbS'+(ok?' ok':'')+'" data-onb="'+x.k+'"><em>'+(ok?'✓':'')+'</em>'+x.t[ES()?1:0]+'</button>';}).join('')+'</div>'+
+     '<button type="button" class="onbX" title="'+T('Hide for now','Ocultar por ahora')+'">×</button></div>';}
+ /* opening a card in Profile counts as reviewing it (course, logging, app) */
+ document.addEventListener('toggle',function(e){var d=e.target;if(d&&d.classList&&d.classList.contains('pgrp')&&d.open&&d.dataset.k)mark(d.dataset.k);},true);
+ document.addEventListener('change',function(){setTimeout(paint,60);});
+ document.addEventListener('click',function(){setTimeout(paint,120);});
+ setInterval(paint,2000);
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(paint,800);});else setTimeout(paint,800);
+ window.ONB={paint:paint,steps:STEPS};
+})();
+</script>
+<style>
+#onbBar{max-width:1100px;margin:10px auto 4px;padding:0 16px;animation:onbIn .5s ease both}
+#onbBar .onbIn{position:relative;display:grid;grid-template-columns:1fr 180px auto;gap:6px 16px;align-items:center;background:var(--pine,#0f3a2c);color:#f6f2e7;border-radius:14px;padding:13px 46px 13px 18px;box-shadow:0 6px 18px rgba(15,58,44,.18)}
+#onbBar .onbHd b{display:block;font-family:var(--serif);font-size:17px;font-weight:600}
+#onbBar .onbHd span{font-size:12.5px;opacity:.82}
+#onbBar .onbProg{height:7px;border-radius:4px;background:rgba(246,242,231,.18);overflow:hidden}
+#onbBar .onbProg i{display:block;height:100%;border-radius:4px;background:var(--sand,#d8c48c);transition:width .7s cubic-bezier(.2,.8,.2,1)}
+#onbBar .onbN{font-family:var(--cond);font-weight:700;font-size:13px;color:var(--sand,#d8c48c)}
+#onbBar .onbSteps{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px;margin-top:3px}
+#onbBar .onbS{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(246,242,231,.35);background:transparent;color:#f6f2e7;border-radius:20px;padding:5px 12px 5px 6px;font-family:var(--cond);font-size:12.5px;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s,transform .15s}
+#onbBar .onbS:hover{background:rgba(246,242,231,.1);border-color:#f6f2e7;transform:translateY(-1px)}
+#onbBar .onbS em{width:17px;height:17px;border-radius:50%;border:1.5px dashed rgba(246,242,231,.55);display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:11px}
+#onbBar .onbS.ok{opacity:.72}#onbBar .onbS.ok em{border:none;background:var(--sand,#d8c48c);color:var(--pine,#0f3a2c);animation:onbPop .4s ease}
+#onbBar .onbX{position:absolute;right:10px;top:9px;background:none;border:none;color:#f6f2e7;opacity:.6;font-size:20px;cursor:pointer;line-height:1}#onbBar .onbX:hover{opacity:1}
+#onbBar.onbAll .onbIn{background:var(--fairway,#1f7a4d)}#onbBar.onbAll .onbSteps{display:none}
+@keyframes onbIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes onbPop{0%{transform:scale(.3)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+@media(max-width:700px){#onbBar .onbIn{grid-template-columns:1fr auto}#onbBar .onbProg{grid-column:1/-1;grid-row:2}}
 </style>
 </body>
 </html>
