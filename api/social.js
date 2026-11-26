@@ -318,12 +318,16 @@ module.exports = async (req, res) => {
       return ok({ log });
     }
 
-    if (action === 'importStatus') {   // admin: where the daily GolfCourseAPI import is and what the last run did
+    if (action === 'importStatus' || action === 'importRun') {   // admin: the GolfCourseAPI import, run by hand one batch (< 1 minute) at a time
       if (me !== L.ADMIN) return bad(403, 'admin');
+      const IMP = require('./cron-courses');
+      let run = null;
+      if (action === 'importRun') { const key = IMP.keyOf(); if (!key) return bad(503, 'no-key'); run = await IMP.runImport(sql, key, 50000); }
       const r = await sql`select v from gs_settings where k = 'imp_state'`;
-      if (!r.length) return ok({ started: false });
-      const S = JSON.parse(r[0].v);
-      return ok({ started: true, last: S.last || null, total: S.total || 0, callsToday: S.day === new Date().toISOString().slice(0, 10) ? S.calls : 0, queue: (S.queue || []).length });
+      const S = r.length ? JSON.parse(r[0].v) : {};
+      const ci = S.ci || 0, today = new Date().toISOString().slice(0, 10);
+      return ok({ started: !!r.length, run, last: S.last || null, total: S.total || 0, callsToday: S.day === today ? (S.calls || 0) : 0, cap: IMP.DAY_CAP, queue: (S.queue || []).length,
+        plan: IMP.PLAN.map((p, i) => ({ country: p[0], status: i < ci ? 'done' : i === ci ? 'current' : 'pending', found: (S.found || {})[p[0]] || 0 })) });
     }
     if (action === 'courseDelete') {   // admin removes a course added to the shared database (a built-in course with the same code comes back)
       if (me !== L.ADMIN) return bad(403, 'admin');

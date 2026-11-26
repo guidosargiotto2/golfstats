@@ -3478,7 +3478,7 @@ var I18N_ES={"Club":"Palo","Tournament round":"Vuelta de torneo","Counts for my 
  "★ default":"★ predeterminada","☆ set default":"☆ fijar predeterminada",
  "Fairway":"Fairway","Rough":"Rough","Sand":"Bunker","Recovery":"Recuperación","Green·ft":"Green·ft","Pen":"Pen","Par":"Par",
  "Prev":"Anterior","Next":"Siguiente","Next hole →":"Siguiente hoyo →","+ Add a shot":"+ Agregar tiro","Holed it":"Embocado",
- "Hole":"Hoyo","Markers":"Marcas","Pin":"Pin","Front −10":"Adelante −10","Mid":"Medio","Back +10":"Atrás +10",
+ "Hole":"Hoyo","Markers":"Marcas","Marker position":"Posición de las marcas","Pin":"Pin","Front −10":"Adelante −10","Mid":"Medio","Back +10":"Atrás +10",
  "HOLE":"HOYO","PAR":"PAR","SCORE":"SCORE","STATUS":"ESTADO","SG":"SG","TIGER'S 5":"TIGER'S 5","OUT":"IDA","IN":"VUELTA","TOT":"TOT","HOLE TOTAL":"TOTAL HOYO","T5":"T5",
  "Round journal":"Diario de la vuelta","Notes":"Notas","What I learnt":"Qué aprendí","required":"obligatorio",
  "Continue round →":"Continuar vuelta →","Hole total":"Total hoyo","Net":"Neto",
@@ -4025,7 +4025,7 @@ function renderHoleBar(hi){
    var fin=!!(h.done||h._sank),gd=hstr-h.par,nd=hstr-netParOf(hi);
    hdt=fin?(scw(gd,hstr)+((PROF.netPar&&nd!==gd)?' · '+t('Net')+' '+scw(nd,0).toLowerCase():'')):(ES_?'en juego':'in play');}
  var tees=COURSES[R.course]?COURSES[R.course].tees:{},curTee=h.teeOv||R.markers||R.tee,teeKeys=teeList(R.course,[curTee,R.tee],true),pin=h.pin||'M';
- var teeSel=teeKeys.length>1?('<span class="ha">'+t('Markers')+' <span class="teechips">'+teeKeys.map(function(k){return '<button type="button" class="teechip'+(k===curTee?' on':'')+'" data-hatee="'+hi+'" data-tk="'+k+'" style="'+teeStyle(R.course,k)+'">'+teeEN(R.course,k)+'</button>';}).join('')+'</span></span>'):'';
+ var teeSel=teeKeys.length>1?('<span class="ha" title="'+(window.__LANG==='es'?'Dónde estaban las marcas hoy en este hoyo. Cambia el largo del hoyo para los strokes gained; tu hándicap sigue usando el tee de la vuelta.':'Where the markers were set on this hole today. It changes the hole length used for strokes gained; your handicap still uses the round\'s tee.')+'">'+t('Marker position')+' <span class="teechips">'+teeKeys.map(function(k){return '<button type="button" class="teechip'+(k===curTee?' on':'')+'" data-hatee="'+hi+'" data-tk="'+k+'" style="'+teeStyle(R.course,k)+'">'+teeEN(R.course,k)+'</button>';}).join('')+'</span></span>'):'';
  var pinSeg='<span class="ha">'+t('Pin')+' <span class="haseg">'+
    '<button class="hpin'+(pin==='F'?' on':'')+'" style="'+pinBtn(R.course,'F',pin==='F').st+'" data-hpin="'+hi+':F" title="Flag short of middle">'+pinBtn(R.course,'F',pin==='F').dot+t('Front −10')+'</button>'+
    '<button class="hpin'+(pin==='M'?' on':'')+'" style="'+pinBtn(R.course,'M',pin==='M').st+'" data-hpin="'+hi+':M">'+pinBtn(R.course,'M',pin==='M').dot+t('Mid')+'</button>'+
@@ -5167,7 +5167,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
         exactly as the four detail levels in Profile → Round logging: Essentials → Player → Player+ → Analyst. Nothing is saved. ---- */
  var PLV=['ess','ply','plus','ana'];
  var PSTORY={
-  ess:[["Hole 9, par 4. You play from the black tees (380 yards), but today the markers on this hole were set where the <b>blue</b> tee is, and the <b>flag was at the back</b> of the green: your cursor is on the tee distance, press <span class='tk'>Tab</span> to move to the next marker (blue), then set the flag to <b>Back +10</b>. The tee distance updates itself","Hoyo 9, par 4. Jugás desde las negras (380 yardas), pero hoy en este hoyo las marcas estaban donde va el tee <b>azul</b>, y la <b>bandera atrás</b> del green: el cursor está en la distancia del tee, apretá <span class='tk'>Tab</span> para pasar a la marca siguiente (azul), y después marcá la bandera en <b>Atrás +10</b>. La distancia del tee se actualiza sola"],
+  ess:[["Hole 9, par 4. You play from the black tees (380 yards), but today the markers on this hole were set where the <b>blue</b> tee is, and the <b>flag was at the back</b> of the green: your cursor is on the tee distance, press <span class='tk'>Tab</span> to change the <b>marker position</b> to blue, then set the flag to <b>Back +10</b>. The tee distance updates itself","Hoyo 9, par 4. Jugás desde las negras (380 yardas), pero hoy en este hoyo las marcas estaban donde va el tee <b>azul</b>, y la <b>bandera atrás</b> del green: el cursor está en la distancia del tee, apretá <span class='tk'>Tab</span> para cambiar la <b>posición de las marcas</b> a azul, y después marcá la bandera en <b>Atrás +10</b>. La distancia del tee se actualiza sola"],
        ["Your drive finished in the rough, 140 yards out. The prediction (amber) already has it in the rough, but at 150: check the distance and type <b>140</b>","Tu salida quedó en el rough, a 140 yardas. La predicción (en ámbar) ya la pone en el rough, pero a 150: revisá la distancia y escribí <b>140</b>"],
        ["The approach found the bunker, 15 yards out. This time the prediction has the right distance in the wrong lie (rough): press <span class='tk'>Tab</span> to move the pill to <b>Sand</b>","El approach quedó en el bunker, a 15 yardas. Esta vez la predicción tiene la distancia correcta en el lie equivocado (rough): apretá <span class='tk'>Tab</span> para mover el valor a <b>Bunker</b>"],
        ["You splashed out to 8 feet","Saliste a 8 pies"],
@@ -5486,7 +5486,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    var rl=el.querySelector('#rvLoad');if(rl)rl.onclick=function(){api('reviewList').then(function(j){var box=el.querySelector('#rvAdmin');if(!box)return;var L=(j&&j.reviews)||[];
      box.innerHTML=L.length?L.map(function(r){return '<div class="frline" style="align-items:flex-start;border-top:1px solid var(--line);padding-top:8px"><span><b>'+esc(r.display)+'</b> <small>@'+esc(r.username)+'</small><br><small>'+esc(r.contact||'')+(r.note?' · “'+esc(r.note)+'”':'')+'</small><br><small>'+(r.status==='done'?T('done · ','hecha · ')+(r.recommendation||''):T('requested','pedida'))+'</small></span>'+(r.status==='done'?'':'<span><select data-rvrec="'+esc(r.username)+'"><option value="free">Free</option><option value="lite">Lite</option><option value="pro">Pro</option></select> <button class="pf_btn" data-rvdone="'+esc(r.username)+'">'+T('Done','Hecha')+'</button></span>')+'</div>';}).join(''):'<p class="frsub">'+T('No requests yet.','Todavía no hay pedidos.')+'</p>';
      box.querySelectorAll('[data-rvdone]').forEach(function(b){b.onclick=function(){var u=b.getAttribute('data-rvdone'),sel=box.querySelector('[data-rvrec="'+u+'"]');api('reviewDone',{user:u,recommendation:sel?sel.value:''}).then(function(){rl.onclick();});};});});};
-   var cra=el.querySelector('#crAdmin');if(cra&&window.COURSEREQ)window.COURSEREQ.admin(cra);var ist=el.querySelector('#impStat');if(ist)api('importStatus').then(function(j){if(!j||!j.ok){ist.textContent='';return;}if(!j.started){ist.textContent=T('Daily import: waiting for its first run (08:00 UTC).','Importación diaria: esperando su primera corrida (08:00 UTC).');return;}var L=j.last||{};ist.innerHTML='<b>'+T('Daily import','Importación diaria')+'</b> · '+T('last run','última corrida')+' '+esc(String(L.at||'').slice(0,16).replace('T',' '))+' UTC · '+esc(L.country||'')+' · +'+(L.added||0)+' '+T('new','nuevas')+', '+(L.existed||0)+' '+T('already in','ya estaban')+', '+(L.nodata||0)+' '+T('without data','sin datos')+' · '+T('total imported','total importadas')+' '+j.total+' · '+T('API calls today','llamadas hoy')+' '+j.callsToday+' / 2000';});
+   var cra=el.querySelector('#crAdmin');if(cra&&window.COURSEREQ)window.COURSEREQ.admin(cra);var ist=el.querySelector('#impStat');if(ist&&window.IMPMAP)window.IMPMAP.mount(ist);
    var ml=el.querySelector('#frMemLoad');if(ml)ml.onclick=function(){api('members').then(function(j){var box=el.querySelector('#frMembers');if(!box)return;if(!j||!j.ok){box.innerHTML='<p class="frsub">'+T('Could not load.','No se pudo cargar.')+'</p>';return;}
      box.innerHTML=membersHTML(j.members||[])+((j.teams&&j.teams.length)?'<h4 style="font-family:var(--serif);color:var(--pine);margin:14px 0 4px">'+T('Teams','Equipos')+'</h4>'+j.teams.map(function(tm){return '<div class="frline"><span><b>'+esc(tm.code)+'</b> · @'+esc(tm.owner)+' · '+tm.n+'/4</span><span><select data-tplan="'+esc(tm.code)+'"><option value="lite"'+(tm.plan!=='pro'&&tm.plan!=='plus'?' selected':'')+'>Lite</option><option value="plus"'+(tm.plan==='plus'?' selected':'')+'>Plus</option><option value="pro"'+(tm.plan==='pro'?' selected':'')+'>Pro</option></select> <label class="frchk"><input type="checkbox" data-tpaid="'+esc(tm.code)+'"'+(tm.paid?' checked':'')+'> '+T('paid','pagado')+'</label></span></div>';}).join(''):'');
      box.querySelectorAll('[data-tplan]').forEach(function(se){se.onchange=function(){var cb=box.querySelector('[data-tpaid="'+se.getAttribute('data-tplan')+'"]');api('teamSetPaid',{code:se.getAttribute('data-tplan'),paid:!!(cb&&cb.checked),plan:se.value});};});box.querySelectorAll('[data-tpaid]').forEach(function(cb){cb.onchange=function(){api('teamSetPaid',{code:cb.getAttribute('data-tpaid'),paid:cb.checked,plan:(box.querySelector('[data-tplan="'+cb.getAttribute('data-tpaid')+'"]')||{}).value}).then(function(r){cb.parentNode.style.color=(r&&r.ok)?'var(--fairway)':'var(--clay)';});};});box.querySelectorAll('[data-rpw]').forEach(function(b){b.onclick=function(){var u=b.getAttribute('data-rpw');if(!confirm(T('Reset the password of @','¿Resetear la contraseña de @')+u+T('? They will sign in with their username as password and must choose a new one.','? Va a entrar con su usuario como contraseña y tendrá que elegir una nueva.')))return;api('adminResetPass',{user:u}).then(function(r){alert((r&&r.ok)?T('Done. Tell @','Listo. Decile a @')+u+T(' to sign in with password: ',' que entre con la contraseña: ')+u:T('That did not work.','No funcionó.'));});};});box.querySelectorAll('select[data-plan]').forEach(function(sel){sel.onchange=function(){api('setPlan',{user:sel.getAttribute('data-plan'),plan:sel.value}).then(function(r){MSG=(r&&r.ok)?T('Plan updated.','Plan actualizado.'):T('That did not work.','No funcionó.');var m=el.querySelector('.frmsgx');sel.style.outline=(r&&r.ok)?'2px solid var(--fairway)':'2px solid var(--clay)';});};});});};
@@ -6535,6 +6535,79 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
  window.addEventListener('appinstalled',function(){deferred=null;var b=document.getElementById('pwaBar');if(b)b.remove();});
  window.addEventListener('load',function(){if(isIOS)setTimeout(bar,6000);});
  window.PWA={bar:bar,installed:standalone};
+})();
+</script>
+<style>
+.imp{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--paper)}.impLine{font-size:13px;line-height:1.5;color:var(--ink-soft);font-family:var(--cond)}.impBtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.impBtns .pf_btn{margin-top:0}
+.impOv{position:fixed;inset:0;z-index:9500;background:rgba(15,30,22,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:30px 12px}
+.impCard{position:relative;background:#fbf8ef;border-radius:18px;max-width:980px;width:100%;padding:22px 24px 18px;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.impX{position:absolute;top:10px;right:14px;border:none;background:none;font-size:26px;color:#5c6357;cursor:pointer}
+.impKick{font-family:var(--cond);font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sand-deep)}.impCard h3{font-family:var(--serif);font-size:24px;color:var(--pine);margin:2px 0 8px}
+.impLeg{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--cond);font-size:12.5px;color:#5c6357;margin-bottom:6px}.impLeg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}.impLeg .lg1{background:linear-gradient(90deg,#cfe6d7,#0f3a2c)}.impLeg .lg2{background:#d8a531}.impLeg .lg3{background:#e2ddcc}
+.impMap{position:relative;min-height:240px;font-size:13px;color:#5c6357}.impMap svg{width:100%;height:auto;display:block}.impC{transition:fill .3s}.impN{font-family:var(--cond);font-weight:700;font-size:11px;fill:#fff;paint-order:stroke;stroke:#0f3a2c;stroke-width:2.5px;pointer-events:none}
+.impTip{position:absolute;display:none;pointer-events:none;background:#20261f;color:#fff;font-size:12px;line-height:1.4;padding:6px 9px;border-radius:7px;z-index:2;font-family:var(--cond)}
+.impCard{position:relative}.impSum{font-size:14px;color:#20261f;margin:10px 0 6px}
+.impTbl table{width:100%;border-collapse:collapse;font-size:13px}.impTbl th{text-align:left;font-family:var(--cond);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:#5c6357;border-bottom:1.5px solid var(--pine);padding:5px 6px}.impTbl td{padding:5px 6px;border-bottom:1px solid #e6dfcb}.impTbl td.n{font-weight:700;font-variant-numeric:tabular-nums}
+.impSt{font-family:var(--cond);font-weight:700;font-size:11.5px;border-radius:999px;padding:2px 9px}.impSt.in{background:#e3f1e6;color:#1f7a4d}.impSt.now{background:#f7ead0;color:#8a5a00}.impSt.pend{background:#eee9da;color:#5c6357}
+</style><script>
+/* ===== Admin: course import, run by hand, and a map of the countries imported and pending ===== */
+window.IMPMAP=(function(){
+ var ES=function(){return window.__LANG==='es';},T=function(a,b){return ES()?b:a;};
+ var esc=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+ var norm=function(x){return String(x||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\./g,'').trim();};
+ /* map names (world atlas) ↔ plan names ↔ how courses store their country */
+ var ALIAS={'brasil':'brazil','mexico':'mexico','peru':'peru','panama':'panama','republica dominicana':'dominican republic','dominican rep':'dominican republic','united states of america':'united states','usa':'united states','us':'united states','estados unidos':'united states','españa':'spain','espana':'spain'};
+ var key=function(x){var k=norm(x);return ALIAS[k]||k;};
+ function counts(){var o={};try{Object.keys(window.COURSES||{}).forEach(function(c){var d=window.COURSES[c];if(!d||d.empty)return;var k=key(d.loc&&d.loc.country);if(!k)return;o[k]=(o[k]||0)+1;});}catch(e){}return o;}
+ function api(action){var tok=localStorage.getItem('gs-token');return fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({action:action})}).then(function(r){return r.json().catch(function(){return {};});});}
+ function line(j){if(!j||!j.ok)return '';if(!j.started)return T('Not started yet. Each batch runs for under a minute.','Todavía no empezó. Cada tanda dura menos de un minuto.');var L=j.last||{};
+   return '<b>'+T('Last batch','Última tanda')+'</b> '+esc(String(L.at||'').slice(0,16).replace('T',' '))+' UTC · '+esc(L.country||'')+' · +'+(L.added||0)+' '+T('new','nuevas')+', '+(L.existed||0)+' '+T('already in','ya estaban')+', '+(L.nodata||0)+' '+T('without data','sin datos')+' · '+T('total imported','total importadas')+' <b>'+j.total+'</b> · '+T('API calls today','llamadas hoy')+' <b>'+j.callsToday+'</b> / '+(j.cap||2000);}
+ function mount(box){if(!box)return;
+   box.innerHTML='<div class="imp"><div class="impLine" id="impLine">'+T('Loading…','Cargando…')+'</div><div class="impBtns"><button type="button" class="pf_btn" id="impRun">'+T('Import a batch','Importar una tanda')+'</button><button type="button" class="pf_btn frgrey" id="impMapBtn">'+T('Courses map','Mapa de canchas')+'</button></div></div>';
+   var ln=box.querySelector('#impLine');
+   api('importStatus').then(function(j){ln.innerHTML=line(j);});
+   box.querySelector('#impRun').onclick=function(){var b=this;b.disabled=true;var old=b.textContent;b.textContent=T('Importing… (up to a minute)','Importando… (hasta un minuto)');
+     api('importRun').then(function(j){b.disabled=false;b.textContent=old;if(!j||!j.ok){ln.textContent=T('That did not work: ','No funcionó: ')+(j&&j.error||'error');return;}ln.innerHTML=line(j);if(j.callsToday>=(j.cap||2000))b.disabled=true;});};
+   box.querySelector('#impMapBtn').onclick=open;}
+ var LIBS=['https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js','https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js'];
+ function load(i,cb){if(i>=LIBS.length)return cb();if((i===0&&window.d3)||(i===1&&window.topojson))return load(i+1,cb);var s=document.createElement('script');s.src=LIBS[i];s.onload=function(){load(i+1,cb);};s.onerror=function(){cb(new Error('lib'));};document.head.appendChild(s);}
+ function open(){
+   var ov=document.createElement('div');ov.className='impOv';ov.innerHTML='<div class="impCard"><button type="button" class="impX" aria-label="Close">×</button><div class="impKick">'+T('Course database','Base de canchas')+'</div><h3>'+T('Countries imported and pending','Países importados y pendientes')+'</h3><div class="impLeg"><span><i class="lg1"></i>'+T('In Golfimbul','En Golfimbul')+'</span><span><i class="lg2"></i>'+T('Importing now','Importando ahora')+'</span><span><i class="lg3"></i>'+T('Pending','Pendiente')+'</span></div><div class="impMap" id="impMapSvg">'+T('Loading map…','Cargando mapa…')+'</div><div class="impTip" id="impTip"></div><div class="impTbl" id="impTbl"></div></div>';
+   document.body.appendChild(ov);var close=function(){ov.remove();document.removeEventListener('keydown',kd);},kd=function(e){if(e.key==='Escape')close();};
+   ov.querySelector('.impX').onclick=close;ov.addEventListener('click',function(e){if(e.target===ov)close();});document.addEventListener('keydown',kd);
+   api('importStatus').then(function(j){
+     var C=counts(),plan=(j&&j.plan)||[],P={};plan.forEach(function(p,i){P[key(p.country)]={i:i,country:p.country,status:p.status,found:p.found};});
+     /* every country with courses, plus the plan: south to north first, then any other country already in the database */
+     var rows=plan.map(function(p){var k=key(p.country);return {k:k,name:p.country,n:C[k]||0,found:p.found,status:(C[k]||0)>0&&p.status!=='current'?'in':p.status==='current'?'now':(p.status==='done'?'in':'pend')};});
+     Object.keys(C).forEach(function(k){if(!P[k])rows.push({k:k,name:k.replace(/\b\w/g,function(c){return c.toUpperCase();}),n:C[k],found:0,status:'in',extra:true});});
+     var tot=rows.reduce(function(a,r){return a+r.n;},0),done=rows.filter(function(r){return r.status==='in';}).length;
+     var lab={in:T('In Golfimbul','En Golfimbul'),now:T('Importing now','Importando ahora'),pend:T('Pending','Pendiente')};
+     ov.querySelector('#impTbl').innerHTML='<p class="impSum"><b>'+tot+'</b> '+T('courses in','canchas en')+' <b>'+done+'</b> '+T('countries','países')+' · '+rows.filter(function(r){return r.status==='pend';}).length+' '+T('countries pending','países pendientes')+'</p><table><thead><tr><th>#</th><th>'+T('Country','País')+'</th><th>'+T('Status','Estado')+'</th><th>'+T('Courses in Golfimbul','Canchas en Golfimbul')+'</th><th>'+T('Found in search','Encontradas al buscar')+'</th></tr></thead><tbody>'+
+       rows.map(function(r,i){return '<tr data-k="'+esc(r.k)+'"><td>'+(r.extra?'·':(i+1))+'</td><td>'+esc(r.name)+'</td><td><span class="impSt '+r.status+'">'+lab[r.status]+'</span></td><td class="n">'+(r.n||'–')+'</td><td class="n">'+(r.found||'–')+'</td></tr>';}).join('')+'</tbody></table>';
+     var byK={};rows.forEach(function(r){byK[r.k]=r;});
+     load(0,function(err){var el=ov.querySelector('#impMapSvg');if(err||!window.d3||!window.topojson){el.textContent=T('The map could not load (no connection). The table below has the same data.','No se pudo cargar el mapa (sin conexión). La tabla de abajo tiene los mismos datos.');return;}
+       fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(function(r){return r.json();}).then(function(w){
+         var d3=window.d3,feats=window.topojson.feature(w,w.objects.countries).features.filter(function(f){return f.properties.name!=='Antarctica';});
+         var W=el.clientWidth||760,H=Math.round(W*0.78);el.innerHTML='';
+         var focus={type:'FeatureCollection',features:feats.filter(function(f){var r=byK[key(f.properties.name)];return r&&!r.extra;})};
+         var proj=d3.geoMercator().fitExtent([[10,10],[W-10,H-10]],focus.features.length?focus:{type:'FeatureCollection',features:feats});
+         var path=d3.geoPath(proj),max=Math.max(1,d3.max(rows,function(r){return r.n;}));
+         var green=d3.scaleSqrt().domain([0,max]).range(['#cfe6d7','#0f3a2c']);
+         var svg=d3.select(el).append('svg').attr('viewBox','0 0 '+W+' '+H).attr('role','img').attr('aria-label',T('Map of countries imported and pending','Mapa de países importados y pendientes'));
+         var tip=ov.querySelector('#impTip');
+         svg.append('g').selectAll('path').data(feats).join('path').attr('d',path).attr('class','impC')
+           .attr('fill',function(f){var r=byK[key(f.properties.name)];if(!r)return '#efeadb';if(r.status==='now')return '#d8a531';if(r.status==='pend')return '#e2ddcc';return green(r.n||0);})
+           .attr('stroke','#fffdf7').attr('stroke-width',0.7)
+           .on('mousemove',function(e,f){var r=byK[key(f.properties.name)],rc=el.getBoundingClientRect();tip.style.display='block';tip.style.left=(e.clientX-rc.left+14)+'px';tip.style.top=(e.clientY-rc.top+el.offsetTop+10)+'px';
+             tip.innerHTML='<b>'+esc(r?r.name:f.properties.name)+'</b><br>'+(r?(lab[r.status]+' · '+(r.n||0)+' '+T('courses','canchas')+(r.found?' · '+r.found+' '+T('found','encontradas'):'')):T('Not in the plan yet','Todavía fuera del plan'));d3.select(this).attr('stroke','#20261f').attr('stroke-width',1.4).raise();})
+           .on('mouseleave',function(){tip.style.display='none';d3.select(this).attr('stroke','#fffdf7').attr('stroke-width',0.7);});
+         /* the number of courses on each country with courses */
+         svg.append('g').selectAll('text').data(feats.filter(function(f){var r=byK[key(f.properties.name)];return r&&r.n>0&&path.area(f)>120;})).join('text')
+           .attr('transform',function(f){var c=path.centroid(f);return 'translate('+c[0]+','+c[1]+')';}).attr('class','impN').attr('text-anchor','middle').attr('dy','0.35em')
+           .text(function(f){return byK[key(f.properties.name)].n;});
+       }).catch(function(){el.textContent=T('The map could not load. The table below has the same data.','No se pudo cargar el mapa. La tabla de abajo tiene los mismos datos.');});});
+   });}
+ return {mount:mount,open:open};
 })();
 </script>
 </body>

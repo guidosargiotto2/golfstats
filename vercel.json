@@ -46,14 +46,11 @@
     }
   ],
   "cleanUrls": true,
-  "crons": [
-    {
-      "path": "/api/cron-courses",
-      "schedule": "0 8 * * *"
-    }
-  ],
   "functions": {
     "api/cron-courses.js": {
+      "maxDuration": 60
+    },
+    "api/social.js": {
       "maxDuration": 60
     }
   }
