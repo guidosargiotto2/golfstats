@@ -5193,7 +5193,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
      if(!s){errs.push(es?'Falta '+nth(k)+'.':'Log '+nth(k)+'.');break;}
      if(s.lie!==a.lie||+s.dist!==(k===0?st.yd:a.dist)){errs.push(es?'Revisá '+nth(k)+': desde dónde y a qué distancia.':'Check '+nth(k)+': where it was played from and the distance.');break;}}
    if(!errs.length&&S.length>PANS.length)errs.push(es?'Sobran tiros: el hoyo terminó en 5.':'Too many shots: the hole ended in 5.');
-   if(!errs.length&&!st.done)errs.push(es?'Marcá el hoyo como terminado: el último putt entró.':'Mark the hole as finished: the last putt went in.');
+   
    if(!errs.length){for(var k2=0;k2<PANS.length;k2++){var a2=PANS[k2],s2=S[k2];
      if(s2.comp!==a2.comp){errs.push(es?'Cumplimiento de '+nth(k2)+': '+(a2.comp?'✓':'✕')+'.':'Compliance on '+nth(k2)+': '+(a2.comp?'✓':'✕')+'.');break;}
      if(i>=1&&pClub(s2.club)!==pClub(CL[k2]?CL[k2].c:a2.club)){errs.push(es?'Palo de '+nth(k2)+'.':'Club on '+nth(k2)+'.');break;}
