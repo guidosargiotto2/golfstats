@@ -1399,6 +1399,14 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #landing .valNote{font-size:12.5px;color:#8a8471;line-height:1.5;margin:6px 0 0;}
 @media(max-width:820px){#landing .valWrap{grid-template-columns:1fr;gap:16px}}
 @media(prefers-reduced-motion:reduce){#landing .valArt .vpulse{animation:none}#landing .valArt .vdot{opacity:1;transform:none}}
+#landing .startBand{display:grid;grid-template-columns:1.1fr 1fr;gap:34px;align-items:center;background:linear-gradient(140deg,#0f3a2c,#174c3a);color:#f6f2e7;border-radius:22px;padding:34px 38px;}
+#landing .startQ{position:relative;padding-left:6px;}
+#landing .startMk{position:absolute;left:-14px;top:-34px;font-family:var(--serif);font-size:92px;line-height:1;color:var(--sand);opacity:.55;}
+#landing .startLine{font-family:var(--serif);font-size:clamp(22px,2.6vw,30px);line-height:1.25;margin:0 0 10px;color:#f6f2e7;}
+#landing .startLine2{font-family:var(--serif);font-style:italic;font-size:clamp(26px,3.2vw,38px);line-height:1.15;margin:0;color:var(--sand);}
+#landing .startTxt p{font-size:15.5px;line-height:1.6;color:rgba(246,242,231,.86);margin:0 0 16px;}
+#landing .startTxt .btn1{background:var(--sand);color:var(--pine);}
+@media(max-width:820px){#landing .startBand{grid-template-columns:1fr;gap:18px;padding:26px 22px}}
 #landing .tier{position:relative;}
 #landing .tier.free{background:#fbfaf6;border-color:#e6e2d6;}
 #landing .tier.lite{background:linear-gradient(170deg,#f8efd6,#efe1b8);border-color:var(--sand);}
@@ -1585,6 +1593,11 @@ svg.tgSvg{width:100%;height:auto;display:block;}
   <g class="vdot v4"><circle cx="190" cy="74" r="13" fill="#1f7a4d" stroke="#0f3a2c" stroke-width="2"/><circle class="vpulse" cx="190" cy="74" r="13" fill="none" stroke="#1f7a4d" stroke-width="2"/>
     <text x="212" y="80" class="vlg">Golfimbul</text><text x="212" y="98" class="vs" data-l="what is real, where strokes go,|qué es real, dónde van los golpes,">what is real, where strokes go,</text><text x="212" y="112" class="vs" data-l="how to improve|cómo mejorar">how to improve</text></g>
 </svg>
+</div></section>
+<section class="blk" id="l-start"><div class="lw rv startBand">
+ <div class="startQ"><span class="startMk">“</span><p class="startLine" data-l="The best time to start logging was the day you got your handicap.|El mejor momento para empezar a cargar fue el día que sacaste tu hándicap.">The best time to start logging was the day you got your handicap.</p><p class="startLine2" data-l="The second best time is today.|El segundo mejor momento es hoy.">The second best time is today.</p></div>
+ <div class="startTxt"><p data-l="Golfimbul shows its full value with data. Control charts need your rounds to learn what is normal for you, and every round you log makes the signal sharper and the advice more precise. The sooner you start, the sooner it tells you what is real.|Golfimbul muestra todo su valor con datos. Los gráficos de control necesitan tus vueltas para aprender qué es normal para vos, y cada vuelta que cargás hace la señal más nítida y los consejos más precisos. Cuanto antes empieces, antes te dice qué es real.">Golfimbul shows its full value with data. Control charts need your rounds to learn what is normal for you, and every round you log makes the signal sharper and the advice more precise. The sooner you start, the sooner it tells you what is real.</p>
+ <button class="btn1" data-go="up" data-l="Start free|Empezá gratis">Start free</button></div>
 </div></section>
 <section class="blk" id="l-desk"><div class="lw rv deskWrap">
  <div class="deskTxt">
@@ -2891,15 +2904,20 @@ var GROUPR={};
 function drawXmr(sfx){
  if(!R.length)return;
  {const d=document.getElementById('det_'+sfx);if(d)d.style.display='none';}
+ /* metrics nobody in range has (e.g. putts on club-portal rounds) are greyed out and can't be picked; the panel moves off one that has no data */
+ {const gg=GROUPS[sfx],has=k=>{try{return R.some(r=>metrics[k](r)!=null);}catch(e){return false;}};
+  document.getElementById('ctrl_'+sfx).querySelectorAll('button[data-k]').forEach(b=>{const ok=has(b.dataset.k);b.disabled=!ok;b.classList.toggle('nodata',!ok);b.title=ok?'':LX('Needs rounds logged shot by shot','Necesita vueltas cargadas tiro por tiro');});
+  if(!has(gg.cur)){const f=gg.metrics.find(has);if(f)gg.cur=f;}}
  const base=GROUPS[sfx].cur;let key=base;if(GROUPS[sfx].pct&&PCT_OF[base])key=PCT_OF[base];
  {const ml=document.getElementById('mlbl_'+sfx);if(ml)ml.textContent=CUSUM_METRICS.has(key)?'CUSUM':'XmR';}
  const RR=R.filter(r=>metrics[key](r)!=null);GROUPR[sfx]=RR;
- if(CUSUM_METRICS.has(key)){ drawCusum(sfx,key); return; }
+ if(CUSUM_METRICS.has(key)){ {const c0=document.getElementById('xmr_'+sfx);if(c0)cvInit(c0);} drawCusum(sfx,key); return; }
  if(RR.length<2){
    const cv=document.getElementById('xmr_'+sfx),g=cvInit(cv);
    if(g){g.ctx.fillStyle=F.inkSoft;g.ctx.textAlign='center';g.ctx.textBaseline='middle';g.ctx.fillText(R.length?LX('Not enough rounds with this metric yet — it builds from shot-by-shot rounds.','Todavía faltan vueltas con esta métrica — se arma con vueltas tiro a tiro.'):LX('No rounds yet.','Todavía no hay vueltas.'),g.W/2,g.H/2);}
    const mr=document.getElementById('mr_'+sfx),g2=cvInit(mr); if(g2){}
    ['expl_'+sfx,'sig_'+sfx].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='';});
+   document.getElementById('ctrl_'+sfx).querySelectorAll('button').forEach(b=>{if(b.dataset.k)b.classList.toggle('on',b.dataset.k===base);});
    return;
  }
  const v=RR.map(metrics[key]),cnt=isCount(key),S=segLimits(v,cnt),idx=RR.map((_,i)=>i+1),N=v.length;
@@ -5236,6 +5254,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
 .accLine{font-size:12.5px;color:var(--ink-soft);font-family:var(--cond);}
 .accCell{color:var(--pine);}
 .practiceCard{margin-top:10px;}
+.controls button.nodata{opacity:.38;cursor:not-allowed;text-decoration:line-through;text-decoration-thickness:1px}
 .scTbl tr.scRn td{color:var(--fairway);font-weight:700;background:rgba(31,122,77,.06)}.scTbl tr.scRn td.scLbl{color:var(--fairway)}
 .demoCard>button{flex:none;border:none;border-radius:999px;padding:9px 18px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:#fff;background:linear-gradient(160deg,var(--fairway),var(--pine));cursor:pointer;box-shadow:0 6px 14px -8px rgba(15,58,44,.7);transition:transform .15s}.demoCard>button:hover{transform:translateY(-1px)}.demoCard>button:disabled{opacity:.6;cursor:wait}
 .scTier{display:inline-block;background:var(--pine);color:var(--sand);border-radius:6px;padding:0 7px;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
