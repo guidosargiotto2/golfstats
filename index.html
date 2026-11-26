@@ -4676,15 +4676,15 @@ ${PROF.gender==='m'?`  <label class="chkrow" style="flex-direction:row;align-ite
   </div>
   <div class="hiblock">
     <div class="hirow"><span>Import rounds (differentials)</span></div>
-    <div class="hisub">Paste your AAG record rows — date · club · differential (e.g. <i>07/11/26&nbsp;&nbsp;403 - CORDOBA GOLF CLUB&nbsp;&nbsp;5,0</i>). These seed your Handicap Index.</div>
-    <textarea id="pf_imp" class="pf_ta" rows="4" placeholder="07/11/26  403 - CORDOBA GOLF CLUB  5,0&#10;31/10/26  403 - CORDOBA GOLF CLUB  -2,0"></textarea>
+    <div class="hisub">Paste your AAG record rows — date · club · differential (e.g. <i>15/03/26&nbsp;&nbsp;123 - YOUR CLUB&nbsp;&nbsp;18,4</i>). These seed your Handicap Index.</div>
+    <textarea id="pf_imp" class="pf_ta" rows="4" placeholder="Example — paste your own rows:&#10;15/03/26  123 - YOUR CLUB  18,4&#10;08/03/26  123 - YOUR CLUB  21,0"></textarea>
     <button class="pf_btn" id="pf_impbtn">Import rounds</button>
     <div class="hisub" id="pf_impmsg">${HIST.length?HIST.length+' rounds in history':''}</div>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>Published HI history</span>${HIHIST.length?`<b style="font-size:16px">${HIHIST[HIHIST.length-1].hi}</b>`:''}</div>
     <div class="hisub">Optional — paste your official index over time (date · HI) to track and compare against the computed one.</div>
-    <textarea id="pf_imph" class="pf_ta" rows="3" placeholder="12/11/26  -2,6&#10;01/11/26  -3,0"></textarea>
+    <textarea id="pf_imph" class="pf_ta" rows="3" placeholder="Example — paste your own:&#10;15/03/26  19,2&#10;01/03/26  19,8"></textarea>
     <button class="pf_btn" id="pf_imphbtn">Import HI history</button>
     <div class="hisub" id="pf_imphmsg">${HIHIST.length?HIHIST.length+' index points · latest '+HIHIST[HIHIST.length-1].hi:''}</div>
   </div>`;
