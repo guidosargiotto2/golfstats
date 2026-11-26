@@ -3633,6 +3633,7 @@ function predictNext(hi){
  var p=PROFILE[pkey(R.course,R.tee,hi)];
  var prev=shots[idx-1];
  if(!prev) return {lie:'tee',dist:h.yd,pen:0,conf:false};
+ if(R._tour&&hi===PR_HI&&PR_PRED[idx])return {lie:PR_PRED[idx].lie,dist:PR_PRED[idx].dist,pen:0,conf:false};   /* practice hole: scripted predictions to teach checking them */
  /* most-common lie you reach at this shot position (tendency only) */
  var histBest=null;
  if(p&&p.pos&&p.pos[idx]){Object.keys(p.pos[idx]).forEach(function(L){var c=p.pos[idx][L];if(c&&c.n>0&&(!histBest||c.n>histBest.n))histBest={lie:L,dist:c.dist,n:c.n};});}
@@ -4062,11 +4063,14 @@ function predictClub(hi,si,s){
  if(!s)return '';if(s.lie==='putt')return 'Pt';
  /* recovery = a punch back into play: a low iron, whatever the distance says */
  if(s.lie==='rec'){var irons=myClubs().map(function(x){return x.c;}).filter(function(c){return /^\di$/.test(c);}).sort();if(irons.length)return irons[0];}
- var h=R.holes[hi],P=PROFILE[pkey(R.course,R.tee,hi)];
- if(P&&P.clubs&&P.clubs[si]){var best=null;Object.keys(P.clubs[si]).forEach(function(c){var n=P.clubs[si][c];if(!best||n>best.n)best={c:c,n:n};});if(best&&best.n>=2)return best.c;}   /* what you usually hit from here */
- var L=myClubs(),D=+s.dist||0;
+ var h=R.holes[hi],P=PROFILE[pkey(R.course,R.tee,hi)],L=myClubs(),D=+s.dist||0;
+ var isWedge=function(c){return /^(SW|LW|GW|AW|PW|[4-6]\d)$/i.test(c);};
+ /* what you usually hit with this shot number on this hole — only when it fits the lie and the distance (a putter is never a bunker or rough shot) */
+ if(P&&P.clubs&&P.clubs[si]&&!(si===0&&s.lie==='tee')){var best=null;Object.keys(P.clubs[si]).forEach(function(c){var n=P.clubs[si][c];if(!best||n>best.n)best={c:c,n:n};});
+   if(best&&best.n>=2&&best.c!=='Pt'&&best.c!=='Dr'){var bc=L.filter(function(x){return x.c===best.c;})[0];
+     var fitD=!bc||!bc.d||Math.abs(bc.d-D)<=Math.max(15,D*0.12),fitSand=!(s.lie==='sand'&&D<=40)||isWedge(best.c);if(fitD&&fitSand)return best.c;}}
  if(si===0&&s.lie==='tee'&&h.par!==3)return L[0]?L[0].c:'Dr';
- if(s.lie==='sand'&&D<=40)return L.some(function(x){return x.c==='SW';})?'SW':(L[L.length-2]||{}).c;
+ if(s.lie==='sand'&&D<=40){if(L.some(function(x){return x.c==='SW';}))return 'SW';var w=L.filter(function(x){return isWedge(x.c)&&x.c!=='PW';});if(w.length)return w[Math.min(w.length-1,Math.floor(w.length/2))].c;return (L[L.length-2]||{}).c;}
  var cand=L.filter(function(x){return x.c!=='Pt'&&(x.c!=='Dr'||s.lie==='tee');});if(!cand.length)return '';
  if(D<=cand[cand.length-1].d)return cand[cand.length-1].c;
  var b=cand[0];cand.forEach(function(x){if(Math.abs(x.d-D)<Math.abs(b.d-D))b=x;});return b.c;}
@@ -4316,7 +4320,7 @@ function wire(){
      var cur='';cells.forEach(function(c){if(c.value.trim()!=='')cur=c.value.trim();});
      var pr=predictNext(h),disp;
      if(pr&&pr.dist!==''&&pr.lie===lie){disp=(lie==='putt'?pr.dist:Y2U(pr.dist));}   /* predicted lie → context-aware leave */
-     else{var hd=histDist(h,idx,lie);
+     else{var hd=R._tour?null:histDist(h,idx,lie);   /* practice hole: Tab carries the predicted value to the new lie */
        if(hd!=null){disp=(lie==='putt'?hd:Y2U(hd));}
        else if(cur!==''){disp=cur;}
        else{disp='';}}
@@ -4633,7 +4637,8 @@ function lgOpenCard(o){if(!o||!o.holes)return;editRoundId=o.id||null;lgLoad(o);R
 var tourSavedR=null;
 var PR_FLAGS=null;
 /* the tour's practice hole: the REAL logger, one throwaway par 4 (380 yd), never saved; level = ess | ply | plus | ana sets the columns exactly as Profile does */
-var PR_HI=8;   /* hole 9 of Córdoba Golf Club: 380 from the black tee, 361 from the blue markers */
+var PR_HI=8;
+var PR_PRED={1:{lie:'rough',dist:150},2:{lie:'rough',dist:15}};   /* 1: right lie, wrong distance · 2: right distance, wrong lie */   /* hole 9 of Córdoba Golf Club: 380 from the black tee, 361 from the blue markers */
 var PR_HOLE=[{lie:'tee',dist:371,club:'D',disp:'R',comp:true},{lie:'rough',dist:140,club:'7i',disp:'SR',comp:false},{lie:'sand',dist:15,club:'56',disp:'G',comp:true},{lie:'putt',dist:8,club:'P',disp:'G',read:'DL',comp:true},{lie:'putt',dist:2,club:'P',comp:true}];
 function lgPractice(level){
  if(!R._tour){
@@ -4656,6 +4661,7 @@ function lgPracticeEnd(){
  DEMO_ON=false;
  if(tourSavedR){R=tourSavedR;tourSavedR=null;}else{var d=loadDefault();R=newRound(d.course,d.tee);}
  lgEntered=false;scMode=false;render();renderSel();}
+function lgPracticeClubs(){var out=[];PR_HOLE.forEach(function(e,i){var c=e.lie==='putt'?'Pt':(i===0?((myClubs()[0]||{}).c||'Dr'):predictClub(PR_HI,i,{lie:e.lie,dist:e.dist}));out.push({c:c,label:clubLbl(c)});});return out;}
 function lgPracticeState(){if(!R._tour)return null;var h=R.holes[PR_HI];return JSON.parse(JSON.stringify({done:!!h.done,teeOv:h.teeOv||null,pin:h.pin||'M',yd:h.yd,shots:h.shots.filter(function(s){return s.conf!==false;})}));}
 /* "fill it for me": writes the answers for this level into the hole, as if the player had typed them */
 function lgPracticeFill(level){if(!R._tour)return;var h=R.holes[PR_HI],l=LOGLVL.L[level]||LOGLVL.L.ess;
@@ -4663,7 +4669,7 @@ function lgPracticeFill(level){if(!R._tour)return;var h=R.holes[PR_HI],l=LOGLVL.
  h.shots=PR_HOLE.map(function(e,i){var o=h.shots[i]&&h.shots[i].conf!==false?h.shots[i]:{};var s={lie:e.lie,dist:(i===0?h.yd:e.dist),pen:0,conf:true};
    ['club','clubSet','disp','dispYd','read','comp'].forEach(function(k){if(o[k]!==undefined)s[k]=o[k];});
    s.comp=e.comp;
-   if(l.clubs){s.club=e.club;s.clubSet=true;}
+   if(l.clubs){var pc=lgPracticeClubs()[i];s.club=pc.c;s.clubSet=true;}
    var dk=(i===0)?(l.disp!=='off'):(e.lie==='putt'?l.disp==='all':(l.disp==='app'||l.disp==='all'));
    if(dk&&e.disp)s.disp=e.disp;
    if(l.read&&e.read)s.read=e.read;
@@ -4701,7 +4707,7 @@ function demoCardHTML(){if(!demoAvailable())return '';var es=window.__LANG==='es
 /* shared with the other modules (setup wizard, Garmin import, course requests, profile cards) */
 setTimeout(prefPull,900);window.addEventListener('focus',function(){prefPull();});
 window.COURSES=COURSES;window.PROF=PROF;window.saveProf=saveProf;window.teeEN=teeEN;window.applyI18n=applyI18n;
-render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{all=window.ALLROUNDS?window.ALLROUNDS():[];}catch(e){}if(!all.length)all=(window.getLoggedRounds?window.getLoggedRounds():[]);var r=all.filter(function(x){return typeof id==='string'?(x.id||'')===id:(x.date===id.date&&x.score===id.score&&x.course===id.course);})[0];if(r)showRoundReview(r,all);},demo:lgDemo,demoEnd:lgDemoEnd,demoOn:function(){return DEMO_ON;},card:function(){render();renderSel();},importCard:importCard,profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause,practice:lgPractice,practiceState:lgPracticeState,practiceFill:lgPracticeFill,practiceOn:function(){return !!R._tour;},practiceEnd:lgPracticeEnd,tourCard:function(){try{if(!R._tour)return;for(var i=R.hStart;i<R.hEnd;i++){var h=R.holes[i],y=h.yd;
+render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{all=window.ALLROUNDS?window.ALLROUNDS():[];}catch(e){}if(!all.length)all=(window.getLoggedRounds?window.getLoggedRounds():[]);var r=all.filter(function(x){return typeof id==='string'?(x.id||'')===id:(x.date===id.date&&x.score===id.score&&x.course===id.course);})[0];if(r)showRoundReview(r,all);},demo:lgDemo,demoEnd:lgDemoEnd,demoOn:function(){return DEMO_ON;},card:function(){render();renderSel();},importCard:importCard,profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause,practice:lgPractice,practiceState:lgPracticeState,practiceClubs:lgPracticeClubs,practiceFill:lgPracticeFill,practiceOn:function(){return !!R._tour;},practiceEnd:lgPracticeEnd,tourCard:function(){try{if(!R._tour)return;for(var i=R.hStart;i<R.hEnd;i++){var h=R.holes[i],y=h.yd;
    h.shots=h.par===3?[{lie:'tee',dist:y,pen:0,conf:true},{lie:'putt',dist:22,pen:0,conf:true},{lie:'putt',dist:2,pen:0,conf:true}]
     :h.par===5?[{lie:'tee',dist:y,pen:0,conf:true},{lie:'fw',dist:Math.max(150,y-280),pen:0,conf:true},{lie:(i%3?'fw':'rough'),dist:70,pen:0,conf:true},{lie:'putt',dist:14,pen:0,conf:true},{lie:'putt',dist:2,pen:0,conf:true}]
     :[{lie:'tee',dist:y,pen:0,conf:true},{lie:(i%2?'fw':'rough'),dist:Math.max(60,y-275),pen:0,conf:true},{lie:'putt',dist:(i%4===0?9:20),pen:0,conf:true}].concat(i%4===0?[]:[{lie:'putt',dist:2,pen:0,conf:true}]);
@@ -5162,12 +5168,12 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
  var PLV=['ess','ply','plus','ana'];
  var PSTORY={
   ess:[["Hole 9, par 4. You play from the black tees (380 yards), but today the markers on this hole were set where the <b>blue</b> tee is, and the <b>flag was at the back</b> of the green: your cursor is on the tee distance, press <span class='tk'>Tab</span> to move to the next marker (blue), then set the flag to <b>Back +10</b>. The tee distance updates itself","Hoyo 9, par 4. Jugás desde las negras (380 yardas), pero hoy en este hoyo las marcas estaban donde va el tee <b>azul</b>, y la <b>bandera atrás</b> del green: el cursor está en la distancia del tee, apretá <span class='tk'>Tab</span> para pasar a la marca siguiente (azul), y después marcá la bandera en <b>Atrás +10</b>. La distancia del tee se actualiza sola"],
-       ["Your drive finished in the rough, 140 yards out","Tu salida quedó en el rough, a 140 yardas"],
-       ["The approach found the bunker, 15 yards out","El approach quedó en el bunker, a 15 yardas"],
+       ["Your drive finished in the rough, 140 yards out. The prediction (amber) already has it in the rough, but at 150: check the distance and type <b>140</b>","Tu salida quedó en el rough, a 140 yardas. La predicción (en ámbar) ya la pone en el rough, pero a 150: revisá la distancia y escribí <b>140</b>"],
+       ["The approach found the bunker, 15 yards out. This time the prediction has the right distance in the wrong lie (rough): press <span class='tk'>Tab</span> to move the pill to <b>Sand</b>","El approach quedó en el bunker, a 15 yardas. Esta vez la predicción tiene la distancia correcta en el lie equivocado (rough): apretá <span class='tk'>Tab</span> para mover el valor a <b>Bunker</b>"],
        ["You splashed out to 8 feet","Saliste a 8 pies"],
        ["The putt slid 2 feet past, and you holed the next one","El putt se pasó 2 pies y embocaste el siguiente"],
-       ["Compliance: you planned the centre of the green but went at the pin on the approach (✕); every other shot went to plan (✓)","Cumplimiento: en el approach planeaste el centro del green pero fuiste a la bandera (✕); el resto, según el plan (✓)"]],
-  ply:[["Clubs: driver, 7-iron, 56°, putter, putter","Palos: driver, hierro 7, 56°, putter, putter"],
+       ["Compliance judges your process, not the result. On the approach your plan was the centre of the green but you aimed at the pin: ✕, even though it was a decent shot. On every other shot you did your routine and committed to your target: ✓, even the drive that found the rough","El cumplimiento juzga tu proceso, no el resultado. En el approach tu plan era el centro del green pero apuntaste a la bandera: ✕, aunque el tiro no fue malo. En todos los demás hiciste tu rutina y te comprometiste con tu objetivo: ✓, incluso la salida que fue al rough"]],
+  ply:[["@CLUBS@","@CLUBS@"],
        ["The drive missed the fairway on the right: mark R","La salida falló el fairway por la derecha: marcá R"]],
   plus:[["The approach finished short and right of your target: SR","El approach terminó corto y a la derecha de tu objetivo: SR"],
        ["The bunker shot ran long of your target: LO","La salida del bunker pasó larga de tu objetivo: LO"]],
@@ -5175,9 +5181,10 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
        ["Its read: downhill, breaking left to right (DL)","Su lectura: bajada, de izquierda a derecha (DL)"]]
  };
  var PANS=[{lie:'tee',dist:0,club:'D',disp:'R',comp:true},{lie:'rough',dist:140,club:'7',disp:'SR',comp:false},{lie:'sand',dist:15,club:'56',disp:'G',comp:true},{lie:'putt',dist:8,club:'P',disp:'G',read:'DL',comp:true},{lie:'putt',dist:2,club:'P',comp:true}];
- function pClub(c){c=String(c||'').toUpperCase().replace(/\s/g,'');if(/^D(R|RIVER)?$/.test(c))return 'D';if(/^P(UTTER)?$/.test(c))return 'P';c=c.replace(/^(\d)I$/,'$1');if(c==='SW')return '56';return c;}
+ function pClub(c){c=String(c||'').toUpperCase().replace(/\s/g,'');if(/^D(R|RIVER)?$/.test(c))return 'D';if(/^P(T|UTTER)?$/.test(c))return 'P';return c.replace(/^(\d)I$/,'$1');}
  function pCheck(level){
    var st=window.LGR&&window.LGR.practiceState?window.LGR.practiceState():null,es=ES();if(!st)return {ok:false,msg:''};
+   var CL=(window.LGR&&window.LGR.practiceClubs)?window.LGR.practiceClubs():[];
    var i=PLV.indexOf(level),S=st.shots,errs=[];
    if(st.teeOv!=='Azules')errs.push(es?'En la distancia del tee, apretá Tab hasta el tee azul.':'On the tee distance, press Tab to reach the blue tee.');
    else if(st.pin!=='B')errs.push(es?'Marcá la bandera atrás (Back +10).':'Set the flag to the back (Back +10).');
@@ -5189,13 +5196,14 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    if(!errs.length&&!st.done)errs.push(es?'Marcá el hoyo como terminado: el último putt entró.':'Mark the hole as finished: the last putt went in.');
    if(!errs.length){for(var k2=0;k2<PANS.length;k2++){var a2=PANS[k2],s2=S[k2];
      if(s2.comp!==a2.comp){errs.push(es?'Cumplimiento de '+nth(k2)+': '+(a2.comp?'✓':'✕')+'.':'Compliance on '+nth(k2)+': '+(a2.comp?'✓':'✕')+'.');break;}
-     if(i>=1&&pClub(s2.club)!==pClub(a2.club)){errs.push(es?'Palo de '+nth(k2)+'.':'Club on '+nth(k2)+'.');break;}
+     if(i>=1&&pClub(s2.club)!==pClub(CL[k2]?CL[k2].c:a2.club)){errs.push(es?'Palo de '+nth(k2)+'.':'Club on '+nth(k2)+'.');break;}
      var needD=(k2===0&&i>=1)||((k2===1||k2===2)&&i>=2)||(k2===3&&i>=3);
      if(needD&&s2.disp!==a2.disp){errs.push(es?'Dispersión de '+nth(k2)+'.':'Dispersion on '+nth(k2)+'.');break;}
      if(k2===3&&i>=3&&s2.read!==a2.read){errs.push(es?'Lectura del primer putt.':'Read of the first putt.');break;}}}
    return errs.length?{ok:false,msg:errs[0]}:{ok:true,msg:es?'¡Perfecto! Score del hoyo: 5, un bogey.':'Spot on. Hole score: 5, a bogey.'};}
+ function pClubLine(es){var C=(window.LGR&&window.LGR.practiceClubs)?window.LGR.practiceClubs():[];var n=C.map(function(x){return x.label;}).join(', ');return es?'Palos, de tu bolsa: '+n+'. El palo viene predicho: confirmalo o cambialo':'Clubs, from your bag: '+n+'. The club comes predicted: confirm it or change it';}
  function pStory(level){var es=ES(),i=PLV.indexOf(level),out='';
-   PLV.slice(0,i+1).forEach(function(lv,j){out+=PSTORY[lv].map(function(x){return '<li'+(j<i?' class="pold"':'')+'>'+(es?x[1]:x[0])+'</li>';}).join('');});
+   PLV.slice(0,i+1).forEach(function(lv,j){out+=PSTORY[lv].map(function(x){var t=es?x[1]:x[0];if(t==='@CLUBS@')t=pClubLine(es);return '<li'+(j<i?' class="pold"':'')+'>'+t+'</li>';}).join('');});
    return '<ol class="pstory">'+out+'</ol>';}
  function pAcc(level){var es=ES(),i=PLV.indexOf(level),A=window.ACC,v=A?A.lvl(level):0,p=(A&&i>0)?A.lvl(PLV[i-1]):0;
    return '<div class="pacc"><span>'+(es?'Precisión de tus datos':'Accuracy of your data')+'</span><div class="paccBar"><i style="width:'+p+'%" data-to="'+v+'"></i></div><b>'+v+'%</b>'+(i>0?'<em>+'+(v-p)+'%</em>':'')+'</div>';}
