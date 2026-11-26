@@ -4818,14 +4818,14 @@ ${PROF.gender==='m'?`  <label class="chkrow" style="flex-direction:row;align-ite
       <option value="manual" ${PROF.hiMode==='manual'?'selected':''}>Manual only</option></select></label>
     ${PROF.hiMode!=='auto'?`<label>Manual index<input id="pf_himan" type="number" step="0.1" value="${PROF.hiManual}" placeholder="e.g. 1.2"></label>`:''}
   </div>
-  <div class="hiblock">
+  <div class="hiblock" style="display:none" data-hidden="until-fixed">
     <div class="hirow"><span>Import rounds (differentials)</span></div>
     <div class="hisub">Paste your AAG record rows — date · club · differential (e.g. <i>15/03/26&nbsp;&nbsp;123 - YOUR CLUB&nbsp;&nbsp;18,4</i>). These seed your Handicap Index.</div>
     <textarea id="pf_imp" class="pf_ta" rows="4" placeholder="Example — paste your own rows:&#10;15/03/26  123 - YOUR CLUB  18,4&#10;08/03/26  123 - YOUR CLUB  21,0"></textarea>
     <button class="pf_btn" id="pf_impbtn">Import rounds</button>
     <div class="hisub" id="pf_impmsg">${HIST.length?HIST.length+' rounds in history':''}</div>
   </div>
-  <div class="hiblock">
+  <div class="hiblock" style="display:none" data-hidden="until-fixed">
     <div class="hirow"><span>Published HI history</span>${HIHIST.length?`<b style="font-size:16px">${HIHIST[HIHIST.length-1].hi}</b>`:''}</div>
     <div class="hisub">Optional — paste your official index over time (date · HI) to track and compare against the computed one.</div>
     <textarea id="pf_imph" class="pf_ta" rows="3" placeholder="Example — paste your own:&#10;15/03/26  19,2&#10;01/03/26  19,8"></textarea>
