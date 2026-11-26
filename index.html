@@ -1079,6 +1079,27 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .nearFav button:hover{transform:translateY(-1px)}.nearFav button.on{background:var(--pine,#0f3a2c);color:#fff;border-color:var(--pine,#0f3a2c)}
 .pfAbout{display:flex;flex-direction:column;gap:10px}.pfAbout textarea{width:100%;box-sizing:border-box;font:15px/1.5 'Trebuchet MS',sans-serif;border:1px solid var(--line,#e2ddcc);border-radius:10px;padding:10px;background:var(--cream,#f6f2e7);resize:vertical}
 .noFit{border:1px solid #e3b9ac;border-left:4px solid #a23b2a;background:#fbefe9;border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.5;color:#3a2a24;margin:0 0 8px}.noFit b{color:#a23b2a}
+#rsheet{position:fixed;inset:0;z-index:900;overflow-y:auto;background:var(--paper,#f6f2e7);animation:rsUp .32s cubic-bezier(.2,.8,.2,1) both}
+html.rsOpen{overflow:hidden}
+@keyframes rsUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+#rsheet .rsIn{max-width:1180px;margin:0 auto;padding:18px 22px 60px}
+#rsheet .rsTop{display:flex;align-items:center;gap:16px;padding-bottom:12px;border-bottom:1px solid var(--line,#e2ddcc)}
+#rsheet .rsT{flex:1}#rsheet .rsT h2{font-family:var(--serif);color:var(--pine,#0f3a2c);font-size:26px;margin:0}#rsheet .rsT span{font-family:var(--cond);font-size:13px;color:var(--ink-soft,#5c6357)}
+#rsheet .rsScore{text-align:right;font-family:var(--serif);color:var(--pine,#0f3a2c)}#rsheet .rsScore b{font-size:40px;line-height:1}#rsheet .rsScore small{display:block;font-family:var(--cond);font-size:14px;font-weight:700;color:var(--ink-soft,#5c6357)}
+#rsheet .rsActs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 14px}
+#rsheet .rsA{border:1px solid var(--line,#e2ddcc);background:#fff;color:var(--pine,#0f3a2c);border-radius:20px;padding:7px 14px;font-family:var(--cond);font-weight:700;font-size:13px;cursor:pointer;transition:transform .15s,border-color .15s}#rsheet .rsA:hover{transform:translateY(-1px);border-color:var(--pine,#0f3a2c)}
+#rsheet .rsCard{background:#fffdf7;border:1px solid var(--line,#e2ddcc);border-radius:14px;padding:12px;overflow-x:auto}
+#rsheet .rsCard .scTbl td{font-size:15px}
+#rsheet .rsH{font-family:var(--serif);color:var(--pine,#0f3a2c);font-size:21px;margin:22px 0 8px}
+#rsheet .rsDepth{display:flex;align-items:center;gap:10px;font-family:var(--cond);font-size:12.5px;color:var(--ink-soft,#5c6357);margin-bottom:10px}
+#rsheet .rsDots{display:flex;gap:4px}#rsheet .rsDots i{width:22px;height:6px;border-radius:3px;background:#e2ddcc}#rsheet .rsDots i.on{background:var(--fairway,#1f7a4d)}#rsheet .rsDepth b{color:var(--pine,#0f3a2c)}
+#rsheet .rsIns{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px}
+#rsheet .rsIns li{display:flex;gap:12px;background:#fffdf7;border:1px solid var(--line,#e2ddcc);border-radius:12px;padding:12px 14px;font-size:14.5px;line-height:1.5;animation:rsUp .4s ease both}
+#rsheet .rsIns li i{flex:none;width:28px;height:28px;border-radius:50%;background:var(--pine,#0f3a2c);color:var(--sand,#d8c48c);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:13px}
+#rsheet .rsIns li:nth-child(2){animation-delay:.05s}#rsheet .rsIns li:nth-child(3){animation-delay:.1s}#rsheet .rsIns li:nth-child(4){animation-delay:.15s}#rsheet .rsIns li:nth-child(n+5){animation-delay:.2s}
+#rsheet .rsMore,#rsheet .rsNone{font-family:var(--cond);font-size:13px;color:var(--ink-soft,#5c6357);margin:10px 0 0}
+#rsheet .rsNotes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:16px}#rsheet .rsNotes div{border-left:3px solid var(--sand-deep,#b9a66a);padding:4px 12px;font-size:14px}#rsheet .rsNotes span{display:block;font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft,#5c6357);font-weight:700}
+@media(max-width:640px){#rsheet .rsIn{padding:12px}#rsheet .rsT h2{font-size:20px}#rsheet .rsScore b{font-size:30px}}
 </style>
 <style id="gimcss">
 .gimTag{font:600 10px/1 var(--sans,inherit);letter-spacing:.08em;background:var(--pine);color:#fff;border-radius:20px;padding:4px 8px;vertical-align:3px;margin-left:6px}
@@ -1715,7 +1736,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
   <div class="tabnav" id="tabnav"><a class="navbrand" href="#" onclick="event.preventDefault();var b=document.querySelector('#tabnav button[data-v=stats]');if(b)b.click();" title="Golfimbul"><svg width="30" height="30" viewBox="0 0 116 116" aria-hidden="true" class="gmark"><defs><clipPath id="gmkNav"><circle cx="58" cy="58" r="50"/></clipPath></defs><circle cx="58" cy="58" r="50" fill="#fbf6e6"/><g clip-path="url(#gmkNav)"><rect x="0" y="30" width="116" height="30" fill="#c2502e" opacity=".07"/><path d="M0 30 H 116 M0 60 H 116" stroke="#c2502e" stroke-width="2.4" stroke-dasharray="4 4"/><polyline points="10,46 20,36 30,52 40,38 50,50 60,40 66,46" fill="none" stroke="#0f3a2c" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M66 46 C 74 56 78 72 82 84" fill="none" stroke="#0f3a2c" stroke-width="4.4" stroke-linecap="round"/><path d="M0 116 V 98 C 30 98 46 80 76 80 C 98 80 110 90 116 96 V 116 Z" fill="#7aa36a"/><path d="M0 98 C 30 98 46 80 76 80 C 98 80 110 90 116 96" fill="none" stroke="#0f3a2c" stroke-width="2.4"/><path d="M72 100 a 10 10 0 0 1 20 0 Z" fill="#3b2614"/><circle cx="82" cy="90" r="6.4" fill="#fff" stroke="#0f3a2c" stroke-width="2.4"/></g><circle cx="58" cy="58" r="50" fill="none" stroke="#0f3a2c" stroke-width="5"/><circle cx="58" cy="58" r="55" fill="none" stroke="#b89a52" stroke-width="2"/></svg><span>Golfimbul</span></a><button data-v="stats" data-i18n="Statistics">Statistics</button><button data-v="friends" data-i18n="Friends">Friends</button><button data-v="ledger" data-i18n="Rounds">Rounds</button><button data-v="ideas" data-i18n="Ideas">Ideas</button><span class="navsp"></span><button data-v="log" class="navlog" data-i18n="+ Log a round">+ Log a round</button><button class="tourbtn" id="tourBtn" type="button" title="Take the tour" aria-label="Take the tour"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true" style="display:block;transform:rotate(45deg)"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></button><div class="acct" id="acct"><button type="button" class="acctBtn" id="acctBtn" aria-haspopup="menu" aria-expanded="false"><span class="acctAv" id="acctAv">·</span><span class="whoami" id="whoami"></span><span class="acctCar" aria-hidden="true">▾</span></button><div class="acctDd" id="acctDd" role="menu"><button data-v="profile" role="menuitem" data-i18n="Profile & settings">Profile &amp; settings</button><button data-v="bag" role="menuitem" data-i18n="My bag">My bag</button><button type="button" id="acctPlan" role="menuitem" data-i18n="Plan">Plan</button><button type="button" id="acctAdmin" role="menuitem" style="display:none" data-i18n="Admin">Admin</button><button class="logoutbtn" id="logoutBtn" type="button" role="menuitem" data-i18n="Log out">Log out</button></div></div></div>
   <div id="view-log" class="lgscope" style="display:none"><div class="wrap">
  <div class="bar"><div><h1 id="lgTitle">Start a round</h1><div class="meta" id="meta" style="display:none"></div></div>
-   <div class="tot" id="totBox"><div class="sc" id="totScore">—</div><div class="sg" id="totSG">—</div></div></div>
+   <div class="tot" id="totBox" style="visibility:hidden"><div class="sc" id="totScore">—</div><div class="sg" id="totSG">—</div></div></div>
 
  <div id="setupPanel" class="setup">
    <div id="resumeCard" class="resumecard" style="display:none"></div>
@@ -3221,13 +3242,15 @@ window.saveLoggedRounds=function(a){try{save(uckey(),a||[]);if(PLAYER===(localSt
        '<span class="ledsrc '+(o.src==='logged'?'lg':'im')+'">'+T(o.src)+'</span>'+
        ((o.src==='logged'||r.putts!=null)?'<span class="ledshare ledrev" data-rv="1" title="'+(window.__LANG==='es'?'Esta vuelta contra tu normalidad':'This round against your normal')+'">◎ '+(window.__LANG==='es'?'Revisión':'Review')+'</span>':'')+
        '<span class="ledshare" data-sh="1" title="WhatsApp · PNG">⤴ '+T('Share')+'</span>'+
-       '<span class="ledgo">'+(card?T('Scorecard')+' ▶':(icard?T('Scorecard')+' ▾':T('Details')+' ▾'))+'</span></div>'+
+       '<span class="ledgo">'+((card||icard||r.hs)?T('Scorecard'):T('Details'))+' ⤢</span></div>'+
        '<div class="leddet" id="leddet_'+i+'" style="display:none"></div></div>';
    }).join('');
    el.querySelectorAll('.ledrow').forEach(function(row){row.addEventListener('click',function(ev){
      var i=+row.getAttribute('data-li'),o=all[i],r=o.r;
      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.ledrev')){if(window.LGR&&window.LGR.review)window.LGR.review(o.src==='logged'?r.id:{date:r.date,score:r.score,course:r.course});return;}
       if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.ledshare')){if(window.SHARE)window.SHARE.round(r,user);return;}
+     if(window.LGR&&window.LGR.sheet){var ed=(o.src==='logged'&&r.holes)?function(){if(window.showView)window.showView('log');window.LGR.openCard({id:r.id,course:r.courseCode||r.course,tee:r.tee,date:r.date,score:r.score,chcp:r.ph,notes:r.notes,lesson:r.lesson,whyMet:r.whyMet,holes:r.holes});}:null;
+       var rvw=(o.src==='logged'||r.putts!=null)?function(){window.LGR.review(o.src==='logged'?r.id:{date:r.date,score:r.score,course:r.course});}:null;window.LGR.sheet(r,{edit:ed,review:rvw});return;}
      if(o.src==='logged'&&r.holes){if(window.showView)window.showView('log');if(window.LGR&&window.LGR.openCard)window.LGR.openCard({id:r.id,course:r.courseCode||r.course,tee:r.tee,date:r.date,score:r.score,chcp:r.ph,notes:r.notes,lesson:r.lesson,whyMet:r.whyMet,holes:r.holes});return;}
      var dd=document.getElementById('leddet_'+i);if(!dd)return;var open=dd.style.display!=='none';
      if(!open){var ic=null;try{if(r.hl&&window.LGR&&window.LGR.importCard){var ph0=(r.ph!=null)?r.ph:((r.hi!=null&&r.slope&&r.cr)?Math.round(r.hi*r.slope/113+(r.cr-(r.par||72))):null);ic=window.LGR.importCard(r.hl,{ph:ph0,course:r.course});}}catch(e){ic=null;}
@@ -4435,7 +4458,7 @@ function totals(){
  var count=R.hEnd-R.hStart;
  var sc=0,sg=0,par=0,gpar=0,sr=srMap();for(var i=(R.hStart||0);i<(R.hEnd!=null?R.hEnd:18);i++){var h=R.holes[i];if(!h.done)continue;var hsg=holeSG(holeView(h));sc+=hsg.strokes;sg+=hsg.tot;par+=netParOf(i,sr);gpar+=h.par;}
  var tpf=function(d){return (d>0?'+':'')+(d===0?'E':d);};
- document.getElementById('totScore').textContent=done.length?tpf(sc-gpar):'—';
+ document.getElementById('totScore').textContent=done.length?tpf(sc-gpar):'—';var tbx=document.getElementById('totBox');if(tbx)tbx.style.visibility=done.length?'':'hidden';   /* no dashes before the first hole is in */
  document.getElementById('totSG').style.display='none';void done.length?((par!==gpar?t('Net')+' '+tpf(sc-par)+' · ':'')+t('thru')+' '+done.length+' <span class="sgmini '+(sg<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg)+'</span>'):'—';
  var rem=count-done.length,w=document.getElementById('warn');
  var cross=(rem===0&&R.score!==''&&R.score!=null&&+R.score!==sc)?('⚠ you entered score '+R.score+', but your shots add up to '+sc):'';
@@ -4910,6 +4933,90 @@ function importCard(hl,opt){
    '<div class="sgcats2">'+chip('Off tee',cat.ott)+chip('Approach',cat.app)+chip('Around grn',cat.atg)+chip('Putting',cat.putt)+chip('Total',cat.tot)+'</div>'+
    '<div class="scHint ihShots">'+t('Tap any hole to see its shots.')+'</div>',shots:shots,pars:H.map(function(h){return h.par;})};
 }
+/* ===== round sheet: every round opens full screen — its card and an analysis as deep as its data allows ===== */
+function rsHl(r){if(r.hl)return r.hl;if(!r.holes)return null;var LC={tee:'t',fw:'f',rough:'r',sand:'s',rec:'x',putt:'p'};
+ var H=r.holes.filter(function(h){return h&&h.shots&&h.shots.filter(function(x){return x.conf!==false;}).length;});if(!H.length)return null;
+ return H.map(function(h){return [h.par,0,h.shots.filter(function(x){return x.conf!==false;}).map(function(x){var p='';for(var i=0;i<(x.pen||0);i++)p+='*';return (LC[x.lie]||'f')+(+x.dist||0)+p;}).join('')];});}
+function rsPH(r){if(r.ph!=null&&r.ph!=='')return +r.ph;if(r.chcp!=null&&r.chcp!=='')return +r.chcp;if(r.hi!=null&&r.slope&&r.cr)return Math.round(r.hi*r.slope/113+(r.cr-(r.par||72)));return null;}
+function rsMed(a){a=a.filter(function(x){return x!=null&&!isNaN(x);}).sort(function(x,y){return x-y;});if(!a.length)return null;var m=Math.floor(a.length/2);return a.length%2?a[m]:(a[m-1]+a[m])/2;}
+function rsAnalysis(r,hl,ph){
+ var es=window.__LANG==='es',T=function(a,b){return es?b:a;},pm=function(v){v=Math.round(v*10)/10;return (v>0?'+':'')+String(v).replace('.',es?',':'.');},ins=[],depth=0,miss=[];
+ var all=[];try{all=(window.ALLROUNDS?window.ALLROUNDS():[]).filter(function(x){return !(x.date===r.date&&x.score===r.score);}).sort(function(a,b){return a.date<b.date?1:-1;}).slice(0,20);}catch(e){}
+ var say=function(icon,txt){ins.push('<li><i>'+icon+'</i><span>'+txt+'</span></li>');};
+ /* ---- level 0: the total, against your own normal ---- */
+ var ms=rsMed(all.map(function(x){return +x.score;}));
+ if(r.score&&ms!=null&&all.length>=5){var d=r.score-ms;say(d<0?'▲':d>0?'▼':'=',T('Score <b>'+r.score+'</b>: '+(d===0?'exactly your median':(Math.abs(d)+' '+(d<0?'better':'worse')+' than your median of '+ms))+' over your last '+all.length+' rounds.','Score <b>'+r.score+'</b>: '+(d===0?'justo tu mediana':(Math.abs(d)+' '+(d<0?'mejor':'peor')+' que tu mediana de '+ms))+' en tus últimas '+all.length+' vueltas.'));}
+ [['putts',T('Putts','Putts'),-1],['gir','GIR',1],['fw',T('Fairways','Fairways'),1]].forEach(function(m){var v=r[m[0]],md=rsMed(all.map(function(x){return x[m[0]];}));if(v==null||md==null||all.filter(function(x){return x[m[0]]!=null;}).length<5)return;var d=v-md;if(Math.abs(d)<1.5)return;
+   say((d*m[2]>0)?'▲':'▼',m[1]+' <b>'+v+'</b> '+T('against a usual '+md+'.','contra un habitual de '+md+'.'));});
+ /* ---- level 1: hole by hole ---- */
+ var pars=null,sc=null;
+ if(hl&&hl.length){pars=hl.map(function(a){return +a[0];});sc=hl.map(function(a){var n=0;String(a[2]).replace(/[tfrsxp][\d.]+(\**)/g,function(m0,st){n+=1+st.length;return m0;});return n;});}
+ else if(r.hs&&r.hp){pars=r.hp.map(Number);sc=r.hs.map(Number);}
+ if(pars&&sc&&sc.length===pars.length){depth=1;
+   var NR=(pars.length===18)?netRow(ph,r.course):null,net=!!NR&&PROF.netPar!==false,B=pars.map(function(p,i){return net?p+NR(i):p;}),D=sc.map(function(x,i){return x-B[i];}),lab=net?T(' net',' neto'):'';
+   var tot=D.reduce(function(a,b){return a+b;},0);
+   if(sc.length===18){var f9=D.slice(0,9).reduce(function(a,b){return a+b;},0),b9=tot-f9;
+     say('◐',T('Front nine <b>'+pm(f9)+'</b>'+lab+', back nine <b>'+pm(b9)+'</b>'+lab+'. ','Ida <b>'+pm(f9)+'</b>'+lab+', vuelta <b>'+pm(b9)+'</b>'+lab+'. ')+(Math.abs(f9-b9)>=3?(f9>b9?T('The round got away early; the finish was the real you.','La vuelta se escapó al principio; el cierre fue tu golf real.'):T('A good start, then it slipped. Look at what changed on the back nine: fatigue, focus, or one bad hole.','Buen comienzo y después se fue. Mirá qué cambió en la vuelta: cansancio, foco o un hoyo malo.')):T('An even round: no collapse on either side.','Vuelta pareja: ningún lado se cayó.')));}
+   var bad=D.map(function(d,i){return {i:i,d:d};}).filter(function(o){return o.d>=2;}).sort(function(a,b){return b.d-a.d;}),badS=bad.reduce(function(a,o){return a+o.d;},0);
+   if(bad.length)say('✕',T('<b>'+bad.length+'</b> hole'+(bad.length>1?'s':'')+' at double'+lab+' or worse ('+bad.map(function(o){return (o.i+1);}).join(', ')+') cost <b>'+badS+'</b> strokes'+(tot>0?', '+Math.round(100*Math.min(badS,tot)/tot)+'% of your total over'+lab:'')+'. Those are the strokes to win back first, not birdies.','<b>'+bad.length+'</b> hoyo'+(bad.length>1?'s':'')+' en doble'+lab+' o peor ('+bad.map(function(o){return (o.i+1);}).join(', ')+') costaron <b>'+badS+'</b> golpes'+(tot>0?', el '+Math.round(100*Math.min(badS,tot)/tot)+'% de lo que pasaste'+lab:'')+'. Esos son los golpes a recuperar primero, no los birdies.'));
+   else say('✓',T('No double'+lab+' all round. That is how scores come down.','Ningún doble'+lab+' en toda la vuelta. Así baja el score.'));
+   var bb=0,bn=0;for(var i=0;i+1<D.length;i++)if(D[i]>=1){bn++;if(D[i+1]<=0)bb++;}
+   if(bn>=2)say('↺',T('Bounce-back: after a bogey'+lab+' or worse you made par'+lab+' or better on the next hole <b>'+bb+' of '+bn+'</b> times.'+(bb/bn<0.34?' One bad hole is turning into two.':''),'Rebote: después de un bogey'+lab+' o peor hiciste par'+lab+' o mejor en el hoyo siguiente <b>'+bb+' de '+bn+'</b> veces.'+(bb/bn<0.34?' Un hoyo malo se está convirtiendo en dos.':'')));
+   var byP={};pars.forEach(function(p,i){(byP[p]=byP[p]||[]).push(D[i]);});
+   var pt=Object.keys(byP).sort().map(function(p){var a=byP[p],m=a.reduce(function(x,y){return x+y;},0)/a.length;return {p:p,m:m,n:a.length};});
+   if(pt.length>1){var worst=pt.slice().sort(function(a,b){return b.m-a.m;})[0];say('◇',pt.map(function(o){return 'Par '+o.p+' <b>'+pm(o.m)+'</b>';}).join(' · ')+T(' per hole'+lab+'. ',' por hoyo'+lab+'. ')+(worst.m>0.5?T('Par '+worst.p+'s are where this round leaked.','Los par '+worst.p+' fueron donde se escapó esta vuelta.'):''));}
+   var SI=null;try{var ck=Object.keys(COURSES).filter(function(k){return COURSES[k].name===r.course;})[0];if(ck&&COURSES[ck].hcp&&COURSES[ck].hcp.length===pars.length&&COURSES[ck].hcp.some(function(x){return x>0;}))SI=COURSES[ck].hcp;}catch(e){}
+   if(SI&&pars.length===18){var hard=[],easy=[];SI.forEach(function(x,i){if(x<=6)hard.push(D[i]);if(x>=13)easy.push(D[i]);});var mh=hard.reduce(function(a,b){return a+b;},0),me=easy.reduce(function(a,b){return a+b;},0);
+     say('⚖',T('Six hardest holes <b>'+pm(mh)+'</b>'+lab+', six easiest <b>'+pm(me)+'</b>'+lab+'. ','Los seis hoyos más difíciles <b>'+pm(mh)+'</b>'+lab+', los seis más fáciles <b>'+pm(me)+'</b>'+lab+'. ')+(me>=mh?T('You gave strokes away where the course gives them to you.','Regalaste golpes donde la cancha te los regala.'):T('The hard holes did the damage, as they should; the easy ones held.','Los difíciles hicieron el daño, como corresponde; los fáciles aguantaron.')));}
+ } else miss.push(T('hole-by-hole scores','el score de cada hoyo'));
+ /* ---- level 2: shot by shot ---- */
+ if(hl&&hl.length){depth=2;var LM={t:'tee',f:'fw',r:'rough',s:'sand',x:'rec',p:'putt'};
+   var H=hl.map(function(a){var sh=[],re=/([tfrsxp])([\d.]+)(\**)/g,m;while((m=re.exec(a[2])))sh.push({lie:LM[m[1]],dist:+m[2],pen:m[3].length});return {par:+a[0],shots:sh};});
+   var cat={ott:0,app:0,atg:0,putt:0},worstH=null,t5={p3:0,db:0,bp5:0,f150:0,short:0},putts=0,p1=0,p3n=0,gir=0,pen=0,fp=[];
+   H.forEach(function(h,i){var g=holeSG(h),m=holeMistakes(h,null,h.par);['ott','app','atg','putt'].forEach(function(k){cat[k]+=g[k];});if(!worstH||g.tot<worstH.g)worstH={i:i,g:g.tot};
+     Object.keys(t5).forEach(function(k){t5[k]+=m[k]?1:0;});var pi=h.shots.findIndex(function(x){return x.lie==='putt';}),np=h.shots.filter(function(x){return x.lie==='putt';}).length;putts+=np;if(np===1)p1++;if(np>=3)p3n++;
+     var strokesBefore=0;for(var q=0;q<(pi<0?h.shots.length:pi);q++)strokesBefore+=1+(h.shots[q].pen||0);if(pi>=0&&strokesBefore<=h.par-2)gir++;if(pi>=0)fp.push(h.shots[pi].dist);h.shots.forEach(function(x){pen+=x.pen||0;});});
+   var CN={ott:T('off the tee','desde el tee'),app:T('approach','approach'),atg:T('around the green','alrededor del green'),putt:T('putting','putting')};
+   var ks=Object.keys(cat).sort(function(a,b){return cat[a]-cat[b];});
+   say('⛳',T('Strokes gained: biggest leak <b>'+CN[ks[0]]+' '+fmt(cat[ks[0]])+'</b>, best <b>'+CN[ks[3]]+' '+fmt(cat[ks[3]])+'</b>. That leak is where practice time pays this week.','Strokes gained: la mayor pérdida <b>'+CN[ks[0]]+' '+fmt(cat[ks[0]])+'</b>, lo mejor <b>'+CN[ks[3]]+' '+fmt(cat[ks[3]])+'</b>. Esa pérdida es donde la práctica rinde esta semana.'));
+   if(worstH)say('⚑',T('Worst hole: <b>'+(worstH.i+1)+'</b> ('+fmt(worstH.g)+' SG). Tap it on the card to replay the shots: was it one decision or one swing?','Peor hoyo: <b>'+(worstH.i+1)+'</b> ('+fmt(worstH.g)+' SG). Tocalo en la tarjeta para ver los tiros: ¿fue una decisión o un swing?'));
+   var t5n=t5.p3+t5.db+t5.bp5+t5.f150+t5.short,T5N={p3:T('3-putts','3 putts'),db:T('doubles','dobles'),bp5:T('bogeys on par 5','bogeys en par 5'),f150:T('bogeys with a short iron in hand','bogeys con hierro corto'),short:T('wasted easy saves','saves fáciles perdidos')};
+   say(t5n?'✕':'✓',"Tiger 5: <b>"+t5n+'</b>'+(t5n?' — '+Object.keys(t5).filter(function(k){return t5[k];}).map(function(k){return t5[k]+' '+T5N[k];}).join(', ')+'.':T('. A clean card on the mistakes that cost amateurs the most.','. Tarjeta limpia en los errores que más le cuestan al amateur.')));
+   var fpm=rsMed(fp);say('◉',T('Putting: <b>'+putts+'</b> putts, '+p1+' one-putt'+(p1!==1?'s':'')+', '+p3n+' three-putt'+(p3n!==1?'s':'')+(fpm!=null?'; first putts from a median of '+Math.round(fpm)+' ft':'')+'. ','Putting: <b>'+putts+'</b> putts, '+p1+' de un putt, '+p3n+' de tres'+(fpm!=null?'; primeros putts desde una mediana de '+Math.round(fpm)+' pies':'')+'. ')+(fpm!=null&&fpm>25?T('The putter is paying for the approach play: get closer before blaming the stroke.','El putter está pagando los approaches: acercala antes de culpar al golpe.'):''));
+   say('◎','GIR <b>'+gir+'/'+H.length+'</b>'+(pen?T(' · penalties <b>'+pen+'</b>',' · penalidades <b>'+pen+'</b>'):''));
+ } else if(depth===1)miss.push(T('every shot (where from, how far)','cada tiro (desde dónde, a qué distancia)'));
+ /* ---- level 3: process — compliance, clubs, misses (rounds logged in Golfimbul) ---- */
+ var SH=[];(r.holes||[]).forEach(function(h){(h.shots||[]).forEach(function(x,k){if(x.conf!==false)SH.push({x:x,k:k});});});
+ var cmp=SH.filter(function(o){return o.x.comp===true||o.x.comp===false;}),dsp=SH.filter(function(o){return o.x.disp;});
+ if(cmp.length||dsp.length){depth=3;
+   if(cmp.length){var ok=cmp.filter(function(o){return o.x.comp===true;}).length,pc=Math.round(100*ok/cmp.length);say('✓',T('Process: you followed your plan on <b>'+pc+'%</b> of shots ('+ok+'/'+cmp.length+'). ','Proceso: seguiste tu plan en el <b>'+pc+'%</b> de los tiros ('+ok+'/'+cmp.length+'). ')+(pc<80?T('Below 80%, the score is telling you about decisions, not swings.','Debajo del 80%, el score habla de decisiones, no de swings.'):T('That is a round you can trust: the result is your real level.','Es una vuelta confiable: el resultado es tu nivel real.')));}
+   var tee=dsp.filter(function(o){return o.k===0&&(o.x.disp==='L'||o.x.disp==='R'||o.x.disp==='I'||o.x.disp==='D');});
+   if(tee.length>=3){var L=tee.filter(function(o){return /^(L|I)$/.test(o.x.disp);}).length,Rr=tee.length-L;say('↔',T('Tee misses: <b>'+L+' left, '+Rr+' right</b>. ','Salidas falladas: <b>'+L+' a la izquierda, '+Rr+' a la derecha</b>. ')+(Math.max(L,Rr)>=2*Math.max(1,Math.min(L,Rr))?T('One side dominates: aim away from it and play the miss you own.','Domina un lado: apuntá lejos de ese lado y jugá el error que tenés.'):T('Misses both ways: that is a contact or tempo issue, not aim.','Fallos a los dos lados: es contacto o ritmo, no puntería.')));}
+   var app=dsp.filter(function(o){return o.k>0&&o.x.lie!=='putt';}),sh2=app.filter(function(o){return /^(S|C)/.test(o.x.disp);}).length,lo=app.filter(function(o){return /^(LO|L[IDLR]?$)/.test(o.x.disp)&&o.x.disp!=='L'||o.x.disp==='LO';}).length;
+   if(app.length>=4&&sh2+lo>=3)say('↕',T('Approaches: <b>'+sh2+' short, '+lo+' long</b> of target. ','Approaches: <b>'+sh2+' cortos, '+lo+' largos</b> del objetivo. ')+(sh2>=2*Math.max(1,lo)?T('Take one more club: amateurs come up short far more than long.','Tomá un palo más: el amateur queda corto mucho más que largo.'):''));
+ } else if(depth===2)miss.push(T('compliance and dispersion','cumplimiento y dispersión'));
+ var lv=[T('Score only','Solo score'),T('Hole by hole','Hoyo por hoyo'),T('Shot by shot','Tiro por tiro'),T('Shots + process','Tiros + proceso')];
+ return '<div class="rsAn"><div class="rsDepth"><span>'+T('Analysis depth','Profundidad del análisis')+'</span><div class="rsDots">'+[0,1,2,3].map(function(k){return '<i class="'+(k<=depth?'on':'')+'" title="'+lv[k]+'"></i>';}).join('')+'</div><b>'+lv[depth]+'</b></div>'+
+  (ins.length?'<ul class="rsIns">'+ins.join('')+'</ul>':'<p class="rsNone">'+T('Not enough data on this round to say anything honest about it.','No hay datos suficientes en esta vuelta para decir algo honesto.')+'</p>')+
+  (miss.length?'<p class="rsMore">'+T('Log ','Cargá ')+miss[0]+T(' and this page tells you more.',' y esta página te dice más.')+'</p>':'')+'</div>';}
+function rsE(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function roundSheet(r,opt){opt=opt||{};var es=window.__LANG==='es',T=function(a,b){return es?b:a;},ph=rsPH(r),hl=rsHl(r),card='',ic=null;
+ try{if(hl&&hl.length)ic=importCard(hl,{ph:ph,course:r.course});}catch(e){ic=null;}
+ if(ic)card=ic.html;else if(r.hs&&r.hp)card=scoreCard(r.hp,r.hs,ph,r.course);
+ var stp=r.stp!=null?r.stp:null,old=document.getElementById('rsheet');if(old)old.remove();
+ var el=document.createElement('div');el.id='rsheet';el.className='lgscope';
+ el.innerHTML='<div class="rsIn"><div class="rsTop"><button type="button" class="pgBackB rsX">← '+T('Back','Volver')+'</button><div class="rsT"><h2>'+rsE(r.course||'')+'</h2><span>'+rsE(r.date||'')+(r.tee?' · '+rsE(r.tee):'')+(ph!=null?' · '+T('playing hcp ','hcp de juego ')+(ph<0?'+'+(-ph):ph):'')+'</span></div><div class="rsScore"><b>'+(r.score||'·')+'</b>'+(stp!=null?'<small>'+(stp>0?'+':'')+stp+'</small>':'')+'</div></div>'+
+  '<div class="rsActs">'+(opt.edit?'<button type="button" class="rsA" data-rs="edit">✎ '+T('Edit round','Editar vuelta')+'</button>':'')+(opt.review?'<button type="button" class="rsA" data-rs="review">◎ '+T('Against your normal','Contra tu normalidad')+'</button>':'')+'<button type="button" class="rsA" data-rs="share">⤴ '+T('Share','Compartir')+'</button></div>'+
+  (card?'<div class="rsCard">'+card+'</div>':'<p class="rsNone">'+T('Imported summary: no hole-by-hole card for this round.','Resumen importado: esta vuelta no tiene tarjeta hoyo por hoyo.')+'</p>')+
+  '<h3 class="rsH">'+T('What this round says','Qué dice esta vuelta')+'</h3>'+rsAnalysis(r,hl,ph)+
+  ((r.notes||r.lesson||r.whyMet)?'<div class="rsNotes">'+(r.lesson?'<div><span>'+T('What I learnt','Qué aprendí')+'</span>'+rsE(r.lesson)+'</div>':'')+(r.notes?'<div><span>'+T('Notes','Notas')+'</span>'+rsE(r.notes)+'</div>':'')+(r.whyMet&&window.whyLbl?'<div><span>'+T('Gave you what you play for?','¿Te dio lo que buscás en el golf?')+'</span>'+window.whyLbl(r.whyMet)+'</div>':'')+'</div>':'')+
+  '</div>';
+ document.body.appendChild(el);document.documentElement.classList.add('rsOpen');
+ var close=function(){el.remove();document.documentElement.classList.remove('rsOpen');document.removeEventListener('keydown',kd);},kd=function(e){if(e.key==='Escape')close();};document.addEventListener('keydown',kd);
+ el.querySelector('.rsX').onclick=close;
+ el.querySelectorAll('[data-rs]').forEach(function(b){b.onclick=function(){var a=b.getAttribute('data-rs');if(a==='edit'){close();opt.edit();}else if(a==='review'){close();opt.review();}else if(a==='share'&&window.SHARE)window.SHARE.round(r,localStorage.getItem('app-user')||'');};});
+ if(ic)el.querySelector('.rsCard').onclick=function(ev){var td=ev.target.closest?ev.target.closest('[data-ih]'):null;if(!td)return;var k=+td.getAttribute('data-ih'),box=el.querySelector('.ihShots');if(box)box.innerHTML='<b>'+t('HOLE')+' '+(k+1)+' · '+t('PAR')+' '+ic.pars[k]+'</b> — '+ic.shots[k];};
+ el.scrollTop=0;}
 function lgSnap(){try{return JSON.stringify([R.notes||'',R.lesson||'',!!R.tourn,!!R.noHcp,R.holes.map(function(h){return [h.pin||'M',h.teeOv||'',(h.shots||[]).filter(function(x){return x.conf!==false;}).map(function(x){return [x.lie,+x.dist,x.pen||0,x.club||'',x.comp===true?1:x.comp===false?0:'',(x.disp||'')+(x.dispYd!=null?x.dispYd:''),x.read||''];})];})]);}catch(e){return '';}}
 function lgOpenCard(o){if(!o||!o.holes)return;editRoundId=o.id||null;lgLoad(o);R._editId=o.id||null;R._snap=lgSnap();save();scMode=true;render();renderLogged();}
 /* new user with no imported and no logged rounds → ask for a realistic average drive */
@@ -4998,7 +5105,7 @@ function demoCardHTML(){if(!demoAvailable())return '';var es=window.__LANG==='es
 /* shared with the other modules (setup wizard, Garmin import, course requests, profile cards) */
 setTimeout(prefPull,900);window.addEventListener('focus',function(){prefPull();});
 window.COURSES=COURSES;window.PROF=PROF;window.saveProf=saveProf;window.teeEN=teeEN;window.applyI18n=applyI18n;
-render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{all=window.ALLROUNDS?window.ALLROUNDS():[];}catch(e){}if(!all.length)all=(window.getLoggedRounds?window.getLoggedRounds():[]);var r=all.filter(function(x){return typeof id==='string'?(x.id||'')===id:(x.date===id.date&&x.score===id.score&&x.course===id.course);})[0];if(r)showRoundReview(r,all);},demo:lgDemo,demoEnd:lgDemoEnd,demoOn:function(){return DEMO_ON;},card:function(){render();renderSel();},scoreCard:scoreCard,importCard:importCard,profile:renderProf,load:lgLoad,openCard:lgOpenCard,pause:lgPause,practice:lgPractice,practiceState:lgPracticeState,practiceClubs:lgPracticeClubs,practiceFill:lgPracticeFill,practiceOn:function(){return !!R._tour;},practiceEnd:lgPracticeEnd,tourCard:function(){try{if(!R._tour)return;for(var i=R.hStart;i<R.hEnd;i++){var h=R.holes[i],y=h.yd;
+render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{all=window.ALLROUNDS?window.ALLROUNDS():[];}catch(e){}if(!all.length)all=(window.getLoggedRounds?window.getLoggedRounds():[]);var r=all.filter(function(x){return typeof id==='string'?(x.id||'')===id:(x.date===id.date&&x.score===id.score&&x.course===id.course);})[0];if(r)showRoundReview(r,all);},demo:lgDemo,demoEnd:lgDemoEnd,demoOn:function(){return DEMO_ON;},card:function(){render();renderSel();},scoreCard:scoreCard,importCard:importCard,profile:renderProf,load:lgLoad,openCard:lgOpenCard,sheet:roundSheet,pause:lgPause,practice:lgPractice,practiceState:lgPracticeState,practiceClubs:lgPracticeClubs,practiceFill:lgPracticeFill,practiceOn:function(){return !!R._tour;},practiceEnd:lgPracticeEnd,tourCard:function(){try{if(!R._tour)return;for(var i=R.hStart;i<R.hEnd;i++){var h=R.holes[i],y=h.yd;
    h.shots=h.par===3?[{lie:'tee',dist:y,pen:0,conf:true},{lie:'putt',dist:22,pen:0,conf:true},{lie:'putt',dist:2,pen:0,conf:true}]
     :h.par===5?[{lie:'tee',dist:y,pen:0,conf:true},{lie:'fw',dist:Math.max(150,y-280),pen:0,conf:true},{lie:(i%3?'fw':'rough'),dist:70,pen:0,conf:true},{lie:'putt',dist:14,pen:0,conf:true},{lie:'putt',dist:2,pen:0,conf:true}]
     :[{lie:'tee',dist:y,pen:0,conf:true},{lie:(i%2?'fw':'rough'),dist:Math.max(60,y-275),pen:0,conf:true},{lie:'putt',dist:(i%4===0?9:20),pen:0,conf:true}].concat(i%4===0?[]:[{lie:'putt',dist:2,pen:0,conf:true}]);
@@ -6960,7 +7067,18 @@ window.IMPMAP=(function(){
 .acctDd button.on{color:var(--pine);background:rgba(216,196,140,.22)}
 .acctDd .logoutbtn{border-top:1px solid var(--line-soft);border-radius:0 0 9px 9px;margin-top:4px;color:var(--clay)}
 .ledLog{margin:0 0 12px!important}
-@media (max-width:699px){.tabnav .navsp{display:none}.tabnav button.navlog{padding:8px 12px;margin:2px 4px}.acct .whoami{display:none!important}}
+/* phone: row 1 = brand · Log a round · tour · account; row 2 = the four sections, evenly spread */
+@media (max-width:699px){
+ .tabnav{justify-content:flex-start;align-items:center;gap:6px;padding:6px 8px 0}
+ .tabnav .navbrand{order:0;margin:0}
+ .tabnav button.navlog{order:1;margin:0 0 0 auto;padding:9px 16px;font-size:11.5px}
+ .tabnav .tourbtn{order:2;margin:0}
+ .tabnav .acct{order:3}
+ .tabnav .navsp{display:block;order:5;flex:0 0 100%;height:0}
+ .tabnav>button[data-v]:not(.navlog){order:10;flex:1 1 0;text-align:center;padding:11px 2px 10px;font-size:11px;letter-spacing:.07em}
+ .acct .whoami{display:none!important}
+ .tabnav .acct .acctBtn{padding:3px 6px 3px 3px;gap:4px}
+}
 </style>
 <script>
 /* ===== onboarding strip for new accounts: a link on top to finish the settings, progress as each one is done, then "all set" ===== */
