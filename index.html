@@ -4791,16 +4791,16 @@ function scoreCard(pars,hs,ph,courseName){if(!pars||!hs||pars.length!==hs.length
  /* net par per hole: the strokes the playing handicap gives on each hole by stroke index (plus handicaps give strokes back on the easiest holes) */
  var SI=null;try{var ck=Object.keys(COURSES).filter(function(k){return COURSES[k].name===courseName;})[0];if(ck&&COURSES[ck].hcp&&COURSES[ck].hcp.length===18)SI=COURSES[ck].hcp;}catch(e){}
  var rcv=function(i){if(SI==null||ph==null||isNaN(+ph))return null;var h=Math.round(+ph),si=SI[i];if(h>=0)return Math.floor(h/18)+(si<=h%18?1:0);return (si>18+h)?-1:0;};
- var hasNet=SI!=null&&ph!=null&&!isNaN(+ph),rN='<td class="scLbl">'+t('NET PAR')+'</td>',GN=0;
+ var hasNet=SI!=null&&ph!=null&&!isNaN(+ph),NB=hasNet&&PROF.netPar!==false,rN='<td class="scLbl">'+t('NET PAR')+'</td>',GN=0;
  function sym(st,sc){if(st<=-2)return '<span class="scEag">'+sc+'</span>';if(st===-1)return '<span class="scBir">'+sc+'</span>';if(st===1)return '<span class="scBog">'+sc+'</span>';if(st>=2)return '<span class="scDbl">'+sc+'</span>';return '<span>'+sc+'</span>';}
- var rH='<td class="scLbl">'+t('HOLE')+'</td>',rP='<td class="scLbl">'+t('PAR')+'</td>',rS='<td class="scLbl">'+t('SCORE')+'</td>',rSt='<td class="scLbl">'+t('STATUS')+'</td>',rT='<td class="scLbl">TIGER&#39;S 5</td>',run=0,G={tot:0,par:0,t5:0};
- function seg(a,b,label){var S={tot:0,par:0,t5:0};for(var i=a;i<b;i++){var p=+pars[i],sc=+hs[i],st=sc-p;run+=st;
-   var fl=[st>=2?'D':'',(p===5&&st>=1)?'P5':''].filter(Boolean);
-   var np=hasNet?p+rcv(i):null;if(hasNet){rN+='<td class="scNet">'+np+'</td>';S.np=(S.np||0)+np;}
+ var rH='<td class="scLbl">'+t('HOLE')+'</td>',rP='<td class="scLbl">'+t('PAR')+'</td>',rS='<td class="scLbl">'+t('SCORE')+'</td>',rSt='<td class="scLbl">'+t('STATUS')+'</td>',rT='<td class="scLbl">TIGER&#39;S 5</td>',run=0,G={tot:0,par:0,t5:0};if(NB)rSt='<td class="scLbl">'+t('STATUS')+' · '+t('Net').toUpperCase()+'</td>';
+ function seg(a,b,label){var S={tot:0,par:0,t5:0};for(var i=a;i<b;i++){var p=+pars[i],sc=+hs[i],gst=sc-p,np=hasNet?p+rcv(i):null,st=NB?sc-np:gst;run+=st;   /* colours and status against net par when the setting is on; Tiger 5 stays gross */
+   var fl=[gst>=2?'D':'',(p===5&&gst>=1)?'P5':''].filter(Boolean);
+   if(hasNet){rN+='<td class="scNet">'+np+'</td>';S.np=(S.np||0)+np;}
    rH+='<td>'+(i+1)+'</td>';rP+='<td>'+p+'</td>';rS+='<td>'+sym(st,sc)+'</td>';rSt+='<td class="scSt">'+(run>0?'+'+run:(run===0?'E':run))+'</td>';rT+='<td class="scT5'+(fl.length?' bad':'')+'">'+(fl.length?fl.join(' '):'·')+'</td>';
    S.tot+=sc;S.par+=p;S.t5+=fl.length;}
-  var tp=S.tot-S.par;if(hasNet){rN+='<td class="scTotH">'+S.np+'</td>';GN+=S.np;}rH+='<td class="scTotH">'+label+'</td>';rP+='<td class="scTotH">'+S.par+'</td>';rS+='<td class="scTotH">'+S.tot+'</td>';rSt+='<td class="scTotH">'+(tp>0?'+'+tp:(tp===0?'E':tp))+'</td>';rT+='<td class="scTotH">'+S.t5+'</td>';G.tot+=S.tot;G.par+=S.par;G.t5+=S.t5;}
- if(hs.length>9){seg(0,9,t('OUT'));seg(9,hs.length,t('IN'));var gp=G.tot-G.par;rH+='<td class="scTotH scGrand">'+t('TOT')+'</td>';rP+='<td class="scTotH scGrand">'+G.par+'</td>';rS+='<td class="scTotH scGrand">'+G.tot+'</td>';rSt+='<td class="scTotH scGrand">'+(gp>0?'+'+gp:(gp===0?'E':gp))+'</td>';rT+='<td class="scTotH scGrand">'+G.t5+'</td>';if(hasNet)rN+='<td class="scTotH scGrand">'+GN+'</td>';}
+  var tp=S.tot-(NB?S.np:S.par);if(hasNet){rN+='<td class="scTotH">'+S.np+'</td>';GN+=S.np;}rH+='<td class="scTotH">'+label+'</td>';rP+='<td class="scTotH">'+S.par+'</td>';rS+='<td class="scTotH">'+S.tot+'</td>';rSt+='<td class="scTotH">'+(tp>0?'+'+tp:(tp===0?'E':tp))+'</td>';rT+='<td class="scTotH">'+S.t5+'</td>';G.tot+=S.tot;G.par+=S.par;G.t5+=S.t5;}
+ if(hs.length>9){seg(0,9,t('OUT'));seg(9,hs.length,t('IN'));var gp=G.tot-(NB?GN:G.par);rH+='<td class="scTotH scGrand">'+t('TOT')+'</td>';rP+='<td class="scTotH scGrand">'+G.par+'</td>';rS+='<td class="scTotH scGrand">'+G.tot+'</td>';rSt+='<td class="scTotH scGrand">'+(gp>0?'+'+gp:(gp===0?'E':gp))+'</td>';rT+='<td class="scTotH scGrand">'+G.t5+'</td>';if(hasNet)rN+='<td class="scTotH scGrand">'+GN+'</td>';}
  else seg(0,hs.length,t('OUT'));
  var es=window.__LANG==='es';
  var net=G.tot-(GN-G.par),phs=(ph<0?'+'+(-ph):ph),netNote=hasNet?(es?' Par neto con hándicap de juego '+phs+' (score neto '+net+').':' Net par with playing handicap '+phs+' (net score '+net+').'):'';
@@ -4812,22 +4812,22 @@ function importCard(hl,opt){
  var H=hl.map(function(a){var sh=[],re=/([tfrsxp])([\d.]+)(\**)/g,m;while((m=re.exec(a[2])))sh.push({lie:LM[m[1]],dist:+m[2],pen:m[3].length});return {par:a[0],yd:sh.length?sh[0].dist:0,shots:sh};});
  function sym(st,sc){if(st<=-2)return '<span class="scEag">'+sc+'</span>';if(st===-1)return '<span class="scBir">'+sc+'</span>';if(st===1)return '<span class="scBog">'+sc+'</span>';if(st>=2)return '<span class="scDbl">'+sc+'</span>';return '<span>'+sc+'</span>';}
  var rH='<td class="scLbl">'+t('HOLE')+'</td>',rP='<td class="scLbl">'+t('PAR')+'</td>',rS='<td class="scLbl">'+t('SCORE')+'</td>',rSt='<td class="scLbl">'+t('STATUS')+'</td>',rG='<td class="scLbl">SG</td>',rT='<td class="scLbl">TIGER&#39;S 5</td>';
- var NR=(opt&&H.length===18)?netRow(opt.ph,opt.course):null,rN='<td class="scLbl">'+t('NET PAR')+'</td>',GN=0;
+ var NR=(opt&&H.length===18)?netRow(opt.ph,opt.course):null,NB=!!NR&&PROF.netPar!==false,rN='<td class="scLbl">'+t('NET PAR')+'</td>',GN=0;if(NB)rSt='<td class="scLbl">'+t('STATUS')+' · '+t('Net').toUpperCase()+'</td>';
  var run=0,G={tot:0,par:0,sg:0,t5:0},cat={ott:0,app:0,atg:0,putt:0,tot:0};
  function seg(a,b,label){var S={tot:0,par:0,sg:0,t5:0};
-   for(var i=a;i<b;i++){var h=H[i],g=holeSG(h),m=holeMistakes(h,null,h.par),st=g.strokes-h.par;
-     if(NR){var npx=h.par+NR(i);rN+='<td class="scNet">'+npx+'</td>';S.np=(S.np||0)+npx;}
+   for(var i=a;i<b;i++){var h=H[i],g=holeSG(h),m=holeMistakes(h,null,h.par),npx=NR?h.par+NR(i):h.par,st=g.strokes-(NB?npx:h.par);
+     if(NR){rN+='<td class="scNet">'+npx+'</td>';S.np=(S.np||0)+npx;}
      rH+='<td class="scHole" data-ih="'+i+'">'+(i+1)+'</td>';rP+='<td>'+h.par+'</td>';rS+='<td class="scHole" data-ih="'+i+'">'+sym(st,g.strokes)+'</td>';
      run+=st;rSt+='<td class="scSt">'+(run>0?'+'+run:(run===0?'E':run))+'</td>';
      rG+='<td class="'+(g.tot<0?'sg-neg':'sg-pos')+'">'+fmt(g.tot)+'</td>';
      var fl=[m.p3?'3P':'',m.db?'D':'',m.bp5?'P5':'',m.f150?'B':'',m.short?'S':''].filter(Boolean);
      rT+='<td class="scT5'+(fl.length?' bad':'')+'">'+(fl.length?fl.join(' '):'·')+'</td>';
      S.tot+=g.strokes;S.par+=h.par;S.sg+=g.tot;S.t5+=fl.length;cat.ott+=g.ott;cat.app+=g.app;cat.atg+=g.atg;cat.putt+=g.putt;cat.tot+=g.tot;}
-   var tp=S.tot-S.par;
+   var tp=S.tot-(NB?S.np:S.par);
    if(NR){rN+='<td class="scTotH">'+S.np+'</td>';GN+=S.np;}
    rH+='<td class="scTotH">'+label+'</td>';rP+='<td class="scTotH">'+S.par+'</td>';rS+='<td class="scTotH">'+S.tot+'</td>';rSt+='<td class="scTotH">'+(tp>0?'+'+tp:(tp===0?'E':tp))+'</td>';rG+='<td class="scTotH '+(S.sg<0?'sg-neg':'sg-pos')+'">'+fmt(S.sg)+'</td>';rT+='<td class="scTotH">'+S.t5+'</td>';
    G.tot+=S.tot;G.par+=S.par;G.sg+=S.sg;G.t5+=S.t5;}
- if(H.length>9){seg(0,9,t('OUT'));seg(9,H.length,t('IN'));var gp=G.tot-G.par;
+ if(H.length>9){seg(0,9,t('OUT'));seg(9,H.length,t('IN'));var gp=G.tot-(NB?GN:G.par);
    rH+='<td class="scTotH scGrand">'+t('TOT')+'</td>';rP+='<td class="scTotH scGrand">'+G.par+'</td>';rS+='<td class="scTotH scGrand">'+G.tot+'</td>';rSt+='<td class="scTotH scGrand">'+(gp>0?'+'+gp:(gp===0?'E':gp))+'</td>';rG+='<td class="scTotH scGrand">'+fmt(G.sg)+'</td>';rT+='<td class="scTotH scGrand">'+G.t5+'</td>';if(NR)rN+='<td class="scTotH scGrand">'+GN+'</td>';
  } else seg(0,H.length,t('OUT'));
  var chip=function(l,v){return '<span class="sgcat"><span class="sgcatL">'+t(l)+'</span><b class="'+(v<0?'sg-neg':'sg-pos')+'">'+fmt(v)+'</b></span>';};
