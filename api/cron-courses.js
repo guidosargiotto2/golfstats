@@ -53,7 +53,7 @@ async function runImport(sql, key, runMs) {
   const run = { added: 0, existed: 0, nodata: 0, errors: 0, searches: 0 };
   S.found = S.found || {};
   /* once every country is done, the next batch starts a maintenance pass: the same searches again, keeping only courses not seen before (new courses, new entries) */
-  if (S.ci >= PLAN.length) { S.cycle = (S.cycle || 1) + 1; S.ci = 0; S.qi = 0; S.queue = []; S.found = {}; S.log = (S.log || []).concat([{ day, maintenance: S.cycle }]).slice(-60); }
+  if (S.ci >= PLAN.length) { S.cycle = (S.cycle || 1) + 1; S.ci = 0; S.qi = 0; S.queue = []; S.found = {}; S.per = {}; S.log = (S.log || []).concat([{ day, maintenance: S.cycle }]).slice(-60); }
   while (Date.now() - t0 < runMs && S.calls < DAY_CAP && S.ci < PLAN.length) {
     const [country, cities] = PLAN[S.ci], words = [country].concat(cities);
     if (!S.queue.length) {
@@ -67,6 +67,7 @@ async function runImport(sql, key, runMs) {
     const id = S.queue.shift();
     const R = await CI.adopt(sql, get, id, 'import', fullName);
     if (R.error) run.errors++; else if (R.existed) run.existed++; else if (R.nodata) run.nodata++; else run.added++;
+    { const cn = PLAN[S.ci][0], k = R.error ? 'err' : R.existed ? 'existed' : R.nodata ? 'nodata' : 'added'; S.per = S.per || {}; S.per[cn] = S.per[cn] || {}; S.per[cn][k] = (S.per[cn][k] || 0) + 1; }
     await sleep(PAUSE_MS);
   }
   S.total = (S.total || 0) + run.added;

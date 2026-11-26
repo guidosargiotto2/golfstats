@@ -6551,7 +6551,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
 .impTip{position:absolute;display:none;pointer-events:none;background:#20261f;color:#fff;font-size:12px;line-height:1.4;padding:6px 9px;border-radius:7px;z-index:2;font-family:var(--cond)}
 .impCard{position:relative}.impSum{font-size:14px;color:#20261f;margin:10px 0 6px}
 .impTbl table{width:100%;border-collapse:collapse;font-size:13px}.impTbl th{text-align:left;font-family:var(--cond);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:#5c6357;border-bottom:1.5px solid var(--pine);padding:5px 6px}.impTbl td{padding:5px 6px;border-bottom:1px solid #e6dfcb}.impTbl td.n{font-weight:700;font-variant-numeric:tabular-nums}
-.impSt{font-family:var(--cond);font-weight:700;font-size:11.5px;border-radius:999px;padding:2px 9px}.impSt.in{background:#e3f1e6;color:#1f7a4d}.impSt.now{background:#f7ead0;color:#8a5a00}.impSt.pend{background:#eee9da;color:#5c6357}
+.impSt{font-family:var(--cond);font-weight:700;font-size:11.5px;border-radius:999px;padding:2px 9px}.impSt.in{background:#e3f1e6;color:#1f7a4d}.impSt.now{background:#f7ead0;color:#8a5a00}.impSt.pend{background:#eee9da;color:#5c6357}.impSt.none{background:#e6e1d2;color:#7a735f}.impSub{font-weight:400;color:#8a8471}
 </style><script>
 /* ===== Admin: course import, run by hand, and a map of the countries imported and pending ===== */
 window.IMPMAP=(function(){
@@ -6561,7 +6561,8 @@ window.IMPMAP=(function(){
  /* map names (world atlas) ↔ plan names ↔ how courses store their country */
  var ALIAS={'brasil':'brazil','mexico':'mexico','peru':'peru','panama':'panama','republica dominicana':'dominican republic','dominican rep':'dominican republic','united states of america':'united states','usa':'united states','us':'united states','estados unidos':'united states','españa':'spain','espana':'spain'};
  var key=function(x){var k=norm(x);return ALIAS[k]||k;};
- function counts(){var o={};try{Object.keys(window.COURSES||{}).forEach(function(c){var d=window.COURSES[c];if(!d||d.empty)return;var k=key(d.loc&&d.loc.country);if(!k)return;o[k]=(o[k]||0)+1;});}catch(e){}return o;}
+ /* courses per country: the shared database (fresh from the server) plus the built-in courses of the app */
+ function counts(db){var o={},seen={};(db||[]).forEach(function(x){seen[x[0]]=1;var k=key(x[1]);if(k)o[k]=(o[k]||0)+1;});try{Object.keys(window.COURSES||{}).forEach(function(c){if(seen[c])return;var d=window.COURSES[c];if(!d||d.empty)return;var k=key(d.loc&&d.loc.country);if(!k)return;o[k]=(o[k]||0)+1;});}catch(e){}return o;}
  function api(action){var tok=localStorage.getItem('gs-token');return fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+tok},body:JSON.stringify({action:action})}).then(function(r){return r.json().catch(function(){return {};});});}
  function line(j){if(!j||!j.ok)return '';if(!j.started)return T('Not started yet. Each batch runs for under a minute.','Todavía no empezó. Cada tanda dura menos de un minuto.');var L=j.last||{};
    return '<b>'+T('Last batch','Última tanda')+'</b> '+esc(String(L.at||'').slice(0,16).replace('T',' '))+' UTC · '+(L.pass>1?T('maintenance pass ','repaso de mantenimiento ')+L.pass+' · ':'')+esc(L.country||'')+' · +'+(L.added||0)+' '+T('new','nuevas')+', '+(L.existed||0)+' '+T('already in','ya estaban')+', '+(L.nodata||0)+' '+T('without data','sin datos')+' · '+T('total imported','total importadas')+' <b>'+j.total+'</b> · '+T('API calls today','llamadas hoy')+' <b>'+j.callsToday+'</b> / '+(j.cap||2000);}
@@ -6579,14 +6580,14 @@ window.IMPMAP=(function(){
    document.body.appendChild(ov);var close=function(){ov.remove();document.removeEventListener('keydown',kd);},kd=function(e){if(e.key==='Escape')close();};
    ov.querySelector('.impX').onclick=close;ov.addEventListener('click',function(e){if(e.target===ov)close();});document.addEventListener('keydown',kd);
    api('importStatus').then(function(j){
-     var C=counts(),plan=(j&&j.plan)||[],P={};plan.forEach(function(p,i){P[key(p.country)]={i:i,country:p.country,status:p.status,found:p.found};});
+     var C=counts(j&&j.db),plan=(j&&j.plan)||[],P={};plan.forEach(function(p,i){P[key(p.country)]={i:i,country:p.country,status:p.status,found:p.found};});
      /* every country with courses, plus the plan: south to north first, then any other country already in the database */
-     var rows=plan.map(function(p){var k=key(p.country);return {k:k,name:p.country,n:C[k]||0,found:p.found,status:(C[k]||0)>0&&p.status!=='current'?'in':p.status==='current'?'now':(p.status==='done'?'in':'pend')};});
+     var rows=plan.map(function(p){var k=key(p.country),n=C[k]||0;return {k:k,name:p.country,n:n,found:p.found,per:p.per||{},status:p.status==='current'?'now':n>0?'in':(p.status==='done'?'none':'pend')};});
      Object.keys(C).forEach(function(k){if(!P[k])rows.push({k:k,name:k.replace(/\b\w/g,function(c){return c.toUpperCase();}),n:C[k],found:0,status:'in',extra:true});});
-     var tot=rows.reduce(function(a,r){return a+r.n;},0),done=rows.filter(function(r){return r.status==='in';}).length;
-     var lab={in:T('In Golfimbul','En Golfimbul'),now:T('Importing now','Importando ahora'),pend:T('Pending','Pendiente')};
+     var tot=rows.reduce(function(a,r){return a+r.n;},0),done=rows.filter(function(r){return r.n>0;}).length;
+     var lab={in:T('In Golfimbul','En Golfimbul'),now:T('Importing now','Importando ahora'),pend:T('Pending','Pendiente'),none:T('Searched · no complete scorecards','Buscado · sin tarjetas completas')};
      ov.querySelector('#impTbl').innerHTML='<p class="impSum"><b>'+tot+'</b> '+T('courses in','canchas en')+' <b>'+done+'</b> '+T('countries','países')+' · '+rows.filter(function(r){return r.status==='pend';}).length+' '+T('countries pending','países pendientes')+'</p><table><thead><tr><th>#</th><th>'+T('Country','País')+'</th><th>'+T('Status','Estado')+'</th><th>'+T('Courses in Golfimbul','Canchas en Golfimbul')+'</th><th>'+T('Found in search','Encontradas al buscar')+'</th></tr></thead><tbody>'+
-       rows.map(function(r,i){return '<tr data-k="'+esc(r.k)+'"><td>'+(r.extra?'·':(i+1))+'</td><td>'+esc(r.name)+'</td><td><span class="impSt '+r.status+'">'+lab[r.status]+'</span></td><td class="n">'+(r.n||'–')+'</td><td class="n">'+(r.found||'–')+'</td></tr>';}).join('')+'</tbody></table>';
+       rows.map(function(r,i){return '<tr data-k="'+esc(r.k)+'"><td>'+(r.extra?'·':(i+1))+'</td><td>'+esc(r.name)+'</td><td><span class="impSt '+r.status+'">'+lab[r.status]+'</span></td><td class="n">'+(r.n||'–')+'</td><td class="n">'+(r.found||'–')+(r.per&&(r.per.nodata||r.per.existed)?' <small class="impSub">('+[r.per.nodata?r.per.nodata+' '+T('without 18-hole data','sin datos de 18 hoyos'):'',r.per.existed?r.per.existed+' '+T('already in','ya estaban'):''].filter(Boolean).join(', ')+')</small>':'')+'</td></tr>';}).join('')+'</tbody></table>';
      var byK={};rows.forEach(function(r){byK[r.k]=r;});
      load(0,function(err){var el=ov.querySelector('#impMapSvg');if(err||!window.d3||!window.topojson){el.textContent=T('The map could not load (no connection). The table below has the same data.','No se pudo cargar el mapa (sin conexión). La tabla de abajo tiene los mismos datos.');return;}
        fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(function(r){return r.json();}).then(function(w){
@@ -6599,7 +6600,7 @@ window.IMPMAP=(function(){
          var svg=d3.select(el).append('svg').attr('viewBox','0 0 '+W+' '+H).attr('role','img').attr('aria-label',T('Map of countries imported and pending','Mapa de países importados y pendientes'));
          var tip=ov.querySelector('#impTip');
          svg.append('g').selectAll('path').data(feats).join('path').attr('d',path).attr('class','impC')
-           .attr('fill',function(f){var r=byK[key(f.properties.name)];if(!r)return '#efeadb';if(r.status==='now')return '#d8a531';if(r.status==='pend')return '#e2ddcc';return green(r.n||0);})
+           .attr('fill',function(f){var r=byK[key(f.properties.name)];if(!r)return '#efeadb';if(r.status==='now')return '#d8a531';if(r.status==='pend')return '#e2ddcc';if(r.status==='none')return '#c9c3b0';return green(r.n||0);})
            .attr('stroke','#fffdf7').attr('stroke-width',0.7)
            .on('mousemove',function(e,f){var r=byK[key(f.properties.name)],rc=el.getBoundingClientRect();tip.style.display='block';tip.style.left=(e.clientX-rc.left+14)+'px';tip.style.top=(e.clientY-rc.top+el.offsetTop+10)+'px';
              tip.innerHTML='<b>'+esc(r?r.name:f.properties.name)+'</b><br>'+(r?(lab[r.status]+' · '+(r.n||0)+' '+T('courses','canchas')+(r.found?' · '+r.found+' '+T('found','encontradas'):'')):T('Not in the plan yet','Todavía fuera del plan'));d3.select(this).attr('stroke','#20261f').attr('stroke-width',1.4).raise();})
