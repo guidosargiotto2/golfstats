@@ -4596,11 +4596,14 @@ function wire(){
  wireArrows();
  document.querySelectorAll('#lgBody select.dispsel').forEach(function(el){el.addEventListener('change',function(){var a=el.getAttribute('data-disp').split(':'),sh=R.holes[+a[0]].shots[+a[1]];if(!sh)return;
    if(el.value)sh.disp=el.value;else delete sh.disp;el.className='dispsel'+(el.value==='ok'?' ok':el.value?' miss':'');
-   var yi=el.parentNode.querySelector('input.dispyd');if(yi){if(el.getAttribute('data-kind')!=='putt'&&dispSide(el.value)){yi.style.display='';if(!el._kb)yi.focus();}else{yi.style.display='none';yi.value='';delete sh.dispYd;}}save();});});
+   var yi=el.parentNode.querySelector('input.dispyd');if(yi){if(sh.dispAuto){delete sh.dispYd;delete sh.dispAuto;yi.value='';}
+     /* a pure long or short miss: the distance left for the next shot is how far it missed — filled in, still editable */
+     if(el.getAttribute('data-kind')!=='putt'&&(el.value==='S'||el.value==='G')&&sh.dispYd==null){var nxs=R.holes[+a[0]].shots[+a[1]+1];if(nxs&&nxs.conf!==false&&+nxs.dist>0){var yd0=nxs.lie==='putt'?Math.max(1,Math.round(+nxs.dist/3)):Math.round(+nxs.dist);if(yd0<=150){sh.dispYd=yd0;sh.dispAuto=true;yi.value=Y2U(yd0);}}}
+     if(el.getAttribute('data-kind')!=='putt'&&dispSide(el.value)){yi.style.display='';if(!el._kb&&!sh.dispAuto)yi.focus();}else{yi.style.display='none';yi.value='';delete sh.dispYd;}}save();});});
  document.querySelectorAll('#lgBody select.readsel').forEach(function(el){el.addEventListener('change',function(){var a=el.getAttribute('data-read').split(':'),sh=R.holes[+a[0]].shots[+a[1]];if(!sh)return;
    if(el.value)sh.read=el.value;else delete sh.read;el.classList.toggle('set',!!el.value);save();});});
  document.querySelectorAll('#lgBody input.dispyd').forEach(function(el){el.addEventListener('change',function(){var a=el.getAttribute('data-dispyd').split(':'),sh=R.holes[+a[0]].shots[+a[1]];if(!sh)return;
-   var v=parseFloat(el.value);if(isFinite(v)&&v>=0){sh.dispYd=U2Y(Math.min(150,Math.round(v)));}else{delete sh.dispYd;el.value='';}save();});
+   delete sh.dispAuto;var v=parseFloat(el.value);if(isFinite(v)&&v>=0){sh.dispYd=U2Y(Math.min(150,Math.round(v)));}else{delete sh.dispYd;el.value='';}save();});
    });
  wireExtras();
  document.querySelectorAll('#lgBody button.compbtn').forEach(function(el){el.addEventListener('click',function(){var a=el.getAttribute('data-comp').split(':'),hh=R.holes[+a[0]],sh=hh&&hh.shots[+a[1]];if(!sh)return;
