@@ -3182,8 +3182,8 @@ window.saveLoggedRounds=function(a){try{save(uckey(),a||[]);if(PLAYER===(localSt
       if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.ledshare')){if(window.SHARE)window.SHARE.round(r,user);return;}
      if(o.src==='logged'&&r.holes){if(window.showView)window.showView('log');if(window.LGR&&window.LGR.openCard)window.LGR.openCard({id:r.id,course:r.courseCode||r.course,tee:r.tee,date:r.date,score:r.score,chcp:r.ph,notes:r.notes,lesson:r.lesson,holes:r.holes});return;}
      var dd=document.getElementById('leddet_'+i);if(!dd)return;var open=dd.style.display!=='none';
-     if(!open){var ic=null;try{if(r.hl&&window.LGR&&window.LGR.importCard)ic=window.LGR.importCard(r.hl);}catch(e){ic=null;}
-       var sco=(!ic&&r.hs&&r.hp&&window.LGR&&window.LGR.scoreCard)?window.LGR.scoreCard(r.hp,r.hs):'';
+     if(!open){var ic=null;try{if(r.hl&&window.LGR&&window.LGR.importCard){var ph0=(r.ph!=null)?r.ph:((r.hi!=null&&r.slope&&r.cr)?Math.round(r.hi*r.slope/113+(r.cr-(r.par||72))):null);ic=window.LGR.importCard(r.hl,{ph:ph0,course:r.course});}}catch(e){ic=null;}
+       var sco=(!ic&&r.hs&&r.hp&&window.LGR&&window.LGR.scoreCard)?window.LGR.scoreCard(r.hp,r.hs,r.ph,r.course):'';
        dd.innerHTML=(ic?'<div style="margin-top:10px">'+ic.html+'</div>':'')+(sco?'<div style="margin-top:10px">'+sco+'</div>':'')+(r.putts!=null&&window.REVIEWINLINE?window.REVIEWINLINE(r):'')+detail(r);
        if(ic){dd.onclick=function(ev){ev.stopPropagation();var td=ev.target.closest?ev.target.closest('[data-ih]'):null;if(!td)return;var k=+td.getAttribute('data-ih'),box=dd.querySelector('.ihShots');if(box)box.innerHTML='<b>'+T('HOLE')+' '+(k+1)+' · '+T('PAR')+' '+ic.pars[k]+'</b> — '+ic.shots[k];};}
        else dd.onclick=null;}
@@ -4724,26 +4724,36 @@ function lgLoad(o){
 function lgPause(){if(R.phase==='play'){var act=R.holes.slice(R.hStart,R.hEnd),allDone=act.length>0&&act.every(function(x){return x.done;});if(!allDone&&lgEntered){lgEntered=false;render();}}}
 /* read-only scorecard for imported rounds (hl = [[par,pen,"t372f150p20p3"],...]) — never touches the round in progress */
 /* scorecard for score-only rounds (club portal imports): par, score per hole with birdie circles / bogey boxes, running status, Tiger 5 flags we can know (double, bogey on par 5) */
-function scoreCard(pars,hs){if(!pars||!hs||pars.length!==hs.length)return '';
+function scoreCard(pars,hs,ph,courseName){if(!pars||!hs||pars.length!==hs.length)return '';
+ /* net par per hole: the strokes the playing handicap gives on each hole by stroke index (plus handicaps give strokes back on the easiest holes) */
+ var SI=null;try{var ck=Object.keys(COURSES).filter(function(k){return COURSES[k].name===courseName;})[0];if(ck&&COURSES[ck].hcp&&COURSES[ck].hcp.length===18)SI=COURSES[ck].hcp;}catch(e){}
+ var rcv=function(i){if(SI==null||ph==null||isNaN(+ph))return null;var h=Math.round(+ph),si=SI[i];if(h>=0)return Math.floor(h/18)+(si<=h%18?1:0);return (si>18+h)?-1:0;};
+ var hasNet=SI!=null&&ph!=null&&!isNaN(+ph),rN='<td class="scLbl">'+t('NET PAR')+'</td>',GN=0;
  function sym(st,sc){if(st<=-2)return '<span class="scEag">'+sc+'</span>';if(st===-1)return '<span class="scBir">'+sc+'</span>';if(st===1)return '<span class="scBog">'+sc+'</span>';if(st>=2)return '<span class="scDbl">'+sc+'</span>';return '<span>'+sc+'</span>';}
  var rH='<td class="scLbl">'+t('HOLE')+'</td>',rP='<td class="scLbl">'+t('PAR')+'</td>',rS='<td class="scLbl">'+t('SCORE')+'</td>',rSt='<td class="scLbl">'+t('STATUS')+'</td>',rT='<td class="scLbl">TIGER&#39;S 5</td>',run=0,G={tot:0,par:0,t5:0};
  function seg(a,b,label){var S={tot:0,par:0,t5:0};for(var i=a;i<b;i++){var p=+pars[i],sc=+hs[i],st=sc-p;run+=st;
    var fl=[st>=2?'D':'',(p===5&&st>=1)?'P5':''].filter(Boolean);
+   var np=hasNet?p+rcv(i):null;if(hasNet){rN+='<td class="scNet">'+np+'</td>';S.np=(S.np||0)+np;}
    rH+='<td>'+(i+1)+'</td>';rP+='<td>'+p+'</td>';rS+='<td>'+sym(st,sc)+'</td>';rSt+='<td class="scSt">'+(run>0?'+'+run:(run===0?'E':run))+'</td>';rT+='<td class="scT5'+(fl.length?' bad':'')+'">'+(fl.length?fl.join(' '):'·')+'</td>';
    S.tot+=sc;S.par+=p;S.t5+=fl.length;}
-  var tp=S.tot-S.par;rH+='<td class="scTotH">'+label+'</td>';rP+='<td class="scTotH">'+S.par+'</td>';rS+='<td class="scTotH">'+S.tot+'</td>';rSt+='<td class="scTotH">'+(tp>0?'+'+tp:(tp===0?'E':tp))+'</td>';rT+='<td class="scTotH">'+S.t5+'</td>';G.tot+=S.tot;G.par+=S.par;G.t5+=S.t5;}
- if(hs.length>9){seg(0,9,t('OUT'));seg(9,hs.length,t('IN'));var gp=G.tot-G.par;rH+='<td class="scTotH scGrand">'+t('TOT')+'</td>';rP+='<td class="scTotH scGrand">'+G.par+'</td>';rS+='<td class="scTotH scGrand">'+G.tot+'</td>';rSt+='<td class="scTotH scGrand">'+(gp>0?'+'+gp:(gp===0?'E':gp))+'</td>';rT+='<td class="scTotH scGrand">'+G.t5+'</td>';}
+  var tp=S.tot-S.par;if(hasNet){rN+='<td class="scTotH">'+S.np+'</td>';GN+=S.np;}rH+='<td class="scTotH">'+label+'</td>';rP+='<td class="scTotH">'+S.par+'</td>';rS+='<td class="scTotH">'+S.tot+'</td>';rSt+='<td class="scTotH">'+(tp>0?'+'+tp:(tp===0?'E':tp))+'</td>';rT+='<td class="scTotH">'+S.t5+'</td>';G.tot+=S.tot;G.par+=S.par;G.t5+=S.t5;}
+ if(hs.length>9){seg(0,9,t('OUT'));seg(9,hs.length,t('IN'));var gp=G.tot-G.par;rH+='<td class="scTotH scGrand">'+t('TOT')+'</td>';rP+='<td class="scTotH scGrand">'+G.par+'</td>';rS+='<td class="scTotH scGrand">'+G.tot+'</td>';rSt+='<td class="scTotH scGrand">'+(gp>0?'+'+gp:(gp===0?'E':gp))+'</td>';rT+='<td class="scTotH scGrand">'+G.t5+'</td>';if(hasNet)rN+='<td class="scTotH scGrand">'+GN+'</td>';}
  else seg(0,hs.length,t('OUT'));
  var es=window.__LANG==='es';
- return '<div class="scWrap"><table class="scTbl"><tbody><tr class="scRh">'+rH+'</tr><tr class="scRp">'+rP+'</tr><tr class="scRs">'+rS+'</tr><tr class="scRst">'+rSt+'</tr><tr class="scRt5">'+rT+'</tr></tbody></table></div><div class="scHint">'+(es?'Tarjeta del portal del club: score por hoyo, sin tiros. Tiger 5: D = doble bogey o peor, P5 = bogey o peor en par 5.':'Club portal scorecard: score per hole, no shots. Tiger 5: D = double bogey or worse, P5 = bogey or worse on a par 5.')+'</div>';}
-function importCard(hl){
+ var net=G.tot-(GN-G.par),phs=(ph<0?'+'+(-ph):ph),netNote=hasNet?(es?' Par neto con hándicap de juego '+phs+' (score neto '+net+').':' Net par with playing handicap '+phs+' (net score '+net+').'):'';
+ return '<div class="scWrap"><table class="scTbl"><tbody><tr class="scRh">'+rH+'</tr><tr class="scRp">'+rP+'</tr>'+(hasNet?'<tr class="scRn">'+rN+'</tr>':'')+'<tr class="scRs">'+rS+'</tr><tr class="scRst">'+rSt+'</tr><tr class="scRt5">'+rT+'</tr></tbody></table></div><div class="scHint">'+(es?'Tarjeta del portal del club: score por hoyo, sin tiros. Tiger 5: D = doble bogey o peor, P5 = bogey o peor en par 5.':'Club portal scorecard: score per hole, no shots. Tiger 5: D = double bogey or worse, P5 = bogey or worse on a par 5.')+netNote+'</div>';}
+function netRow(ph,courseName){var SI=null;try{var ck=Object.keys(COURSES).filter(function(k){return COURSES[k].name===courseName;})[0];if(ck&&COURSES[ck].hcp&&COURSES[ck].hcp.length===18)SI=COURSES[ck].hcp;}catch(e){}
+ if(SI==null||ph==null||isNaN(+ph))return null;var h=Math.round(+ph);return function(i){var si=SI[i];if(h>=0)return Math.floor(h/18)+(si<=h%18?1:0);return (si>18+h)?-1:0;};}
+function importCard(hl,opt){
  var LM={t:'tee',f:'fw',r:'rough',s:'sand',x:'rec',p:'putt'},LN={tee:'Tee',fw:'Fairway',rough:'Rough',sand:'Sand',rec:'Recovery',putt:'Putt'};
  var H=hl.map(function(a){var sh=[],re=/([tfrsxp])([\d.]+)(\**)/g,m;while((m=re.exec(a[2])))sh.push({lie:LM[m[1]],dist:+m[2],pen:m[3].length});return {par:a[0],yd:sh.length?sh[0].dist:0,shots:sh};});
  function sym(st,sc){if(st<=-2)return '<span class="scEag">'+sc+'</span>';if(st===-1)return '<span class="scBir">'+sc+'</span>';if(st===1)return '<span class="scBog">'+sc+'</span>';if(st>=2)return '<span class="scDbl">'+sc+'</span>';return '<span>'+sc+'</span>';}
  var rH='<td class="scLbl">'+t('HOLE')+'</td>',rP='<td class="scLbl">'+t('PAR')+'</td>',rS='<td class="scLbl">'+t('SCORE')+'</td>',rSt='<td class="scLbl">'+t('STATUS')+'</td>',rG='<td class="scLbl">SG</td>',rT='<td class="scLbl">TIGER&#39;S 5</td>';
+ var NR=(opt&&H.length===18)?netRow(opt.ph,opt.course):null,rN='<td class="scLbl">'+t('NET PAR')+'</td>',GN=0;
  var run=0,G={tot:0,par:0,sg:0,t5:0},cat={ott:0,app:0,atg:0,putt:0,tot:0};
  function seg(a,b,label){var S={tot:0,par:0,sg:0,t5:0};
    for(var i=a;i<b;i++){var h=H[i],g=holeSG(h),m=holeMistakes(h,null,h.par),st=g.strokes-h.par;
+     if(NR){var npx=h.par+NR(i);rN+='<td class="scNet">'+npx+'</td>';S.np=(S.np||0)+npx;}
      rH+='<td class="scHole" data-ih="'+i+'">'+(i+1)+'</td>';rP+='<td>'+h.par+'</td>';rS+='<td class="scHole" data-ih="'+i+'">'+sym(st,g.strokes)+'</td>';
      run+=st;rSt+='<td class="scSt">'+(run>0?'+'+run:(run===0?'E':run))+'</td>';
      rG+='<td class="'+(g.tot<0?'sg-neg':'sg-pos')+'">'+fmt(g.tot)+'</td>';
@@ -4751,14 +4761,15 @@ function importCard(hl){
      rT+='<td class="scT5'+(fl.length?' bad':'')+'">'+(fl.length?fl.join(' '):'·')+'</td>';
      S.tot+=g.strokes;S.par+=h.par;S.sg+=g.tot;S.t5+=fl.length;cat.ott+=g.ott;cat.app+=g.app;cat.atg+=g.atg;cat.putt+=g.putt;cat.tot+=g.tot;}
    var tp=S.tot-S.par;
+   if(NR){rN+='<td class="scTotH">'+S.np+'</td>';GN+=S.np;}
    rH+='<td class="scTotH">'+label+'</td>';rP+='<td class="scTotH">'+S.par+'</td>';rS+='<td class="scTotH">'+S.tot+'</td>';rSt+='<td class="scTotH">'+(tp>0?'+'+tp:(tp===0?'E':tp))+'</td>';rG+='<td class="scTotH '+(S.sg<0?'sg-neg':'sg-pos')+'">'+fmt(S.sg)+'</td>';rT+='<td class="scTotH">'+S.t5+'</td>';
    G.tot+=S.tot;G.par+=S.par;G.sg+=S.sg;G.t5+=S.t5;}
  if(H.length>9){seg(0,9,t('OUT'));seg(9,H.length,t('IN'));var gp=G.tot-G.par;
-   rH+='<td class="scTotH scGrand">'+t('TOT')+'</td>';rP+='<td class="scTotH scGrand">'+G.par+'</td>';rS+='<td class="scTotH scGrand">'+G.tot+'</td>';rSt+='<td class="scTotH scGrand">'+(gp>0?'+'+gp:(gp===0?'E':gp))+'</td>';rG+='<td class="scTotH scGrand">'+fmt(G.sg)+'</td>';rT+='<td class="scTotH scGrand">'+G.t5+'</td>';
+   rH+='<td class="scTotH scGrand">'+t('TOT')+'</td>';rP+='<td class="scTotH scGrand">'+G.par+'</td>';rS+='<td class="scTotH scGrand">'+G.tot+'</td>';rSt+='<td class="scTotH scGrand">'+(gp>0?'+'+gp:(gp===0?'E':gp))+'</td>';rG+='<td class="scTotH scGrand">'+fmt(G.sg)+'</td>';rT+='<td class="scTotH scGrand">'+G.t5+'</td>';if(NR)rN+='<td class="scTotH scGrand">'+GN+'</td>';
  } else seg(0,H.length,t('OUT'));
  var chip=function(l,v){return '<span class="sgcat"><span class="sgcatL">'+t(l)+'</span><b class="'+(v<0?'sg-neg':'sg-pos')+'">'+fmt(v)+'</b></span>';};
  var shots=H.map(function(h){return h.shots.map(function(x){return t(LN[x.lie])+' '+Math.round(x.dist)+(x.lie==='putt'?' ft':'')+(x.pen?' (+'+x.pen+' '+t('pen')+')':'');}).join(' → ');});
- return {html:'<div class="scWrap"><table class="scTbl"><tbody><tr class="scRh">'+rH+'</tr><tr class="scRp">'+rP+'</tr><tr class="scRs">'+rS+'</tr><tr class="scRst">'+rSt+'</tr><tr class="scRsg">'+rG+'</tr><tr class="scRt5">'+rT+'</tr></tbody></table></div>'+
+ return {html:'<div class="scWrap"><table class="scTbl"><tbody><tr class="scRh">'+rH+'</tr><tr class="scRp">'+rP+'</tr>'+(NR?'<tr class="scRn">'+rN+'</tr>':'')+'<tr class="scRs">'+rS+'</tr><tr class="scRst">'+rSt+'</tr><tr class="scRsg">'+rG+'</tr><tr class="scRt5">'+rT+'</tr></tbody></table></div>'+
    '<div class="sgcats2">'+chip('Off tee',cat.ott)+chip('Approach',cat.app)+chip('Around grn',cat.atg)+chip('Putting',cat.putt)+chip('Total',cat.tot)+'</div>'+
    '<div class="scHint ihShots">'+t('Tap any hole to see its shots.')+'</div>',shots:shots,pars:H.map(function(h){return h.par;})};
 }
@@ -5225,6 +5236,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
 .accLine{font-size:12.5px;color:var(--ink-soft);font-family:var(--cond);}
 .accCell{color:var(--pine);}
 .practiceCard{margin-top:10px;}
+.scTbl tr.scRn td{color:var(--fairway);font-weight:700;background:rgba(31,122,77,.06)}.scTbl tr.scRn td.scLbl{color:var(--fairway)}
 .demoCard>button{flex:none;border:none;border-radius:999px;padding:9px 18px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:#fff;background:linear-gradient(160deg,var(--fairway),var(--pine));cursor:pointer;box-shadow:0 6px 14px -8px rgba(15,58,44,.7);transition:transform .15s}.demoCard>button:hover{transform:translateY(-1px)}.demoCard>button:disabled{opacity:.6;cursor:wait}
 .scTier{display:inline-block;background:var(--pine);color:var(--sand);border-radius:6px;padding:0 7px;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
 .tourcard .pacc{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-family:var(--cond,sans-serif);font-size:12px;font-weight:700;color:#5c6357;}
