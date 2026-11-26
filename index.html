@@ -5074,7 +5074,7 @@ function lgPracticeClubs(){var out=[];PR_HOLE.forEach(function(e,i){var c=e.lie=
 function lgPracticeState(){if(!R._tour)return null;var h=R.holes[PR_HI];return JSON.parse(JSON.stringify({done:!!h.done,teeOv:h.teeOv||null,pin:h.pin||'M',yd:h.yd,shots:h.shots.filter(function(s){return s.conf!==false;})}));}
 /* "fill it for me": writes the answers for this level into the hole, as if the player had typed them */
 function lgPracticeFill(level){if(!R._tour)return;var h=R.holes[PR_HI],l=LOGLVL.L[level]||LOGLVL.L.ess;
- if(COURSES[R.course]&&COURSES[R.course].tees.Azules)h.teeOv='Azules';h.pin='B';h.pinSet=true;recomputeHoleYd(PR_HI);
+ if(COURSES[R.course]&&COURSES[R.course].tees.Azules)h.teeOv='Azules';h.pin='F';h.pinSet=true;recomputeHoleYd(PR_HI);
  h.shots=PR_HOLE.map(function(e,i){var o=h.shots[i]&&h.shots[i].conf!==false?h.shots[i]:{};var s={lie:e.lie,dist:(i===0?h.yd:e.dist),pen:0,conf:true};
    ['club','clubSet','disp','dispYd','read','comp'].forEach(function(k){if(o[k]!==undefined)s[k]=o[k];});
    if(l.comp)s.comp=e.comp;else delete s.comp;
@@ -5592,7 +5592,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
         exactly as the four detail levels in Profile → Round logging: Essentials → Player → Player+ → Analyst. Nothing is saved. ---- */
  var PLV=['ess','ply','plus','ana'];
  var PSTORY={
-  ess:[["Tee: markers were on <b>blue</b>, flag at the <b>back</b>. Press <span class='tk'>Tab</span> to blue, then tap <b>Back +10</b>","Tee: las marcas estaban en <b>azul</b>, bandera <b>atrás</b>. Apretá <span class='tk'>Tab</span> hasta azul y tocá <b>Atrás +10</b>"],
+  ess:[["Tee: markers were on <b>blue</b>, <b>red</b> flag at the <b>front</b>. Press <span class='tk'>Tab</span> to blue, then tap <b>Front −10</b>","Tee: las marcas estaban en <b>azul</b>, bandera <b>roja, adelante</b>. Apretá <span class='tk'>Tab</span> hasta azul y tocá <b>Adelante −10</b>"],
        ["Drive: rough, 140 yards. Prediction says 150: type <b>140</b>","Salida: rough, a 140 yardas. La predicción dice 150: escribí <b>140</b>"],
        ["Approach: bunker, 15 yards. Right distance, wrong lie: <span class='tk'>Tab</span> to <b>Sand</b>","Approach: bunker, a 15 yardas. Distancia bien, lie mal: <span class='tk'>Tab</span> hasta <b>Bunker</b>"],
        ["Bunker shot: to <b>8 feet</b>","Salida del bunker: a <b>8 pies</b>"],
@@ -5612,7 +5612,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    var CL=(window.LGR&&window.LGR.practiceClubs)?window.LGR.practiceClubs():[];
    var i=PLV.indexOf(level),S=st.shots,errs=[];
    if(st.teeOv!=='Azules')errs.push(es?'En la distancia del tee, apretá Tab hasta el tee azul.':'On the tee distance, press Tab to reach the blue tee.');
-   else if(st.pin!=='B')errs.push(es?'Marcá la bandera atrás (Back +10).':'Set the flag to the back (Back +10).');
+   else if(st.pin!=='F')errs.push(es?'Marcá la bandera roja, adelante (Adelante −10).':'Set the red flag, at the front (Front −10).');
    var nth=function(k){return es?['la salida','el approach','la salida del bunker','el primer putt','el segundo putt'][k]:['the drive','the approach','the bunker shot','the first putt','the second putt'][k];};
    if(!errs.length)for(var k=0;k<PANS.length;k++){var a=PANS[k],s=S[k];
      if(!s){errs.push(es?'Falta '+nth(k)+'.':'Log '+nth(k)+'.');break;}
