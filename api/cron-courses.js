@@ -52,6 +52,8 @@ async function runImport(sql, key, runMs) {
   const fullName = (club, course) => { club = tidy(club); let v = tidy(course); if (v.toLowerCase().indexOf(club.toLowerCase()) === 0) v = v.slice(club.length); v = v.replace(/^[\s\-–(]+/, '').replace(/\)\s*$/, '').trim(); return (v ? club + ' — ' + v : club).slice(0, 60); };
   const run = { added: 0, existed: 0, nodata: 0, errors: 0, searches: 0 };
   S.found = S.found || {};
+  /* once every country is done, the next batch starts a maintenance pass: the same searches again, keeping only courses not seen before (new courses, new entries) */
+  if (S.ci >= PLAN.length) { S.cycle = (S.cycle || 1) + 1; S.ci = 0; S.qi = 0; S.queue = []; S.found = {}; S.log = (S.log || []).concat([{ day, maintenance: S.cycle }]).slice(-60); }
   while (Date.now() - t0 < runMs && S.calls < DAY_CAP && S.ci < PLAN.length) {
     const [country, cities] = PLAN[S.ci], words = [country].concat(cities);
     if (!S.queue.length) {
@@ -69,7 +71,7 @@ async function runImport(sql, key, runMs) {
   }
   S.total = (S.total || 0) + run.added;
   S.seen = Array.from(seen).slice(-20000);
-  S.last = { at: new Date().toISOString(), country: PLAN[Math.min(S.ci, PLAN.length - 1)][0], ...run, callsToday: S.calls };
+  S.last = { at: new Date().toISOString(), country: PLAN[Math.min(S.ci, PLAN.length - 1)][0], pass: S.cycle || 1, ...run, callsToday: S.calls };
   await sql`insert into gs_settings (k, v) values ('imp_state', ${JSON.stringify(S)}) on conflict (k) do update set v = excluded.v`;
   return { ...S.last, totalAdded: S.total, finished: S.ci >= PLAN.length };
 }
