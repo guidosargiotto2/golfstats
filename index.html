@@ -7103,7 +7103,7 @@ window.IMPMAP=(function(){
   {k:'app',t:['Language & units','Idioma y unidades'],ok:function(){return !!O().app;}}];
  var shownDone=false,hidden=false;
  function isNew(){var p=P(),u=localStorage.getItem('app-user')||'';if(!u||p.onbDone)return false;
-   try{var PL=(typeof PLAYERS!=='undefined')?PLAYERS:null;if(PL&&Object.keys(PL).some(function(n){var r=PL[n];return n.toLowerCase()===u.toLowerCase()&&r&&r.length>0;}))return false;   /* players with embedded history are not new */}catch(e){}
+   if(['guido','manuel','nicolas','diego','enrique'].indexOf(u.toLowerCase())>=0)return false;   /* founders only; rounds arriving later (club history) must not hide the strip, or it flickers */
    return true;}
  function inApp(){var n=document.getElementById('tabnav');return !!(n&&n.offsetParent);}
  function mark(k){var o=O();if(o[k])return;o[k]=1;try{window.saveProf();}catch(e){}paint();}
