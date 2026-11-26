@@ -406,6 +406,14 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .scNotes{display:flex;flex-direction:column;gap:12px;margin:14px 0 4px;max-width:560px;}
 .lgscope .scNotes label{display:flex;flex-direction:column;gap:5px;font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft);font-weight:700;}
 .lgscope .scNotes textarea{font-family:var(--sans);font-size:14px;line-height:1.5;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--cream);color:var(--ink);resize:vertical;}
+.lgscope .whyAsk{border:1px solid var(--line);border-left:3px solid var(--sand-deep);border-radius:10px;background:var(--cream);padding:10px 12px;display:flex;flex-direction:column;gap:6px;}
+.lgscope .whyAsk .whyL{font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft);font-weight:700;}
+.lgscope .whyAsk q{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--pine);line-height:1.45;}
+.lgscope .whyAsk .whyQ{font-size:13.5px;color:var(--ink);font-weight:600;}
+.lgscope .whyAsk .whyB{display:flex;gap:8px;}
+.lgscope .whyAsk .whyB button{border:1px solid var(--line);background:#fff;color:var(--pine);border-radius:18px;padding:6px 16px;font-family:var(--cond);font-weight:700;font-size:13px;cursor:pointer;transition:background .15s,color .15s,transform .15s;}
+.lgscope .whyAsk .whyB button:hover{transform:translateY(-1px);border-color:var(--pine);}
+.lgscope .whyAsk .whyB button.on{background:var(--pine);color:#fff;border-color:var(--pine);}
 .lgscope .scNotes textarea.bad{border-color:var(--clay);box-shadow:0 0 0 2px rgba(194,80,46,.2);}
 .lgscope .scbtn{font-size:12px;padding:9px 16px;}
 .lgscope .actbtns .scbreak{flex-basis:100%;height:0;margin:-5px 0;}
@@ -3167,7 +3175,7 @@ window.saveLoggedRounds=function(a){try{save(uckey(),a||[]);if(PLAYER===(localSt
    (so?'':'<div><span class="ldh">'+T('Card')+'</span>FW '+(r.fw!=null?r.fw:'·')+' · GIR '+(r.gir!=null?r.gir:'·')+' · '+T('Putt')+'s '+(r.putts!=null?r.putts:'·')+' · Pen '+(r.pen!=null?r.pen:'·')+' · Drive '+(r.dist!=null?r.dist+'y':'·')+'</div>')+
    (so&&r.name?'<div><span class="ldh">'+(window.__LANG==='es'?'Torneo':'Event')+'</span>'+esc(r.name)+(r.ph!=null?' · '+(window.__LANG==='es'?'Hcp de juego ':'Playing hcp ')+r.ph:'')+(r.tee?' · Tee '+esc(r.tee):'')+'</div>':'')+
    '<div><span class="ldh">'+T('Scoring')+'</span>'+T('Birdies')+' '+(r.bir!=null?r.bir:'·')+' · '+T('Bogeys')+' '+(r.bog!=null?r.bog:'·')+(r.pars!=null?' · Pars '+r.pars:'')+' · '+T('Doubles+')+' '+(r.dbl!=null?r.dbl:'·')+' · Tiger’s 5 '+(r.mtot!=null?r.mtot:'·')+(r.t5part?' <small>('+(window.__LANG==='es'?'dobles + bogey en par 5':'doubles + bogey on par 5')+')</small>':'')+'</div>'+
-   (r.lesson?'<div><span class="ldh">'+T('What I learnt')+'</span>'+esc(r.lesson)+'</div>':'')+
+   (r.lesson?'<div><span class="ldh">'+T('What I learnt')+'</span>'+esc(r.lesson)+'</div>':'')+(r.whyMet&&window.whyLbl?'<div><span class="ldh">'+(window.__LANG==='es'?'¿Te dio lo que buscás en el golf?':'Gave you what you play for?')+'</span>'+window.whyLbl(r.whyMet)+'</div>':'')+
    ((r.holes||r.hl||r.hs)?'':'<div style="color:var(--ink-soft);font-size:12px;grid-column:1/-1">'+T('Imported summary — no shot-by-shot detail, so no hole-by-hole scorecard.')+'</div>')+
    (r.hlx?'<div style="color:var(--clay);font-size:12px;grid-column:1/-1">'+T('Shot detail in the sheet is one stroke short of the recorded score.')+'</div>':'')+
    '</div>';}
@@ -3209,7 +3217,7 @@ window.saveLoggedRounds=function(a){try{save(uckey(),a||[]);if(PLAYER===(localSt
      var i=+row.getAttribute('data-li'),o=all[i],r=o.r;
      if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.ledrev')){if(window.LGR&&window.LGR.review)window.LGR.review(o.src==='logged'?r.id:{date:r.date,score:r.score,course:r.course});return;}
       if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.ledshare')){if(window.SHARE)window.SHARE.round(r,user);return;}
-     if(o.src==='logged'&&r.holes){if(window.showView)window.showView('log');if(window.LGR&&window.LGR.openCard)window.LGR.openCard({id:r.id,course:r.courseCode||r.course,tee:r.tee,date:r.date,score:r.score,chcp:r.ph,notes:r.notes,lesson:r.lesson,holes:r.holes});return;}
+     if(o.src==='logged'&&r.holes){if(window.showView)window.showView('log');if(window.LGR&&window.LGR.openCard)window.LGR.openCard({id:r.id,course:r.courseCode||r.course,tee:r.tee,date:r.date,score:r.score,chcp:r.ph,notes:r.notes,lesson:r.lesson,whyMet:r.whyMet,holes:r.holes});return;}
      var dd=document.getElementById('leddet_'+i);if(!dd)return;var open=dd.style.display!=='none';
      if(!open){var ic=null;try{if(r.hl&&window.LGR&&window.LGR.importCard){var ph0=(r.ph!=null)?r.ph:((r.hi!=null&&r.slope&&r.cr)?Math.round(r.hi*r.slope/113+(r.cr-(r.par||72))):null);ic=window.LGR.importCard(r.hl,{ph:ph0,course:r.course});}}catch(e){ic=null;}
        var sco=(!ic&&r.hs&&r.hp&&window.LGR&&window.LGR.scoreCard)?window.LGR.scoreCard(r.hp,r.hs,r.ph,r.course):'';
@@ -3419,7 +3427,7 @@ function roundRecord(){
    ph:phForRound(),netpar:netpar,stpNet:strokes-netpar,girNet:girNet,
    p3Net:net.p3,dbNet:net.db,bp5Net:net.bp5,f150Net:net.f150,fxNet:net.short,mtotNet:mtotN,
    ott:r2(sg.ott),app:r2(sg.app),atg:r2(sg.atg),putt:r2(sg.putt),sgtot:r2(sg.tot),bir:bir,bog:bog,dbl:dbl,
-   courseCode:R.course,tee:R.tee,notes:R.notes||'',lesson:R.lesson||'',tourn:!!R.tourn,noHcp:!!R.noHcp,holes:JSON.parse(JSON.stringify(R.holes))};
+   courseCode:R.course,tee:R.tee,notes:R.notes||'',lesson:R.lesson||'',whyMet:R.whyMet||'',tourn:!!R.tourn,noHcp:!!R.noHcp,holes:JSON.parse(JSON.stringify(R.holes))};
 }
 /* ===== detail levels: one recommendation instead of five switches. Strokes gained, prediction and compliance are in every level ===== */
 var LOGLVL={order:['ess','ply','plus','ana'],
@@ -3778,7 +3786,7 @@ function renderLogged(){
  if(!arr.length){el.innerHTML='<div class="hisub" style="padding:6px 0">No rounds logged in this browser yet.</div>';return;}
  el.innerHTML=arr.slice().reverse().map(function(r){var id=r.id||'';return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)"><span style="flex:1;font-family:var(--cond);font-size:12.5px">'+(r.date||'?')+' · '+(r.course||'')+' · '+r.score+' ('+(r.stp>=0?'+':'')+r.stp+')'+(editRoundId&&editRoundId===id?' · editing…':'')+'</span><button class="pf_btn frgrey" data-rvw="'+id+'" style="padding:5px 10px">'+(window.__LANG==='es'?'Revisión':'Review')+'</button><button class="pf_btn" data-edr="'+id+'" style="padding:5px 10px">Scorecard</button><button class="pf_btn" data-dlr="'+id+'" style="padding:5px 10px;background:var(--clay)">Delete</button></div>';}).join('');
  el.querySelectorAll('[data-rvw]').forEach(function(b){b.onclick=function(){window.LGR.review(b.getAttribute('data-rvw'));};});
- el.querySelectorAll('[data-edr]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-edr');var r=(window.getLoggedRounds()||[]).find(function(x){return (x.id||'')===id;});if(!r||!r.holes){alert('This round was logged before editing existed, so it has no shot detail to reopen. Re-log it (or Load it) to make it editable.');return;}editRoundId=id;lgLoad({course:r.courseCode||r.course,tee:r.tee,date:r.date,notes:r.notes,lesson:r.lesson,holes:r.holes});scMode=true;render();renderLogged();window.scrollTo(0,0);};});
+ el.querySelectorAll('[data-edr]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-edr');var r=(window.getLoggedRounds()||[]).find(function(x){return (x.id||'')===id;});if(!r||!r.holes){alert('This round was logged before editing existed, so it has no shot detail to reopen. Re-log it (or Load it) to make it editable.');return;}editRoundId=id;lgLoad({course:r.courseCode||r.course,tee:r.tee,date:r.date,notes:r.notes,lesson:r.lesson,whyMet:r.whyMet,holes:r.holes});scMode=true;render();renderLogged();window.scrollTo(0,0);};});
  el.querySelectorAll('[data-dlr]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-dlr');if(!confirm('Delete this logged round?'))return;var a2=(window.getLoggedRounds()||[]).filter(function(x){return (x.id||'')!==id;});if(window.saveLoggedRounds)window.saveLoggedRounds(a2);if(editRoundId===id||(R&&R._editId===id)){editRoundId=null;scMode=false;localStorage.removeItem(RKEY);var d0=loadDefault();R=newRound(d0.course,d0.tee);lgEntered=false;render();}renderLogged();};});
 }
 const LIE_OPTS=[['tee','Tee'],['fw','Fairway'],['rough','Rough'],['sand','Sand'],['rec','Recovery'],['putt','Green (putt)']];
@@ -4089,7 +4097,7 @@ function renderScorecard(){
  var esc=function(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');};
  var notesBlk='<h3 style="font-family:var(--serif);font-weight:600;font-size:17px;color:var(--pine);margin:20px 0 4px">'+t('Round journal')+'</h3>'+
    '<div class="tournrow"><label class="tournchk"><input type="checkbox" id="scTourn"'+(R.tourn?' checked':'')+'><span>'+t('Tournament round')+'</span></label><label class="tournchk"><input type="checkbox" id="scHcp"'+(R.noHcp?'':' checked')+'><span>'+t('Counts for my handicap')+'</span></label></div>'+'<div class="scNotes"><label>'+t('Notes')+'<textarea id="scNotes" rows="2" placeholder="'+(window.__LANG==='es'?'Cómo fue, condiciones, algo para recordar…':'How it went, conditions, anything worth remembering…')+'">'+esc(R.notes)+'</textarea></label>'+
-   '<label>'+t('What I learnt')+' <span class="lbls" style="color:var(--clay)">'+t('required')+'</span><textarea id="scLesson" rows="2" placeholder="'+(window.__LANG==='es'?'Un aprendizaje de esta vuelta…':'One takeaway from this round…')+'">'+esc(R.lesson)+'</textarea></label></div>';
+   '<label>'+t('What I learnt')+' <span class="lbls" style="color:var(--clay)">'+t('required')+'</span><textarea id="scLesson" rows="2" placeholder="'+(window.__LANG==='es'?'Un aprendizaje de esta vuelta…':'One takeaway from this round…')+'">'+esc(R.lesson)+'</textarea></label>'+whyAskHTML()+'</div>';
  var hdTot=0,hdPar=0;for(var q=hs;q<he;q++){hdTot+=holeSG(holeView(R.holes[q])).strokes;hdPar+=R.holes[q].par;}
  var hdTp=hdTot-hdPar,hdTee=COURSES[R.course]&&COURSES[R.course].tees[R.tee],hdDate='';
  try{hdDate=R.date?new Date(R.date+'T12:00:00').toLocaleDateString(window.__LANG==='es'?'es-AR':'en-GB',{weekday:'short',day:'numeric',month:'long',year:'numeric'}):'';}catch(e){hdDate=R.date||'';}
@@ -4780,13 +4788,20 @@ function lgLoad(o){
  if(!o||!o.holes)return;
  var c=COURSES[o.course]||COURSES.CGC, t=(c.tees[o.tee]||c.tees[Object.keys(c.tees)[0]]);
  R={course:(COURSES[o.course]?o.course:R.course),tee:(c.tees[o.tee]?o.tee:R.tee),courseName:c.name,cr:t.cr,slope:t.slope,date:o.date||new Date().toISOString().slice(0,10),
-   score:o.score||'',chcp:o.chcp||'',notes:o.notes||'',lesson:o.lesson||'',tourn:!!o.tourn,noHcp:!!o.noHcp,phase:'play',cur:0,holesMode:(o.holes.length===9?'front':'18'),hStart:0,hEnd:o.holes.length,
+   score:o.score||'',chcp:o.chcp||'',notes:o.notes||'',lesson:o.lesson||'',whyMet:o.whyMet||'',tourn:!!o.tourn,noHcp:!!o.noHcp,phase:'play',cur:0,holesMode:(o.holes.length===9?'front':'18'),hStart:0,hEnd:o.holes.length,
    holes:o.holes.map(function(h,i){return {par:h.par,yd:h.yd||((h.shots&&h.shots[0])?h.shots[0].dist:0),hcp:(c.hcp?c.hcp[i]:0),pin:h.pin||'M',pinSet:h.pinSet||undefined,teeOv:h.teeOv||null,card:h.card||undefined,done:true,shots:(h.shots||[]).map(function(s){return {lie:s.lie,dist:s.dist,pen:s.pen||0,conf:true,club:s.club,clubSet:s.clubSet,comp:s.comp,disp:s.disp,dispYd:s.dispYd,read:s.read};})};})};
  lgEntered=true;save();render();renderSel();
 }
 function lgPause(){if(R.phase==='play'){var act=R.holes.slice(R.hStart,R.hEnd),allDone=act.length>0&&act.every(function(x){return x.done;});if(!allDone&&lgEntered){lgEntered=false;render();}}}
 /* read-only scorecard for imported rounds (hl = [[par,pen,"t372f150p20p3"],...]) — never touches the round in progress */
 /* scorecard for score-only rounds (club portal imports): par, score per hole with birdie circles / bogey boxes, running status, Tiger 5 flags we can know (double, bogey on par 5) */
+/* after each round: did it give you what you play for? (the "why" from the setup questions) */
+function whyAskHTML(){var w=((PROF.about||{}).why||'').trim();if(!w)return '';var es=window.__LANG==='es',v=R.whyMet||'';
+ var B=[['yes',es?'Sí':'Yes'],['some',es?'En parte':'Partly'],['no','No']];
+ return '<div class="whyAsk"><span class="whyL">'+(es?'Por qué jugás':'Why you play')+'</span><q>'+esc(w)+'</q><div class="whyQ">'+(es?'¿Esta vuelta te lo dio?':'Did this round give you that?')+'</div><div class="whyB">'+B.map(function(b){return '<button type="button" data-why="'+b[0]+'" class="'+(v===b[0]?'on':'')+'">'+b[1]+'</button>';}).join('')+'</div></div>';}
+document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('.whyAsk [data-why]');if(!b)return;var k=b.getAttribute('data-why');R.whyMet=(R.whyMet===k?'':k);save();b.parentNode.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-why')===R.whyMet);});});
+function whyLbl(k){var es=window.__LANG==='es';return k==='yes'?(es?'Sí':'Yes'):k==='some'?(es?'En parte':'Partly'):k==='no'?'No':'';}
+window.whyLbl=whyLbl;
 function scoreCard(pars,hs,ph,courseName){if(!pars||!hs||pars.length!==hs.length)return '';
  /* net par per hole: the strokes the playing handicap gives on each hole by stroke index (plus handicaps give strokes back on the easiest holes) */
  var SI=null;try{var ck=Object.keys(COURSES).filter(function(k){return COURSES[k].name===courseName;})[0];if(ck&&COURSES[ck].hcp&&COURSES[ck].hcp.length===18)SI=COURSES[ck].hcp;}catch(e){}
@@ -5634,7 +5649,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    var h='<h4>'+esc(STU.name)+'</h4>'+abH+'<p class="frsub">'+T('Last 10 rounds','Últimas 10 vueltas')+'</p><div class="frks">'+kp(a10)+'</div><p class="frsub">'+T('All rounds','Todas las vueltas')+'</p><div class="frks">'+kp(aAll)+'</div><div id="hwCoach"></div>';STU._all=rounds;
    h+=rounds.slice(0,40).map(function(r,i){
      return '<div class="frround"><div class="frrow"><span class="frd">'+esc(r.date||'')+'</span><span class="frc">'+esc(r.course||'')+'</span><span class="frs">'+(r.score!=null?r.score:'·')+(r.stp!=null?' <small>('+(r.stp>0?'+':'')+r.stp+')</small>':'')+'</span><span class="'+((r.sgtot!=null&&r.sgtot<0)?'sg-neg':'sg-pos')+'">SG '+sgn(num(r.sgtot),2)+'</span><span class="frt5">T5 '+(r.mtot!=null?r.mtot:'·')+'</span>'+((r.holes||r.hl)?'<button class="frlink" data-card="'+i+'">'+T('Scorecard','Scorecard')+' ▾</button>':'')+'</div>'+
-       (r.lesson?'<div class="frnote"><b>'+T('Learnt:','Aprendió:')+'</b> '+esc(r.lesson)+'</div>':'')+(r.notes?'<div class="frnote"><b>'+T('Notes:','Notas:')+'</b> '+esc(r.notes)+'</div>':'')+'<div class="frcard" id="frcard_'+i+'" style="display:none"></div></div>';}).join('');
+       (r.lesson?'<div class="frnote"><b>'+T('Learnt:','Aprendió:')+'</b> '+esc(r.lesson)+'</div>':'')+(r.notes?'<div class="frnote"><b>'+T('Notes:','Notas:')+'</b> '+esc(r.notes)+'</div>':'')+(r.whyMet&&window.whyLbl?'<div class="frnote"><b>'+T('Gave them what they play for:','Le dio lo que busca en el golf:')+'</b> '+window.whyLbl(r.whyMet)+'</div>':'')+'<div class="frcard" id="frcard_'+i+'" style="display:none"></div></div>';}).join('');
    STU._rounds=rounds;
    return h;
  }
