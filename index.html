@@ -5236,15 +5236,20 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(!k||k.indexOf('golf-ledger-custom-')!==0||k===key)continue;try{(JSON.parse(localStorage.getItem(k)||'[]')||[]).forEach(function(r){if(r&&r.id)other[r.id]=1;});}catch(e){}}
    var gone=[],keep=mine.filter(function(r){var bad=r&&((r.owner&&r.owner!==user)||(!r.owner&&r.id&&other[r.id]));if(bad)gone.push(r.id);return !bad;});
    if(gone.length){localStorage.setItem(key,JSON.stringify(keep));var del=[];try{del=JSON.parse(localStorage.getItem(dk)||'[]')||[];}catch(e){}gone.forEach(function(id){if(id&&del.indexOf(id)<0)del.push(id);});localStorage.setItem(dk,JSON.stringify(del));}
-   keep.forEach(function(r){if(r&&!r.owner)r.owner=user;});localStorage.setItem(key,JSON.stringify(keep));}catch(e){}})();
+   keep.forEach(function(r){if(r&&!r.owner){r.owner=user;r.upd=Date.now();}});localStorage.setItem(key,JSON.stringify(keep));}catch(e){}})();
+ /* one browser, one player at a time: when another tab signs in or out, every open tab reloads as that player */
+ window.addEventListener('storage',function(e){if(e.key==='app-user'||e.key==='gs-token'){if((e.key==='app-user'&&(e.newValue||'')!==(user||''))||(e.key==='gs-token'&&!e.newValue))location.reload();}});
  function runSync(){
    var tok=localStorage.getItem('gs-token');if(!tok||!user)return;
+   if((localStorage.getItem('app-user')||'')!==user){location.reload();return;}   /* another tab signed in as someone else: this page must not sync one player's rounds with another's token */
    if(busy){again=true;return;}busy=true;
    var key='golf-ledger-custom-'+user,dk='golf-ledger-del-'+user,snap=localStorage.getItem(key)||'[]',local=[],del=[];
    try{local=(JSON.parse(snap)||[]).map(rid);}catch(e){}try{del=JSON.parse(localStorage.getItem(dk)||'[]')||[];}catch(e){}
-   fetch('/api/sync',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({rounds:local,deleted:del})})
+   fetch('/api/sync',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({rounds:local,deleted:del,as:user})})
      .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};});})
      .then(function(o){
+       if(o.s===409){mark('⚠');return;}   /* the server says this token is not this player: nothing is written */
+       if((localStorage.getItem('app-user')||'')!==user)return;   /* the player changed while the request was out */
        if(o.s===401){localStorage.removeItem('gs-token');mark('');return;}
        if(!o.j||!o.j.ok){mark('⚠');return;}
        if((localStorage.getItem(key)||'[]')!==snap){again=true;return;}      /* changed while syncing → go again */
