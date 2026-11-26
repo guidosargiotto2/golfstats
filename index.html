@@ -6728,9 +6728,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
  /* the link under the course selector when starting a round */
  function addLink(){var sc=document.getElementById('selCourse');if(sc){var w=document.getElementById('crWarn'),c0=window.COURSES&&window.COURSES[sc.value],need=!!(c0&&(c0.noSI||c0.unverified));if(need&&!w){w=document.createElement('div');w.id='crWarn';w.className='crWarn';sc.parentNode.appendChild(w);}if(w){w.style.display=need?'':'none';if(need&&w.dataset.k!==sc.value+(c0.noSI?'n':'u')){w.dataset.k=sc.value+(c0.noSI?'n':'u');w.innerHTML='⚠ '+(c0.noSI?T('This course has no stroke index yet, so net par is off here. ','Esta cancha todavía no tiene hándicap por hoyo, así que el par neto está desactivado acá. '):T('This course has not been checked against a scorecard yet. ','Esta cancha todavía no fue revisada contra una tarjeta. '))+'<a href="#" class="crHelp">'+(c0.noSI?T('Have the scorecard? Add the stroke index','¿Tenés la tarjeta? Cargá el hándicap por hoyo'):T('Have the scorecard? Check it and report any error','¿Tenés la tarjeta? Revisala y avisá si hay un error'))+'</a>';w.querySelector('.crHelp').onclick=function(e){e.preventDefault();helpCourse(sc.value);};}}}
    if(!sc||document.getElementById('crLink'))return;var a=document.createElement('a');a.id='crLink';a.href='#';a.className='crLink';a.textContent=T('Course not listed? Request it','¿No está tu cancha? Pedila');a.onclick=function(e){e.preventDefault();openRequest();};sc.parentNode.appendChild(a);
-   var src=document.createElement('div');src.id='crSrc';src.className='crSrc';
-   src.innerHTML=T('Course data comes from our collaboration with <a href="https://golfcourseapi.com" target="_blank" rel="noopener">GolfCourseAPI</a>, so courses across Latin America and beyond are available to everyone. Some scorecards arrive incomplete: ','Los datos de las canchas vienen de nuestra colaboración con <a href="https://golfcourseapi.com" target="_blank" rel="noopener">GolfCourseAPI</a>, así que hay canchas de toda Latinoamérica y más, disponibles para todos. Algunas tarjetas llegan incompletas: ')+'<a href="#" id="crReport">'+T('spot something wrong or missing? Report it','¿ves algo mal o que falta? Avisanos')+'</a>.';
-   sc.parentNode.appendChild(src);src.querySelector('#crReport').onclick=function(e){e.preventDefault();var cs=document.getElementById('selCourse');if(cs&&cs.value)helpCourse(cs.value);else openRequest();};}
+   }   /* the GolfCourseAPI note lives in Help, not on the log screen */
  /* ---- admin: requests + course editor ---- */
  function adminPanel(el){if(!el)return;el.innerHTML='<p class="frsub">…</p>';
    api('courseRequests',{}).then(function(j){var L=(j&&j.requests)||[];
@@ -7159,12 +7157,15 @@ window.IMPMAP=(function(){
  var title=function(x){return String(x||'').toLowerCase().replace(/(^|\s)\S/g,function(m){return m.toUpperCase();});};
  var iso=function(d){var m=String(d||'').match(/^(\d{2})-(\d{2})-(\d{4})$/);return m?m[3]+'-'+m[2]+'-'+m[1]:d;};
  /* one Digigolf card → a Golfimbul score-per-hole round (same shape as the rounds imported for Enrique) */
- function toRound(row,c,ck,tee){var C=(window.COURSES||{})[ck]||{},tt=(C.tees||{})[tee]||{},hp=c.par,hs=c.sc,par=0,tot=0,bir=0,pars=0,bog=0,dbl=0,bp5=0;
+ function toRound(row,c,ck,tee,rd,many){var C=(window.COURSES||{})[ck]||{},tt=(C.tees||{})[tee]||{},hp=c.par,hs=(rd||c).sc,par=0,tot=0,bir=0,pars=0,bog=0,dbl=0,bp5=0;
    for(var i=0;i<18;i++){var d=hs[i]-hp[i];par+=hp[i];tot+=hs[i];if(d<=-1)bir++;else if(d===0)pars++;else if(d===1)bog++;else dbl++;if(hp[i]===5&&d>=1)bp5++;}
    return {course:C.name||row.club,date:iso(row.date),score:tot,par:par,stp:tot-par,bir:bir,pars:pars,bog:bog,dbl:dbl,db:dbl,bp5:bp5,p3:null,f150:null,fx:null,mtot:dbl+bp5,t5part:true,putts:null,fw:null,gir:null,pen:null,holesPlayed:18,
-     ph:c.hcp,tee:tee,cr:tt.cr||null,slope:tt.slope||null,hp:hp,hs:hs,name:title(row.name),src:'digigolf'};}
+     ph:c.hcp,tee:tee,cr:tt.cr||null,slope:tt.slope||null,hp:hp,hs:hs,name:title(row.name)+(many&&rd?' · R'+rd.n:''),src:'digigolf'};}
+ var TEAM=/FOUR ?BALL|FBC|LAGUNEADA|SCRAMBLE|PROBANDO|PARCIALES|HASTA \d+(\.\d)?$/i;   /* team formats and test events: not an individual score */
  function flags(row,c,medHcp){var f=[];if(!c||c.err)f.push(T('card not read','tarjeta no leída'));else{if(!c.sc||c.sc.length!==18||!c.par||c.par.length!==18)f.push(T('no 18-hole card','sin tarjeta de 18 hoyos'));
    else{var sum=c.sc.reduce(function(a,b){return a+b;},0);if(c.tot!=null&&sum!==c.tot)f.push(T('holes do not add up','los hoyos no suman'));}
+   if(TEAM.test(row.name||''))f.push(T('team format or test event','formato por equipos o torneo de prueba'));
+   if(c.sc&&c.sc.every(function(v){return v===c.sc[0];}))f.push(T('every hole the same score','el mismo score en todos los hoyos'));
    if(c.hcp===0&&medHcp>5)f.push(T('handicap 0 — likely a team format','hándicap 0 — probablemente por equipos'));
    if(c.hcp!=null&&medHcp!=null&&Math.abs(c.hcp-medHcp)>8)f.push(T('handicap far from usual','hándicap muy distinto al habitual'));}return f;}
  function mount(el){var es=ES(),today=new Date().toISOString().slice(0,10),ST={rows:[],cards:{}};
@@ -7185,7 +7186,7 @@ window.IMPMAP=(function(){
      out.innerHTML=idPick+'<b>'+rows.length+'</b> '+T('rounds','vueltas')+' · id '+E(ST.id)+(med!=null?' · '+T('usual handicap ','hándicap habitual ')+med:'')+
        '<div class="dgRow" style="margin-top:8px"><label>'+T('Course','Cancha')+'<select id="dgCourse">'+opts+'</select></label><label>'+T('Tees they play','Tees que juega')+'<select id="dgTee"></select></label><button type="button" class="pf_btn" id="dgRead">'+(read<rows.length?T('Read the scorecards','Leer las tarjetas')+' ('+(rows.length-read)+')':T('Read again','Leer de nuevo'))+'</button></div>'+
        '<div class="dgTbl"><table><tr><th></th><th>'+T('Date','Fecha')+'</th><th>'+T('Event','Torneo')+'</th><th>'+T('Gross','Gross')+'</th><th>Hcp</th><th>'+T('Card','Tarjeta')+'</th></tr>'+rows.map(function(r,i){var c=ST.cards[r.href],fl=c?flags(r,c,med):[],ok=c&&!fl.length;
-         return '<tr class="'+(fl.length?'warn':'')+'"><td><input type="checkbox" data-dg="'+i+'"'+(c&&ok?' checked':'')+(c&&c.sc&&c.sc.length===18?'':' disabled')+'></td><td>'+E(r.date)+'</td><td>'+E(title(r.name))+'</td><td>'+E(r.gross)+'</td><td>'+E(c&&c.hcp!=null?c.hcp:r.hcp)+'</td><td>'+(!c?'·':(ok?'✓ '+c.sc.join(' '):'⚠ '+E(fl.join('; '))))+'</td></tr>';}).join('')+'</table></div>'+
+         return '<tr class="'+(fl.length?'warn':'')+'"><td><input type="checkbox" data-dg="'+i+'"'+(c&&ok?' checked':'')+(c&&c.sc&&c.sc.length===18?'':' disabled')+'></td><td>'+E(r.date)+'</td><td>'+E(title(r.name))+'</td><td>'+E(r.gross)+'</td><td>'+E(c&&c.hcp!=null?c.hcp:r.hcp)+'</td><td>'+(!c?'·':(ok?'✓ '+(c.rds&&c.rds.length>1?c.rds.length+' '+T('rounds','rondas')+' · ':'')+c.sc.join(' '):'⚠ '+E(fl.join('; '))))+'</td></tr>';}).join('')+'</table></div>'+
        (read?'<div class="dgRow" style="margin-top:10px"><label>'+T('Save to Golfimbul user','Guardar en el usuario de Golfimbul')+'<input id="dgUser" placeholder="'+T('username','usuario')+'"></label><button type="button" class="pf_btn" id="dgSave">'+T('Save checked rounds','Guardar las vueltas marcadas')+'</button></div><div id="dgMsg"></div>':'');
      var cSel=out.querySelector('#dgCourse'),tSel=out.querySelector('#dgTee');
      var club=rows[0]&&rows[0].club,guess=Object.keys(cs).filter(function(k){return nk(cs[k].name)===nk(club);})[0];if(guess)cSel.value=guess;if(ST.ck&&cs[ST.ck])cSel.value=ST.ck;
@@ -7196,7 +7197,8 @@ window.IMPMAP=(function(){
        (function next(){if(k>=todo.length){paint();return;}var chunk=todo.slice(k,k+15);b.textContent=T('Reading ','Leyendo ')+Math.min(k+15,todo.length)+' / '+todo.length+'…';
          api('dgCards',{hrefs:chunk}).then(function(j){(j&&j.cards||[]).forEach(function(c){ST.cards[c.href]=c;});k+=15;next();}).catch(function(){k+=15;next();});})();};
      var sv=out.querySelector('#dgSave');if(sv)sv.onclick=function(){var u=out.querySelector('#dgUser').value.trim().toLowerCase(),msg=out.querySelector('#dgMsg');if(!u){msg.textContent=T('Which user?','¿Qué usuario?');return;}
-       var pick=[].slice.call(out.querySelectorAll('[data-dg]:checked')).map(function(x){var r=rows[+x.getAttribute('data-dg')];return toRound(r,ST.cards[r.href],cSel.value,tSel.value);});
+       var pick=[],seenH={};[].slice.call(out.querySelectorAll('[data-dg]:checked')).forEach(function(x){var r=rows[+x.getAttribute('data-dg')],c=ST.cards[r.href],rds=(c.rds&&c.rds.length)?c.rds:[{n:1,sc:c.sc}];
+         rds.forEach(function(rd){if(!rd.sc||rd.sc.length!==18)return;var k=rd.sc.join('');if(seenH[k])return;seenH[k]=1;pick.push(toRound(r,c,cSel.value,tSel.value,rd,rds.length>1));});});   /* multi-day events give one round per day; the same card under two events counts once */
        if(!pick.length){msg.textContent=T('Nothing checked.','No hay nada marcado.');return;}
        if(!confirm(T('Save '+pick.length+' rounds to "'+u+'"?','¿Guardar '+pick.length+' vueltas en "'+u+'"?')))return;
        msg.textContent='…';api('dgSave',{user:u,rounds:pick}).then(function(j){msg.innerHTML=j&&j.ok?'<b style="color:var(--fairway)">✓ '+T(j.added+' new rounds saved ('+j.saved+' in total). They appear the next time '+E(u)+' opens Golfimbul.',j.added+' vueltas nuevas guardadas ('+j.saved+' en total). Aparecen la próxima vez que '+E(u)+' abra Golfimbul.')+'</b>':T('Did not work: ','No funcionó: ')+(j&&j.error||'error');});};}

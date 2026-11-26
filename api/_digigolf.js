@@ -29,8 +29,10 @@ async function card(href) {
   if (!r.ok) throw new Error('digigolf-' + r.status);
   const t = strip(await r.text()).replace(/\s+/g, ' ');
   const hcp = (t.match(/HCP:\s*(-?\d+)/i) || [])[1];
-  const par = t.match(/Par ((?:\d+ ){18})(\d+)/), rd = t.match(/Ronda 1 ((?:\d+ ){18})(\d+)(?: (-?\d+))?/);
-  return { hcp: hcp != null ? +hcp : null, par: par ? par[1].trim().split(' ').map(Number) : null, sc: rd ? rd[1].trim().split(' ').map(Number) : null, tot: rd ? +rd[2] : null, net: rd && rd[3] != null ? +rd[3] : null };
+  const par = t.match(/Par ((?:\d+ ){18})(\d+)/), re = /Ronda (\d+) ((?:\d+ ){18})(\d+)(?: (-?\d+))?/g, rds = [];
+  let m; while ((m = re.exec(t))) rds.push({ n: +m[1], sc: m[2].trim().split(' ').map(Number), tot: +m[3] });   // multi-day events: one card, several rounds
+  rds.sort((x, y) => x.n - y.n);
+  return { hcp: hcp != null ? +hcp : null, par: par ? par[1].trim().split(' ').map(Number) : null, rds, sc: rds[0] ? rds[0].sc : null, tot: rds[0] ? rds[0].tot : null };
 }
 
 module.exports = { search, card };
