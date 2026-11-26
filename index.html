@@ -1106,6 +1106,7 @@ html.rsOpen{overflow:hidden}
 .scCC select{max-width:420px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;font:14px var(--sans);color:var(--ink);text-transform:none;letter-spacing:0}
 #view-profile.pfMe .pgrp:not([data-k="personal"]):not([data-k="about"]),#view-profile.pfMe .pgHead,#view-profile.pfMe #obRedo{display:none!important}
 #view-profile.pfSet .pgrp[data-k="personal"],#view-profile.pfSet .pgrp[data-k="about"]{display:none!important}
+#gimBox{display:none!important}   /* Garmin import hidden for now */
 </style>
 <style id="gimcss">
 .gimTag{font:600 10px/1 var(--sans,inherit);letter-spacing:.08em;background:var(--pine);color:#fff;border-radius:20px;padding:4px 8px;vertical-align:3px;margin-left:6px}
@@ -4334,7 +4335,7 @@ window.BAGEDIT={
   var rows=L.map(function(x){return '<div class="beRow"><span class="beN">'+clubFull(x.c)+'</span><input class="pf_cs" data-c="'+x.c+'" maxlength="3" value="'+clubLbl(x.c)+'" title="'+(es?'Abreviatura':'Short name')+'"><label class="beD"><input type="number" class="be_d" data-c="'+x.c+'" min="0" max="400" step="5" value="'+(x.d||'')+'"><i>yd</i></label><button type="button" class="be_x" data-c="'+x.c+'" title="'+(es?'Sacar de la bolsa':'Remove from the bag')+'">×</button></div>';}).join('')+
    '<div class="beRow bePt"><span class="beN">Putter</span><input class="pf_cs" data-c="Pt" maxlength="3" value="'+clubLbl('Pt')+'"><span class="beD"></span><span></span></div>';
   var add='<option value="">'+(es?'+ Agregar un palo':'+ Add a club')+'</option>'+CLUBALL.filter(function(x){return !have[x[0]];}).map(function(x){return '<option value="'+x[0]+'">'+x[es?2:1]+'</option>';}).join('');
-  return '<div class="frsec" id="bagEdit"><h3>'+(es?'Mi bolsa':'My bag')+'</h3><p class="frsub">'+(es?'Los palos que llevás, cómo aparece cada uno al cargar una vuelta (D, 3W, 4H, 7, 56) y su distancia habitual, carry más rodada. Con esto se predice el palo de cada tiro y se arma la tarjeta impresa. Si importás tu Garmin, las distancias salen de tus tiros reales.':'The clubs you carry, how each appears when you log a round (D, 3W, 4H, 7, 56), and its usual distance, carry plus roll. This predicts the club on each shot and builds your printed scorecard. Import your Garmin and distances come from your real shots.')+'</p>'+
+  return '<div class="frsec" id="bagEdit"><h3>'+(es?'Mi bolsa':'My bag')+'</h3><p class="frsub">'+(es?'Los palos que llevás, cómo aparece cada uno al cargar una vuelta (D, 3W, 4H, 7, 56) y su distancia habitual, carry más rodada. Con esto se predice el palo de cada tiro y se arma la tarjeta impresa.':'The clubs you carry, how each appears when you log a round (D, 3W, 4H, 7, 56), and its usual distance, carry plus roll. This predicts the club on each shot and builds your printed scorecard.')+'</p>'+
    '<div class="beHd"><span>'+(es?'Palo':'Club')+'</span><span>'+(es?'Abrev.':'Short')+'</span><span>'+(es?'Distancia':'Distance')+'</span><span></span></div>'+rows+
    '<div class="beFoot"><select class="be_add">'+add+'</select><span class="beCnt'+(n>14?' over':'')+'">'+n+' / 14 '+(es?'palos':'clubs')+(n>14?(es?' · las reglas permiten 14':' · the rules allow 14'):'')+'</span><button type="button" class="be_reset">'+(es?'Volver a la bolsa estándar':'Reset to a standard bag')+'</button></div></div>';},
  wire:function(root){var me=this,box=(root||document).querySelector('#bagEdit');if(!box)return;
@@ -4711,9 +4712,9 @@ function renderProf(){
  /* the cards hold the previous render's fields; clear them first, or the old copies keep the ids and get the new listeners */
  document.querySelectorAll('#profGroups .pgrp[data-k] .pgB').forEach(function(b){while(b.firstChild)b.removeChild(b.firstChild);});
  const auto=computeHI(),eff=effHI();
- const courseOpts=favOptsHTML(PROF.homeCourse);
+ const courseOpts=favOptsHTML(PROF.homeClub?PROF.homeCourse:'');   /* nothing preselected until the home club is chosen */
  const tkeys=teeList(COURSES[PROF.homeCourse]?PROF.homeCourse:'CGC',PROF.defaultTee);
- const teeOpts=tkeys.map(k=>`<option value="${k}" ${k===PROF.defaultTee?'selected':''}>${teeEN(PROF.homeCourse,k)}</option>`).join('');
+ const teeOpts=PROF.homeClub?tkeys.map(k=>`<option value="${k}" ${k===PROF.defaultTee?'selected':''}>${teeEN(PROF.homeCourse,k)}</option>`).join(''):`<option value="" selected>${window.__LANG==='es'?'— primero elegí tu club —':'— pick your club first —'}</option>`;
  document.getElementById('pform').innerHTML=`
   <div id="pf_avatar" class="pfAv"><span class="pfAvPic">${avatarHTML(myAvatar(),PROF.name||localStorage.getItem('app-user'),72)}</span><span class="pfAvB"><button type="button" class="pf_btn" id="pf_avup">${window.__LANG==='es'?(myAvatar()?'Cambiar foto':'Subir foto'):(myAvatar()?'Change photo':'Upload photo')}</button>${myAvatar()?`<button type="button" class="pf_btn frgrey" id="pf_avrm">${window.__LANG==='es'?'Quitar':'Remove'}</button>`:''}<input type="file" id="pf_avfile" accept="image/*" hidden><small id="pf_avmsg">${window.__LANG==='es'?'Tus amigos la ven junto a tu nombre.':'Your friends see it next to your name.'}</small></span></div>
   <label>Name<input id="pf_name" value="${PROF.name||''}" placeholder="${localStorage.getItem('app-user')||''}"></label>
@@ -4848,8 +4849,8 @@ ${PROF.gender==='m'?`  <label class="chkrow" style="flex-direction:row;align-ite
    if(e.target.value==='__more'){e.target.value=PROF.homeClub||'';coursePicker(k=>{PROF.homeClub=clubOf(k);toCourse(k);done();});return;}
    PROF.homeClub=e.target.value;toCourse(clubCourse(e.target.value));done();});
  document.getElementById('pf_units').addEventListener('change',e=>{PROF.units=e.target.value;saveProf();render();renderProf();});
- document.getElementById('pf_course').addEventListener('change',e=>{const set=k=>{PROF.homeCourse=k;PROF.defaultTee=Object.keys(COURSES[k].tees)[0];saveProf();renderProf();try{renderSel();}catch(_){}};if(e.target.value==='__more'){e.target.value=PROF.homeCourse;coursePicker(set);return;}set(e.target.value);});
- document.getElementById('pf_tee').addEventListener('change',e=>{PROF.defaultTee=e.target.value;saveProf();});
+ document.getElementById('pf_course').addEventListener('change',e=>{if(!e.target.value)return;const set=k=>{PROF.homeCourse=k;if(!PROF.homeClub)PROF.homeClub=clubOf(k);PROF.defaultTee=Object.keys(COURSES[k].tees)[0];saveProf();renderProf();try{renderSel();}catch(_){}};if(e.target.value==='__more'){e.target.value=PROF.homeCourse;coursePicker(set);return;}set(e.target.value);});
+ document.getElementById('pf_tee').addEventListener('change',e=>{if(!e.target.value)return;PROF.defaultTee=e.target.value;saveProf();});
  var pfb=document.getElementById('pf_favbtn');if(pfb)pfb.onclick=function(){coursePicker(function(k){if(!isFav(k))toggleFav(k);try{renderProf();renderSel();}catch(_){}});var mo=new MutationObserver(function(){if(!document.querySelector('.cpBox')){mo.disconnect();try{renderProf();renderSel();}catch(_){}}});mo.observe(document.body,{childList:true});};
  document.getElementById('pf_drive').addEventListener('change',e=>{PROF.driveYd=Math.min(400,Math.max(50,parseInt(e.target.value||'250',10)||250));e.target.value=PROF.driveYd;saveProf();reseedPredicted();render();});
  document.getElementById('pf_t5mode').addEventListener('change',e=>{PROF.t5mode=e.target.value;saveProf();});
@@ -6479,7 +6480,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
   {k:'about',t:['About your game','Sobre tu juego'],ids:['pf_about']},
   {k:'course',t:['Course & tees','Cancha y tees'],ids:['pf_homeclub','pf_course','pf_favbtn','pf_tee','pf_teeset','pf_hidered']},
   {k:'game',t:['My game & handicap','Mi juego y hándicap'],ids:['pf_himode','pf_drive','pf_nine','pf_impbtn','pf_imphbtn']},
-  {k:'bag',t:['My bag','Mi bolsa'],link:'bag',sub:['Distance and dispersion for every club · Garmin import','Distancia y dispersión de cada palo · importación de Garmin']},
+  {k:'bag',t:['My bag','Mi bolsa'],link:'bag',sub:['Your clubs, short names and distances','Tus palos, abreviaturas y distancias']},
   {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_level','pf_logest','pf_predict','pf_clubs','pf_disp','pf_read','pf_comp','pf_printcard']},
   {k:'analysis',t:['Scoring & analysis','Score y análisis'],ids:['pf_netpar','pf_sgbase','pf_atg']},
   {k:'t5',t:["Tiger's 5",'Tiger 5'],ids:['pf_t5mode','pf_t5x','pf_bogeyx']},
