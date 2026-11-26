@@ -985,13 +985,15 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 #pf_level .lvCmp{margin-top:18px}
 .lvTbl i{font-style:normal;font-size:15px}.lvTbl i.y{color:var(--fairway)}.lvTbl i.n{color:#b9b4a3}
 .lvTbl tbody tr:last-child td{border-bottom:none;color:var(--pine)}
-.lvGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:6px}
+.lvGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:6px}
+@media(max-width:520px){.lvGrid{grid-template-columns:1fr}}
 .lvCard{position:relative;text-align:left;display:flex;flex-direction:column;gap:4px;padding:14px 14px 12px;border-radius:14px;border:1.5px solid var(--line);background:#fffdf7;cursor:pointer;font:inherit;color:var(--ink);transition:transform .15s,border-color .15s,box-shadow .15s}
 .lvCard:hover{transform:translateY(-2px);border-color:var(--fairway)}
 .lvCard.on{border-color:var(--pine);background:#fff;box-shadow:inset 0 0 0 1.5px var(--pine)}
 .lvCard b{font-family:var(--serif,Georgia,serif);font-size:19px;font-weight:600;color:var(--pine)}
 .lvCard span{font-size:12.5px;line-height:1.4;color:var(--ink-soft);text-transform:none;letter-spacing:0;font-weight:400}
 .lvCard small{font-family:var(--cond);font-weight:700;font-size:12px;color:var(--pine);margin-top:2px}
+.lvCard .lvAcc{display:block;height:6px;border-radius:4px;background:var(--line-soft);overflow:hidden;margin-top:4px}.lvCard .lvAcc i{display:block;height:100%;background:var(--fairway);border-radius:4px}
 .lvCard em{position:absolute;top:-9px;right:10px;font-style:normal;font-family:var(--cond);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--sand-deep,#b89a52);color:#fff;padding:2px 8px;border-radius:999px}
 .estbig{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:4px 0 6px;}
 .estbig b{font-family:var(--serif,Georgia,serif);font-size:30px;font-weight:600;color:var(--pine,#1c3d2e);letter-spacing:-.01em;}
@@ -1651,7 +1653,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
  </div>
  <div id="lgToast" class="lgtoast" role="status" aria-live="polite"></div>
 </div></div>
-  <div id="view-profile" class="lgscope" style="display:none"><div style="max-width:620px;margin:0 auto;padding-top:4px"><h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px" data-i18n="Player profile">Player profile</h2><div id="bagEntry"></div><div class="pform" id="pform"></div><div id="acctBody"></div></div></div>
+  <div id="view-profile" class="lgscope" style="display:none"><div style="max-width:780px;margin:0 auto;padding-top:4px"><h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 14px" data-i18n="Player profile">Player profile</h2><div id="bagEntry"></div><div class="pform" id="pform"></div><div id="acctBody"></div></div></div>
   <div id="view-ledger" style="display:none"><div class="lgscope" style="max-width:1280px;margin:0 auto;padding-top:4px">
     <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 2px" data-i18n="Round ledger">Round ledger</h2>
     <p style="font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:0 0 14px" data-i18n="Every round — imported and logged here. Open any one for its scorecard and details.">Every round — imported and logged here. Open any one for its scorecard and details.</p>
@@ -3354,20 +3356,53 @@ var LOGLVL={order:['ess','ply','plus','ana'],
      [['Approaches and short game against your target','Approaches y juego corto respecto de tu objetivo'],O.map(function(k){var d=me.L[k].disp;return (d==='app'||d==='all')?Y:N;})],
      [['Missed putts: short or long, left or right','Putts errados: corto o largo, izquierda o derecha'],O.map(function(k){return me.L[k].disp==='all'?Y:N;})],
      [['Putt read: slope and break','Lectura del putt: pendiente y caída'],O.map(function(k){return me.L[k].read?Y:N;})],
-     [['Time per round','Tiempo por vuelta'],O.map(function(k){var m=me.mins(k);return '≈ '+(m%1?m.toFixed(1):m)+' min';})]];
+     [['Time per round','Tiempo por vuelta'],O.map(function(k){var m=me.mins(k);return '≈ '+(m%1?m.toFixed(1):m)+' min';})],
+     [['Accuracy of your data (up to)','Precisión de tus datos (hasta)'],O.map(function(k){return '<b class="accCell">'+accLvl(k)+'%</b>';})]];
    return '<div class="lvTblW"><table class="lvTbl"><colgroup><col class="c0"><col><col><col><col></colgroup><thead><tr><th></th>'+O.map(function(k){return '<th class="'+(k===cur?'cur ':'')+(k===rec?'rec':'')+'">'+(k===rec?'<small>'+(es?'recomendado':'recommended')+'</small>':'')+me.L[k].n[es]+'</th>';}).join('')+'</tr></thead><tbody>'+
      rows.map(function(r){return '<tr><td>'+r[0][es]+'</td>'+r[1].map(function(v,i){return '<td class="'+(O[i]===cur?'cur':'')+'">'+v+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table></div>';},
  html:function(){var es=window.__LANG==='es'?1:0,rec=this.mine(),cur=this.current(),me=this;
-   return '<div class="lvGrid">'+this.order.map(function(k){var l=me.L[k],m=me.mins(k);return '<button type="button" class="lvCard'+(cur===k?' on':'')+'" data-lvl="'+k+'">'+(rec===k?'<em>'+(es?'Recomendado':'Recommended')+'</em>':'')+'<b>'+l.n[es]+'</b><span>'+l.d[es]+'</span><small>≈ '+(m%1?m.toFixed(1):m)+' min</small></button>';}).join('')+'</div>'+
+   return '<div class="lvGrid">'+this.order.map(function(k){var l=me.L[k],m=me.mins(k);return '<button type="button" class="lvCard'+(cur===k?' on':'')+'" data-lvl="'+k+'">'+(rec===k?'<em>'+(es?'Recomendado':'Recommended')+'</em>':'')+'<b>'+l.n[es]+'</b><span>'+l.d[es]+'</span><small>≈ '+(m%1?m.toFixed(1):m)+' min · '+accLvl(k)+'% '+(es?'precisión':'accuracy')+'</small><i class="lvAcc"><i style="width:'+accLvl(k)+'%"></i></i></button>';}).join('')+'</div>'+
      '<details class="lvCmp" open><summary>'+(es?'Comparar los niveles':'Compare the levels')+'</summary>'+this.table(es,rec,cur)+'</details>'+
      (cur?'':'<p class="hisub" style="margin-top:8px">'+(es?'Ahora tenés una combinación propia. Tocá un nivel para volver a uno estándar.':'You are on a custom mix right now. Tap a level to go back to a standard one.')+'</p>');}};
 window.LOGLVL=LOGLVL;
+/* ===== Data accuracy: how complete and precise the logged data is. Two parts:
+   1) the ceiling the active settings allow (each column has a weight), 2) how fully the player actually fills it in (last 10 rounds).
+   Weights: shots 50 · flag position 5 · tee 5 · compliance 10 · club 10 · tee-shot dispersion 5 · approach dispersion 10 · putt dispersion 3 · putt read 2 = 100 ===== */
+var ACC_W={shots:50,pin:5,tee:5,comp:10,club:10,dtee:5,dapp:10,dputt:3,read:2};
+var ACC_N={shots:['lie and distance','lie y distancia'],pin:['flag position','posición de bandera'],tee:['tee','tee'],comp:['compliance','cumplimiento'],club:['club','palo'],dtee:['tee-shot misses','fallos de salida'],dapp:['approach dispersion','dispersión de approaches'],dputt:['missed putts','putts errados'],read:['putt read','lectura del putt']};
+function accOn(P){P=P||PROF;var dm=P.trackDisp?(P.dispMode||'all'):'off';return {shots:1,pin:1,tee:1,comp:P.trackComp?1:0,club:P.trackClubs?1:0,dtee:dm!=='off'?1:0,dapp:(dm==='app'||dm==='all')?1:0,dputt:dm==='all'?1:0,read:P.trackRead?1:0};}
+function accCeil(P){var o=accOn(P),t=0;for(var k in ACC_W)t+=ACC_W[k]*o[k];return t;}
+function accLvl(k){var l=LOGLVL.L[k];if(!l)return 0;return accCeil({trackComp:true,trackClubs:l.clubs,trackDisp:l.disp!=='off',dispMode:l.disp,trackRead:l.read});}
+/* fill rate of each column over the last 10 logged rounds (null when there is nothing to measure) */
+function accUsage(){var rs=[];try{rs=(window.getLoggedRounds?window.getLoggedRounds():[]).filter(function(r){return r&&r.holes&&r.holes.length;}).slice(-10);}catch(e){}
+ if(!rs.length)return null;var C={};Object.keys(ACC_W).forEach(function(k){C[k]={n:0,y:0};});var add=function(k,v){C[k].n++;C[k].y+=v;};
+ rs.forEach(function(r){add('tee',r.tee?1:0);
+   r.holes.forEach(function(h){var S=(h.shots||[]).filter(function(s){return s&&s.conf!==false;});if(!S.length)return;
+     add('shots',1);add('pin',(h.pinSet||(h.pin&&h.pin!=='M'))?1:0);
+     S.forEach(function(s,i){var nx=S[i+1];
+       add('comp',(s.comp===true||s.comp===false)?1:0);
+       add('club',s.clubSet?1:(s.club?0.5:0));
+       if(i===0&&s.lie==='tee'&&+h.par>3){if(nx&&nx.lie!=='fw'&&nx.lie!=='putt')add('dtee',s.disp?1:0);}
+       else if(s.lie!=='putt'&&s.lie!=='tee')add('dapp',s.disp?1:0);
+       if(s.lie==='putt'&&nx&&nx.lie==='putt')add('dputt',s.disp?1:0);
+       if(s.lie==='putt'&&+s.dist>3)add('read',s.read?1:0);});});});
+ var o={rounds:rs.length};Object.keys(C).forEach(function(k){o[k]=C[k].n?C[k].y/C[k].n:null;});return o;}
+function accScore(P){var on=accOn(P),u=accUsage(),ceil=accCeil(P),act=null,gap=null;
+ if(u){act=0;var worst=0;Object.keys(ACC_W).forEach(function(k){if(!on[k])return;var r=u[k]==null?1:u[k];act+=ACC_W[k]*r;var lost=ACC_W[k]*(1-r);if(lost>worst){worst=lost;gap=k;}});if(worst<1)gap=null;}
+ return {ceil:ceil,act:act==null?null:Math.round(act),gap:gap,rounds:u?u.rounds:0};}
+var ACC_PREV=null;
+function accHTML(){var es=window.__LANG==='es',a=accScore(),d=(ACC_PREV!=null&&ACC_PREV!==a.ceil)?a.ceil-ACC_PREV:0;ACC_PREV=a.ceil;
+ var chip=d?'<em class="accDelta '+(d>0?'up':'dn')+'">'+(d>0?'+':'')+d+'%</em>':'';
+ var bar='<div class="accBar"><i class="accCeil" style="width:'+a.ceil+'%"></i>'+(a.act!=null?'<i class="accAct" style="width:'+a.act+'%"></i>':'')+'</div>';
+ var line=a.act!=null?(es?'Tus últimas '+a.rounds+' vueltas: <b>'+a.act+'%</b>'+(a.gap?' · lo que más te resta: <b>'+ACC_N[a.gap][1]+'</b>':' · ¡completás todo!'):'Your last '+a.rounds+' rounds: <b>'+a.act+'%</b>'+(a.gap?' · what costs you most: <b>'+ACC_N[a.gap][0]+'</b>':' · you fill everything in')):(es?'Todavía no hay vueltas cargadas para medir cuánto completás.':'No logged rounds yet to measure how fully you fill it in.');
+ return '<div class="accBox"><div class="accTop"><span>'+(es?'Precisión de tus datos':'Accuracy of your data')+'</span><b>'+(es?'hasta ':'up to ')+a.ceil+'%</b>'+chip+'</div>'+bar+'<div class="accLine">'+line+'</div></div>';}
+window.ACC={lvl:accLvl,ceil:accCeil,score:accScore};
 /* rough time to log 18 holes with the current logging options (estimates, not measurements) */
 function logEstHTML(){var es=window.__LANG==='es',m=5+(PROF.predict===false?3:0)+(PROF.trackClubs?1:0)+(PROF.trackDisp?((PROF.dispMode==='tee')?0.5:(PROF.dispMode==='app')?1.2:1.5):0)+(PROF.trackRead?1:0)+(PROF.trackComp?2:0);
  var parts=[(es?'base 5':'base 5')];if(PROF.predict===false)parts.push(es?'sin predicción +3':'no prediction +3');if(PROF.trackClubs)parts.push(es?'palo +1':'club +1');if(PROF.trackDisp){var dm=(PROF.dispMode==='tee')?'0.5':(PROF.dispMode==='app')?'1.2':'1.5';parts.push((es?'dispersión +':'dispersion +')+dm);}if(PROF.trackRead)parts.push(es?'lectura +1':'read +1');if(PROF.trackComp)parts.push(es?'cumplimiento +2':'compliance +2');
  return '<div class="estbig"><b>≈ '+(m%1?m.toFixed(1):m)+' min</b><span>'+parts.join(' · ')+'</span></div>';}
-document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('#pf_level [data-lvl]'):null;if(!b)return;LOGLVL.apply(b.getAttribute('data-lvl'));try{renderProf();}catch(_){}try{render();}catch(_){}try{if(window.PGRP&&window.PGRP.refresh)window.PGRP.refresh();}catch(_){}});
-document.addEventListener('change',function(e){var t=e.target;if(t&&/^pf_(predict|clubs|disp|read|comp)$/.test(t.id||'')){var el=document.getElementById('pf_logest');if(el)el.innerHTML=logEstHTML();var lv=document.getElementById('pf_level');if(lv)lv.innerHTML=LOGLVL.html();}});
+document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('#pf_level [data-lvl]'):null;if(!b)return;var _ap=accCeil();LOGLVL.apply(b.getAttribute('data-lvl'));ACC_PREV=_ap;try{renderProf();}catch(_){}try{render();}catch(_){}try{if(window.PGRP&&window.PGRP.refresh)window.PGRP.refresh();}catch(_){}});
+document.addEventListener('change',function(e){var t=e.target;if(t&&/^pf_(predict|clubs|disp|read|comp)$/.test(t.id||'')){var el=document.getElementById('pf_logest');if(el)el.innerHTML=logEstHTML();var ac=document.getElementById('pf_acc');if(ac)ac.innerHTML=accHTML();var lv=document.getElementById('pf_level');if(lv)lv.innerHTML=LOGLVL.html();}});
 /* ===== Printable shot-by-shot scorecard: generic for any course (hole numbers only), shot rows sized by handicap,
    second line per shot only for the columns the player logs (club · dispersion · compliance) ===== */
 function cardRows(hi){if(hi==null||isNaN(hi))return 8;return hi<=5?6:hi<=12?7:hi<=20?8:hi<=28?9:10;}
@@ -3933,7 +3968,7 @@ function renderSetup(){
    var ds0=document.getElementById('demoSlot');if(ds0)ds0.innerHTML='';
    renderSel();return;
  }
- if(!DEMO_ON){var dc=document.getElementById('demoSlot');if(!dc){var nf0=document.getElementById('newRoundForm');if(nf0){dc=document.createElement('div');dc.id='demoSlot';nf0.parentNode.insertBefore(dc,nf0);}}if(dc){dc.innerHTML=demoCardHTML();var dob=document.getElementById('demoOpen');if(dob)dob.onclick=function(){lgEntered=true;lgDemo();};}}
+ if(!DEMO_ON){var dc=document.getElementById('demoSlot');if(!dc){var nf0=document.getElementById('newRoundForm');if(nf0){dc=document.createElement('div');dc.id='demoSlot';nf0.parentNode.insertBefore(dc,nf0);}}if(dc){dc.innerHTML=demoCardHTML()+practiceCardHTML();var dob=document.getElementById('demoOpen');if(dob)dob.onclick=function(){lgEntered=true;lgDemo();};var pob=document.getElementById('practiceOpen');if(pob)pob.onclick=function(){if(window.TOUR&&window.TOUR.practice)window.TOUR.practice();};}}
  if(rc)rc.style.display='none';if(nf)nf.style.display='';
  var ti=document.getElementById('lgTitle');if(ti)ti.textContent=editRoundId?t('Edit round'):t('Start a round');var mt0=document.getElementById('meta');if(mt0)mt0.style.display='none';
  var sc=document.getElementById('selScore');if(sc&&document.activeElement!==sc)sc.value=R.score||'';
@@ -4004,7 +4039,7 @@ function renderHoleBar(hi){
    '<div class="hbR"><span class="sgmini"><span class="ydchip">'+Y2U(h.yd)+' '+PROF.units+'</span> · <span class="'+(sg.tot<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg.tot)+'</span>'+(flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':'')+'</span></div>'+
    '<div class="holeadj">'+teeSel+pinSeg+'</div>';
  document.querySelectorAll('[data-hatee][data-tk]').forEach(function(b){b.onclick=function(){h.teeOv=b.getAttribute('data-tk');recomputeHoleYd(hi);render();};});
- document.querySelectorAll('[data-hpin]').forEach(function(b){b.onclick=function(){var a=b.dataset.hpin.split(':');h.pin=a[1];recomputeHoleYd(hi);render();};});
+ document.querySelectorAll('[data-hpin]').forEach(function(b){b.onclick=function(){var a=b.dataset.hpin.split(':');h.pin=a[1];h.pinSet=true;recomputeHoleYd(hi);render();};});
 }
 function recomputeHoleYd(hi){var h=R.holes[hi];var base=stdYd(R.course,h.teeOv||R.markers||R.tee,hi);var off=h.pin==='F'?-10:h.pin==='B'?10:0;h.yd=Math.max(20,base+off);if(h.shots&&h.shots[0]&&h.shots[0].lie==='tee')h.shots[0].dist=h.yd;}
 /* ===== club per shot: predicted from My bag distances, your past rounds on this hole, and the shot type ===== */
@@ -4421,6 +4456,7 @@ ${PROF.gender==='m'?`  <label class="chkrow" style="flex-direction:row;align-ite
   <div class="hiblock logest">
     <div class="hirow"><span>${window.__LANG==='es'?'Tiempo estimado por vuelta':'Estimated time per round'}</span></div>
     <div id="pf_logest">${logEstHTML()}</div>
+    <div id="pf_acc">${accHTML()}</div>
     <div class="hisub">${window.__LANG==='es'?'Estimación para 18 hoyos cargados después de jugar. Cada opción que activás suma tiempo: elegí lo que de verdad vas a usar.':'An estimate for 18 holes logged after you play. Every option you turn on adds time: pick what you will really use.'}</div>
   </div>
   <div class="hiblock">
@@ -4550,7 +4586,7 @@ function lgLoad(o){
  var c=COURSES[o.course]||COURSES.CGC, t=(c.tees[o.tee]||c.tees[Object.keys(c.tees)[0]]);
  R={course:(COURSES[o.course]?o.course:R.course),tee:(c.tees[o.tee]?o.tee:R.tee),courseName:c.name,cr:t.cr,slope:t.slope,date:o.date||new Date().toISOString().slice(0,10),
    score:o.score||'',chcp:o.chcp||'',notes:o.notes||'',lesson:o.lesson||'',tourn:!!o.tourn,noHcp:!!o.noHcp,phase:'play',cur:0,holesMode:(o.holes.length===9?'front':'18'),hStart:0,hEnd:o.holes.length,
-   holes:o.holes.map(function(h,i){return {par:h.par,yd:h.yd||((h.shots&&h.shots[0])?h.shots[0].dist:0),hcp:(c.hcp?c.hcp[i]:0),pin:h.pin||'M',teeOv:h.teeOv||null,card:h.card||undefined,done:true,shots:(h.shots||[]).map(function(s){return {lie:s.lie,dist:s.dist,pen:s.pen||0,conf:true,club:s.club,clubSet:s.clubSet,comp:s.comp,disp:s.disp,dispYd:s.dispYd,read:s.read};})};})};
+   holes:o.holes.map(function(h,i){return {par:h.par,yd:h.yd||((h.shots&&h.shots[0])?h.shots[0].dist:0),hcp:(c.hcp?c.hcp[i]:0),pin:h.pin||'M',pinSet:h.pinSet||undefined,teeOv:h.teeOv||null,card:h.card||undefined,done:true,shots:(h.shots||[]).map(function(s){return {lie:s.lie,dist:s.dist,pen:s.pen||0,conf:true,club:s.club,clubSet:s.clubSet,comp:s.comp,disp:s.disp,dispYd:s.dispYd,read:s.read};})};})};
  lgEntered=true;save();render();renderSel();
 }
 function lgPause(){if(R.phase==='play'){var act=R.holes.slice(R.hStart,R.hEnd),allDone=act.length>0&&act.every(function(x){return x.done;});if(!allDone&&lgEntered){lgEntered=false;render();}}}
@@ -4655,6 +4691,8 @@ function demoBanner(){var v=document.getElementById('view-log');if(!v)return;var
  if(!b){b=document.createElement('div');b.id='demoBar';v.insertBefore(b,v.firstChild);}
  b.innerHTML='<span><b>'+(es?'VUELTA DE DEMOSTRACIÓN':'DEMO ROUND')+'</b> · '+(es?'recorrela hoyo por hoyo — nada se guarda.':'explore it hole by hole — nothing is saved.')+'</span><button type="button" id="demoExit">'+(es?'Salir de la demo':'Exit demo')+'</button>';
  document.getElementById('demoExit').onclick=lgDemoEnd;}
+function practiceCardHTML(){var es=window.__LANG==='es';
+ return '<div class="demoCard practiceCard"><div><b>'+(es?'Practicá un hoyo':'Practise a hole')+'</b> '+(es?'Cargá un hoyo de ejemplo en los cuatro niveles de detalle y mirá cómo sube la precisión de tus datos. Nada se guarda.':'Log a sample hole at the four detail levels and watch the accuracy of your data grow. Nothing is saved.')+'</div><button type="button" id="practiceOpen">'+(es?'Practicar':'Practise')+'</button></div>';}
 function demoCardHTML(){if(!demoAvailable())return '';var es=window.__LANG==='es';
  return '<div class="demoCard"><div><b>'+(es?'¿Primera vez?':'New here?')+'</b> '+(es?'Mirá una vuelta completa cargada tiro por tiro — 18 hoyos, en el mismo formato que vas a usar.':'See a complete round logged shot by shot — 18 holes, in the same format you will use.')+'</div><button type="button" class="pf_btn" id="demoOpen">'+(es?'Abrir la vuelta de demostración':'Open the demo round')+' →</button></div>';}
 /* shared with the other modules (setup wizard, Garmin import, course requests, profile cards) */
@@ -5017,6 +5055,26 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
 .tourcard .pmsg.ok{color:#1f7a4d;}.tourcard .pmsg.bad{color:#c2502e;}
 .tourcard .pfill{background:none;border:none;color:#8a6d2c;text-decoration:underline;cursor:pointer;font-size:12.5px;font-family:var(--cond,sans-serif);}
 .tourrow .tnext:disabled{opacity:.4;cursor:not-allowed;}
+.accBox{border:1px solid var(--line);border-radius:12px;padding:11px 13px;background:var(--paper);}
+.accTop{display:flex;align-items:baseline;gap:8px;font-family:var(--cond);}
+.accTop span{flex:1;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
+.accTop b{font-family:var(--serif);font-size:22px;color:var(--pine);}
+.accDelta{font-style:normal;font-weight:700;font-size:13px;padding:2px 8px;border-radius:999px;animation:accPop 1.6s ease;}
+.accDelta.up{background:#e3f1e6;color:#1f7a4d;}.accDelta.dn{background:#f8e4df;color:#a8452c;}
+@keyframes accPop{0%{transform:scale(.6);opacity:0}25%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
+.accBar{position:relative;height:10px;border-radius:6px;background:var(--line-soft);margin:7px 0 6px;overflow:hidden;}
+.accBar i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;transition:width .7s cubic-bezier(.2,.7,.2,1);}
+.accBar .accCeil{background:rgba(31,122,77,.25);}.accBar .accAct{background:var(--fairway);}
+.accLine{font-size:12.5px;color:var(--ink-soft);font-family:var(--cond);}
+.accCell{color:var(--pine);}
+.practiceCard{margin-top:10px;}
+.tourcard .pacc{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-family:var(--cond,sans-serif);font-size:12px;font-weight:700;color:#5c6357;}
+.tourcard .pacc span{text-transform:uppercase;letter-spacing:.06em;font-size:10.5px;white-space:nowrap;}
+.tourcard .paccBar{flex:1;height:9px;border-radius:6px;background:#eee9da;overflow:hidden;}
+.tourcard .paccBar i{display:block;height:100%;background:linear-gradient(90deg,#2e8650,#1f7a4d);border-radius:6px;transition:width 1.1s cubic-bezier(.2,.7,.2,1);}
+.tourcard .pacc b{font-family:var(--serif,Georgia);font-size:17px;color:#1c3d2e;}
+.tourcard .pacc em{font-style:normal;color:#1f7a4d;background:#e3f1e6;border-radius:999px;padding:1px 7px;}
+
 
 .tourrow .tback{background:transparent;color:#8a8471;}
 .crLink{display:inline-block;margin-top:6px;font-size:12px;color:var(--fairway);font-weight:700;text-decoration:none}.crLink:hover{text-decoration:underline}
@@ -5078,17 +5136,18 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
  var steps=[
   {center:true,en:{h:"Golfimbul in two minutes",p:"Three things: <b>log</b> every shot in five minutes, <b>read</b> what is real and what is noise, and <b>improve</b> where the strokes are. We'll go through the app left to right, from your settings to your statistics, and finish with you logging one hole yourself. Nothing here is saved."},es:{h:"Golfimbul en dos minutos",p:"Tres cosas: <b>cargar</b> cada tiro en cinco minutos, <b>leer</b> qué es real y qué es ruido, y <b>mejorar</b> donde están los golpes. Recorremos la app de izquierda a derecha, de tu configuración a tus estadísticas, y terminamos con vos cargando un hoyo. Nada de esto se guarda."}},
   {pre:go('profile'),sel:'#tabnav',en:{h:"The menu, left to right",p:"<b>Profile</b>: your settings, your bag and your plan. <b>Log a round</b>: shot by shot, after you play. <b>Round ledger</b>: every round you have played. <b>Statistics</b>: what is real and what is noise. <b>Friends</b>: friends, your coach and your team. The <b>plane</b> replays this tour."},es:{h:"El menú, de izquierda a derecha",p:"<b>Perfil</b>: tu configuración, tu bolsa y tu plan. <b>Cargar vuelta</b>: tiro por tiro, después de jugar. <b>Historial</b>: todas tus vueltas. <b>Estadísticas</b>: qué es real y qué es ruido. <b>Amigos</b>: amigos, tu profesor y tu equipo. El <b>avión</b> repite este recorrido."}},
-  {pre:function(){go('profile')();if(window.PGRP&&window.PGRP.open)window.PGRP.open('course');},sel:'.pgrp[data-k="course"]',en:{h:"Settings: course, tees and handicap",p:"Start here: your home course and tees, so every round opens ready, and your handicap index, which sets your net par and the detail level we suggest. Your plan, privacy and data live in this same tab."},es:{h:"Configuración: cancha, tees y hándicap",p:"Empezá acá: tu cancha y tees habituales, así cada vuelta se abre lista, y tu hándicap index, que define tu par neto y el nivel de detalle que te sugerimos. Tu plan, privacidad y datos están en esta misma pestaña."}},
-  {pre:function(){go('profile')();},sel:'.pgrp[data-k="bag"]',en:{h:"Settings: my bag",p:"Your clubs, with how far each one really goes and where it misses. Import them from Garmin in a minute or enter them by hand: the logger uses them to predict your club on every shot."},es:{h:"Configuración: mi bolsa",p:"Tus palos, con cuánto va cada uno de verdad y hacia dónde falla. Importalos de Garmin en un minuto o cargalos a mano: el logger los usa para predecir el palo de cada tiro."}},
-  {pre:function(){go('profile')();if(window.PGRP&&window.PGRP.open)window.PGRP.open('logging');},sel:'#pf_level',en:{h:"Settings: how much you log",p:"Four detail levels: <b>Essentials</b>, <b>Player</b>, <b>Player+</b> and <b>Analyst</b>. Each adds columns and a minute or two per round; we suggest one from your handicap. You will try all four on a practice hole at the end of this tour."},es:{h:"Configuración: cuánto cargás",p:"Cuatro niveles de detalle: <b>Esencial</b>, <b>Jugador</b>, <b>Jugador+</b> y <b>Analista</b>. Cada uno suma columnas y un minuto o dos por vuelta; te sugerimos uno según tu hándicap. Al final de este recorrido vas a probar los cuatro en un hoyo de práctica."}},
-  {pre:function(){go('log')();if(window.LGR&&window.LGR.demo)window.LGR.demo();},sel:'#scorecardView .scWrap',en:{h:"A complete round",p:"This is a real round, logged shot by shot: score per hole (birdies circled, bogeys boxed), strokes gained per hole and the Tiger 5 mistakes. Every number here comes from the shots — you never type a total."},es:{h:"Una vuelta completa",p:"Esta es una vuelta real, cargada tiro por tiro: score por hoyo (birdies en círculo, bogeys en cuadrado), strokes gained por hoyo y los errores del Tiger 5. Cada número sale de los tiros — nunca escribís un total."}},
+  {pre:function(){go('profile')();if(window.PGRP){try{window.PGRP.back();}catch(e){}window.PGRP.open('course');}},sel:'.pgrp[data-k="course"]',en:{h:"Settings: course, tees and handicap",p:"Start here: your home course and tees, so every round opens ready, and your handicap index, which sets your net par and the detail level we suggest. Your plan, privacy and data live in this same tab."},es:{h:"Configuración: cancha, tees y hándicap",p:"Empezá acá: tu cancha y tees habituales, así cada vuelta se abre lista, y tu hándicap index, que define tu par neto y el nivel de detalle que te sugerimos. Tu plan, privacidad y datos están en esta misma pestaña."}},
+  {pre:go('bag'),sel:'#view-bag',en:{h:"Settings: my bag",p:"Your clubs, with how far each one really goes and where it misses. Import them from Garmin in a minute or enter them by hand: the logger uses them to predict your club on every shot."},es:{h:"Configuración: mi bolsa",p:"Tus palos, con cuánto va cada uno de verdad y hacia dónde falla. Importalos de Garmin en un minuto o cargalos a mano: el logger los usa para predecir el palo de cada tiro."}},
+  {pre:function(){go('profile')();if(window.PGRP){try{window.PGRP.back();}catch(e){}window.PGRP.open('logging');}},sel:'#pf_level',en:{h:"Settings: how much you log",p:"Four detail levels: <b>Essentials</b>, <b>Player</b>, <b>Player+</b> and <b>Analyst</b>. Each adds columns, a minute or two per round, and <b>accuracy</b>: from 70% to 100% of what your data can say. Every switch shows its effect. You will try all four on a practice hole at the end of this tour, or any time from <b>Log a round → Practise a hole</b>."},es:{h:"Configuración: cuánto cargás",p:"Cuatro niveles de detalle: <b>Esencial</b>, <b>Jugador</b>, <b>Jugador+</b> y <b>Analista</b>. Cada uno suma columnas, un minuto o dos por vuelta, y <b>precisión</b>: del 70% al 100% de lo que tus datos pueden decir. Cada opción muestra su efecto. Vas a probar los cuatro en un hoyo de práctica al final de este recorrido, o cuando quieras desde <b>Cargar vuelta → Practicar un hoyo</b>."}},
+  {pre:function(){try{if(window.LGR&&window.LGR.demoOn&&window.LGR.demoOn())window.LGR.demoEnd();}catch(e){}go('log')();},sel:'#newRoundForm',en:{h:"Log a round: the round details",p:"Every round starts here: the date, the holes, the course and tee, your <b>gross score</b> and your <b>playing handicap</b>, and two checks: tournament round, and whether it counts for your handicap. Then <b>Your par</b> shows the net par you play to on every hole."},es:{h:"Cargar vuelta: los datos de la vuelta",p:"Cada vuelta empieza acá: la fecha, los hoyos, la cancha y el tee, tu <b>score gross</b> y tu <b>hándicap de juego</b>, y dos checks: vuelta de torneo, y si cuenta para tu hándicap. Después <b>Tu par</b> te muestra el par neto que jugás en cada hoyo."}},
   {pre:function(){if(window.LGR&&window.LGR.demo)window.LGR.demo(0);},sel:'#holeacts',en:{h:"Hole by hole",p:"<b>Next hole →</b> moves on; the scorecard builds itself. Use it now to browse the demo round — or the hole numbers above."},es:{h:"Hoyo por hoyo",p:"<b>Siguiente hoyo →</b> avanza; la tarjeta se arma sola. Usalo ahora para recorrer la vuelta de demostración — o los números de hoyo de arriba."}},
-  {pre:function(){if(window.LGR&&window.LGR.demo)window.LGR.demo();},sel:'#scLesson',en:{h:"One lesson per round",p:"Every round ends with <b>what you learnt</b> — required to save. Over a season these lessons become your own playbook."},es:{h:"Un aprendizaje por vuelta",p:"Cada vuelta termina con <b>qué aprendiste</b> — obligatorio para guardar. En una temporada, esos aprendizajes se vuelven tu propio manual."}},
   {pre:go('ledger'),sel:'#view-ledger',en:{h:"Round ledger",p:"Every round you've played, with its scorecard, notes and lesson. Open any round to review it, or share it as an image."},es:{h:"Historial de vueltas",p:"Todas tus vueltas, con su tarjeta, notas y aprendizaje. Abrí cualquiera para revisarla, o compartila como imagen."}},
+  {pre:function(){go('log')();if(window.LGR&&window.LGR.demo)window.LGR.demo();},sel:'#scorecardView .scWrap',en:{h:"Open a round: its scorecard",p:"Click any round in the ledger and its scorecard opens, like this one, logged shot by shot: score per hole (birdies circled, bogeys boxed), strokes gained per hole and the Tiger 5 mistakes. Every number here comes from the shots — you never type a total."},es:{h:"Abrí una vuelta: su tarjeta",p:"Hacé clic en cualquier vuelta del historial y se abre su tarjeta, como esta, cargada tiro por tiro: score por hoyo (birdies en círculo, bogeys en cuadrado), strokes gained por hoyo y los errores del Tiger 5. Cada número sale de los tiros — nunca escribís un total."}},
+  {pre:function(){if(window.LGR&&window.LGR.demo)window.LGR.demo();},sel:'#scLesson',en:{h:"One lesson per round",p:"Every round ends with <b>what you learnt</b> — required to save. Over a season these lessons become your own playbook."},es:{h:"Un aprendizaje por vuelta",p:"Cada vuelta termina con <b>qué aprendiste</b> — obligatorio para guardar. En una temporada, esos aprendizajes se vuelven tu propio manual."}},
   {pre:go('stats'),sel:'#view-stats',en:{h:"Statistics: the truth",p:"Control charts for score, strokes gained and Tiger 5. Rounds inside your limits are <b>noise</b> — don't change anything because of them. A point outside the limits, or 8 in a row on one side, is a <b>real change</b>. Your priorities rank where the strokes are leaking."},es:{h:"Estadísticas: la verdad",p:"Gráficos de control de score, strokes gained y Tiger 5. Las vueltas dentro de tus límites son <b>ruido</b> — no cambies nada por ellas. Un punto fuera de los límites, u 8 seguidas del mismo lado, es un <b>cambio real</b>. Tus prioridades ordenan por dónde se escapan los golpes."}},
   {pre:go('stats'),sel:'#sec_dp',en:{h:"Dispersion and process",p:"What you mark on each shot comes back here: where your tee shots miss, where your approaches finish <b>against your target</b>, your putting by distance, by slope and break, and whether following your process pays. It needs your marks to fill up."},es:{h:"Dispersión y proceso",p:"Lo que marcás en cada tiro vuelve acá: hacia dónde fallás las salidas, dónde terminan tus approaches <b>respecto de tu objetivo</b>, tu putt por distancia, por pendiente y caída, y si cumplir tu proceso rinde. Necesita tus marcas para llenarse."}},
   {pre:go('friends'),sel:'#view-friends',en:{h:"Friends, coach and team",p:"Follow friends and compare averages; they only see a summary of each round. Link your professor so they see everything, or build a team of four for 25% off."},es:{h:"Amigos, profesor y equipo",p:"Seguí a tus amigos y compará promedios; solo ven un resumen de cada vuelta. Vinculá a tu profesor para que vea todo, o armá un equipo de cuatro con 25% de descuento."}},
-  {center:true,pre:go('log'),en:{h:"Now you: log a hole",p:"Time to try it. You will log one hole in the real logging screen, four times, once per detail level: Essentials, Player, Player+ and Analyst. Each step adds the columns of that level."},es:{h:"Ahora vos: cargá un hoyo",p:"Hora de probarlo. Vas a cargar un hoyo en la pantalla real de carga, cuatro veces, una por nivel de detalle: Esencial, Jugador, Jugador+ y Analista. Cada paso suma las columnas de ese nivel."}},
+  {pintro:true,center:true,pre:go('log'),en:{h:"Now you: log a hole",p:"Time to try it. You will log one hole in the real logging screen, four times, once per detail level: Essentials, Player, Player+ and Analyst. Each step adds the columns of that level."},es:{h:"Ahora vos: cargá un hoyo",p:"Hora de probarlo. Vas a cargar un hoyo en la pantalla real de carga, cuatro veces, una por nivel de detalle: Esencial, Jugador, Jugador+ y Analista. Cada paso suma las columnas de ese nivel."}},
   {practice:'ess',en:{h:"Essentials level: every shot, plus compliance",p:"This is the real logging screen. Read what happened and log it: type each distance <b>in the column of where the shot was played from</b> (yards, feet on the green), press <span class='tk'>Enter</span> when the prediction is right, and tap <b>Compl.</b> on every shot. This is the Essentials level."},es:{h:"Nivel Esencial: cada tiro, más cumplimiento",p:"Esta es la pantalla real de carga. Leé qué pasó y cargalo: escribí cada distancia <b>en la columna de desde dónde se jugó el tiro</b> (yardas, pies en el green), apretá <span class='tk'>Enter</span> cuando la predicción esté bien, y tocá <b>Cumpl.</b> en cada tiro. Este es el nivel Esencial."}},
   {practice:'ply',en:{h:"Player level: club and tee misses",p:"Same hole, one level up. The <b>Club</b> column appears (predicted from your bag: change it if needed), and <b>Disp.</b> asks which side a tee shot missed the fairway."},es:{h:"Nivel Jugador: palo y salidas",p:"El mismo hoyo, un nivel más. Aparece la columna <b>Palo</b> (predicha según tu bolsa: cambiala si hace falta), y <b>Disp.</b> pregunta hacia qué lado una salida falló el fairway."}},
   {practice:'plus',en:{h:"Player+ level: every approach",p:"Now <b>Disp.</b> also asks where each approach and short shot finished <b>against your target</b>, not the flag: L / R, S short, LO long, or both (SR = short right); ✓ on target."},es:{h:"Nivel Jugador+: cada approach",p:"Ahora <b>Disp.</b> también pregunta dónde terminó cada approach y tiro corto <b>respecto de tu objetivo</b>, no de la bandera: L / R, S corto, LO largo, o las dos (SR = corto a la derecha); ✓ en el objetivo."}},
@@ -5132,17 +5191,21 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
  function pStory(level){var es=ES(),i=PLV.indexOf(level),out='';
    PLV.slice(0,i+1).forEach(function(lv,j){out+=PSTORY[lv].map(function(x){return '<li'+(j<i?' class="pold"':'')+'>'+(es?x[1]:x[0])+'</li>';}).join('');});
    return '<ol class="pstory">'+out+'</ol>';}
+ function pAcc(level){var es=ES(),i=PLV.indexOf(level),A=window.ACC,v=A?A.lvl(level):0,p=(A&&i>0)?A.lvl(PLV[i-1]):0;
+   return '<div class="pacc"><span>'+(es?'Precisión de tus datos':'Accuracy of your data')+'</span><div class="paccBar"><i style="width:'+p+'%" data-to="'+v+'"></i></div><b>'+v+'%</b>'+(i>0?'<em>+'+(v-p)+'%</em>':'')+'</div>';}
  var PTIMER=null;
  function pStop(){if(PTIMER){clearInterval(PTIMER);PTIMER=null;}}
  function pWire(card,level){var nx=card.querySelector('.tnext'),msg=card.querySelector('.pmsg');pStop();
    var tick=function(){var r=pCheck(level);nx.disabled=!r.ok;msg.textContent=r.msg;msg.className='pmsg'+(r.ok?' ok':'');};
    tick();PTIMER=setInterval(tick,450);
+   var bi=card.querySelector('.paccBar i');if(bi)setTimeout(function(){bi.style.width=bi.getAttribute('data-to')+'%';},80);
    card.querySelector('.pfill').onclick=function(){if(window.LGR&&window.LGR.practiceFill)window.LGR.practiceFill(level);tick();};}
- var idx=0,els=[];
+ var idx=0,els=[],PMODE=false;
  function clear(){els.forEach(function(e){if(e&&e.parentNode)e.parentNode.removeChild(e);});els=[];}
- function end(save){clear();pStop();try{if(window.LGR&&window.LGR.practiceOn&&window.LGR.practiceOn())window.LGR.practiceEnd();}catch(e){}try{if(window.showView)window.showView('log');}catch(e){}try{if(window.LGR&&window.LGR.demoEnd)window.LGR.demoEnd();}catch(e){}if(save&&window.LGR&&window.LGR.setTourDone)window.LGR.setTourDone();}
+ function end(save){if(PMODE){PMODE=false;save=false;}clear();pStop();try{if(window.LGR&&window.LGR.practiceOn&&window.LGR.practiceOn())window.LGR.practiceEnd();}catch(e){}try{if(window.showView)window.showView('log');}catch(e){}try{if(window.LGR&&window.LGR.demoEnd)window.LGR.demoEnd();}catch(e){}if(save&&window.LGR&&window.LGR.setTourDone)window.LGR.setTourDone();}
  function show(){
    clear();pStop();var st=steps[idx];if(!st)return end(true);
+   if(PMODE&&!st.practice&&!st.pintro)return end(false);
    if(st.practice){try{go('log')();if(window.LGR&&window.LGR.practice)window.LGR.practice(st.practice);}catch(e){}}
    else{try{if(window.LGR&&window.LGR.practiceOn&&window.LGR.practiceOn())window.LGR.practiceEnd();}catch(e){}}
    if(st.pre){try{st.pre();}catch(e){}}
@@ -5151,9 +5214,9 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
      var mask=document.createElement('div');mask.className='tourmask';els.push(mask);if(!st.practice)document.body.appendChild(mask);
      var card=document.createElement('div');card.className='tourcard';els.push(card);
      var skip=document.createElement('button');skip.className='tourskip';skip.textContent=ES()?'Saltar':'Skip';skip.onclick=function(){end(true);};els.push(skip);document.body.appendChild(skip);
-     var last=(idx===steps.length-1);
+     var last=(idx===steps.length-1)||(PMODE&&!(steps[idx+1]&&steps[idx+1].practice));
      if(st.practice)card.classList.add('tpw');
-     card.innerHTML='<h4>'+txt.h+'</h4><p>'+txt.p+'</p>'+(st.practice?pStory(st.practice)+'<div class="pfoot"><span class="pmsg"></span><button type="button" class="pfill">'+(ES()?'Completalo por mí':'Fill it for me')+'</button></div>':'')+'<div class="tourrow"><span class="tstep">'+(idx+1)+' / '+steps.length+'</span><span class="tbtns">'+(idx>0?'<button class="tback">'+(ES()?'Atrás':'Back')+'</button>':'')+'<button class="tnext">'+(last?(ES()?'Listo':'Done'):(ES()?'Siguiente':'Next'))+'</button></span></div>';
+     card.innerHTML='<h4>'+txt.h+'</h4><p>'+txt.p+'</p>'+(st.practice?pAcc(st.practice)+pStory(st.practice)+'<div class="pfoot"><span class="pmsg"></span><button type="button" class="pfill">'+(ES()?'Completalo por mí':'Fill it for me')+'</button></div>':'')+'<div class="tourrow"><span class="tstep">'+(PMODE?(function(){var n=0,me=0;steps.forEach(function(x,i){if(x.practice||x.pintro){n++;if(i<=idx)me++;}});return me+' / '+n;})():(idx+1)+' / '+steps.length)+'</span><span class="tbtns">'+(idx>0?'<button class="tback">'+(ES()?'Atrás':'Back')+'</button>':'')+'<button class="tnext">'+(last?(ES()?'Listo':'Done'):(ES()?'Siguiente':'Next'))+'</button></span></div>';
      document.body.appendChild(card);
      var tgt=st.sel?q(st.sel):null;
      if(st.practice){card.style.right='14px';card.style.bottom='14px';card.style.left='auto';card.style.top='auto';}
@@ -5167,11 +5230,11 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
        card.style.left='50%';card.style.top='50%';card.style.transform='translate(-50%,-50%)';
      }
      card.querySelector('.tnext').onclick=function(){if(last){end(true);}else{idx++;show();}};
-     var bk=card.querySelector('.tback');if(bk)bk.onclick=function(){idx=Math.max(0,idx-1);show();};
+     var bk=card.querySelector('.tback');if(bk)bk.onclick=function(){var ni=Math.max(0,idx-1);if(PMODE&&!(steps[ni].practice||steps[ni].pintro))return;idx=ni;show();};
      if(st.practice)pWire(card,st.practice);
    },st.pre?260:30);
  }
- window.TOUR={start:function(){idx=0;try{if(window.showView)window.showView('log');}catch(e){}show();}};
+ window.TOUR={practice:function(){PMODE=true;idx=0;for(var i=0;i<steps.length;i++){if(steps[i].pintro){idx=i;break;}}show();},start:function(){PMODE=false;idx=0;try{if(window.showView)window.showView('log');}catch(e){}show();}};
  var tb=document.getElementById('tourBtn');if(tb)tb.onclick=function(){window.TOUR.start();};
  /* auto-start once for brand-new users (wait until the welcome / login overlays are gone) */
  var tries=0;function maybeAuto(){tries++;if(tries>40)return;try{
