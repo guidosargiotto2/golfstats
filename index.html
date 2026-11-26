@@ -5610,6 +5610,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
   {practice:'plus',en:{h:"Player+: dispersion",p:"New: the <b>Disp.</b> column: where each shot finished against your target."},es:{h:"Jugador+: dispersión",p:"Nuevo: la columna <b>Disp.</b>: dónde terminó cada tiro respecto de tu objetivo."}},
   {practice:'ana',en:{h:"Analyst: putts",p:"New: where each missed putt finished, and the <b>read</b> of the putt."},es:{h:"Analista: putts",p:"Nuevo: dónde terminó cada putt errado, y la <b>lectura</b> del putt."}},
   {practice:'comp',en:{h:"Process compliance",p:"Its own column, <b>Compl.</b>: did you follow your process on each shot? Process, not result."},es:{h:"Cumplimiento del proceso",p:"Su propia columna, <b>Cumpl.</b>: ¿seguiste tu proceso en cada tiro? Proceso, no resultado."}},
+  {pdone:true,center:true,pre:go('log'),en:{h:"Your level of detail is yours to choose",p:"Not every golfer needs, or wants, the same level of detail. You choose what you log in <b>Settings → Round logging</b>, and you can change it any time. Just know the trade: the less you log, the less precise your results."},es:{h:"El nivel de detalle lo elegís vos",p:"No todos los golfistas necesitan, ni quieren, el mismo nivel de detalle. Vos elegís qué cargar en <b>Configuración → Carga de vueltas</b>, y podés cambiarlo cuando quieras. Eso sí: cuanto menos cargás, menos precisos son tus resultados."}},
   {center:true,pre:go('log'),en:{h:"Your turn",p:"Log your next round right after you play — five minutes, before your drink arrives. The demo round stays in <b>Log a round</b> until you have 10 rounds of your own. Replay this tour any time with the <b>plane</b> button."},es:{h:"Tu turno",p:"Cargá tu próxima vuelta apenas termines — cinco minutos, antes de que llegue tu bebida. La vuelta de demostración queda en <b>Cargar vuelta</b> hasta que tengas 10 vueltas propias. Repetí este recorrido cuando quieras con el botón del <b>avión</b>."}}
  ];
  /* ---- practice hole: the player logs one example hole in the REAL logger (same window as logging a round), level by level,
@@ -5696,7 +5697,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
  function end(save){if(PMODE){PMODE=false;save=false;}clear();pStop();try{if(window.LGR&&window.LGR.practiceOn&&window.LGR.practiceOn())window.LGR.practiceEnd();}catch(e){}try{if(window.showView)window.showView('log');}catch(e){}try{if(window.LGR&&window.LGR.demoEnd)window.LGR.demoEnd();}catch(e){}if(save&&window.LGR&&window.LGR.setTourDone)window.LGR.setTourDone();if(window.__onbAfterTour){window.__onbAfterTour=false;setTimeout(function(){try{window.showView('profile');if(window.ONB)window.ONB.paint();}catch(e){}},250);}}
  function show(){
    clear();pStop();var st=steps[idx];if(!st)return end(true);
-   if(PMODE&&!st.practice&&!st.pintro)return end(false);
+   if(PMODE&&!st.practice&&!st.pintro&&!st.pdone)return end(false);
    if(st.practice){try{go('log')();if(window.LGR&&window.LGR.practice)window.LGR.practice(st.practice);}catch(e){}}
    else{try{if(window.LGR&&window.LGR.practiceOn&&window.LGR.practiceOn())window.LGR.practiceEnd();}catch(e){}}
    if(st.pre){try{st.pre();}catch(e){}}
@@ -5705,9 +5706,9 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
      var mask=document.createElement('div');mask.className='tourmask';els.push(mask);if(!st.practice)document.body.appendChild(mask);
      var card=document.createElement('div');card.className='tourcard';els.push(card);
      var skip=document.createElement('button');skip.className='tourskip';skip.textContent=ES()?'Saltar':'Skip';skip.onclick=function(){end(true);};els.push(skip);document.body.appendChild(skip);
-     var last=(idx===steps.length-1)||(PMODE&&!(steps[idx+1]&&steps[idx+1].practice));
+     var last=(idx===steps.length-1)||(PMODE&&!(steps[idx+1]&&(steps[idx+1].practice||steps[idx+1].pdone)));
      if(st.practice)card.classList.add('tpw');
-     card.innerHTML='<h4>'+txt.h+'</h4><p>'+txt.p+'</p>'+(st.practice?pAcc(st.practice)+pStory(st.practice)+'<div class="pfoot"><span class="pmsg"></span><button type="button" class="pfill">'+(ES()?'Completalo por mí':'Fill it for me')+'</button></div>':'')+'<div class="tourrow"><span class="tstep">'+(PMODE?(function(){var n=0,me=0;steps.forEach(function(x,i){if(x.practice||x.pintro){n++;if(i<=idx)me++;}});return me+' / '+n;})():(idx+1)+' / '+steps.length)+'</span><span class="tbtns">'+(idx>0?'<button class="tback">'+(ES()?'Atrás':'Back')+'</button>':'')+'<button class="tnext">'+(last?(ES()?'Listo':'Done'):(ES()?'Siguiente':'Next'))+'</button></span></div>';
+     card.innerHTML='<h4>'+txt.h+'</h4><p>'+txt.p+'</p>'+(st.practice?pAcc(st.practice)+pStory(st.practice)+'<div class="pfoot"><span class="pmsg"></span><button type="button" class="pfill">'+(ES()?'Completalo por mí':'Fill it for me')+'</button></div>':'')+'<div class="tourrow"><span class="tstep">'+(PMODE?(function(){var n=0,me=0;steps.forEach(function(x,i){if(x.practice||x.pintro||x.pdone){n++;if(i<=idx)me++;}});return me+' / '+n;})():(idx+1)+' / '+steps.length)+'</span><span class="tbtns">'+(idx>0?'<button class="tback">'+(ES()?'Atrás':'Back')+'</button>':'')+'<button class="tnext">'+(last?(ES()?'Listo':'Done'):(ES()?'Siguiente':'Next'))+'</button></span></div>';
      document.body.appendChild(card);
      var tgt=st.sel?q(st.sel):null;
      if(st.practice){card.style.right='14px';card.style.bottom='14px';card.style.left='auto';card.style.top='auto';}
