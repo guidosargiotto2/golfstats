@@ -17,7 +17,7 @@ const URL = findUrl();
 // Names only (never values) of database-looking variables, to diagnose a missing connection.
 const dbVarNames = () => Object.keys(process.env).filter(k => /(DATABASE|POSTGRES|NEON|PG(HOST|USER|DATABASE))/.test(k)).sort();
 // The four original players: they claim their username on first sign-in, no invite code needed.
-const LEGACY = { guido: 'Guido', manuel: 'Manuel', nicolas: 'Nicolas', diego: 'Diego', enrique: 'Enrique', mauricio: 'Mauricio' };
+const LEGACY = { guido: 'Guido', manuel: 'Manuel', nicolas: 'Nicolas', diego: 'Diego', enrique: 'Enrique', mauricio: 'Mauricio', giuliano: 'Giuliano' };
 /* test accounts: first login with password = username (then forced change), but they are normal new users — trial, plans, onboarding — not founders */
 const TESTERS = { test1: 'Test One', test2: 'Test Two' };
 const FIRST = Object.assign({}, LEGACY, TESTERS);
