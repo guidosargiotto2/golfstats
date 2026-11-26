@@ -1100,6 +1100,9 @@ html.rsOpen{overflow:hidden}
 #rsheet .rsMore,#rsheet .rsNone{font-family:var(--cond);font-size:13px;color:var(--ink-soft,#5c6357);margin:10px 0 0}
 #rsheet .rsNotes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:16px}#rsheet .rsNotes div{border-left:3px solid var(--sand-deep,#b9a66a);padding:4px 12px;font-size:14px}#rsheet .rsNotes span{display:block;font-family:var(--cond);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-soft,#5c6357);font-weight:700}
 @media(max-width:640px){#rsheet .rsIn{padding:12px}#rsheet .rsT h2{font-size:20px}#rsheet .rsScore b{font-size:30px}}
+#demoSlot{margin-top:22px}
+.scCC{margin-top:10px}.scCC label{display:flex;flex-direction:column;gap:5px;font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.scCC select{max-width:420px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;font:14px var(--sans);color:var(--ink);text-transform:none;letter-spacing:0}
 </style>
 <style id="gimcss">
 .gimTag{font:600 10px/1 var(--sans,inherit);letter-spacing:.08em;background:var(--pine);color:#fff;border-radius:20px;padding:4px 8px;vertical-align:3px;margin-left:6px}
@@ -4226,7 +4229,7 @@ function renderSetup(){
    var ds0=document.getElementById('demoSlot');if(ds0)ds0.innerHTML='';
    renderSel();return;
  }
- if(!DEMO_ON){var dc=document.getElementById('demoSlot');if(!dc){var nf0=document.getElementById('newRoundForm');if(nf0){dc=document.createElement('div');dc.id='demoSlot';nf0.parentNode.insertBefore(dc,nf0);}}if(dc){dc.innerHTML=demoCardHTML()+practiceCardHTML()+scorecardCardHTML();var spo=document.getElementById('scPrintOpen');if(spo)spo.onclick=function(){if(window.CARD)window.CARD.download(null,spo);};var dob=document.getElementById('demoOpen');if(dob)dob.onclick=function(){lgEntered=true;lgDemo();};var pob=document.getElementById('practiceOpen');if(pob)pob.onclick=function(){if(window.TOUR&&window.TOUR.practice)window.TOUR.practice();};}}
+ if(!DEMO_ON){var dc=document.getElementById('demoSlot');if(!dc){var nf0=document.getElementById('newRoundForm');if(nf0){dc=document.createElement('div');dc.id='demoSlot';var sp0=document.getElementById('setupPanel')||nf0.parentNode;sp0.appendChild(dc);}   /* practice + printable card sit at the bottom of the page, after the round form */}if(dc){dc.innerHTML=demoCardHTML()+practiceCardHTML()+scorecardCardHTML();var spo=document.getElementById('scPrintOpen');if(spo)spo.onclick=function(){if(window.CARD)window.CARD.download(null,spo);};var dob=document.getElementById('demoOpen');if(dob)dob.onclick=function(){lgEntered=true;lgDemo();};var pob=document.getElementById('practiceOpen');if(pob)pob.onclick=function(){if(window.TOUR&&window.TOUR.practice)window.TOUR.practice();};}}
  if(rc)rc.style.display='none';if(nf)nf.style.display='';
  var ti=document.getElementById('lgTitle');if(ti)ti.textContent=editRoundId?t('Edit round'):t('Start a round');var mt0=document.getElementById('meta');if(mt0)mt0.style.display='none';
  var sc=document.getElementById('selScore');if(sc&&document.activeElement!==sc)sc.value=R.score||'';
