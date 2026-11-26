@@ -5593,16 +5593,16 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
  var PLV=['ess','ply','plus','ana'];
  var PSTORY={
   ess:[["Tee: markers were on <b>blue</b>, <b>red</b> flag at the <b>front</b>. Press <span class='tk'>Tab</span> to blue, then tap <b>Front −10</b>","Tee: las marcas estaban en <b>azul</b>, bandera <b>roja, adelante</b>. Apretá <span class='tk'>Tab</span> hasta azul y tocá <b>Adelante −10</b>"],
-       ["Drive: rough, 140 yards. Prediction says 150: type <b>140</b>","Salida: rough, a 140 yardas. La predicción dice 150: escribí <b>140</b>"],
-       ["Approach: bunker, 15 yards. Right distance, wrong lie: <span class='tk'>Tab</span> to <b>Sand</b>","Approach: bunker, a 15 yardas. Distancia bien, lie mal: <span class='tk'>Tab</span> hasta <b>Bunker</b>"],
-       ["Bunker shot: to <b>8 feet</b>","Salida del bunker: a <b>8 pies</b>"],
-       ["Two putts: 8 feet, then <b>2 feet</b>","Dos putts: 8 pies y después <b>2 pies</b>"]],
+       ["Drive: rough, 140 yards. Prediction says 150: type <b>140</b>, then <span class='tk'>Enter</span>","Salida: rough, a 140 yardas. La predicción dice 150: escribí <b>140</b> y <span class='tk'>Enter</span>"],
+       ["Approach: bunker, 15 yards. Right distance, wrong lie: <span class='tk'>Tab</span> to <b>Sand</b>, then <span class='tk'>Enter</span>","Approach: bunker, a 15 yardas. Distancia bien, lie mal: <span class='tk'>Tab</span> hasta <b>Bunker</b> y <span class='tk'>Enter</span>"],
+       ["Bunker shot: to <b>8 feet</b>. Type <b>8</b> under Green, then <span class='tk'>Enter</span>","Salida del bunker: a <b>8 pies</b>. Escribí <b>8</b> en Green y <span class='tk'>Enter</span>"],
+       ["Second putt from <b>2 feet</b>: type <b>2</b>, then <span class='tk'>Enter</span>. Holed: <span class='tk'>Enter</span> again closes the hole","Segundo putt desde <b>2 pies</b>: escribí <b>2</b> y <span class='tk'>Enter</span>. Embocado: <span class='tk'>Enter</span> otra vez cierra el hoyo"]],
   ply:[["@CLUBS@","@CLUBS@"],
-       ["Drive missed <b>right</b>: mark <b>R</b>","La salida falló <b>a la derecha</b>: marcá <b>R</b>"]],
-  plus:[["Approach finished <b>short right</b>: mark <b>SR</b>","El approach quedó <b>corto a la derecha</b>: marcá <b>SR</b>"],
-       ["Bunker shot went <b>long</b>: mark <b>LO</b>","La salida del bunker pasó <b>larga</b>: marcá <b>LO</b>"]],
-  ana:[["First putt missed <b>long</b>: mark <b>LO</b>","El primer putt se pasó <b>largo</b>: marcá <b>LO</b>"],
-       ["Its read: downhill, left to right: mark <b>DL</b>","Su lectura: bajada, de izquierda a derecha: marcá <b>DL</b>"],
+       ["Drive missed <b>right</b>: mark <b>R</b>, then <span class='tk'>Enter</span>","La salida falló <b>a la derecha</b>: marcá <b>R</b> y <span class='tk'>Enter</span>"]],
+  plus:[["Approach finished <b>short right</b>: mark <b>SR</b>, then <span class='tk'>Enter</span>","El approach quedó <b>corto a la derecha</b>: marcá <b>SR</b> y <span class='tk'>Enter</span>"],
+       ["Bunker shot went <b>long</b>: mark <b>LO</b>, then <span class='tk'>Enter</span>","La salida del bunker pasó <b>larga</b>: marcá <b>LO</b> y <span class='tk'>Enter</span>"]],
+  ana:[["First putt missed <b>long</b>: mark <b>LO</b>, then <span class='tk'>Enter</span>","El primer putt se pasó <b>largo</b>: marcá <b>LO</b> y <span class='tk'>Enter</span>"],
+       ["Its read: downhill, left to right: mark <b>DL</b>, then <span class='tk'>Enter</span>","Su lectura: bajada, de izquierda a derecha: marcá <b>DL</b> y <span class='tk'>Enter</span>"],
        ["Compliance = process, not result. Approach: you aimed at the pin against your plan: <b>✕</b>. Every other shot: <b>✓</b>","Cumplimiento = proceso, no resultado. Approach: apuntaste a la bandera contra tu plan: <b>✕</b>. Los demás tiros: <b>✓</b>"]]
  };
  var PANS=[{lie:'tee',dist:0,club:'D',disp:'R',comp:true},{lie:'rough',dist:140,club:'7',disp:'SR',comp:false},{lie:'sand',dist:15,club:'56',disp:'G',comp:true},{lie:'putt',dist:8,club:'P',disp:'G',read:'DL',comp:true},{lie:'putt',dist:2,club:'P',comp:true}];
@@ -5626,7 +5626,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
      if(needD&&s2.disp!==a2.disp){errs.push(es?'Dispersión de '+nth(k2)+'.':'Dispersion on '+nth(k2)+'.');break;}
      if(k2===3&&i>=3&&s2.read!==a2.read){errs.push(es?'Lectura del primer putt.':'Read of the first putt.');break;}}}
    return errs.length?{ok:false,msg:errs[0]}:{ok:true,msg:es?'¡Perfecto! Score del hoyo: 5, un bogey.':'Spot on. Hole score: 5, a bogey.'};}
- function pClubLine(es){var C=(window.LGR&&window.LGR.practiceClubs)?window.LGR.practiceClubs():[];var n=C.map(function(x){return x.label;}).join(', ');return es?'Palos: '+n+'. Vienen predichos: confirmá o cambiá':'Clubs: '+n+'. They come predicted: confirm or change';}
+ function pClubLine(es){var C=(window.LGR&&window.LGR.practiceClubs)?window.LGR.practiceClubs():[];var n=C.map(function(x){return x.label;}).join(', ');return es?'Palos: '+n+'. Vienen predichos: cambiá si hace falta, <span class=\'tk\'>Enter</span> para confirmar':'Clubs: '+n+'. They come predicted: change if needed, <span class=\'tk\'>Enter</span> to confirm';}
  function pStory(level){var es=ES(),i=PLV.indexOf(level),out='';
    PLV.slice(i,i+1).forEach(function(lv,j){out+=PSTORY[lv].map(function(x){var t=es?x[1]:x[0];if(t==='@CLUBS@')t=pClubLine(es);return '<li>'+t+'</li>';}).join('');});
    return '<ol class="pstory">'+out+'</ol>';}
