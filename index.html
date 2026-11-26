@@ -5615,11 +5615,11 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
        ["Bunker shot: to <b>8 feet</b>. Type <b>8</b> under Green, then <span class='tk'>Enter</span>","Salida del bunker: a <b>8 pies</b>. Escribí <b>8</b> en Green y <span class='tk'>Enter</span>"],
        ["Second putt from <b>2 feet</b>: type <b>2</b>, then <span class='tk'>Enter</span>. Holed: <span class='tk'>Enter</span> again closes the hole","Segundo putt desde <b>2 pies</b>: escribí <b>2</b> y <span class='tk'>Enter</span>. Embocado: <span class='tk'>Enter</span> otra vez cierra el hoyo"]],
   ply:[["@CLUBS@","@CLUBS@"]],
-  plus:[["Drive missed <b>right</b>: mark <b>R</b>, then <span class='tk'>Enter</span>","La salida falló <b>a la derecha</b>: marcá <b>R</b> y <span class='tk'>Enter</span>"],
-       ["Approach finished <b>short right</b>: mark <b>SR</b>, then <span class='tk'>Enter</span>","El approach quedó <b>corto a la derecha</b>: marcá <b>SR</b> y <span class='tk'>Enter</span>"],
-       ["Bunker shot went <b>long</b>: mark <b>LO</b>, then <span class='tk'>Enter</span>","La salida del bunker pasó <b>larga</b>: marcá <b>LO</b> y <span class='tk'>Enter</span>"]],
-  ana:[["First putt missed <b>long</b>: mark <b>LO</b>, then <span class='tk'>Enter</span>","El primer putt se pasó <b>largo</b>: marcá <b>LO</b> y <span class='tk'>Enter</span>"],
-       ["Its read: downhill, left to right: mark <b>DL</b>, then <span class='tk'>Enter</span>","Su lectura: bajada, de izquierda a derecha: marcá <b>DL</b> y <span class='tk'>Enter</span>"],
+  plus:[["Drive missed <b>right</b>: mark <b>R</b>, then <span class='tk'>Enter</span>","La salida falló <b>a la derecha</b>: marcá <b>D</b> (derecha) y <span class='tk'>Enter</span>"],
+       ["Approach finished <b>short right</b>: mark <b>SR</b>, then <span class='tk'>Enter</span>","El approach quedó <b>corto a la derecha</b>: marcá <b>CD</b> (corto-derecha) y <span class='tk'>Enter</span>"],
+       ["Bunker shot went <b>long</b>: mark <b>LO</b>, then <span class='tk'>Enter</span>","La salida del bunker pasó <b>larga</b>: marcá <b>L</b> (largo) y <span class='tk'>Enter</span>"]],
+  ana:[["First putt missed <b>long</b>: mark <b>LO</b>, then <span class='tk'>Enter</span>","El primer putt se pasó <b>largo</b>: marcá <b>L</b> (largo) y <span class='tk'>Enter</span>"],
+       ["Its read: downhill, left to right: mark <b>DL</b>, then <span class='tk'>Enter</span>","Su lectura: bajada, de izquierda a derecha: marcá <b>BI</b> y <span class='tk'>Enter</span>"],
        ["Compliance = process, not result. Approach: you aimed at the pin against your plan: <b>✕</b>. Every other shot: <b>✓</b>","Cumplimiento = proceso, no resultado. Approach: apuntaste a la bandera contra tu plan: <b>✕</b>. Los demás tiros: <b>✓</b>"]]
  };
  var PANS=[{lie:'tee',dist:0,club:'D',disp:'R',comp:true},{lie:'rough',dist:140,club:'7',disp:'SR',comp:false},{lie:'sand',dist:15,club:'56',disp:'G',comp:true},{lie:'putt',dist:8,club:'P',disp:'G',read:'DL',comp:true},{lie:'putt',dist:2,club:'P',comp:true}];
@@ -5630,7 +5630,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    var i=PLV.indexOf(level),S=st.shots,T=function(a,b){return es?b:a;};
    var nth=function(k){return es?['la salida','el approach','la salida del bunker','el primer putt','el segundo putt'][k]:['the drive','the approach','the bunker shot','the first putt','the second putt'][k];};
    var LN={tee:'Tee',fw:'Fairway',rough:'Rough',sand:T('Sand','Bunker'),rec:T('Recovery','Recuperación'),putt:'Green'},un=function(l){return l==='putt'?T(' ft',' pies'):T(' yd',' yd');};
-   var DW={R:T('right (R)','derecha'),SR:T('short right (SR)','corto a la derecha'),G:T('long (LO)','largo'),L:T('left','izquierda')};
+   var DW={R:T('R (right)','D (derecha)'),SR:T('SR (short right)','CD (corto-derecha)'),G:T('LO (long)','L (largo)'),L:T('L (left)','I (izquierda)')};
    /* each problem says where it is (k = shot row), what kind, and exactly what to do; err = a logged shot is wrong (blocks), otherwise it is only the next thing to do */
    var bad=function(k,kind,msg,hint,err){return {ok:false,msg:msg,k:k,kind:kind,hint:hint||msg,err:err!==false};};
    if(st.teeOv!=='Azules')return bad(0,'tee',T('On the tee distance, press Tab to reach the blue tee.','En la distancia del tee, apretá Tab hasta el tee azul.'),T('Markers: <b>Tab</b> until the cell turns blue, then <b>Enter</b>.','Marcas: <b>Tab</b> hasta que la celda quede azul, y <b>Enter</b>.'),false);
@@ -5644,7 +5644,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
      if(i>=1&&pClub(s2.club)!==pClub(CL[k2]?CL[k2].c:a2.club))return bad(k2,'club',T('Club on ','Palo de ')+nth(k2)+'.',T('Club: choose <b>'+(CL[k2]?CL[k2].label:a2.club)+'</b> in the Club column of this row.','Palo: elegí <b>'+(CL[k2]?CL[k2].label:a2.club)+'</b> en la columna Palo de esta fila.'));
      var needD=(k2<=2&&i>=2)||(k2===3&&i>=3);
      if(needD&&s2.disp!==a2.disp)return bad(k2,'disp',T('Dispersion on ','Dispersión de ')+nth(k2)+'.',T('Dispersion: in the Disp. column of this row choose <b>'+DW[a2.disp]+'</b>.','Dispersión: en la columna Disp. de esta fila elegí <b>'+DW[a2.disp]+'</b>.'));
-     if(k2===3&&i>=3&&s2.read!==a2.read)return bad(3,'read',T('Read of the first putt.','Lectura del primer putt.'),T('Read: downhill, left to right. Choose <b>DL</b> in this row.','Lectura: bajada, de izquierda a derecha. Elegí <b>DL</b> en esta fila.'));
+     if(k2===3&&i>=3&&s2.read!==a2.read)return bad(3,'read',T('Read of the first putt.','Lectura del primer putt.'),T('Read: downhill, left to right. Choose <b>DL</b> in this row.','Lectura: bajada, de izquierda a derecha. Elegí <b>BI</b> en esta fila.'));
      if(i>=3&&s2.comp!==a2.comp)return bad(k2,'comp',T('Compliance on ','Cumplimiento de ')+nth(k2)+': '+(a2.comp?'✓':'✕')+'.',T('Compliance: tap the box in this row until it shows <b>'+(a2.comp?'✓':'✕')+'</b>'+(a2.comp?'.':' (you aimed at the pin against your plan).'),'Cumplimiento: tocá el casillero de esta fila hasta ver <b>'+(a2.comp?'✓':'✕')+'</b>'+(a2.comp?'.':' (apuntaste a la bandera contra tu plan).')));}
    return {ok:true,msg:es?'¡Perfecto! Score del hoyo: 5, un bogey.':'Spot on. Hole score: 5, a bogey.'};}
  /* the help sits next to the row it is about; a wrong shot keeps the cursor on its row until it is fixed */
