@@ -3518,21 +3518,21 @@ function cardDoc(lv){
    [[T('Score','Score'),'sc'],[T('Pen','Pen'),'']].forEach(function(r){h+='<tr class="ft '+r[1]+'"><td class="lb">'+r[0]+'</td>'+new Array(11).join('<td></td>')+'</tr>';});
    return h+'</table>';};
  var cellH=two?Math.min(10,78/N):6.6;
- var css='@page{size:A4 portrait;margin:0}*{box-sizing:border-box}body{font-family:"Trebuchet MS",Arial,sans-serif;color:#20261f;margin:0;padding:9mm}'+   /* no page margin = no browser header/footer (date, title, address) */
-  'h1{font-family:Georgia,serif;font-size:17px;color:#0f3a2c;margin:0}.top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #0f3a2c;padding-bottom:4px;margin-bottom:5px}.lvl{font-size:9px;color:#5c6357}.tier{font-family:Georgia,serif;font-weight:700;font-size:15px;color:#fff;background:#0f3a2c;border-radius:6px;padding:3px 10px;letter-spacing:.04em;text-transform:uppercase}.tier small{font-family:Arial,sans-serif;font-weight:400;font-size:8.5px;text-transform:none;letter-spacing:0;margin-left:5px;color:#d8c48c}'+
-  '.f{display:flex;gap:14px;font-size:10px;color:#5c6357;margin:0 0 6px}.f span{flex:1;border-bottom:1px solid #b9b3a2;padding-bottom:9px}'+
-  'table{width:100%;border-collapse:collapse;table-layout:fixed;margin-bottom:6px}th,td{border:1px solid #9a947f;text-align:center;font-size:9px;padding:0}'+
-  'th{background:#0f3a2c;color:#fff;font-size:11px;height:6mm}th.lb,td.lb{width:17mm;text-align:left;padding:0 1.5mm;font-size:8.5px;color:#5c6357}th.lb{color:#fff}'+
-  '.tot{width:13mm;background:#f3efe3}th.tot{background:#d8c48c;color:#0f3a2c}tr.par td{height:5mm;background:#f8f5ec}tr.sh td{height:'+cellH+'mm;vertical-align:top;position:relative}tr.sh.first td{border-top:1.6px solid #0f3a2c}'+
-  'i.tee{font-size:6.5px;color:#b4ad98;font-style:normal;position:absolute;left:1mm;top:.5mm}'+
-  '.cbx{position:absolute;right:.6mm;top:.6mm;font-size:5.5px;color:#9a947f;border:.6px solid #c9c2ad;border-radius:1.5px;padding:0 .5mm;line-height:1.5}'+
-  'tr.sh td .b{position:absolute;left:0;right:0;bottom:0;height:46%;border-top:1px dashed #cfc8b4;display:flex}'+
-  '.bx{flex:1;border-left:.6px dotted #cfc8b4;font-size:5.5px;color:#b4ad98;text-align:left;padding:.3mm .6mm}.bx:first-child{border-left:none}.bx.w2{flex:1.2}'+
-  'tr.ft td{height:6.2mm}tr.ft.sc td{border-top:1.6px solid #0f3a2c;background:#f8f5ec}tr.ft td.lb{font-weight:bold;color:#0f3a2c}tr.ft.cp td.lb{font-weight:normal;font-size:7.5px}'+
-  '.legw{display:flex;gap:5mm;border-top:1px solid #cfc8b4;padding-top:4px}.leg{flex:1;font-size:8.5px;color:#5c6357;line-height:1.45}.leg b{color:#0f3a2c}'+'.exw{width:34mm;flex:none}table.ex{margin:0;width:34mm}table.ex th{font-size:7px;height:4.5mm;padding:0 1mm}table.ex tr.sh td{height:'+(two?7.5:5.5)+'mm}table.ex tr.ft td{height:5mm}'+'.exv{position:absolute;left:1.2mm;top:.6mm;font-family:"Segoe Print","Comic Sans MS",cursive;font-size:9px;color:#1f5fa8}tr.ft .exv{position:static;font-size:10px}.exk{color:#1f5fa8;border-color:#1f5fa8}.exh{font-family:"Segoe Print","Comic Sans MS",cursive;font-size:7.5px!important;color:#1f5fa8!important}'+'.exn{font-size:7px;color:#8a8471;margin:1.5mm 0 0;line-height:1.35}';
+ var css='@page{size:A4 portrait;margin:0}*{box-sizing:border-box}body{font-family:"Trebuchet MS",Arial,sans-serif;color:#000;margin:0;padding:9mm}'+   /* no page margin = no browser header/footer (date, title, address) */
+  'h1{font-family:Georgia,serif;font-size:17px;color:#000;margin:0}.top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #000;padding-bottom:4px;margin-bottom:5px}.lvl{font-size:9px;color:#444}.tier{font-family:Georgia,serif;font-weight:700;font-size:15px;color:#000;background:#fff;border:1.5px solid #000;border-radius:6px;padding:3px 10px;letter-spacing:.04em;text-transform:uppercase}.tier small{font-family:Arial,sans-serif;font-weight:400;font-size:8.5px;text-transform:none;letter-spacing:0;margin-left:5px;color:#000}'+
+  '.f{display:flex;gap:14px;font-size:10px;color:#444;margin:0 0 6px}.f span{flex:1;border-bottom:1px solid #999;padding-bottom:9px}'+
+  'table{width:100%;border-collapse:collapse;table-layout:fixed;margin-bottom:6px}th,td{border:1px solid #777;text-align:center;font-size:9px;padding:0}'+
+  'th{background:#fff;color:#000;font-size:11px;height:6mm}th.lb,td.lb{width:17mm;text-align:left;padding:0 1.5mm;font-size:8.5px;color:#444}th.lb{color:#000}'+
+  '.tot{width:13mm;background:#fff}th.tot{background:#fff;color:#000}tr.par td{height:5mm;background:#fff}tr.sh td{height:'+cellH+'mm;vertical-align:top;position:relative}tr.sh.first td{border-top:1.6px solid #000}'+
+  'i.tee{font-size:6.5px;color:#999;font-style:normal;position:absolute;left:1mm;top:.5mm}'+
+  '.cbx{position:absolute;right:.6mm;top:.6mm;font-size:5.5px;color:#777;border:.6px solid #aaa;border-radius:1.5px;padding:0 .5mm;line-height:1.5}'+
+  'tr.sh td .b{position:absolute;left:0;right:0;bottom:0;height:46%;border-top:1px dashed #bbb;display:flex}'+
+  '.bx{flex:1;border-left:.6px dotted #bbb;font-size:5.5px;color:#999;text-align:left;padding:.3mm .6mm}.bx:first-child{border-left:none}.bx.w2{flex:1.2}'+
+  'tr.ft td{height:6.2mm}tr.ft.sc td{border-top:1.6px solid #000;background:#fff}tr.ft td.lb{font-weight:bold;color:#000}tr.ft.cp td.lb{font-weight:normal;font-size:7.5px}'+
+  '.legw{display:flex;gap:5mm;border-top:1px solid #bbb;padding-top:4px}.leg{flex:1;font-size:8.5px;color:#444;line-height:1.45}.leg b{color:#000}'+'.exw{width:34mm;flex:none}table.ex{margin:0;width:34mm}table.ex th{font-size:7px;height:4.5mm;padding:0 1mm}table.ex tr.sh td{height:'+(two?7.5:5.5)+'mm}table.ex tr.ft td{height:5mm}'+'.exv{position:absolute;left:1.2mm;top:.6mm;font-family:"Segoe Print","Comic Sans MS",cursive;font-size:9px;color:#000}tr.ft .exv{position:static;font-size:10px}.exk{color:#000;border-color:#000}.exh{font-family:"Segoe Print","Comic Sans MS",cursive;font-size:7.5px!important;color:#000!important}'+'.exn{font-size:7px;color:#666;margin:1.5mm 0 0;line-height:1.35}';
  var lines=[];
  lines.push('<b>'+T('Each shot','Cada tiro')+'</b>: '+T('where it was played from + distance to the hole','desde dónde se jugó + distancia al hoyo')+' — <b>T</b> tee · <b>F</b> fairway · <b>R</b> rough · '+T('<b>S</b> sand','<b>B</b> bunker')+' · <b>X</b> '+T('recovery','recuperación')+' · <b>G</b> green ('+T('feet','pies')+'). '+T('Example','Ejemplo')+': <b>F140</b>, '+T('<b>S15</b>','<b>B15</b>')+', <b>G8</b>.');
- if(S.comp)lines.push('<b>✓✕</b>: '+T('did you follow your plan on that shot? Process, not result.','¿seguiste tu plan en ese tiro? Proceso, no resultado.'));
+ if(S.comp)lines.push('<b>✓✕</b>: '+T('did you follow your process on that shot? Process, not result.','¿seguiste tu proceso en ese tiro? Proceso, no resultado.'));
  if(S.club)lines.push('<b>'+T('Club','Palo')+'</b>: D, 3W, 7, 56, P…');
  if(S.disp==='tee')lines.push('<b>'+T('L/R','I/D')+'</b>: '+T('only on the tee shot, when it missed the fairway: left or right.','solo en la salida, si falló el fairway: izquierda o derecha.'));
  else if(S.disp!=='off')lines.push('<b>Disp</b>: '+T('where it finished against your target','dónde terminó respecto de tu objetivo')+' — '+T('L R S LO SL SR LL LR ✓ (left, right, short, long…)','I D C L CI CD LI LD ✓ (izquierda, derecha, corto, largo…)')+(S.disp==='all'?T(', missed putts too.',', también putts errados.'):T(' (not on putts).',' (no en putts).')));
@@ -4599,13 +4599,8 @@ ${PROF.gender==='m'?`  <label class="chkrow" style="flex-direction:row;align-ite
   <div class="hiblock">
     <div class="hirow"><span>${window.__LANG==='es'?'Nivel de detalle':'Detail level'}</span></div>
     <div id="pf_level">${LOGLVL.html()}</div>
-    <div class="hisub">${window.__LANG==='es'?'Recomendado según tu hándicap, si tomás clases, cuánto tiempo jugás, cuánto recordás de tus vueltas y si cargarías durante la vuelta. Strokes gained, predicción y cumplimiento están en todos los niveles. Es solo un punto de partida: abajo podés cambiar cada opción.':'Recommended from your handicap, whether you take lessons, how much you play, how well you remember your rounds and whether you would log during the round. Strokes gained, prediction and compliance are in every level. It is only a starting point: you can change each option below.'}</div>
-  </div>
-  <div class="hiblock logest">
-    <div class="hirow"><span>${window.__LANG==='es'?'Tiempo estimado por vuelta':'Estimated time per round'}</span></div>
-    <div id="pf_logest">${logEstHTML()}</div>
     <div id="pf_acc">${accHTML()}</div>
-    <div class="hisub">${window.__LANG==='es'?'Estimación para 18 hoyos cargados después de jugar. Cada opción que activás suma tiempo: elegí lo que de verdad vas a usar.':'An estimate for 18 holes logged after you play. Every option you turn on adds time: pick what you will really use.'}</div>
+    <div class="hisub">${window.__LANG==='es'?'Recomendado según tu hándicap, si tomás clases, cuánto tiempo jugás, cuánto recordás de tus vueltas y si cargarías durante la vuelta. Strokes gained, predicción y cumplimiento están en todos los niveles. Es solo un punto de partida: abajo podés cambiar cada opción.':'Recommended from your handicap, whether you take lessons, how much you play, how well you remember your rounds and whether you would log during the round. Strokes gained, prediction and compliance are in every level. It is only a starting point: you can change each option below.'}</div>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>${window.__LANG==='es'?'Tarjeta para la cancha':'Scorecard for the course'}</span></div>
