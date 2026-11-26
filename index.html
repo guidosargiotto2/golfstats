@@ -993,6 +993,7 @@ svg.tgSvg{width:100%;height:auto;display:block;}
 .lvCard b{font-family:var(--serif,Georgia,serif);font-size:19px;font-weight:600;color:var(--pine)}
 .lvCard span{font-size:12.5px;line-height:1.4;color:var(--ink-soft);text-transform:none;letter-spacing:0;font-weight:400}
 .lvCard small{font-family:var(--cond);font-weight:700;font-size:12px;color:var(--pine);margin-top:2px}
+.lvCard.lvCustom{cursor:default;border-style:dashed}.lvCard.lvCustom:hover{transform:none}
 .lvCard .lvAcc{display:block;height:6px;border-radius:4px;background:var(--line-soft);overflow:hidden;margin-top:4px}.lvCard .lvAcc i{display:block;height:100%;background:var(--fairway);border-radius:4px}
 .lvCard em{position:absolute;top:-9px;right:10px;font-style:normal;font-family:var(--cond);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--sand-deep,#b89a52);color:#fff;padding:2px 8px;border-radius:999px}
 .estbig{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:4px 0 6px;}
@@ -3341,7 +3342,12 @@ var LOGLVL={order:['ess','ply','plus','ana'],
  recommend:function(o){o=o||{};var h=parseFloat(o.hi),i=(isNaN(h)?0:h>=20?0:h>=10?1:h>=5?2:3);
    if(!isNaN(h)){if(o.lessons==='month'||o.lessons==='week')i++;if(o.golfHrs==='0-4')i--;if(o.recall==='little'&&o.live!=='yes')i--;}
    return this.order[Math.max(0,Math.min(3,i))];},
- mine:function(){var hi=null;try{hi=effHI();}catch(e){}var a=PROF.about||{};return this.recommend({hi:(hi==null||hi==='')?NaN:hi,lessons:a.lessons,golfHrs:a.golfHrs,recall:a.recall,live:a.live});},
+ mine:function(){var hi=null;try{hi=effHI();}catch(e){}
+   /* no index from logged rounds or typed in: use the latest index on the player's imported rounds */
+   if(hi==null||hi===''||isNaN(+hi)){try{var u=(localStorage.getItem('app-user')||'').toLowerCase(),P=(typeof PLAYERS!=='undefined')?PLAYERS:{},k=Object.keys(P).filter(function(x){return x.toLowerCase()===u;})[0];
+     if(k){var rs=P[k].filter(function(r){return r&&r.hi!=null&&!isNaN(+r.hi);});if(rs.length)hi=+rs[rs.length-1].hi;}}catch(e){}}
+   if(hi==null||hi===''||isNaN(+hi))return null;   /* unknown handicap: no recommendation rather than a wrong one */
+   var a=PROF.about||{};return this.recommend({hi:+hi,lessons:a.lessons,golfHrs:a.golfHrs,recall:a.recall,live:a.live});},
  current:function(){var k=null,me=this;this.order.forEach(function(x){var l=me.L[x];if(PROF.predict!==false&&!!PROF.trackComp&&!!PROF.trackClubs===l.clubs&&!!PROF.trackRead===l.read&&(l.disp==='off'?!PROF.trackDisp:(!!PROF.trackDisp&&(PROF.dispMode||'all')===l.disp)))k=x;});return k;},
  apply:function(k){var l=this.L[k];if(!l)return;PROF.predict=true;PROF.trackComp=true;PROF.trackClubs=l.clubs;PROF.trackRead=l.read;PROF.trackDisp=l.disp!=='off';if(l.disp!=='off')PROF.dispMode=l.disp;PROF.logLevel=k;saveProf();},
  mins:function(k){var l=this.L[k];return 5+2+(l.clubs?1:0)+(l.disp==='tee'?0.5:l.disp==='app'?1.2:l.disp==='all'?1.5:0)+(l.read?1:0);},
@@ -3362,9 +3368,12 @@ var LOGLVL={order:['ess','ply','plus','ana'],
    return '<div class="lvTblW"><table class="lvTbl"><colgroup><col class="c0"><col><col><col><col></colgroup><thead><tr><th></th>'+O.map(function(k){return '<th class="'+(k===cur?'cur ':'')+(k===rec?'rec':'')+'">'+(k===rec?'<small>'+(es?'recomendado':'recommended')+'</small>':'')+me.L[k].n[es]+'</th>';}).join('')+'</tr></thead><tbody>'+
      rows.map(function(r){return '<tr><td>'+r[0][es]+'</td>'+r[1].map(function(v,i){return '<td class="'+(O[i]===cur?'cur':'')+'">'+v+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table></div>';},
  html:function(){var es=window.__LANG==='es'?1:0,rec=this.mine(),cur=this.current(),me=this;
-   return '<div class="lvGrid">'+this.order.map(function(k){var l=me.L[k],m=me.mins(k);return '<button type="button" class="lvCard'+(cur===k?' on':'')+'" data-lvl="'+k+'">'+(rec===k?'<em>'+(es?'Recomendado':'Recommended')+'</em>':'')+'<b>'+l.n[es]+'</b><span>'+l.d[es]+'</span><small>≈ '+(m%1?m.toFixed(1):m)+' min · '+accLvl(k)+'% '+(es?'precisión':'accuracy')+'</small><i class="lvAcc"><i style="width:'+accLvl(k)+'%"></i></i></button>';}).join('')+'</div>'+
-     '<details class="lvCmp" open><summary>'+(es?'Comparar los niveles':'Compare the levels')+'</summary>'+this.table(es,rec,cur)+'</details>'+
-     (cur?'':'<p class="hisub" style="margin-top:8px">'+(es?'Ahora tenés una combinación propia. Tocá un nivel para volver a uno estándar.':'You are on a custom mix right now. Tap a level to go back to a standard one.')+'</p>');}};
+   var cm=5+(PROF.predict===false?3:0)+(PROF.trackClubs?1:0)+(PROF.trackDisp?((PROF.dispMode==='tee')?0.5:(PROF.dispMode==='app')?1.2:1.5):0)+(PROF.trackRead?1:0)+(PROF.trackComp?2:0),ca=accCeil();
+   var custom=cur?'':'<div class="lvCard on lvCustom"><b>'+(es?'Personalizado':'Custom')+'</b><span>'+(es?'Tu propia combinación de columnas.':'Your own mix of columns.')+'</span><small>≈ '+(cm%1?cm.toFixed(1):cm)+' min · '+ca+'% '+(es?'precisión':'accuracy')+'</small><i class="lvAcc"><i style="width:'+ca+'%"></i></i></div>';
+   var nohi=rec?'':'<p class="hisub" style="margin:0 0 8px">'+(es?'Cargá tu hándicap index en <b>Mi juego y hándicap</b> y te recomendamos un nivel.':'Add your handicap index in <b>My game &amp; handicap</b> and we will recommend a level.')+'</p>';
+   return nohi+'<div class="lvGrid">'+this.order.map(function(k){var l=me.L[k],m=me.mins(k);return '<button type="button" class="lvCard'+(cur===k?' on':'')+'" data-lvl="'+k+'">'+(rec===k?'<em>'+(es?'Recomendado':'Recommended')+'</em>':'')+'<b>'+l.n[es]+'</b><span>'+l.d[es]+'</span><small>≈ '+(m%1?m.toFixed(1):m)+' min · '+accLvl(k)+'% '+(es?'precisión':'accuracy')+'</small><i class="lvAcc"><i style="width:'+accLvl(k)+'%"></i></i></button>';}).join('')+custom+'</div>'+
+     '<details class="lvCmp"><summary>'+(es?'Comparar los niveles':'Compare the levels')+'</summary>'+this.table(es,rec,cur)+'</details>'+
+     (cur?'':'<p class="hisub" style="margin-top:8px">'+(es?'Tus opciones no coinciden con ningún nivel, así que estás en <b>Personalizado</b>. Tocá un nivel para volver a uno estándar.':'Your settings match no level, so you are on <b>Custom</b>. Tap a level to go back to a standard one.')+'</p>');}};
 window.LOGLVL=LOGLVL;
 /* ===== Data accuracy: how complete and precise the logged data is. Two parts:
    1) the ceiling the active settings allow (each column has a weight), 2) how fully the player actually fills it in (last 10 rounds).
@@ -6059,7 +6068,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
   {k:'course',t:['Course & tees','Cancha y tees'],ids:['pf_homeclub','pf_course','pf_favbtn','pf_tee','pf_teeset','pf_hidered']},
   {k:'game',t:['My game & handicap','Mi juego y hándicap'],ids:['pf_drive','pf_himode','pf_impbtn','pf_imphbtn']},
   {k:'bag',t:['My bag','Mi bolsa'],link:'bag',sub:['Distance and dispersion for every club · Garmin import','Distancia y dispersión de cada palo · importación de Garmin']},
-  {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_level','pf_logest','pf_predict','pf_clubs','pf_disp','pf_read','pf_comp']},
+  {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_level','pf_logest','pf_predict','pf_clubs','pf_disp','pf_read','pf_comp','pf_printcard']},
   {k:'analysis',t:['Scoring & analysis','Score y análisis'],ids:['pf_netpar','pf_sgbase','pf_atg']},
   {k:'t5',t:["Tiger's 5",'Tiger 5'],ids:['pf_t5mode','pf_t5x','pf_nine','pf_bogeyx']},
   {k:'app',t:['App preferences','Preferencias de la app'],ids:['pf_units','pf_lang']},
