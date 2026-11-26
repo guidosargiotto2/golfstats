@@ -1261,7 +1261,7 @@ html.rsOpen{overflow:hidden}
       '<p class="obSub" style="margin-top:14px">'+(isNaN(hi)?T('Without a handicap index we start you on the lightest level.','Sin hándicap index empezamos por el nivel más liviano.'):T('For your index we suggest <b>','Para tu index sugerimos <b>')+(LV?LV.L[rec].n[es]:'')+'</b>. '+T('More detail gives more answers but takes longer after each round.','Más detalle da más respuestas, pero lleva más tiempo después de cada vuelta.'))+'</p>'+
       '<div class="obLv">'+(LV?LV.order.map(function(k){var l=LV.L[k],m=LV.mins(k);return '<span class="obChip obLvC'+(A.level===k?' on':'')+'" data-lv="'+k+'">'+(k===rec?'<em>'+T('Suggested','Sugerido')+'</em>':'')+'<b>'+l.n[es]+'</b><i>'+l.d[es]+'</i><small>≈ '+(m%1?m.toFixed(1):m)+' min '+T('per round','por vuelta')+'</small></span>';}).join(''):'')+'</div>'+
       (LV&&LV.table?'<details class="obCmp"><summary>'+T('Compare the levels','Comparar los niveles')+'</summary>'+LV.table(es,rec,A.level)+'</details>':'')+
-      '<p class="obSub" style="margin-top:12px;font-size:13px">'+T('Strokes gained, shot prediction and compliance come with every level. You can change this any time in Profile → Round logging.','Strokes gained, predicción de tiros y cumplimiento vienen en todos los niveles. Podés cambiarlo cuando quieras en Perfil → Carga de vueltas.')+'</p>';}},
+      '<p class="obSub" style="margin-top:12px;font-size:13px">'+T('Strokes gained and shot prediction come with every level. You can change this any time in Settings → Round logging.','Strokes gained y predicción de tiros vienen en todos los niveles. Podés cambiarlo cuando quieras en Configuración → Carga de vueltas.')+'</p>';}},
   {id:'done',ok:function(){return true;},h:function(){var nm=(A.name||'').trim().split(' ')[0];return '<div class="obDone"><div class="obBall"></div><h2>'+T('You\'re set, ','Listo, ')+esc(nm)+'.</h2><p class="obSub">'+T('Your profile is ready. One honest note: the analysis grows with your rounds. Round 1 gives you the scorecard and strokes gained; 5 rounds, your first limits; 12 rounds, limits you can trust. Next, a short tour.','Tu perfil está listo. Una nota honesta: el análisis crece con tus vueltas. La vuelta 1 te da la tarjeta y strokes gained; 5 vueltas, tus primeros límites; 12 vueltas, límites confiables. Ahora, un recorrido corto.')+'</p></div>';}}
  ];
  function parseHI(v){v=String(v||'').trim().replace(',','.');if(!v)return NaN;var plus=/^\+/.test(v);var n=parseFloat(v.replace('+',''));if(isNaN(n)||n<0||n>54)return NaN;return plus?-n:n;}
@@ -3518,10 +3518,10 @@ function roundRecord(){
 }
 /* ===== detail levels: one recommendation instead of five switches. Strokes gained, prediction and compliance are in every level ===== */
 var LOGLVL={order:['ess','ply','plus','ana'],
- L:{ess:{n:['Essentials','Esencial'],d:['Lie and distance on every shot, plus compliance.','Lie y distancia en cada tiro, más cumplimiento.'],clubs:false,disp:'off',read:false},
-    ply:{n:['Player','Jugador'],d:['Adds the club, and which side you miss your tee shots.','Suma el palo, y hacia qué lado fallás las salidas.'],clubs:true,disp:'tee',read:false},
-    plus:{n:['Player+','Jugador+'],d:['Adds where every approach and short shot finishes against your target.','Suma dónde termina cada approach y tiro corto respecto de tu objetivo.'],clubs:true,disp:'app',read:false},
-    ana:{n:['Analyst','Analista'],d:['Adds missed putts and the read of each putt: slope and break.','Suma los putts errados y la lectura de cada putt: pendiente y caída.'],clubs:true,disp:'all',read:true}},
+ L:{ess:{n:['Essentials','Esencial'],d:['Lie and distance on every shot.','Lie y distancia en cada tiro.'],comp:false,clubs:false,disp:'off',read:false},
+    ply:{n:['Player','Jugador'],d:['Adds the club, and which side you miss your tee shots.','Suma el palo, y hacia qué lado fallás las salidas.'],comp:false,clubs:true,disp:'tee',read:false},
+    plus:{n:['Player+','Jugador+'],d:['Adds where every approach and short shot finishes against your target.','Suma dónde termina cada approach y tiro corto respecto de tu objetivo.'],comp:false,clubs:true,disp:'app',read:false},
+    ana:{n:['Analyst','Analista'],d:['Adds missed putts, the read of each putt, and process compliance on every shot.','Suma los putts errados, la lectura de cada putt y el cumplimiento del proceso en cada tiro.'],comp:true,clubs:true,disp:'all',read:true}},
  /* handicap sets the level; a coach moves it up one, very little golf time moves it down one */
  /* willingness first: no logging after the round and none during it = no level (the app is not for them yet); can't recall or logs on the phone = Essentials, whatever the index */
  nofit:function(o){o=o||{};return o.sit==='no'&&o.live==='no';},
@@ -3532,16 +3532,16 @@ var LOGLVL={order:['ess','ply','plus','ana'],
    if(this.nofit(a0))return null;if(a0.recall==='little'||a0.sit==='no')return 'ess';
    if(hi==null||hi===''||isNaN(+hi))return null;   /* unknown handicap: no recommendation rather than a wrong one */
    var a=PROF.about||{};return this.recommend({hi:+hi,lessons:a.lessons,golfHrs:a.golfHrs,recall:a.recall,sit:a.sit,live:a.live});},
- current:function(){var k=null,me=this;this.order.forEach(function(x){var l=me.L[x];if(PROF.predict!==false&&!!PROF.trackComp&&!!PROF.trackClubs===l.clubs&&!!PROF.trackRead===l.read&&(l.disp==='off'?!PROF.trackDisp:(!!PROF.trackDisp&&(PROF.dispMode||'all')===l.disp)))k=x;});return k;},
- apply:function(k){var l=this.L[k];if(!l)return;PROF.predict=true;PROF.trackComp=true;PROF.trackClubs=l.clubs;PROF.trackRead=l.read;PROF.trackDisp=l.disp!=='off';if(l.disp!=='off')PROF.dispMode=l.disp;PROF.logLevel=k;saveProf();},
- mins:function(k){var l=this.L[k];return 5+2+(l.clubs?1:0)+(l.disp==='tee'?0.5:l.disp==='app'?1.2:l.disp==='all'?1.5:0)+(l.read?1:0);},
+ current:function(){var k=null,me=this;this.order.forEach(function(x){var l=me.L[x];if(PROF.predict!==false&&!!PROF.trackComp===l.comp&&!!PROF.trackClubs===l.clubs&&!!PROF.trackRead===l.read&&(l.disp==='off'?!PROF.trackDisp:(!!PROF.trackDisp&&(PROF.dispMode||'all')===l.disp)))k=x;});return k;},
+ apply:function(k){var l=this.L[k];if(!l)return;PROF.predict=true;PROF.trackComp=l.comp;PROF.trackClubs=l.clubs;PROF.trackRead=l.read;PROF.trackDisp=l.disp!=='off';if(l.disp!=='off')PROF.dispMode=l.disp;PROF.logLevel=k;saveProf();},
+ mins:function(k){var l=this.L[k];return 5+(l.comp?2:0)+(l.clubs?1:0)+(l.disp==='tee'?0.5:l.disp==='app'?1.2:l.disp==='all'?1.5:0)+(l.read?1:0);},
  /* side-by-side comparison of the four levels */
  table:function(es,rec,cur){var me=this,Y='<i class="y">✓</i>',N='<i class="n">–</i>',O=this.order;
    var rows=[[['Suggested handicap index','Hándicap index sugerido'],['20+','10–19.9','5–9.9',['under 5','menos de 5'][es]]],
      [['Lie and distance of every shot','Lie y distancia de cada tiro'],[Y,Y,Y,Y]],
      [['Strokes gained','Strokes gained'],[Y,Y,Y,Y]],
      [['Tiger 5','Tiger 5'],[Y,Y,Y,Y]],
-     [['Process compliance ✓ / ✕','Cumplimiento del proceso ✓ / ✕'],[Y,Y,Y,Y]],
+     [['Process compliance ✓ / ✕','Cumplimiento del proceso ✓ / ✕'],O.map(function(k){return me.L[k].comp?Y:N;})],
      [['Club on every shot','Palo en cada tiro'],O.map(function(k){return me.L[k].clubs?Y:N;})],
      [['Tee shots: missed left or right','Salidas: fallo a izquierda o derecha'],O.map(function(k){return me.L[k].disp!=='off'?Y:N;})],
      [['Approaches and short game against your target','Approaches y juego corto respecto de tu objetivo'],O.map(function(k){var d=me.L[k].disp;return (d==='app'||d==='all')?Y:N;})],
@@ -3560,6 +3560,8 @@ var LOGLVL={order:['ess','ply','plus','ana'],
      '<details class="lvCmp"><summary>'+(es?'Comparar los niveles':'Compare the levels')+'</summary>'+this.table(es,rec,cur)+'</details>'+
      (cur?'':'<p class="hisub" style="margin-top:8px">'+(es?'Tus opciones no coinciden con ningún nivel, así que estás en <b>Personalizado</b>. Tocá un nivel para volver a uno estándar.':'Your settings match no level, so you are on <b>Custom</b>. Tap a level to go back to a standard one.')+'</p>');}};
 window.LOGLVL=LOGLVL;
+/* once: compliance moved to Analyst only — players on a lower level keep their level, without the compliance column */
+try{if(!PROF.compMig){PROF.compMig=1;if(PROF._upd&&/^(ess|ply|plus)$/.test(PROF.logLevel||'')&&PROF.trackComp){PROF.trackComp=false;saveProf();}else localStorage.setItem(PROFK,JSON.stringify(PROF));}}catch(e){}
 /* ===== Data accuracy: how complete and precise the logged data is. Two parts:
    1) the ceiling the active settings allow (each column has a weight), 2) how fully the player actually fills it in (last 10 rounds).
    Weights: shots 50 · flag position 5 · tee 5 · compliance 10 · club 10 · tee-shot dispersion 5 · approach dispersion 10 · putt dispersion 3 · putt read 2 = 100 ===== */
@@ -3567,7 +3569,7 @@ var ACC_W={shots:50,pin:5,tee:5,comp:10,club:10,dtee:5,dapp:10,dputt:3,read:2};
 var ACC_N={shots:['lie and distance','lie y distancia'],pin:['flag position','posición de bandera'],tee:['tee','tee'],comp:['compliance','cumplimiento'],club:['club','palo'],dtee:['tee-shot misses','fallos de salida'],dapp:['approach dispersion','dispersión de approaches'],dputt:['missed putts','putts errados'],read:['putt read','lectura del putt']};
 function accOn(P){P=P||PROF;var dm=P.trackDisp?(P.dispMode||'all'):'off';return {shots:1,pin:1,tee:1,comp:P.trackComp?1:0,club:P.trackClubs?1:0,dtee:dm!=='off'?1:0,dapp:(dm==='app'||dm==='all')?1:0,dputt:dm==='all'?1:0,read:P.trackRead?1:0};}
 function accCeil(P){var o=accOn(P),t=0;for(var k in ACC_W)t+=ACC_W[k]*o[k];return t;}
-function accLvl(k){var l=LOGLVL.L[k];if(!l)return 0;return accCeil({trackComp:true,trackClubs:l.clubs,trackDisp:l.disp!=='off',dispMode:l.disp,trackRead:l.read});}
+function accLvl(k){var l=LOGLVL.L[k];if(!l)return 0;return accCeil({trackComp:l.comp,trackClubs:l.clubs,trackDisp:l.disp!=='off',dispMode:l.disp,trackRead:l.read});}
 /* fill rate of each column over the last 10 logged rounds (null when there is nothing to measure) */
 function accUsage(){var rs=[];try{rs=(window.getLoggedRounds?window.getLoggedRounds():[]).filter(function(r){return r&&r.holes&&r.holes.length;}).slice(-10);}catch(e){}
  if(!rs.length)return null;var C={};Object.keys(ACC_W).forEach(function(k){C[k]={n:0,y:0};});var add=function(k,v){C[k].n++;C[k].y+=v;};
@@ -3604,7 +3606,7 @@ function cardRows(hi){if(hi==null||isNaN(hi))return 8;return hi<=5?6:hi<=12?7:hi
 function cardHI(){try{return playerHI();}catch(e){return null;}}
 /* what one card asks for, by detail level (or the player's own switches): compliance box, club, dispersion (tee only / every shot / incl. putts), putt read */
 function cardSpec(lv){var L=(typeof LOGLVL!=='undefined'&&LOGLVL.L[lv])||null;
- if(L)return {key:lv,name:L.n,comp:true,club:L.clubs,disp:L.disp,read:L.read};
+ if(L)return {key:lv,name:L.n,comp:L.comp,club:L.clubs,disp:L.disp,read:L.read};
  return {key:'custom',name:['Your settings','Tu configuración'],comp:!!PROF.trackComp,club:!!PROF.trackClubs,disp:(PROF.trackDisp||PROF.trackRead)?(PROF.dispMode||'all'):'off',read:!!PROF.trackRead};}
 function cardLevelNow(){try{return LOGLVL.current()||'custom';}catch(e){return 'custom';}}
 function cardInfoHTML(lv){var es=window.__LANG==='es',hi=cardHI(),n=cardRows(hi),S=cardSpec(lv||cardLevelNow()),bits=[];
@@ -5057,7 +5059,7 @@ function lgPractice(level){
    var h=R.holes[PR_HI];h.par=4;h.pin='M';h.teeOv=null;h.done=false;h.yd=stdYd(ck,tk,PR_HI);h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];teeArmed=false;
  }
  var l=(typeof LOGLVL!=='undefined'&&LOGLVL.L[level])||null;
- if(l){PROF.predict=true;PROF.trackComp=true;PROF.trackClubs=l.clubs;PROF.trackRead=l.read;PROF.trackDisp=l.disp!=='off';if(l.disp!=='off')PROF.dispMode=l.disp;}
+ if(l){PROF.predict=true;PROF.trackComp=l.comp;PROF.trackClubs=l.clubs;PROF.trackRead=l.read;PROF.trackDisp=l.disp!=='off';if(l.disp!=='off')PROF.dispMode=l.disp;}
  lgEntered=true;scMode=false;gotoHole(PR_HI);render();
  var _h=R.holes[PR_HI];if(!_h.teeOv&&_h.shots.length===1)setTimeout(function(){try{var ti=document.querySelector('[data-ydtee="'+PR_HI+'"]');if(ti){ti.focus();ti.select();}}catch(e){}},350);
  try{var wrap=document.querySelector('#lgTable');if(wrap)wrap.scrollIntoView({block:'center'});}catch(e){}
@@ -5075,7 +5077,7 @@ function lgPracticeFill(level){if(!R._tour)return;var h=R.holes[PR_HI],l=LOGLVL.
  if(COURSES[R.course]&&COURSES[R.course].tees.Azules)h.teeOv='Azules';h.pin='B';h.pinSet=true;recomputeHoleYd(PR_HI);
  h.shots=PR_HOLE.map(function(e,i){var o=h.shots[i]&&h.shots[i].conf!==false?h.shots[i]:{};var s={lie:e.lie,dist:(i===0?h.yd:e.dist),pen:0,conf:true};
    ['club','clubSet','disp','dispYd','read','comp'].forEach(function(k){if(o[k]!==undefined)s[k]=o[k];});
-   s.comp=e.comp;
+   if(l.comp)s.comp=e.comp;else delete s.comp;
    if(l.clubs){var pc=lgPracticeClubs()[i];s.club=pc.c;s.clubSet=true;}
    var dk=(i===0)?(l.disp!=='off'):(e.lie==='putt'?l.disp==='all':(l.disp==='app'||l.disp==='all'));
    if(dk&&e.disp)s.disp=e.disp;
@@ -5580,28 +5582,28 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
   {pre:function(){try{if(window.LGR&&window.LGR.demoOn&&window.LGR.demoOn())window.LGR.demoEnd();}catch(e){}go('log')();},sel:'#newRoundForm',en:{h:"Log a round: the round details",p:"Every round starts here: the date, the holes, the course and tee, your <b>gross score</b> and your <b>playing handicap</b>, and two checks: tournament round, and whether it counts for your handicap. Then <b>Your par</b> shows the net par you play to on every hole."},es:{h:"Cargar vuelta: los datos de la vuelta",p:"Cada vuelta empieza acá: la fecha, los hoyos, la cancha y el tee, tu <b>score gross</b> y tu <b>hándicap de juego</b>, y dos checks: vuelta de torneo, y si cuenta para tu hándicap. Después <b>Tu par</b> te muestra el par neto que jugás en cada hoyo."}},
   {pre:function(){if(window.LGR&&window.LGR.demo)window.LGR.demo(0);},sel:'#holeacts',en:{h:"Hole by hole",p:"<b>Next hole →</b> moves on; the scorecard builds itself. Use it now to browse the demo round — or the hole numbers above."},es:{h:"Hoyo por hoyo",p:"<b>Siguiente hoyo →</b> avanza; la tarjeta se arma sola. Usalo ahora para recorrer la vuelta de demostración — o los números de hoyo de arriba."}},
   {pintro:true,center:true,pre:go('log'),en:{h:"Now you: log a hole",p:"Time to try it. You will log one hole in the real logging screen, four times, once per detail level: Essentials, Player, Player+ and Analyst. Each step adds the columns of that level."},es:{h:"Ahora vos: cargá un hoyo",p:"Hora de probarlo. Vas a cargar un hoyo en la pantalla real de carga, cuatro veces, una por nivel de detalle: Esencial, Jugador, Jugador+ y Analista. Cada paso suma las columnas de ese nivel."}},
-  {practice:'ess',en:{h:"Essentials level: every shot, plus compliance",p:"This is the real logging screen. Read what happened and log it: type each distance <b>in the column of where the shot was played from</b> (yards, feet on the green), fix the prediction if it is wrong, press <span class='tk'>Enter</span> to confirm each shot once it is right, and tap <b>Compl.</b> on every shot. This is the Essentials level."},es:{h:"Nivel Esencial: cada tiro, más cumplimiento",p:"Esta es la pantalla real de carga. Leé qué pasó y cargalo: escribí cada distancia <b>en la columna de desde dónde se jugó el tiro</b> (yardas, pies en el green), corregí la predicción si está mal, apretá <span class='tk'>Enter</span> para confirmar cada tiro cuando esté bien, y tocá <b>Cumpl.</b> en cada tiro. Este es el nivel Esencial."}},
-  {practice:'ply',en:{h:"Player level: club and tee misses",p:"Same hole, one level up. The <b>Club</b> column appears (predicted from your bag: change it if needed), and <b>Disp.</b> asks which side a tee shot missed the fairway."},es:{h:"Nivel Jugador: palo y salidas",p:"El mismo hoyo, un nivel más. Aparece la columna <b>Palo</b> (predicha según tu bolsa: cambiala si hace falta), y <b>Disp.</b> pregunta hacia qué lado una salida falló el fairway."}},
-  {practice:'plus',en:{h:"Player+ level: every approach",p:"Now <b>Disp.</b> also asks where each approach and short shot finished <b>against your target</b>, not the flag: L / R, S short, LO long, or both (SR = short right); ✓ on target."},es:{h:"Nivel Jugador+: cada approach",p:"Ahora <b>Disp.</b> también pregunta dónde terminó cada approach y tiro corto <b>respecto de tu objetivo</b>, no de la bandera: L / R, S corto, LO largo, o las dos (SR = corto a la derecha); ✓ en el objetivo."}},
-  {practice:'ana',en:{h:"Analyst level: putts",p:"The full detail: where each <b>missed putt</b> finished, and the <b>read</b> of every putt longer than 3 feet: uphill or downhill, and the break."},es:{h:"Nivel Analista: putts",p:"Todo el detalle: dónde terminó cada <b>putt errado</b>, y la <b>lectura</b> de cada putt de más de 3 pies: subida o bajada, y la caída."}},
+  {practice:'ess',en:{h:"Essentials: every shot",p:"Type each distance in the column it was played from. <span class='tk'>Enter</span> confirms the shot."},es:{h:"Esencial: cada tiro",p:"Escribí cada distancia en la columna desde donde se jugó. <span class='tk'>Enter</span> confirma el tiro."}},
+  {practice:'ply',en:{h:"Player: club and tee miss",p:"New: the <b>Club</b> column, and the side your tee shot missed."},es:{h:"Jugador: palo y salida",p:"Nuevo: la columna <b>Palo</b>, y el lado al que falló tu salida."}},
+  {practice:'plus',en:{h:"Player+: every approach",p:"New: where each approach finished against your target."},es:{h:"Jugador+: cada approach",p:"Nuevo: dónde terminó cada approach respecto de tu objetivo."}},
+  {practice:'ana',en:{h:"Analyst: putts and process",p:"New: missed putts, the read, and <b>Compl.</b>: did you follow your process?"},es:{h:"Analista: putts y proceso",p:"Nuevo: putts errados, la lectura y <b>Cumpl.</b>: ¿seguiste tu proceso?"}},
   {center:true,pre:go('log'),en:{h:"Your turn",p:"Log your next round right after you play — five minutes, before your drink arrives. The demo round stays in <b>Log a round</b> until you have 10 rounds of your own. Replay this tour any time with the <b>plane</b> button."},es:{h:"Tu turno",p:"Cargá tu próxima vuelta apenas termines — cinco minutos, antes de que llegue tu bebida. La vuelta de demostración queda en <b>Cargar vuelta</b> hasta que tengas 10 vueltas propias. Repetí este recorrido cuando quieras con el botón del <b>avión</b>."}}
  ];
  /* ---- practice hole: the player logs one example hole in the REAL logger (same window as logging a round), level by level,
         exactly as the four detail levels in Profile → Round logging: Essentials → Player → Player+ → Analyst. Nothing is saved. ---- */
  var PLV=['ess','ply','plus','ana'];
  var PSTORY={
-  ess:[["Hole 9, par 4. You play from the black tees (380 yards), but today the markers on this hole were set where the <b>blue</b> tee is, and the <b>flag was at the back</b> of the green: your cursor is on the tee distance, press <span class='tk'>Tab</span> to change the <b>marker position</b> to blue, then set the flag to <b>Back +10</b>. The tee distance updates itself","Hoyo 9, par 4. Jugás desde las negras (380 yardas), pero hoy en este hoyo las marcas estaban donde va el tee <b>azul</b>, y la <b>bandera atrás</b> del green: el cursor está en la distancia del tee, apretá <span class='tk'>Tab</span> para cambiar la <b>posición de las marcas</b> a azul, y después marcá la bandera en <b>Atrás +10</b>. La distancia del tee se actualiza sola"],
-       ["Your drive finished in the rough, 140 yards out. The prediction (amber) already has it in the rough, but at 150: check the distance and type <b>140</b>","Tu salida quedó en el rough, a 140 yardas. La predicción (en ámbar) ya la pone en el rough, pero a 150: revisá la distancia y escribí <b>140</b>"],
-       ["The approach found the bunker, 15 yards out. This time the prediction has the right distance in the wrong lie (rough): press <span class='tk'>Tab</span> to move the pill to <b>Sand</b>","El approach quedó en el bunker, a 15 yardas. Esta vez la predicción tiene la distancia correcta en el lie equivocado (rough): apretá <span class='tk'>Tab</span> para mover el valor a <b>Bunker</b>"],
-       ["You splashed out to 8 feet","Saliste a 8 pies"],
-       ["The 8-foot putt slid 2 feet past, and you holed the next one","El putt de 8 pies se pasó 2 pies y embocaste el siguiente"],
-       ["Compliance judges your process, not the result. On the approach your plan was the centre of the green but you aimed at the pin: ✕, even though it was a decent shot. On every other shot you did your routine and committed to your target: ✓, even the drive that found the rough","El cumplimiento juzga tu proceso, no el resultado. En el approach tu plan era el centro del green pero apuntaste a la bandera: ✕, aunque el tiro no fue malo. En todos los demás hiciste tu rutina y te comprometiste con tu objetivo: ✓, incluso la salida que fue al rough"]],
+  ess:[["Tee: markers were on <b>blue</b>, flag at the <b>back</b>. Press <span class='tk'>Tab</span> to blue, then tap <b>Back +10</b>","Tee: las marcas estaban en <b>azul</b>, bandera <b>atrás</b>. Apretá <span class='tk'>Tab</span> hasta azul y tocá <b>Atrás +10</b>"],
+       ["Drive: rough, 140 yards. Prediction says 150: type <b>140</b>","Salida: rough, a 140 yardas. La predicción dice 150: escribí <b>140</b>"],
+       ["Approach: bunker, 15 yards. Right distance, wrong lie: <span class='tk'>Tab</span> to <b>Sand</b>","Approach: bunker, a 15 yardas. Distancia bien, lie mal: <span class='tk'>Tab</span> hasta <b>Bunker</b>"],
+       ["Bunker shot: to <b>8 feet</b>","Salida del bunker: a <b>8 pies</b>"],
+       ["Two putts: 8 feet, then <b>2 feet</b>","Dos putts: 8 pies y después <b>2 pies</b>"]],
   ply:[["@CLUBS@","@CLUBS@"],
-       ["Dispersion, tee shot: the drive missed the fairway <b>to the right</b>: mark <b>R</b>","Dispersión, salida: el drive falló el fairway <b>a la derecha</b>: marcá <b>R</b>"]],
-  plus:[["Dispersion, approach: it came up <b>short and right</b> of your target: mark <b>SR</b>","Dispersión, approach: quedó <b>corto y a la derecha</b> de tu objetivo: marcá <b>SR</b>"],
-       ["Dispersion, bunker shot: it ran <b>long</b> of your target: mark <b>LO</b>","Dispersión, salida del bunker: pasó <b>larga</b> de tu objetivo: marcá <b>LO</b>"]],
-  ana:[["Dispersion, first putt: the 8-footer missed <b>long</b>: mark <b>LO</b>. The holed putt needs nothing","Dispersión, primer putt: el de 8 pies se pasó <b>largo</b>: marcá <b>LO</b>. El putt embocado no lleva nada"],
-       ["Read, first putt: downhill, breaking left to right: mark <b>DL</b>","Lectura, primer putt: bajada, de izquierda a derecha: marcá <b>DL</b>"]]
+       ["Drive missed <b>right</b>: mark <b>R</b>","La salida falló <b>a la derecha</b>: marcá <b>R</b>"]],
+  plus:[["Approach finished <b>short right</b>: mark <b>SR</b>","El approach quedó <b>corto a la derecha</b>: marcá <b>SR</b>"],
+       ["Bunker shot went <b>long</b>: mark <b>LO</b>","La salida del bunker pasó <b>larga</b>: marcá <b>LO</b>"]],
+  ana:[["First putt missed <b>long</b>: mark <b>LO</b>","El primer putt se pasó <b>largo</b>: marcá <b>LO</b>"],
+       ["Its read: downhill, left to right: mark <b>DL</b>","Su lectura: bajada, de izquierda a derecha: marcá <b>DL</b>"],
+       ["Compliance = process, not result. Approach: you aimed at the pin against your plan: <b>✕</b>. Every other shot: <b>✓</b>","Cumplimiento = proceso, no resultado. Approach: apuntaste a la bandera contra tu plan: <b>✕</b>. Los demás tiros: <b>✓</b>"]]
  };
  var PANS=[{lie:'tee',dist:0,club:'D',disp:'R',comp:true},{lie:'rough',dist:140,club:'7',disp:'SR',comp:false},{lie:'sand',dist:15,club:'56',disp:'G',comp:true},{lie:'putt',dist:8,club:'P',disp:'G',read:'DL',comp:true},{lie:'putt',dist:2,club:'P',comp:true}];
  function pClub(c){c=String(c||'').toUpperCase().replace(/\s/g,'');if(/^D(R|RIVER)?$/.test(c))return 'D';if(/^P(T|UTTER)?$/.test(c))return 'P';return c.replace(/^(\d)I$/,'$1');}
@@ -5618,13 +5620,13 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    if(!errs.length&&S.length>PANS.length)errs.push(es?'Sobran tiros: el hoyo terminó en 5.':'Too many shots: the hole ended in 5.');
    
    if(!errs.length){for(var k2=0;k2<PANS.length;k2++){var a2=PANS[k2],s2=S[k2];
-     if(s2.comp!==a2.comp){errs.push(es?'Cumplimiento de '+nth(k2)+': '+(a2.comp?'✓':'✕')+'.':'Compliance on '+nth(k2)+': '+(a2.comp?'✓':'✕')+'.');break;}
+     if(i>=3&&s2.comp!==a2.comp){errs.push(es?'Cumplimiento de '+nth(k2)+': '+(a2.comp?'✓':'✕')+'.':'Compliance on '+nth(k2)+': '+(a2.comp?'✓':'✕')+'.');break;}
      if(i>=1&&pClub(s2.club)!==pClub(CL[k2]?CL[k2].c:a2.club)){errs.push(es?'Palo de '+nth(k2)+'.':'Club on '+nth(k2)+'.');break;}
      var needD=(k2===0&&i>=1)||((k2===1||k2===2)&&i>=2)||(k2===3&&i>=3);
      if(needD&&s2.disp!==a2.disp){errs.push(es?'Dispersión de '+nth(k2)+'.':'Dispersion on '+nth(k2)+'.');break;}
      if(k2===3&&i>=3&&s2.read!==a2.read){errs.push(es?'Lectura del primer putt.':'Read of the first putt.');break;}}}
    return errs.length?{ok:false,msg:errs[0]}:{ok:true,msg:es?'¡Perfecto! Score del hoyo: 5, un bogey.':'Spot on. Hole score: 5, a bogey.'};}
- function pClubLine(es){var C=(window.LGR&&window.LGR.practiceClubs)?window.LGR.practiceClubs():[];var n=C.map(function(x){return x.label;}).join(', ');return es?'Palos, de tu bolsa: '+n+'. El palo viene predicho: confirmalo o cambialo':'Clubs, from your bag: '+n+'. The club comes predicted: confirm it or change it';}
+ function pClubLine(es){var C=(window.LGR&&window.LGR.practiceClubs)?window.LGR.practiceClubs():[];var n=C.map(function(x){return x.label;}).join(', ');return es?'Palos: '+n+'. Vienen predichos: confirmá o cambiá':'Clubs: '+n+'. They come predicted: confirm or change';}
  function pStory(level){var es=ES(),i=PLV.indexOf(level),out='';
    PLV.slice(i,i+1).forEach(function(lv,j){out+=PSTORY[lv].map(function(x){var t=es?x[1]:x[0];if(t==='@CLUBS@')t=pClubLine(es);return '<li>'+t+'</li>';}).join('');});
    return '<ol class="pstory">'+out+'</ol>';}
