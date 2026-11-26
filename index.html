@@ -3462,11 +3462,14 @@ function cardDoc(lv){
  if(S.read)lines.push('<b>'+T('Read','Lect.')+'</b>: '+T('putts over 3 ft: uphill U / downhill D, break L or R (e.g. DL); – flat and straight.','putts de más de 3 pies: subida S / bajada B, caída I o D (ej. BI); – plano y recto.'));
  lines.push('<b>'+T('Level','Nivel')+'</b>: '+T('this card is for the level printed at the top. Log a round shows your current level: if it is different, print a new card.','esta tarjeta es para el nivel impreso arriba. Cargar vuelta muestra tu nivel actual: si es distinto, imprimí una tarjeta nueva.'));
  lines.push(T('Shot 1 is the tee: the distance is the hole length. Putts come from the G shots and par from the course, so there is no row for them; Pen is for penalty strokes. Log the round in Golfimbul afterwards, one column per hole.','El tiro 1 es el tee: la distancia es el largo del hoyo. Los putts salen de los tiros G y el par de la cancha, así que no tienen fila; Pen es para golpes de penalidad. Después cargá la vuelta en Golfimbul, una columna por hoyo.'));
- return '<!doctype html><html><head><meta charset="utf-8"><title> </title><style>'+css+'</style></head><body>'+
+ return '<!doctype html><html><head><meta charset="utf-8"><title>'+cardName(S)+'</title><style>'+css+'</style></head><body>'+
   '<div class="top"><h1>Golfimbul</h1><span class="tier">'+S.name[es?1:0]+'<small>'+T('scorecard','tarjeta')+'</small></span><span class="lvl">'+T('Printed','Impresa')+' '+new Date().toLocaleDateString(es?'es-AR':'en-GB',{day:'numeric',month:'short',year:'numeric'})+' · '+N+' '+T('shot rows','filas de tiros')+'</span></div>'+
   '<div class="f"><span>'+T('Player','Jugador')+'</span><span>'+T('Date','Fecha')+'</span><span>'+T('Course','Cancha')+'</span><span>Tees</span><span>'+T('Playing hcp','Hcp de juego')+'</span></div>'+
   panel(1,'Out')+panel(10,'In')+'<div class="leg">'+lines.join('<br>')+'</div></body></html>';}
-function printCard(lv){var html=cardDoc(lv),fr=document.createElement('iframe');fr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(fr);
+/* file name when saved as PDF: Golfimbul - <tier> - Scorecard (browsers use the page title) */
+function cardName(S){var es=window.__LANG==='es';return 'Golfimbul - '+S.name[es?1:0]+' - '+(es?'Tarjeta':'Scorecard');}
+function printCard(lv){var S0=cardSpec(lv||cardLevelNow()),nm=cardName(S0),old=document.title;document.title=nm;setTimeout(function(){document.title=old;},90000);window.addEventListener('afterprint',function ap(){document.title=old;window.removeEventListener('afterprint',ap);});
+ var html=cardDoc(lv),fr=document.createElement('iframe');fr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(fr);
  var d=fr.contentWindow.document;d.open();d.write(html);d.close();
  setTimeout(function(){try{fr.contentWindow.focus();fr.contentWindow.print();}catch(e){var w=window.open('','_blank');if(w){w.document.write(html);w.document.close();w.print();}}setTimeout(function(){if(fr.parentNode)fr.parentNode.removeChild(fr);},60000);},300);}
 document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('#pf_printcard');if(b){e.preventDefault();var sl=document.getElementById('pf_cardlvl');printCard(sl?sl.value:cardLevelNow());}});
