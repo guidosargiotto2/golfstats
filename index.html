@@ -3535,10 +3535,23 @@ function printCard(lv){var S0=cardSpec(lv||cardLevelNow()),nm=cardName(S0),old=d
  var html=cardDoc(lv),fr=document.createElement('iframe');fr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(fr);
  var d=fr.contentWindow.document;d.open();d.write(html);d.close();
  setTimeout(function(){try{fr.contentWindow.focus();fr.contentWindow.print();}catch(e){var w=window.open('','_blank');if(w){w.document.write(html);w.document.close();w.print();}}setTimeout(function(){if(fr.parentNode)fr.parentNode.removeChild(fr);},60000);},300);}
-document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('#pf_printcard');if(b){e.preventDefault();var sl=document.getElementById('pf_cardlvl');printCard(sl?sl.value:cardLevelNow());}});
+document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('#pf_printcard');if(b){e.preventDefault();var sl=document.getElementById('pf_cardlvl');downloadCard(sl?sl.value:cardLevelNow(),b);}});
 document.addEventListener('change',function(e){var t=e.target;if(t&&(/^pf_(clubs|disp|read|comp)$/.test(t.id||'')||t.id==='pf_cardlvl')){var el=document.getElementById('pf_cardinfo'),sl=document.getElementById('pf_cardlvl');if(sl&&t.id!=='pf_cardlvl')sl.value=cardLevelNow();if(el)el.innerHTML=cardInfoHTML(sl?sl.value:undefined);}});
 document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('#pf_level [data-lvl]'))setTimeout(function(){var sl=document.getElementById('pf_cardlvl'),el=document.getElementById('pf_cardinfo');if(sl)sl.value=cardLevelNow();if(el)el.innerHTML=cardInfoHTML(sl?sl.value:undefined);},50);});
-window.CARD={doc:cardDoc,print:printCard};
+/* download a real PDF named "Golfimbul - <tier> - Scorecard.pdf": the card is drawn in a hidden A4 frame and saved with jsPDF; printing stays as the fallback */
+var CARD_LIBS=['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js','https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
+function cardLibs(i,cb){if(i>=CARD_LIBS.length)return cb();if((i===0&&window.html2canvas)||(i===1&&window.jspdf))return cardLibs(i+1,cb);var sc=document.createElement('script');sc.src=CARD_LIBS[i];sc.onload=function(){cardLibs(i+1,cb);};sc.onerror=function(){cb(new Error('lib'));};document.head.appendChild(sc);}
+function downloadCard(lv,btn){var S0=cardSpec(lv||cardLevelNow()),nm=cardName(S0),es=window.__LANG==='es',old=btn?btn.textContent:'';
+ if(btn){btn.disabled=true;btn.textContent=es?'Preparando…':'Preparing…';}
+ var done=function(){if(btn){btn.disabled=false;btn.textContent=old;}};
+ cardLibs(0,function(err){if(err||!window.html2canvas||!window.jspdf){done();printCard(lv);return;}
+   var fr=document.createElement('iframe');fr.style.cssText='position:fixed;left:-10000px;top:0;width:794px;height:1123px;border:0;visibility:hidden';document.body.appendChild(fr);
+   var d=fr.contentWindow.document;d.open();d.write(cardDoc(lv));d.close();
+   setTimeout(function(){window.html2canvas(d.body,{scale:2,backgroundColor:'#ffffff',width:794,windowWidth:794,useCORS:true}).then(function(cv){
+       var pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait'}),W=210,H=cv.height*W/cv.width,y=0;
+       if(H>297){var k=297/H;pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',(210-W*k)/2,0,W*k,297);}else pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',0,0,W,H);
+       pdf.save(nm+'.pdf');fr.remove();done();}).catch(function(){fr.remove();done();printCard(lv);});},350);});}
+window.CARD={doc:cardDoc,print:printCard,download:downloadCard};
 function cardLvlSel(){var es=window.__LANG==='es',cur=cardLevelNow(),O=['ess','ply','plus','ana'];
  return '<label style="margin:0">'+(es?'Tarjeta para el nivel':'Card for the level')+'<select id="pf_cardlvl">'+O.map(function(k){return '<option value="'+k+'"'+(k===cur?' selected':'')+'>'+LOGLVL.L[k].n[es?1:0]+'</option>';}).join('')+'<option value="custom"'+(cur==='custom'?' selected':'')+'>'+(es?'Mi configuración (personalizado)':'My settings (custom)')+'</option></select></label>';}
 function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage.getItem(PROFK))||{})}catch(e){return Object.assign({},PROF_DEF)}}
@@ -4074,7 +4087,7 @@ function renderSetup(){
    var ds0=document.getElementById('demoSlot');if(ds0)ds0.innerHTML='';
    renderSel();return;
  }
- if(!DEMO_ON){var dc=document.getElementById('demoSlot');if(!dc){var nf0=document.getElementById('newRoundForm');if(nf0){dc=document.createElement('div');dc.id='demoSlot';nf0.parentNode.insertBefore(dc,nf0);}}if(dc){dc.innerHTML=demoCardHTML()+practiceCardHTML()+scorecardCardHTML();var spo=document.getElementById('scPrintOpen');if(spo)spo.onclick=function(){if(window.CARD)window.CARD.print();};var dob=document.getElementById('demoOpen');if(dob)dob.onclick=function(){lgEntered=true;lgDemo();};var pob=document.getElementById('practiceOpen');if(pob)pob.onclick=function(){if(window.TOUR&&window.TOUR.practice)window.TOUR.practice();};}}
+ if(!DEMO_ON){var dc=document.getElementById('demoSlot');if(!dc){var nf0=document.getElementById('newRoundForm');if(nf0){dc=document.createElement('div');dc.id='demoSlot';nf0.parentNode.insertBefore(dc,nf0);}}if(dc){dc.innerHTML=demoCardHTML()+practiceCardHTML()+scorecardCardHTML();var spo=document.getElementById('scPrintOpen');if(spo)spo.onclick=function(){if(window.CARD)window.CARD.download(null,spo);};var dob=document.getElementById('demoOpen');if(dob)dob.onclick=function(){lgEntered=true;lgDemo();};var pob=document.getElementById('practiceOpen');if(pob)pob.onclick=function(){if(window.TOUR&&window.TOUR.practice)window.TOUR.practice();};}}
  if(rc)rc.style.display='none';if(nf)nf.style.display='';
  var ti=document.getElementById('lgTitle');if(ti)ti.textContent=editRoundId?t('Edit round'):t('Start a round');var mt0=document.getElementById('meta');if(mt0)mt0.style.display='none';
  var sc=document.getElementById('selScore');if(sc&&document.activeElement!==sc)sc.value=R.score||'';
@@ -4573,7 +4586,7 @@ ${PROF.gender==='m'?`  <label class="chkrow" style="flex-direction:row;align-ite
     <div class="hisub" style="margin:0">${window.__LANG==='es'?'Una tarjeta tiro por tiro para imprimir y llevar en el bolsillo: sirve para cualquier cancha, con tantas filas por hoyo como suele necesitar tu hándicap y los casilleros de tu nivel de detalle. Anotás en la cancha, sin teléfono, y cargás después.':'A shot-by-shot card to print and carry in your pocket: it works on any course, with as many rows per hole as your handicap usually needs and the boxes of your detail level. Note it on the course, phone in the bag, and log it afterwards.'}</div>
     ${cardLvlSel()}
     <div class="hisub" id="pf_cardinfo" style="margin:0">${cardInfoHTML()}</div>
-    <button type="button" class="pf_btn" id="pf_printcard" style="margin-top:2px">${window.__LANG==='es'?'Imprimir mi tarjeta':'Print my scorecard'}</button>
+    <button type="button" class="pf_btn" id="pf_printcard" style="margin-top:2px">${window.__LANG==='es'?'Descargar mi tarjeta (PDF)':'Download my scorecard (PDF)'}</button>
   </div>
   <div class="hiblock">
     <div class="hirow"><span>${window.__LANG==='es'?'Predicción':'Prediction'}</span><em class="estchip">${window.__LANG==='es'?'apagada: +3 min':'off: +3 min'}</em></div>
@@ -4807,7 +4820,7 @@ function demoBanner(){var v=document.getElementById('view-log');if(!v)return;var
  b.innerHTML='<span><b>'+(es?'VUELTA DE DEMOSTRACIÓN':'DEMO ROUND')+'</b> · '+(es?'recorrela hoyo por hoyo — nada se guarda.':'explore it hole by hole — nothing is saved.')+'</span><button type="button" id="demoExit">'+(es?'Salir de la demo':'Exit demo')+'</button>';
  document.getElementById('demoExit').onclick=lgDemoEnd;}
 function scorecardCardHTML(){var es=window.__LANG==='es',lv='custom',nm=es?'Personalizado':'Custom',n=8;try{lv=LOGLVL.current()||'custom';if(LOGLVL.L[lv])nm=LOGLVL.L[lv].n[es?1:0];n=cardRows(playerHI());}catch(e){}
- return '<div class="demoCard practiceCard scCardPrint"><div><b>'+(es?'Tu tarjeta para la cancha':'Your scorecard for the course')+'</b> '+(es?'Nivel <b class="scTier">'+nm+'</b> · '+n+' filas de tiros por hoyo. Imprimila antes de jugar y anotá en la cancha sin el teléfono. Si cambiás de nivel, imprimí una nueva: la tarjeta trae su nivel arriba.':'Level <b class="scTier">'+nm+'</b> · '+n+' shot rows per hole. Print it before you play and note on the course, phone in the bag. If you change level, print a new one: the card shows its level at the top.')+'</div><button type="button" id="scPrintOpen">'+(es?'Imprimir':'Print')+'</button></div>';}
+ return '<div class="demoCard practiceCard scCardPrint"><div><b>'+(es?'Tu tarjeta para la cancha':'Your scorecard for the course')+'</b> '+(es?'Nivel <b class="scTier">'+nm+'</b> · '+n+' filas de tiros por hoyo. Descargala e imprimila antes de jugar, y anotá en la cancha sin el teléfono. Si cambiás de nivel, descargá una nueva: la tarjeta trae su nivel arriba.':'Level <b class="scTier">'+nm+'</b> · '+n+' shot rows per hole. Download it and print it before you play, then note on the course, phone in the bag. If you change level, download a new one: the card shows its level at the top.')+'</div><button type="button" id="scPrintOpen">'+(es?'Descargar PDF':'Download PDF')+'</button></div>';}
 function practiceCardHTML(){var es=window.__LANG==='es';
  return '<div class="demoCard practiceCard"><div><b>'+(es?'Practicá un hoyo':'Practise a hole')+'</b> '+(es?'Cargá un hoyo de ejemplo en los cuatro niveles de detalle y mirá cómo sube la precisión de tus datos. Nada se guarda.':'Log a sample hole at the four detail levels and watch the accuracy of your data grow. Nothing is saved.')+'</div><button type="button" id="practiceOpen">'+(es?'Practicar':'Practise')+'</button></div>';}
 function demoCardHTML(){if(!demoAvailable())return '';var es=window.__LANG==='es';
@@ -5185,6 +5198,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
 .accLine{font-size:12.5px;color:var(--ink-soft);font-family:var(--cond);}
 .accCell{color:var(--pine);}
 .practiceCard{margin-top:10px;}
+.demoCard>button{flex:none;border:none;border-radius:999px;padding:9px 18px;font-family:var(--cond);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:#fff;background:linear-gradient(160deg,var(--fairway),var(--pine));cursor:pointer;box-shadow:0 6px 14px -8px rgba(15,58,44,.7);transition:transform .15s}.demoCard>button:hover{transform:translateY(-1px)}.demoCard>button:disabled{opacity:.6;cursor:wait}
 .scTier{display:inline-block;background:var(--pine);color:var(--sand);border-radius:6px;padding:0 7px;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
 .tourcard .pacc{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-family:var(--cond,sans-serif);font-size:12px;font-weight:700;color:#5c6357;}
 .tourcard .pacc span{text-transform:uppercase;letter-spacing:.06em;font-size:10.5px;white-space:nowrap;}
