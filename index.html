@@ -4370,6 +4370,7 @@ function myClubs(){ /* [{c:code,d:typical total yards}] longest first */
  var dr=driveYd();return CLUBDEF.map(function(x){return {c:x[0],d:Math.round(dr*x[2])};});}
 function predictClub(hi,si,s){
  if(!s)return '';if(s.lie==='putt')return 'Pt';
+ if(R&&R._tour&&si===1&&s.lie!=='putt'){var c9=myClubs().map(function(x){return x.c;});if(c9.indexOf('9i')>=0)return '9i';}   /* practice hole: the approach comes predicted as a 9 iron */
  /* recovery = a punch back into play: a low iron, whatever the distance says */
  if(s.lie==='rec'){var irons=myClubs().map(function(x){return x.c;}).filter(function(c){return /^\di$/.test(c);}).sort();if(irons.length)return irons[0];}
  var h=R.holes[hi],P=PROFILE[pkey(R.course,R.tee,hi)],L=myClubs(),D=+s.dist||0;
@@ -5641,11 +5642,11 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
      if(+s.dist!==d)return bad(k,'dist',T('Check ','Revisá ')+nth(k)+T(': wrong distance.',': distancia equivocada.'),T('The distance was <b>'+d+'</b>'+un(a.lie)+', you have '+s.dist+'. Type <b>'+d+'</b>, then <b>Enter</b>.','La distancia era <b>'+d+'</b>'+un(a.lie)+', pusiste '+s.dist+'. Escribí <b>'+d+'</b> y <b>Enter</b>.'));}
    if(S.length>PANS.length)return bad(PANS.length,'extra',T('Too many shots: the hole ended in 5.','Sobran tiros: el hoyo terminó en 5.'),T('The hole ended with the 2-foot putt. Delete this row: empty the cell and press <b>Backspace</b>.','El hoyo terminó con el putt de 2 pies. Borrá esta fila: vaciá la celda y apretá <b>Backspace</b>.'));
    for(var k2=0;k2<PANS.length;k2++){var a2=PANS[k2],s2=S[k2];
-     if(i>=1&&pClub(s2.club)!==pClub(CL[k2]?CL[k2].c:a2.club))return bad(k2,'club',T('Club on ','Palo de ')+nth(k2)+'.',T('Club: choose <b>'+(CL[k2]?CL[k2].label:a2.club)+'</b> in the Club column of this row.','Palo: elegí <b>'+(CL[k2]?CL[k2].label:a2.club)+'</b> en la columna Palo de esta fila.'));
+     if(i>=1&&!s2.club)return bad(k2,'club',T('Club on ','Palo: ')+nth(k2)+'.',T('Club: choose the club for this shot in the Club column of this row.','Palo: elegí el palo de este tiro en la columna Palo de esta fila.'));
      var needD=(k2<=2&&i>=2)||(k2===3&&i>=3);
-     if(needD&&s2.disp!==a2.disp)return bad(k2,'disp',T('Dispersion on ','Dispersión de ')+nth(k2)+'.',T('Dispersion: in the Disp. column of this row choose <b>'+DW[a2.disp]+'</b>.','Dispersión: en la columna Disp. de esta fila elegí <b>'+DW[a2.disp]+'</b>.'));
+     if(needD&&s2.disp!==a2.disp)return bad(k2,'disp',T('Dispersion on ','Dispersión: ')+nth(k2)+'.',T('Dispersion: in the Disp. column of this row choose <b>'+DW[a2.disp]+'</b>.','Dispersión: en la columna Disp. de esta fila elegí <b>'+DW[a2.disp]+'</b>.'));
      if(k2===3&&i>=3&&s2.read!==a2.read)return bad(3,'read',T('Read of the first putt.','Lectura del primer putt.'),T('Read: downhill, left to right. Choose <b>DL</b> in this row.','Lectura: bajada, de izquierda a derecha. Elegí <b>BI</b> en esta fila.'));
-     if(i>=3&&s2.comp!==a2.comp)return bad(k2,'comp',T('Compliance on ','Cumplimiento de ')+nth(k2)+': '+(a2.comp?'✓':'✕')+'.',T('Compliance: tap the box in this row until it shows <b>'+(a2.comp?'✓':'✕')+'</b>'+(a2.comp?'.':' (you aimed at the pin against your plan).'),'Cumplimiento: tocá el casillero de esta fila hasta ver <b>'+(a2.comp?'✓':'✕')+'</b>'+(a2.comp?'.':' (apuntaste a la bandera contra tu plan).')));}
+     if(i>=3&&s2.comp!==a2.comp)return bad(k2,'comp',T('Compliance on ','Cumplimiento: ')+nth(k2)+' '+(a2.comp?'✓':'✕')+'.',T('Compliance: tap the box in this row until it shows <b>'+(a2.comp?'✓':'✕')+'</b>'+(a2.comp?'.':' (you aimed at the pin against your plan).'),'Cumplimiento: tocá el casillero de esta fila hasta ver <b>'+(a2.comp?'✓':'✕')+'</b>'+(a2.comp?'.':' (apuntaste a la bandera contra tu plan).')));}
    return {ok:true,msg:es?'¡Perfecto! Score del hoyo: 5, un bogey.':'Spot on. Hole score: 5, a bogey.'};}
  /* the help sits next to the row it is about; a wrong shot keeps the cursor on its row until it is fixed */
  function pRowOf(r){var q=function(x){return document.querySelector('#view-log '+x);};
@@ -5662,7 +5663,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    if(r.err&&row.tagName==='TR')row.classList.add('pbad');
    var R0=row.getBoundingClientRect(),tb=document.querySelector('#view-log #lgTable'),TR=tb?tb.getBoundingClientRect():R0;
    b.style.left=Math.max(8,TR.left+34)+'px';b.style.top=(R0.bottom+7)+'px';b.style.maxWidth=Math.max(260,Math.min(620,TR.width-50))+'px';}
- function pClubLine(es){var C=(window.LGR&&window.LGR.practiceClubs)?window.LGR.practiceClubs():[];var n=C.map(function(x){return x.label;}).join(', ');return es?'Palos: '+n+'. Vienen predichos: cambiá si hace falta, <span class=\'tk\'>Enter</span> para confirmar':'Clubs: '+n+'. They come predicted: change if needed, <span class=\'tk\'>Enter</span> to confirm';}
+ function pClubLine(es){return es?'Cada tiro trae su <b>palo</b> predicho de tu bolsa. Si no es el que usarías, cambialo; <span class=\'tk\'>Enter</span> confirma':'Every shot comes with its <b>club</b> predicted from your bag. If it is not the one you would hit, change it; <span class=\'tk\'>Enter</span> confirms';}
  function pStory(level){var es=ES(),i=PLV.indexOf(level),out='';
    PLV.slice(i,i+1).forEach(function(lv,j){out+=PSTORY[lv].map(function(x){var t=es?x[1]:x[0];if(t==='@CLUBS@')t=pClubLine(es);return '<li>'+t+'</li>';}).join('');});
    return '<ol class="pstory">'+out+'</ol>';}
