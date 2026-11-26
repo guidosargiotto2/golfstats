@@ -4633,19 +4633,21 @@ function lgOpenCard(o){if(!o||!o.holes)return;editRoundId=o.id||null;lgLoad(o);R
 var tourSavedR=null;
 var PR_FLAGS=null;
 /* the tour's practice hole: the REAL logger, one throwaway par 4 (380 yd), never saved; level = ess | ply | plus | ana sets the columns exactly as Profile does */
-var PR_HOLE=[{lie:'tee',dist:380,club:'D',disp:'R',comp:true},{lie:'rough',dist:140,club:'7i',disp:'SR',comp:false},{lie:'sand',dist:15,club:'56',disp:'G',comp:true},{lie:'putt',dist:8,club:'P',disp:'G',read:'DL',comp:true},{lie:'putt',dist:2,club:'P',comp:true}];
+var PR_HI=8;   /* hole 9 of Córdoba Golf Club: 380 from the black tee, 361 from the blue markers */
+var PR_HOLE=[{lie:'tee',dist:371,club:'D',disp:'R',comp:true},{lie:'rough',dist:140,club:'7i',disp:'SR',comp:false},{lie:'sand',dist:15,club:'56',disp:'G',comp:true},{lie:'putt',dist:8,club:'P',disp:'G',read:'DL',comp:true},{lie:'putt',dist:2,club:'P',comp:true}];
 function lgPractice(level){
  if(!R._tour){
    if(DEMO_ON&&R._demo)lgDemoEnd();   /* leave the demo round first, so the player's own round is what comes back */
    tourSavedR=JSON.parse(JSON.stringify(R));DEMO_ON=true;
    PR_FLAGS={predict:PROF.predict,trackClubs:PROF.trackClubs,trackDisp:PROF.trackDisp,trackRead:PROF.trackRead,trackComp:PROF.trackComp,dispMode:PROF.dispMode};
    var ck=COURSES.CGC?'CGC':Object.keys(COURSES)[0],c=COURSES[ck],tk=Object.keys(c.tees)[0];
-   R=newRound(ck,tk);R.score='';R.chcp='0';R.phase='play';R.markers=tk;R._tour=true;R.cur=R.hStart;
-   var h=R.holes[R.cur];h.par=4;h.yd=380;h.done=false;h.shots=[{lie:'tee',dist:380,pen:0,conf:true}];teeArmed=false;
+   R=newRound(ck,tk);R.score='';R.chcp='0';R.phase='play';R.markers=tk;R._tour=true;R.cur=PR_HI;
+   var h=R.holes[PR_HI];h.par=4;h.pin='M';h.teeOv=null;h.done=false;h.yd=stdYd(ck,tk,PR_HI);h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];teeArmed=false;
  }
  var l=(typeof LOGLVL!=='undefined'&&LOGLVL.L[level])||null;
  if(l){PROF.predict=true;PROF.trackComp=true;PROF.trackClubs=l.clubs;PROF.trackRead=l.read;PROF.trackDisp=l.disp!=='off';if(l.disp!=='off')PROF.dispMode=l.disp;}
- lgEntered=true;scMode=false;gotoHole(R.hStart);render();
+ lgEntered=true;scMode=false;gotoHole(PR_HI);render();
+ var _h=R.holes[PR_HI];if(!_h.teeOv&&_h.shots.length===1)setTimeout(function(){try{var ti=document.querySelector('[data-ydtee="'+PR_HI+'"]');if(ti){ti.focus();ti.select();}}catch(e){}},350);
  try{var wrap=document.querySelector('#lgTable');if(wrap)wrap.scrollIntoView({block:'center'});}catch(e){}
 }
 function lgPracticeEnd(){
@@ -4654,10 +4656,11 @@ function lgPracticeEnd(){
  DEMO_ON=false;
  if(tourSavedR){R=tourSavedR;tourSavedR=null;}else{var d=loadDefault();R=newRound(d.course,d.tee);}
  lgEntered=false;scMode=false;render();renderSel();}
-function lgPracticeState(){if(!R._tour)return null;var h=R.holes[R.hStart];return JSON.parse(JSON.stringify({done:!!h.done,shots:h.shots.filter(function(s){return s.conf!==false;})}));}
+function lgPracticeState(){if(!R._tour)return null;var h=R.holes[PR_HI];return JSON.parse(JSON.stringify({done:!!h.done,teeOv:h.teeOv||null,pin:h.pin||'M',yd:h.yd,shots:h.shots.filter(function(s){return s.conf!==false;})}));}
 /* "fill it for me": writes the answers for this level into the hole, as if the player had typed them */
-function lgPracticeFill(level){if(!R._tour)return;var h=R.holes[R.hStart],l=LOGLVL.L[level]||LOGLVL.L.ess;
- h.shots=PR_HOLE.map(function(e,i){var o=h.shots[i]&&h.shots[i].conf!==false?h.shots[i]:{};var s={lie:e.lie,dist:e.dist,pen:0,conf:true};
+function lgPracticeFill(level){if(!R._tour)return;var h=R.holes[PR_HI],l=LOGLVL.L[level]||LOGLVL.L.ess;
+ if(COURSES[R.course]&&COURSES[R.course].tees.Azules)h.teeOv='Azules';h.pin='B';h.pinSet=true;recomputeHoleYd(PR_HI);
+ h.shots=PR_HOLE.map(function(e,i){var o=h.shots[i]&&h.shots[i].conf!==false?h.shots[i]:{};var s={lie:e.lie,dist:(i===0?h.yd:e.dist),pen:0,conf:true};
    ['club','clubSet','disp','dispYd','read','comp'].forEach(function(k){if(o[k]!==undefined)s[k]=o[k];});
    s.comp=e.comp;
    if(l.clubs){s.club=e.club;s.clubSet=true;}
@@ -5158,7 +5161,8 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
         exactly as the four detail levels in Profile → Round logging: Essentials → Player → Player+ → Analyst. Nothing is saved. ---- */
  var PLV=['ess','ply','plus','ana'];
  var PSTORY={
-  ess:[["Drive on a 380-yard par 4: it finished in the rough, 140 yards out","Salida en un par 4 de 380 yardas: quedó en el rough, a 140 yardas"],
+  ess:[["Hole 9, par 4. You play from the black tees (380 yards), but today the markers on this hole were set where the <b>blue</b> tee is, and the <b>flag was at the back</b> of the green: your cursor is on the tee distance, press <span class='tk'>Tab</span> to move to the next marker (blue), then set the flag to <b>Back +10</b>. The tee distance updates itself","Hoyo 9, par 4. Jugás desde las negras (380 yardas), pero hoy en este hoyo las marcas estaban donde va el tee <b>azul</b>, y la <b>bandera atrás</b> del green: el cursor está en la distancia del tee, apretá <span class='tk'>Tab</span> para pasar a la marca siguiente (azul), y después marcá la bandera en <b>Atrás +10</b>. La distancia del tee se actualiza sola"],
+       ["Your drive finished in the rough, 140 yards out","Tu salida quedó en el rough, a 140 yardas"],
        ["The approach found the bunker, 15 yards out","El approach quedó en el bunker, a 15 yardas"],
        ["You splashed out to 8 feet","Saliste a 8 pies"],
        ["The putt slid 2 feet past, and you holed the next one","El putt se pasó 2 pies y embocaste el siguiente"],
@@ -5170,15 +5174,17 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
   ana:[["The 8-foot putt missed long: LO","El putt de 8 pies se pasó largo: LO"],
        ["Its read: downhill, breaking left to right (DL)","Su lectura: bajada, de izquierda a derecha (DL)"]]
  };
- var PANS=[{lie:'tee',dist:380,club:'D',disp:'R',comp:true},{lie:'rough',dist:140,club:'7',disp:'SR',comp:false},{lie:'sand',dist:15,club:'56',disp:'G',comp:true},{lie:'putt',dist:8,club:'P',disp:'G',read:'DL',comp:true},{lie:'putt',dist:2,club:'P',comp:true}];
+ var PANS=[{lie:'tee',dist:0,club:'D',disp:'R',comp:true},{lie:'rough',dist:140,club:'7',disp:'SR',comp:false},{lie:'sand',dist:15,club:'56',disp:'G',comp:true},{lie:'putt',dist:8,club:'P',disp:'G',read:'DL',comp:true},{lie:'putt',dist:2,club:'P',comp:true}];
  function pClub(c){c=String(c||'').toUpperCase().replace(/\s/g,'');if(/^D(R|RIVER)?$/.test(c))return 'D';if(/^P(UTTER)?$/.test(c))return 'P';c=c.replace(/^(\d)I$/,'$1');if(c==='SW')return '56';return c;}
  function pCheck(level){
    var st=window.LGR&&window.LGR.practiceState?window.LGR.practiceState():null,es=ES();if(!st)return {ok:false,msg:''};
    var i=PLV.indexOf(level),S=st.shots,errs=[];
+   if(st.teeOv!=='Azules')errs.push(es?'En la distancia del tee, apretá Tab hasta el tee azul.':'On the tee distance, press Tab to reach the blue tee.');
+   else if(st.pin!=='B')errs.push(es?'Marcá la bandera atrás (Back +10).':'Set the flag to the back (Back +10).');
    var nth=function(k){return es?['la salida','el approach','la salida del bunker','el primer putt','el segundo putt'][k]:['the drive','the approach','the bunker shot','the first putt','the second putt'][k];};
-   for(var k=0;k<PANS.length;k++){var a=PANS[k],s=S[k];
+   if(!errs.length)for(var k=0;k<PANS.length;k++){var a=PANS[k],s=S[k];
      if(!s){errs.push(es?'Falta '+nth(k)+'.':'Log '+nth(k)+'.');break;}
-     if(s.lie!==a.lie||+s.dist!==a.dist){errs.push(es?'Revisá '+nth(k)+': desde dónde y a qué distancia.':'Check '+nth(k)+': where it was played from and the distance.');break;}}
+     if(s.lie!==a.lie||+s.dist!==(k===0?st.yd:a.dist)){errs.push(es?'Revisá '+nth(k)+': desde dónde y a qué distancia.':'Check '+nth(k)+': where it was played from and the distance.');break;}}
    if(!errs.length&&S.length>PANS.length)errs.push(es?'Sobran tiros: el hoyo terminó en 5.':'Too many shots: the hole ended in 5.');
    if(!errs.length&&!st.done)errs.push(es?'Marcá el hoyo como terminado: el último putt entró.':'Mark the hole as finished: the last putt went in.');
    if(!errs.length){for(var k2=0;k2<PANS.length;k2++){var a2=PANS[k2],s2=S[k2];
