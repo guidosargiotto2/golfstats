@@ -357,7 +357,8 @@ module.exports = async (req, res) => {
       const S = r.length ? JSON.parse(r[0].v) : {};
       const ci = S.ci || 0, today = new Date().toISOString().slice(0, 10);
       return ok({ started: !!r.length, run, last: S.last || null, total: S.total || 0, callsToday: S.day === today ? (S.calls || 0) : 0, cap: IMP.DAY_CAP, queue: (S.queue || []).length,
-        plan: IMP.PLAN.map((p, i) => ({ country: p[0], status: i < ci ? 'done' : i === ci ? 'current' : 'pending', found: (S.found || {})[p[0]] || 0, per: (S.per || {})[p[0]] || {} })),
+        searches: S.searches || 0, searchCap: IMP.SEARCH_CAP,
+        plan: IMP.PLAN.map((p, i) => ({ country: p[0] + (p[2] ? ' · by club name' : ''), names: p[2] ? p[1].length : 0, status: i < ci ? 'done' : i === ci ? 'current' : 'pending', found: (S.found || {})[p[0]] || 0, per: (S.per || {})[p[0]] || {} })),
         db: (await sql`select code, data from gs_courses`).map(x => { const d = typeof x.data === 'string' ? JSON.parse(x.data) : x.data; return d && !d.empty ? [x.code, (d.loc && d.loc.country) || ''] : null; }).filter(Boolean) });
     }
     if (action === 'courseDelete') {   // admin removes a course added to the shared database (a built-in course with the same code comes back)

@@ -5,6 +5,7 @@
 const L = require('./_lib');
 const CI = require('./_courseimp');
 
+const SEARCH_CAP = 7000;       // searches in total, as agreed with the provider; the import stops searching when it gets there
 const DAY_CAP = 2000;          // API calls per day (search + course), the provider's limit
 const RUN_MS = 50000;          // stop well before the 60 s function limit
 const PAUSE_MS = 300;          // gap between calls, so the import never hits them all at once
@@ -35,6 +36,9 @@ const PLAN = [
   ['Bahamas', ['Nassau', 'Freeport', 'Exuma', 'Abaco']],
   ['Mexico', ['Mexico City', 'Guadalajara', 'Monterrey', 'Cancún', 'Los Cabos', 'Cabo San Lucas', 'Puerto Vallarta', 'Querétaro', 'Puebla', 'Mérida', 'León', 'San Miguel de Allende', 'Acapulco', 'Mazatlán', 'Playa del Carmen', 'Tijuana', 'Chihuahua', 'Hermosillo', 'Aguascalientes', 'San Luis Potosí', 'Cuernavaca', 'Morelia', 'Toluca', 'Ixtapa', 'Huatulco', 'Nuevo Vallarta', 'Torreón', 'Saltillo', 'Culiacán', 'Veracruz']]
 ];
+/* second pass, after the last country: search every known club by name (lists in _clubnames.js) — how Argentina got its coverage */
+const NAMES = require('./_clubnames');
+['Uruguay', 'Chile', 'Brazil', 'Mexico'].forEach(c => { if (NAMES[c] && NAMES[c].length) PLAN.push([c, NAMES[c], true]); });
 const norm = x => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 const ALIAS = { 'brazil': ['brasil'], 'mexico': ['méxico'], 'peru': ['perú'], 'panama': ['panamá'], 'dominican republic': ['republica dominicana'] };
 const inCountry = (c, country) => { const k = norm(c && c.location && c.location.country), want = norm(country); return k === want || (ALIAS[want] || []).map(norm).includes(k) || (want === 'puerto rico' && /puerto rico|\bpr\b/.test(k)); };
@@ -54,12 +58,14 @@ async function runImport(sql, key, runMs) {
   S.found = S.found || {};
   /* once every country is done, the next batch starts a maintenance pass: the same searches again, keeping only courses not seen before (new courses, new entries) */
   if (S.ci >= PLAN.length) { S.cycle = (S.cycle || 1) + 1; S.ci = 0; S.qi = 0; S.queue = []; S.found = {}; S.per = {}; S.log = (S.log || []).concat([{ day, maintenance: S.cycle }]).slice(-60); }
+  S.searches = S.searches || 0;
   while (Date.now() - t0 < runMs && S.calls < DAY_CAP && S.ci < PLAN.length) {
-    const [country, cities] = PLAN[S.ci], words = [country].concat(cities);
+    const [country, cities, byName] = PLAN[S.ci], words = byName ? cities : [country].concat(cities);
     if (!S.queue.length) {
       if (S.qi >= words.length) { S.log = (S.log || []).concat([{ day, country, done: true }]).slice(-60); S.ci++; S.qi = 0; continue; }
+      if (S.searches >= SEARCH_CAP) { run.capped = true; break; }                      // total search allowance used up
       const r = await get('https://api.golfcourseapi.com/v1/search?search_query=' + encodeURIComponent(words[S.qi]));
-      run.searches++; S.qi++;
+      run.searches++; S.searches++; S.qi++;
       if (r.status === 429) break;                                   // provider says slow down: stop for today
       if (r.ok) (r.j.courses || []).forEach(c => { if (c && c.id != null && !seen.has(String(c.id)) && inCountry(c, country)) { seen.add(String(c.id)); S.queue.push(String(c.id)); S.found[country] = (S.found[country] || 0) + 1; } });
       await sleep(PAUSE_MS); continue;
@@ -72,7 +78,7 @@ async function runImport(sql, key, runMs) {
   }
   S.total = (S.total || 0) + run.added;
   S.seen = Array.from(seen).slice(-20000);
-  S.last = { at: new Date().toISOString(), country: PLAN[Math.min(S.ci, PLAN.length - 1)][0], pass: S.cycle || 1, ...run, callsToday: S.calls };
+  S.last = { at: new Date().toISOString(), country: PLAN[Math.min(S.ci, PLAN.length - 1)][0], pass: S.cycle || 1, ...run, callsToday: S.calls, searchesTotal: S.searches, searchCap: SEARCH_CAP };
   await sql`insert into gs_settings (k, v) values ('imp_state', ${JSON.stringify(S)}) on conflict (k) do update set v = excluded.v`;
   return { ...S.last, totalAdded: S.total, finished: S.ci >= PLAN.length };
 }
@@ -88,5 +94,5 @@ const handler = async (req, res) => {
   try { await L.init(); const r = await runImport(L.db(), key, RUN_MS); return res.status(200).json({ ok: true, ...r }); }
   catch (e) { return res.status(500).json({ error: 'server', detail: String(e && e.message || e).slice(0, 200) }); }
 };
-handler.runImport = runImport; handler.PLAN = PLAN; handler.keyOf = keyOf; handler.DAY_CAP = DAY_CAP;
+handler.runImport = runImport; handler.PLAN = PLAN; handler.keyOf = keyOf; handler.DAY_CAP = DAY_CAP; handler.SEARCH_CAP = SEARCH_CAP;
 module.exports = handler;
