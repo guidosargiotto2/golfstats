@@ -625,12 +625,12 @@ table.rt tbody tr:hover{background:var(--line-soft);}
 .lgscope .plCard.pl-pro .plIcons{color:var(--sand);}
 .lgscope .plTag{position:absolute;top:-10px;right:16px;background:var(--sand);color:var(--pine);font-family:var(--cond);font-weight:700;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:999px;}
 .lgscope .plName{font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--sand-deep);}
-.lgscope .plBalls{display:flex;align-items:center;gap:10px;margin:10px 0 2px;min-height:34px;}
+.lgscope .plBalls{display:flex;align-items:center;gap:10px;margin:10px 0 2px;min-height:34px;white-space:nowrap;}.lgscope .plIcons.plNone{visibility:hidden;width:0;margin-right:-10px;}
 .lgscope .plIcons{display:inline-flex;align-items:center;gap:3px;color:var(--pine);}
 .lgscope .plIcons b{font-family:var(--serif);font-size:20px;margin-left:2px;}
 .lgscope .plQty{font-family:var(--serif);font-weight:700;font-size:24px;color:var(--pine);}
 .lgscope .plQty small{font-family:var(--cond);font-weight:500;font-size:13px;color:inherit;opacity:.7;}
-.lgscope .plUsd{font-family:var(--cond);font-size:12.5px;color:var(--ink-soft);margin-bottom:12px;}
+.lgscope .plUsd{font-family:var(--cond);font-size:12.5px;color:var(--ink-soft);margin-bottom:12px;min-height:2.9em;}
 .lgscope .plCard ul{list-style:none;padding:0;margin:0 0 14px;flex:1;}
 .lgscope .plCard li{font-family:var(--cond);font-size:13.5px;line-height:1.45;color:var(--ink);padding:5px 0 5px 20px;position:relative;}
 .lgscope .plCard li::before{content:'';position:absolute;left:2px;top:11px;width:8px;height:8px;border-radius:50%;background:var(--sand);}
@@ -5822,8 +5822,8 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
  var rank=function(p){return ({free:0,lite:1,plus:2,pro:3})[p]||0;};
  function plan(){return localStorage.getItem('gs-token')?(localStorage.getItem('gs-plan')||''):'';}   /* '' = unknown → never lock */
  function locked(view){var p=plan();if(!p)return false;return (view==='stats'||view==='friends')&&rank(p)<1;}
- var ball=function(sz){return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.3"/>'+
-   [[8,8],[12,6.5],[16,8],[7,12],[12,11],[17,12],[8.5,16],[12,15.5],[15.5,16]].map(function(d){return '<circle cx="'+d[0]+'" cy="'+d[1]+'" r="1" fill="currentColor" opacity=".35"/>';}).join('')+'</svg>';};
+ var ball=function(sz){return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="#b9a66a" stroke-width="1.3"/>'+
+   [[8,8],[12,6.5],[16,8],[7,12],[12,11],[17,12],[8.5,16],[12,15.5],[15.5,16]].map(function(d){return '<circle cx="'+d[0]+'" cy="'+d[1]+'" r="1" fill="#8a8471" opacity=".55"/>';}).join('')+'</svg>';};
  var LOCKMSG={stats:['Trends across rounds are part of Lite — your rounds are already saved','Las tendencias entre vueltas son parte de Lite — tus vueltas ya están guardadas'],friends:['Friends are part of Lite','Amigos es parte de Lite']};
  function render(reason,target){
    if(reason&&LOCKMSG[reason]&&!target){var lb=document.getElementById('plansBody');if(!lb)return;
@@ -5838,7 +5838,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    PLANS.forEach(function(p){var me=cur===p.k,usd=p.balls*BALL_USD;
      h+='<div class="plCard pl-'+p.k+(me?' on':'')+'">'+
        (p.k==='plus'?'<div class="plBadge">'+T('Most picked','El más elegido')+'</div>':'')+'<div class="plName">'+p.name+'</div>'+
-       '<div class="plBalls">'+(p.balls?('<span class="plIcons">'+(p.balls<=3?Array(p.balls+1).join(ball(26)):ball(26)+'<b>×'+p.balls+'</b>')+'</span><span class="plQty">'+(p.balls===1?T('1 ball','1 pelota'):(p.balls===6?T('6 balls','6 pelotas'):(p.balls===12?T('12 balls','12 pelotas'):p.balls+T(' balls',' pelotas'))))+'<small>'+T(' / month',' / mes')+'</small></span>'):'<span class="plQty">'+T('Free','Gratis')+'</span>')+'</div>'+
+       '<div class="plBalls">'+(p.balls?('<span class="plIcons">'+ball(26)+'</span><span class="plQty">'+(p.balls===1?T('1 ball','1 pelota'):(p.balls===6?T('6 balls','6 pelotas'):(p.balls===12?T('12 balls','12 pelotas'):p.balls+T(' balls',' pelotas'))))+'<small>'+T(' / month',' / mes')+'</small></span>'):'<span class="plIcons plNone">'+ball(26)+'</span><span class="plQty">'+T('Free','Gratis')+'</span>')+'</div>'+
        '<div class="plUsd">'+(p.balls?'≈ US$'+usd.toFixed(2)+T(' a month · annual: 10 months',' por mes · anual: 10 meses'):'&nbsp;')+'</div>'+
        '<ul>'+(ES()?p.es:p.en).map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+(p.note?'<div class="plNote">'+(ES()?p.note[1]:p.note[0])+'</div>':'')+
        (me?'<div class="plCur">'+(trial?T('Your plan this month — free','Tu plan este mes — gratis'):T('Your plan','Tu plan'))+'</div>':(!cur?'':(trial?'<button class="plBtn" disabled>'+T('You choose after your meeting','Elegís después de tu reunión')+'</button>':(trial&&rank(p.k)>rank(cur))?'<button class="plBtn" disabled>'+T('Available from '+fmtD(upD),'Disponible desde el '+fmtD(upD))+'</button>':'<button class="plBtn plGo" data-to="'+p.k+'">'+T('Switch to ','Cambiar a ')+p.name+'</button>')))+
