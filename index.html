@@ -3580,7 +3580,7 @@ try{if(!PROF.compMig){PROF.compMig=1;if(PROF._upd&&/^(ess|ply|plus)$/.test(PROF.
    Weights: shots 50 · flag position 5 · tee 5 · compliance 10 · club 10 · tee-shot dispersion 5 · approach dispersion 10 · putt dispersion 3 · putt read 2 = 100 ===== */
 var ACC_W={shots:50,pin:5,tee:5,comp:10,club:10,dtee:5,dapp:10,dputt:3,read:2};
 var ACC_N={shots:['lie and distance','lie y distancia'],pin:['flag position','posición de bandera'],tee:['tee','tee'],comp:['compliance','cumplimiento'],club:['club','palo'],dtee:['tee-shot misses','fallos de salida'],dapp:['approach dispersion','dispersión de approaches'],dputt:['missed putts','putts errados'],read:['putt read','lectura del putt']};
-function accOn(P){P=P||PROF;var dm=P.trackDisp?(P.dispMode||'all'):'off';return {shots:1,pin:1,tee:1,comp:P.trackComp?1:0,club:P.trackClubs?1:0,dtee:dm!=='off'?1:0,dapp:(dm==='app'||dm==='all')?1:0,dputt:dm==='all'?1:0,read:P.trackRead?1:0};}
+function accOn(P){P=P||PROF;var dm=P.trackDisp?(P.dispMode||'all'):'off';return {shots:1,pin:P.assumeSetup?0:1,tee:P.assumeSetup?0:1,comp:P.trackComp?1:0,club:P.trackClubs?1:0,dtee:dm!=='off'?1:0,dapp:(dm==='app'||dm==='all')?1:0,dputt:dm==='all'?1:0,read:P.trackRead?1:0};}
 function accCeil(P){var o=accOn(P),t=0;for(var k in ACC_W)t+=ACC_W[k]*o[k];return t;}
 function accLvl(k){var l=LOGLVL.L[k];if(!l)return 0;return accCeil({trackComp:l.comp,trackClubs:l.clubs,trackDisp:l.disp!=='off',dispMode:l.disp,trackRead:l.read});}
 /* fill rate of each column over the last 10 logged rounds (null when there is nothing to measure) */
@@ -3699,7 +3699,7 @@ function printCard(lv){var S0=cardSpec(lv||cardLevelNow()),nm=cardName(S0),old=d
  var d=fr.contentWindow.document;d.open();d.write(html);d.close();
  setTimeout(function(){try{fr.contentWindow.focus();fr.contentWindow.print();}catch(e){var w=window.open('','_blank');if(w){w.document.write(html);w.document.close();w.print();}}setTimeout(function(){if(fr.parentNode)fr.parentNode.removeChild(fr);},60000);},300);}
 document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('#pf_printcard');if(b){e.preventDefault();var sl=document.getElementById('pf_cardlvl');downloadCard(sl?sl.value:cardLevelNow(),b);}});
-document.addEventListener('change',function(e){var t=e.target;if(t&&(/^pf_(clubs|disp|read|comp)$/.test(t.id||'')||t.id==='pf_cardlvl')){var el=document.getElementById('pf_cardinfo'),sl=document.getElementById('pf_cardlvl');if(sl&&t.id!=='pf_cardlvl')sl.value=cardLevelNow();if(el)el.innerHTML=cardInfoHTML(sl?sl.value:undefined);}});
+document.addEventListener('change',function(e){var t=e.target;if(t&&(/^pf_(clubs|disp|read|comp|setup)$/.test(t.id||'')||t.id==='pf_cardlvl')){var el=document.getElementById('pf_cardinfo'),sl=document.getElementById('pf_cardlvl');if(sl&&t.id!=='pf_cardlvl')sl.value=cardLevelNow();if(el)el.innerHTML=cardInfoHTML(sl?sl.value:undefined);}});
 document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('#pf_level [data-lvl]'))setTimeout(function(){var sl=document.getElementById('pf_cardlvl'),el=document.getElementById('pf_cardinfo');if(sl)sl.value=cardLevelNow();if(el)el.innerHTML=cardInfoHTML(sl?sl.value:undefined);},50);});
 /* download a real PDF named "Golfimbul - <tier> - Scorecard.pdf": the card is drawn in a hidden A4 frame and saved with jsPDF; printing stays as the fallback */
 var CARD_LIBS=['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js','https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
@@ -4321,7 +4321,7 @@ function renderHoleBar(hi){
    (h.card?(function(){var lg=confShots(h).reduce(function(n,x){return n+1+(x.pen||0);},0),ok=(h.done||h._sank)&&lg===h.card;return '<span class="cardchip'+(ok?' ok':'')+'" title="'+(window.__LANG==='es'?'Score de tu tarjeta':'Score from your card')+'">'+(window.__LANG==='es'?'Tarjeta ':'Card ')+h.card+'</span>';})():'')+
    (hstr?'<span class="holescore" title="Hole score">'+hstr+' <small>'+hdt+'</small></span>':'')+'</div>'+
    '<div class="hbR"><span class="sgmini"><span class="ydchip">'+Y2U(h.yd)+' '+PROF.units+'</span> · <span class="'+(sg.tot<0?'sg-neg':'sg-pos')+'">SG '+fmt(sg.tot)+'</span>'+(flags?' · <span style="color:var(--clay)">⚑ '+flags+'</span>':'')+'</span></div>'+
-   '<div class="holeadj">'+teeSel+pinSeg+'</div>';
+   ((PROF.assumeSetup&&!R._tour)?'':'<div class="holeadj">'+teeSel+pinSeg+'</div>');
  document.querySelectorAll('[data-hatee][data-tk]').forEach(function(b){b.onclick=function(){h.teeOv=b.getAttribute('data-tk');recomputeHoleYd(hi);render();var pf=document.querySelector('[data-hpin="'+hi+':F"]');if(pf)pf.focus();};});   /* markers chosen → cursor on the flag, front first */
  document.querySelectorAll('[data-hpin]').forEach(function(b){b.onclick=function(){var a=b.dataset.hpin.split(':');h.pin=a[1];h.pinSet=true;recomputeHoleYd(hi);render();var tc=document.querySelector('input[data-ydtee="'+hi+'"]');if(tc){tc.focus();if(tc.select)tc.select();}};   /* flag confirmed → cursor on the tee cell */
    b.onkeydown=function(e){if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft'&&e.key!=='Tab')return;var O=['F','M','B'],k=O.indexOf(b.dataset.hpin.split(':')[1]),n=O[(k+((e.key==='ArrowLeft'||(e.key==='Tab'&&e.shiftKey))?2:1))%3],nb=document.querySelector('[data-hpin="'+hi+':'+n+'"]');if(nb){e.preventDefault();nb.focus();}};});
@@ -4513,7 +4513,7 @@ function focusTee(){setTimeout(function(){try{var hh=R.holes[R.cur];if(hh&&hh.do
 function focusEntry(){setTimeout(function(){try{var fb=document.getElementById('btnHoled');var hh=R.holes[R.cur];var cs=hh?confShots(hh):[],l=cs[cs.length-1];var holed=(PROF.predict&&l&&l.lie==='putt'&&l.dist<=4)||(hh&&hh._sank);if(fb&&holed){fb.focus();return;}var on=document.querySelector('#lgBody tr.entry input.lc.on');var el=on||document.querySelector('#lgBody tr.entry input.lc[data-lie="fw"]')||document.querySelector('#lgBody tr.entry input.lc');if(el){el.focus({preventScroll:false});if(el.select)el.select();}}catch(e){}},0);}
 /* ← → move between category cells in the same row (once the caret is at the edge) */
 function wireArrows(){document.querySelectorAll('#lgBody input.lc, #lgBody input.p').forEach(function(el){el.addEventListener('keydown',function(e){
-   if(e.key==='Enter'&&el.dataset.ydtee!=null&&!R.holes[+el.dataset.ydtee].pinSet){e.preventDefault();var pf=document.querySelector('[data-hpin="'+el.dataset.ydtee+':F"]');if(pf){pf.focus();return;}}
+   if(e.key==='Enter'&&el.dataset.ydtee!=null&&!PROF.assumeSetup&&!R.holes[+el.dataset.ydtee].pinSet){e.preventDefault();var pf=document.querySelector('[data-hpin="'+el.dataset.ydtee+':F"]');if(pf){pf.focus();return;}}
    if(e.key==='Enter'){e.preventDefault();
      var isEntry=el.closest('tr').classList.contains('entry');
      if(isEntry){
@@ -4815,6 +4815,13 @@ ${PROF.gender==='m'?`  <label class="chkrow" style="flex-direction:row;align-ite
     <div class="hisub">${window.__LANG==='es'?'Subida (S) o bajada (B), y hacia dónde cae: de izquierda a derecha (I) o de derecha a izquierda (D). Ej.: BI = bajada, de izquierda a derecha; – = plano y recto. Con esto, Estadísticas muestra qué tipo de putt te cuesta más. Opcional en cada putt.':'Uphill (U) or downhill (D), and which way it breaks: left-to-right (L) or right-to-left (R). E.g. DL = downhill, left-to-right; – = flat and straight. With this, Statistics shows which kind of putt costs you most. Optional on each putt.'}</div>
   </div>
   <div class="hiblock">
+    <div class="hirow"><span>${window.__LANG==='es'?'Marcas y bandera de cada hoyo':'Markers and flag on each hole'}</span><em class="estchip">${PROF.assumeSetup?'−10%':'+10%'} ${window.__LANG==='es'?'precisión':'accuracy'}</em></div>
+    <label>${window.__LANG==='es'?'En cada hoyo, ¿cargás dónde estaban las marcas y la bandera?':'On each hole, do you log where the markers and the flag were?'}<select id="pf_setup">
+      <option value="on" ${PROF.assumeSetup?'':'selected'}>${window.__LANG==='es'?'Sí — elijo marcas y bandera en cada hoyo':'Yes — I set markers and flag on every hole'}</option>
+      <option value="off" ${PROF.assumeSetup?'selected':''}>${window.__LANG==='es'?'No — asumir las marcas de mi tee y la bandera blanca (medio)':'No — assume the markers of my tee and the white flag (middle)'}</option></select></label>
+    <div class="hisub">${window.__LANG==='es'?'Si no las cargás, cada hoyo se toma con el largo de tu tee y la bandera al medio: más rápido, pero las distancias de tus salidas y approaches pueden quedar hasta unas 10 yardas corridas.':'If you do not log them, every hole uses the length of your tee and a middle flag: faster, but your tee-shot and approach distances can be off by up to about 10 yards.'}</div>
+  </div>
+  <div class="hiblock">
     <div class="hirow"><span>${window.__LANG==='es'?'Cumplimiento del proceso':'Process compliance'}</span><em class="estchip">+2 min</em></div>
     <label>${window.__LANG==='es'?'Marcar en cada tiro si cumpliste tu proceso':'Mark on every shot whether you followed your process'}<select id="pf_comp">
       <option value="off" ${PROF.trackComp?'':'selected'}>${window.__LANG==='es'?'No':'Off'}</option>
@@ -4884,6 +4891,7 @@ ${PROF.gender==='m'?`  <label class="chkrow" style="flex-direction:row;align-ite
  
  var prd=document.getElementById('pf_read');if(prd)prd.addEventListener('change',e=>{PROF.trackRead=(e.target.value==='on');saveProf();try{render();}catch(_){}});
  var pds=document.getElementById('pf_disp');if(pds)pds.addEventListener('change',e=>{PROF.trackDisp=(e.target.value!=='off');if(PROF.trackDisp)PROF.dispMode=e.target.value;saveProf();try{render();}catch(_){}});
+ var pst=document.getElementById('pf_setup');if(pst)pst.addEventListener('change',e=>{PROF.assumeSetup=(e.target.value==='off');saveProf();try{render();}catch(_){}try{renderProf();}catch(_){}});
  var pcm=document.getElementById('pf_comp');if(pcm)pcm.addEventListener('change',e=>{PROF.trackComp=(e.target.value==='on');saveProf();try{render();}catch(_){}});
  var pcl=document.getElementById('pf_clubs');if(pcl)pcl.addEventListener('change',e=>{PROF.trackClubs=(e.target.value==='on');saveProf();try{render();}catch(_){}});
  var pts=document.getElementById('pf_teeset');if(pts)pts.addEventListener('change',e=>{PROF.teeSet=e.target.value;saveProf();try{renderProf();}catch(_){}try{render();renderSel();}catch(_){}});
@@ -5074,12 +5082,13 @@ function lgPractice(level){
  if(!R._tour){
    if(DEMO_ON&&R._demo)lgDemoEnd();   /* leave the demo round first, so the player's own round is what comes back */
    tourSavedR=JSON.parse(JSON.stringify(R));DEMO_ON=true;
-   PR_FLAGS={predict:PROF.predict,trackClubs:PROF.trackClubs,trackDisp:PROF.trackDisp,trackRead:PROF.trackRead,trackComp:PROF.trackComp,dispMode:PROF.dispMode};
+   PR_FLAGS={assumeSetup:PROF.assumeSetup,predict:PROF.predict,trackClubs:PROF.trackClubs,trackDisp:PROF.trackDisp,trackRead:PROF.trackRead,trackComp:PROF.trackComp,dispMode:PROF.dispMode};
    var ck=COURSES.CGC?'CGC':Object.keys(COURSES)[0],c=COURSES[ck],tk=Object.keys(c.tees)[0];
    R=newRound(ck,tk);R.score='';R.chcp='0';R.phase='play';R.markers=tk;R._tour=true;R.cur=PR_HI;
    var h=R.holes[PR_HI];h.par=4;h.pin='M';h.teeOv=null;h.done=false;h.yd=stdYd(ck,tk,PR_HI);h.shots=[{lie:'tee',dist:h.yd,pen:0,conf:true}];teeArmed=false;
  }
  var l=(typeof LOGLVL!=='undefined'&&LOGLVL.L[level==='comp'?'ana':level])||null;
+ PROF.assumeSetup=false;
  if(l){PROF.predict=true;PROF.trackComp=(level==='comp');PROF.trackClubs=l.clubs;PROF.trackRead=l.read;PROF.trackDisp=l.disp!=='off';if(l.disp!=='off')PROF.dispMode=l.disp;if(level==='ply')PROF.trackDisp=false;}   /* practice: Player shows the club only; the dispersion column arrives with Player+ */
  document.body.classList.add('lgPractising');   /* one hole only: no hole menu, no next hole, no cancel */
  lgEntered=true;scMode=false;gotoHole(PR_HI);render();
@@ -6541,7 +6550,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
   {k:'course',t:['Course & tees','Cancha y tees'],ids:['pf_homeclub','pf_course','pf_favbtn','pf_tee','pf_teeset','pf_hidered']},
   {k:'game',t:['My game & handicap','Mi juego y hándicap'],ids:['pf_himode','pf_drive','pf_nine','pf_impbtn','pf_imphbtn']},
   {k:'bag',t:['My bag','Mi bolsa'],link:'bag',sub:['Your clubs, short names and distances','Tus palos, abreviaturas y distancias']},
-  {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_level','pf_logest','pf_predict','pf_clubs','pf_disp','pf_read','pf_comp','pf_printcard']},
+  {k:'logging',t:['Round logging','Carga de vueltas'],ids:['pf_level','pf_logest','pf_predict','pf_clubs','pf_disp','pf_read','pf_setup','pf_comp','pf_printcard']},
   {k:'analysis',t:['Scoring & analysis','Score y análisis'],ids:['pf_netpar','pf_sgbase','pf_atg']},
   {k:'t5',t:["Tiger's 5",'Tiger 5'],ids:['pf_t5mode','pf_t5x','pf_bogeyx']},
   {k:'app',t:['App preferences','Preferencias de la app'],ids:['pf_units','pf_lang']},
