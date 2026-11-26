@@ -318,6 +318,36 @@ module.exports = async (req, res) => {
       return ok({ log });
     }
 
+    /* ---- club history (Digigolf, with their permission): admin finds a player, reads the cards, saves the rounds to a player's account ---- */
+    if (action === 'dgSearch' || action === 'dgCards' || action === 'dgSave') {
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      const DG = require('./_digigolf');
+      if (action === 'dgSearch') {
+        const q = String(b.q || '').trim().slice(0, 60), club = String(b.club || '4').replace(/\D/g, '').slice(0, 5) || '4';
+        if (q.length < 3) return bad(400, 'short-query');
+        return ok({ rows: await DG.search(club, q, String(b.from || '2018-01-01'), String(b.to || new Date().toISOString().slice(0, 10))) });
+      }
+      if (action === 'dgCards') {
+        const hrefs = (Array.isArray(b.hrefs) ? b.hrefs : []).slice(0, 15), out = [];
+        for (const h of hrefs) { try { out.push(Object.assign({ href: h }, await DG.card(String(h)))); } catch (e) { out.push({ href: h, err: String(e.message || e) }); } await new Promise(z => setTimeout(z, 250)); }
+        return ok({ cards: out });
+      }
+      const target = String(b.user || '').trim().toLowerCase(), rounds = Array.isArray(b.rounds) ? b.rounds.slice(0, 400) : [];
+      if (!L.validUser(target)) return bad(400, 'bad-user');
+      const ex = await sql`select 1 as x from gs_users where username = ${target}`;
+      if (!ex.length && !L.FIRST[target]) return bad(404, 'no-such-user');
+      const cur = await sql`select rounds from gs_history where username = ${target}`;
+      const old = cur.length ? (typeof cur[0].rounds === 'string' ? JSON.parse(cur[0].rounds) : cur[0].rounds) : [];
+      const key = r => (r.date || '') + '|' + (r.name || '') + '|' + (r.score || '');
+      const map = {}; old.concat(rounds).forEach(r => { if (r && r.date && Array.isArray(r.hs)) map[key(r)] = r; });
+      const all = Object.values(map).sort((x, y) => x.date < y.date ? -1 : 1);
+      await sql`insert into gs_history (username, rounds, src, upd) values (${target}, ${JSON.stringify(all)}, 'digigolf', ${Date.now()}) on conflict (username) do update set rounds = excluded.rounds, src = excluded.src, upd = excluded.upd`;
+      return ok({ saved: all.length, added: all.length - old.length });
+    }
+    if (action === 'myHistory') {   // a player's imported club history (rounds with a score per hole)
+      const r = await sql`select rounds, upd from gs_history where username = ${me}`;
+      return ok({ rounds: r.length ? (typeof r[0].rounds === 'string' ? JSON.parse(r[0].rounds) : r[0].rounds) : [], upd: r.length ? Number(r[0].upd) : 0 });
+    }
     if (action === 'importStatus' || action === 'importRun') {   // admin: the GolfCourseAPI import, run by hand one batch (< 1 minute) at a time
       if (me !== L.ADMIN) return bad(403, 'admin');
       const IMP = require('./cron-courses');
