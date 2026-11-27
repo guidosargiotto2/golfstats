@@ -358,6 +358,7 @@ module.exports = async (req, res) => {
     if (action === 'myHistory') {   // a player's imported club history (rounds with a score per hole)
       const r = await sql`select rounds, extra, upd from gs_history where username = ${me}`;
       const pj = v => (typeof v === 'string' ? JSON.parse(v) : v);
+      if (r.length && b.upd && Number(b.upd) === Number(r[0].upd)) return ok({ same: true });   // the device already has this copy
       return ok({ rounds: r.length ? pj(r[0].rounds) : [], extra: r.length ? (pj(r[0].extra) || null) : null, upd: r.length ? Number(r[0].upd) : 0 });
     }
     if (action === 'historySeed') {   // admin: put a player's history (and their bag and per-hole tendencies) on the server, replacing what was built into the page

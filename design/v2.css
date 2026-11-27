@@ -128,7 +128,7 @@ html.v2 .lgscope>div,html.v2 #view-stats .wrap{animation:v2in .5s cubic-bezier(.
 /* =====================  LANDING  ===================== */
 html.v2 #landing{background:var(--cream);font-family:var(--sans);
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .12 0 0 0 0 .1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
-html.v2 #landing .lw{max-width:1180px;padding:0 36px}
+html.v2 #landing .lw{max-width:1240px;padding:0 36px}
 html.v2 #landing .lnav{background:rgba(244,240,230,.9);border-bottom:1px solid var(--line)}
 html.v2 #landing .lnav .lw{height:68px}
 html.v2 #landing .lbrand{font-family:var(--serif);font-size:23px;font-weight:500;letter-spacing:-.02em}
