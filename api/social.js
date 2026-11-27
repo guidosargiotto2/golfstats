@@ -359,7 +359,7 @@ module.exports = async (req, res) => {
       return ok({ started: !!r.length, run, last: S.last || null, total: S.total || 0, callsToday: S.day === today ? (S.calls || 0) : 0, cap: IMP.DAY_CAP, queue: (S.queue || []).length,
         searches: S.searches || 0, searchCap: IMP.SEARCH_CAP,
         plan: IMP.PLAN.map((p, i) => ({ country: p[0] + (p[2] ? ' · by club name' : ''), names: p[2] ? p[1].length : 0, status: i < ci ? 'done' : i === ci ? 'current' : 'pending', found: (S.found || {})[p[0]] || 0, per: (S.per || {})[p[0]] || {} })),
-        db: (await sql`select code, data from gs_courses`).map(x => { const d = typeof x.data === 'string' ? JSON.parse(x.data) : x.data; return d && !d.empty ? [x.code, (d.loc && d.loc.country) || ''] : null; }).filter(Boolean) });
+        db: (await sql`select code, coalesce(data->'loc'->>'country','') as country from gs_courses where (data->>'empty') is null`).map(x => [x.code, x.country]) });
     }
     if (action === 'courseDelete') {   // admin removes a course added to the shared database (a built-in course with the same code comes back)
       if (me !== L.ADMIN) return bad(403, 'admin');

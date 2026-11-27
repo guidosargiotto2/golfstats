@@ -3367,10 +3367,14 @@ function clubHits(q){var out=[],seen={};Object.keys(COURSES).forEach(function(k)
  out.sort(function(a,b){return (nkS(a.n).indexOf(nkS(q))===0?0:1)-(nkS(b.n).indexOf(nkS(q))===0?0:1)||a.n.localeCompare(b.n,'es');});return out.slice(0,8);}
 document.addEventListener('input',function(e){var i=e.target;if(!i||i.id!=='pf_homeclubT')return;var box=document.getElementById('pf_clubsug'),q=i.value.trim(),es=window.__LANG==='es',E=function(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
  if(!box)return;if(!q){box.innerHTML='';return;}
- box.innerHTML=clubHits(q).map(function(h){return '<button type="button" data-pickclub="'+E(h.k)+'"><b>'+E(h.n)+'</b><span>'+E(h.w)+'</span></button>';}).join('')+'<button type="button" class="obSugMore" data-morecl>'+(es?'¿No está? Buscar entre todas las canchas':'Not here? Search all courses')+'</button>';});
+ var local=clubHits(q),row=function(k,n,w){return '<button type="button" data-pickclub="'+E(k)+'"><b>'+E(n)+'</b><span>'+E(w)+'</span></button>';},more='<button type="button" class="obSugMore" data-morecl>'+(es?'¿No está? Buscar entre todas las canchas':'Not here? Search all courses')+'</button>';
+ box.innerHTML=local.map(function(h){return row(h.k,h.n,h.w);}).join('')+more;
+ clearTimeout(i._t);if(q.length>=3&&window.COURSEFIND)i._t=setTimeout(function(){window.COURSEFIND(q,function(L){if(i.value.trim()!==q)return;var have={};local.forEach(function(h){have[h.k]=1;});
+   L=L.filter(function(r){return !have[r.code]&&!r.empty;}).slice(0,8-Math.min(8,local.length)+4);if(!L.length)return;
+   box.innerHTML=local.map(function(h){return row(h.k,h.n,h.w);}).join('')+L.map(function(r){var l=r.loc||{};return row(r.code,r.name,[l.city,l.state,l.country].filter(Boolean).join(', '));}).join('')+more;});},300);});
 function setHomeClub(k){if(!k||!COURSES[k])return;PROF.homeClub=clubOf(k);PROF.homeCourse=k;PROF.defaultTee=teeFor(k,PROF.defaultTee);saveProf();renderProf();try{renderSel();}catch(_){}}
 document.addEventListener('mousedown',function(e){var b=e.target&&e.target.closest&&e.target.closest('#pf_clubsug button');if(!b)return;e.preventDefault();
- if(b.hasAttribute('data-morecl')){coursePicker(function(k){setHomeClub(k);});return;}setHomeClub(b.getAttribute('data-pickclub'));});
+ if(b.hasAttribute('data-morecl')){coursePicker(function(k){setHomeClub(k);});return;}var pk=b.getAttribute('data-pickclub');if(COURSES[pk])setHomeClub(pk);else if(window.COURSEGET)window.COURSEGET(pk,function(c){if(c)setHomeClub(pk);});});
 document.addEventListener('focusout',function(e){if(e.target&&e.target.id==='pf_homeclubT')setTimeout(function(){var b=document.getElementById('pf_clubsug');if(b)b.innerHTML='';},150);});
 /* the 10 courses nearest the home course: distance when both have coordinates, else same club → city → state */
 function nearCourses(home,max){var h=COURSES[home]||{},hl=h.loc||{},b=courseLoc(home),club=clubOf(home);
@@ -3379,9 +3383,13 @@ function nearCourses(home,max){var h=COURSES[home]||{},hl=h.loc||{},b=courseLoc(
    if(hl.lat!=null&&l.lat!=null)sc=km(hl,l);else sc=clubOf(k)===club?0:(a.country!==b.country)?1e6:(a.state!==b.state)?1e5:(a.city&&a.city===b.city)?10:1e3;return {k:k,sc:sc};})
   .filter(function(o){return o.sc<1e6;}).sort(function(x,y){return x.sc-y.sc||COURSES[x.k].name.localeCompare(COURSES[y.k].name,'es');}).slice(0,max).map(function(o){return o.k;});}
 window.nearCourses=nearCourses;
-function nearFavHTML(){if(!PROF.homeClub||!COURSES[PROF.homeCourse])return '';var es=window.__LANG==='es',L=nearCourses(PROF.homeCourse,10);if(!L.length)return '';
- return '<div class="hisub" style="margin:4px 0 6px">'+(es?'Cerca de tu cancha — tocá para marcar favorita:':'Near your course — tap to star:')+'</div><div class="nearFav">'+L.map(function(k){return '<button type="button" data-nfav="'+k+'" class="'+(isFav(k)?'on':'')+'">'+(isFav(k)?'★ ':'☆ ')+COURSES[k].name+'</button>';}).join('')+'</div>';}
-document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('[data-nfav]');if(!b)return;var k=b.getAttribute('data-nfav');toggleFav(k);b.classList.toggle('on',isFav(k));b.textContent=(isFav(k)?'★ ':'☆ ')+COURSES[k].name;try{renderSel();}catch(_){}});
+function nearFavHTML(){if(!PROF.homeClub||!COURSES[PROF.homeCourse])return '';var es=window.__LANG==='es',home=PROF.homeCourse;
+ setTimeout(function(){var box=document.getElementById('nearFav');if(!box||!window.COURSENEAR)return;window.COURSENEAR(home,function(L){var b2=document.getElementById('nearFav');if(!b2)return;var seen={},all=[];
+   nearCourses(home,10).forEach(function(k){seen[k]=1;all.push({code:k,name:COURSES[k].name});});L.forEach(function(r){if(!seen[r.code]&&r.code!==home){seen[r.code]=1;all.push(r);}});all=all.slice(0,10);
+   if(!all.length){b2.innerHTML='';return;}
+   b2.innerHTML='<div class="hisub" style="margin:4px 0 6px">'+(es?'Cerca de tu cancha — tocá para marcar favorita:':'Near your course — tap to star:')+'</div><div class="nearFav">'+all.map(function(r){return '<button type="button" data-nfav="'+r.code+'" data-nm="'+String(r.name).replace(/"/g,'&quot;')+'" class="'+(isFav(r.code)?'on':'')+'">'+(isFav(r.code)?'★ ':'☆ ')+r.name+'</button>';}).join('')+'</div>';});},60);
+ return '<div id="nearFav"></div>';}
+document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('[data-nfav]');if(!b)return;var k=b.getAttribute('data-nfav'),go=function(){toggleFav(k);b.classList.toggle('on',isFav(k));b.textContent=(isFav(k)?'★ ':'☆ ')+(COURSES[k]?COURSES[k].name:b.getAttribute('data-nm'));try{renderSel();}catch(_){}};if(COURSES[k])go();else if(window.COURSEGET)window.COURSEGET(k,function(c){if(c)go();});});
 /* ---- About your game: what the setup questions asked, kept in Profile ---- */
 function aboutHTML(){var es=window.__LANG==='es',a=PROF.about||{},T=function(x,y){return es?y:x;},E=function(x){return String(x||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
  var sel=function(k,lbl,O){return '<label>'+lbl+'<select data-ab="'+k+'"><option value="">'+T('— Choose —','— Elegí —')+'</option>'+O.map(function(o){return '<option value="'+o[0]+'"'+((a[k]||'')===o[0]?' selected':'')+'>'+(es?o[2]:o[1])+'</option>';}).join('')+'</select></label>';};
@@ -3408,7 +3416,7 @@ function favOptsHTML(sel){var E=function(x){return String(x).replace(/[&<>"]/g,f
 function coursePicker(onPick){var es=window.__LANG==='es',T=function(a,b){return es?b:a;},E=function(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
  var nk=function(x){return String(x||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();};
  var m=document.createElement('div');m.className='crModal';var F={q:'',st:'',fav:false};
- m.innerHTML='<div class="crBox cpBox"><button class="crX" aria-label="close">✕</button><h3>'+T('Find a course','Buscar una cancha')+'</h3><p class="crSub">'+T('Tap ☆ to keep a course in your short list. Tap its name to use it now.','Tocá ☆ para dejar una cancha en tu lista corta. Tocá el nombre para usarla ahora.')+'</p><div class="crFilt"><input id="cpQ" placeholder="'+T('Name or city','Nombre o ciudad')+'" autocomplete="off"><select id="cpS"></select><label class="cpOnly"><input type="checkbox" id="cpF"> '+T('favourites','favoritas')+' <b id="cpCnt" style="color:#d9a400"></b></label></div><div id="cpList"></div><div id="cpMore"></div><p class="crSub" style="margin-top:10px">'+T('Still not here? ','¿Sigue sin aparecer? ')+'<a href="#" id="cpReq" style="color:var(--fairway);font-weight:700">'+T('Request your course','Pedí tu cancha')+'</a></p></div>';
+ m.innerHTML='<div class="crBox cpBox"><button class="crX" aria-label="close">✕</button><h3>'+T('Find a course','Buscar una cancha')+'</h3><p class="crSub">'+T('Type a name or city to search every course. Tap ☆ to keep one in your short list, or its name to use it now.','Escribí un nombre o ciudad para buscar entre todas las canchas. Tocá ☆ para dejarla en tu lista corta, o el nombre para usarla ahora.')+'</p><div class="crFilt"><input id="cpQ" placeholder="'+T('Name or city','Nombre o ciudad')+'" autocomplete="off"><select id="cpS"></select><label class="cpOnly"><input type="checkbox" id="cpF"> '+T('favourites','favoritas')+' <b id="cpCnt" style="color:#d9a400"></b></label></div><div id="cpList"></div><div id="cpSrv"></div><div id="cpMore"></div><p class="crSub" style="margin-top:10px">'+T('Still not here? ','¿Sigue sin aparecer? ')+'<a href="#" id="cpReq" style="color:var(--fairway);font-weight:700">'+T('Request your course','Pedí tu cancha')+'</a></p></div>';
  document.body.appendChild(m);var close=function(){m.remove();};m.querySelector('.crX').onclick=close;m.onclick=function(e){if(e.target===m)close();};
  m.querySelector('#cpReq').onclick=function(e){e.preventDefault();close();if(window.COURSEREQ)window.COURSEREQ.open();};
  var sts={};Object.keys(COURSES).forEach(function(k){var l=courseLoc(k);sts[l.country+' — '+l.state]=1;});
@@ -3433,11 +3441,19 @@ function coursePicker(onPick){var es=window.__LANG==='es',T=function(a,b){return
        more.innerHTML='<div class="crGrpC">'+T('More courses','Más canchas')+'</div>'+L.map(function(r){return '<div class="cpRow"><button type="button" class="cpName" data-adopt="'+E(r.id)+'"><b>'+E(r.name)+'</b>'+(r.where?' <small>'+E(r.where)+'</small>':'')+'</button></div>';}).join('');
        more.querySelectorAll('[data-adopt]').forEach(function(b){b.onclick=function(){var nm=b.textContent;more.innerHTML='<p class="frsub">'+T('Adding ','Agregando ')+E(nm)+'…</p>';
          call({action:'courseAdopt',id:b.getAttribute('data-adopt')}).then(function(k){
-           if(k&&k.ok&&k.code&&k.course&&k.course.tees){COURSES[k.code]=k.course;try{localStorage.removeItem('gs-courses');}catch(e){}if(window.COURSEREQ&&window.COURSEREQ.refresh)window.COURSEREQ.refresh();close();if(onPick)onPick(k.code);
+           if(k&&k.ok&&k.code&&k.course&&k.course.tees){COURSES[k.code]=k.course;try{var _c=JSON.parse(localStorage.getItem('gs-courses')||'{}')||{};_c[k.code]=k.course;localStorage.setItem('gs-courses',JSON.stringify(_c));}catch(e){}close();if(onPick)onPick(k.code);
              if(k.course.noSI&&window.COURSEREQ&&window.COURSEREQ.help)setTimeout(function(){window.COURSEREQ.help(k.code);},700);}
            else if(k&&k.nodata){close();if(window.COURSEREQ)window.COURSEREQ.open({name:k.name,city:k.city||''});}
            else more.innerHTML='<p class="frsub">'+T('Could not add that course. Send the scorecard below.','No se pudo agregar esa cancha. Mandá la tarjeta abajo.')+'</p>';});};});});};}
- var qi=m.querySelector('#cpQ');qi.oninput=function(){F.q=qi.value;draw();moreBtn();};m.querySelector('#cpS').onchange=function(e){F.st=e.target.value;draw();};m.querySelector('#cpF').onchange=function(e){F.fav=e.target.checked;draw();};
+ /* courses that are not on this device: searched on the server as you type; picking or starring one downloads it */
+ var srv=m.querySelector('#cpSrv'),srvT=null,srvN=0;
+ function srvFind(){clearTimeout(srvT);var q=F.q.trim();if(q.length<3||F.fav||!window.COURSEFIND){srv.innerHTML='';return;}
+   srvT=setTimeout(function(){var my=++srvN;window.COURSEFIND(q,function(L){if(my!==srvN)return;L=L.filter(function(r){return !COURSES[r.code]&&!r.empty;});
+     if(!L.length){srv.innerHTML='';return;}
+     srv.innerHTML='<div class="crGrpC">'+T('All courses','Todas las canchas')+' ('+L.length+(L.length>=40?'+':'')+')</div>'+L.map(function(r){var l=r.loc||{},w=[l.city,l.state,l.country].filter(Boolean).join(', ');return '<div class="cpRow"><button type="button" class="cpStar" data-sfav="'+E(r.code)+'" title="'+T('Favourite','Favorita')+'">☆</button><button type="button" class="cpName" data-spick="'+E(r.code)+'"><b>'+E(r.name)+'</b>'+(w?' <small>'+E(w)+'</small>':'')+'</button></div>';}).join('');
+     srv.querySelectorAll('[data-spick]').forEach(function(b){b.onclick=function(){var k=b.getAttribute('data-spick');b.disabled=true;window.COURSEGET(k,function(c){if(!c){b.disabled=false;return;}close();if(onPick)onPick(k);});};});
+     srv.querySelectorAll('[data-sfav]').forEach(function(b){b.onclick=function(e){e.preventDefault();var k=b.getAttribute('data-sfav');window.COURSEGET(k,function(c){if(!c)return;if(!isFav(k))toggleFav(k);cnt();draw();srvFind();try{renderSel();}catch(_){}});};});});},320);}
+ var qi=m.querySelector('#cpQ');qi.oninput=function(){F.q=qi.value;draw();srvFind();moreBtn();};m.querySelector('#cpS').onchange=function(e){F.st=e.target.value;draw();};m.querySelector('#cpF').onchange=function(e){F.fav=e.target.checked;draw();};
  function cnt(){var c=m.querySelector('#cpCnt');if(c)c.textContent=(PROF.favCourses||[]).length?'★ '+(PROF.favCourses||[]).length:'';}
  draw();cnt();setTimeout(function(){qi.focus();},60);}
 window.coursePicker=coursePicker;window.favCourses=favCourses;
@@ -6740,9 +6756,25 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
  function api(action,extra){var b={action:action};if(extra)for(var k in extra)b[k]=extra[k];
    return fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:JSON.stringify(b)}).then(function(r){return r.json();});}
  /* ---- shared course list: refresh from the server, cache for offline, re-render the selectors when something new arrives ---- */
- function refreshCourses(){fetch('/api/login').then(function(r){return r.json();}).then(function(j){if(!j||!j.courses)return;var raw=JSON.stringify(j.courses);
-   var had=localStorage.getItem('gs-courses');if(had===raw)return;try{localStorage.setItem('gs-courses',raw);}catch(e){}
-   if(typeof COURSES!=='undefined'){window.COURSE_STUBS={};Object.keys(j.courses).forEach(function(k){var x=j.courses[k];if(x&&x.empty)window.COURSE_STUBS[k]=x;else if(x&&x.tees&&x.par)COURSES[k]=x;});try{if(window.LGR&&window.LGR.card)window.LGR.card();}catch(e){}}}).catch(function(){});}
+ function myCodes(){var o={},add=function(k){if(k&&/^[A-Z0-9]{2,12}$/.test(String(k)))o[k]=1;},P=window.PROF||{};
+   (P.favCourses||[]).forEach(add);add(P.homeCourse);add(String(P.cardCourse||'').split('|')[0]);
+   try{(window.getLoggedRounds?window.getLoggedRounds():[]).forEach(function(r){add(r.courseCode);});}catch(e){}
+   try{var u=(localStorage.getItem('app-user')||'anon')+'::',rr=JSON.parse(localStorage.getItem(u+'scard-round-v4')||'null');if(rr)add(rr.course);var dd=JSON.parse(localStorage.getItem(u+'scard-default-v1')||'null');if(dd)add(dd.course);}catch(e){}
+   return Object.keys(o);}
+ function putCourses(map,replace){var cache={};if(!replace){try{cache=JSON.parse(localStorage.getItem('gs-courses')||'{}')||{};}catch(e){cache={};}}
+   Object.keys(map||{}).forEach(function(k){var x=map[k];if(!x)return;cache[k]=x;if(typeof COURSES!=='undefined'){if(x.empty)window.COURSE_STUBS[k]=x;else if(x.tees&&x.par)COURSES[k]=x;}});
+   try{localStorage.setItem('gs-courses',JSON.stringify(cache));}catch(e){}}
+ /* the course database lives on the server: a player's device keeps only their home course, starred courses and courses they have played */
+ function refreshCourses(){if(adminPanel._all&&window.COURSEALL)window.COURSEALL();var codes=myCodes();if(!codes.length)return;
+   fetch('/api/login?codes='+encodeURIComponent(codes.join(','))).then(function(r){return r.json();}).then(function(j){if(!j||!j.courses)return;
+     var before=localStorage.getItem('gs-courses');putCourses(j.courses,true);if(before!==localStorage.getItem('gs-courses')){try{if(window.LGR&&window.LGR.card)window.LGR.card();}catch(e){}}}).catch(function(){});}
+ /* one course on demand (picked from a search, or starred): fetched once, kept on this device */
+ window.COURSEGET=function(code,cb){if(typeof COURSES!=='undefined'&&COURSES[code]){if(cb)cb(COURSES[code]);return;}
+   fetch('/api/login?codes='+encodeURIComponent(code)).then(function(r){return r.json();}).then(function(j){var c=j&&j.courses&&j.courses[code];if(c){var m={};m[code]=c;putCourses(m,false);}if(cb)cb(c&&c.tees?c:null);}).catch(function(){if(cb)cb(null);});};
+ window.COURSEFIND=function(q,cb){fetch('/api/login?q='+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(j){cb((j&&j.results)||[]);}).catch(function(){cb([]);});};
+ window.COURSENEAR=function(code,cb){var l=(typeof COURSES!=='undefined'&&COURSES[code]&&COURSES[code].loc)||{};fetch('/api/login?near='+encodeURIComponent(code)+(l.country?'&country='+encodeURIComponent(l.country)+'&state='+encodeURIComponent(l.state||'')+'&city='+encodeURIComponent(l.city||''):'')).then(function(r){return r.json();}).then(function(j){cb((j&&j.results)||[]);}).catch(function(){cb([]);});};
+ /* the admin's course panel is the only place that needs the whole list */
+ window.COURSEALL=function(cb){fetch('/api/login?all=1').then(function(r){return r.json();}).then(function(j){if(j&&j.courses){window.__ALLC=j.courses;window.COURSE_STUBS={};Object.keys(j.courses).forEach(function(k){var x=j.courses[k];if(x&&x.empty)window.COURSE_STUBS[k]=x;else if(x&&x.tees&&x.par)COURSES[k]=x;});}if(cb)cb();}).catch(function(){if(cb)cb();});};
  /* ---- duplicates: compare names without accents, case or filler words ("golf", "club", "de"…) ---- */
  var STOPW={golf:1,club:1,de:1,del:1,el:1,la:1,los:1,las:1,country:1,the:1,gc:1,cc:1,course:1,y:1,and:1};
  function nameKey(x){return String(x||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(function(w){return w&&!STOPW[w];}).sort().join(' ');}
@@ -6805,7 +6837,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
    if(!sc||document.getElementById('crLink'))return;var a=document.createElement('a');a.id='crLink';a.href='#';a.className='crLink';a.textContent=T('Course not listed? Request it','¿No está tu cancha? Pedila');a.onclick=function(e){e.preventDefault();openRequest();};sc.parentNode.appendChild(a);
    }   /* the GolfCourseAPI note lives in Help, not on the log screen */
  /* ---- admin: requests + course editor ---- */
- function adminPanel(el){if(!el)return;el.innerHTML='<p class="frsub">…</p>';
+ function adminPanel(el){if(!el)return;el.innerHTML='<p class="frsub">…</p>';if(!adminPanel._all){adminPanel._all=1;window.COURSEALL(function(){adminPanel(el);});return;}
    api('courseRequests',{}).then(function(j){var L=(j&&j.requests)||[];
      var nOpen=L.filter(function(r){return r.status==='requested';}).length;
      el.innerHTML='<h4 class="crDbT" style="margin-top:6px">'+T('Course list','Lista de canchas')+'</h4><div id="crDb"></div><button class="pf_btn frgrey" data-crnew="">+ '+T('Add a course','Agregar una cancha')+'</button><div id="crEditor"></div><details class="crDbRow" style="margin-top:12px"><summary><b>'+T('GolfCourseAPI test — Argentina','Prueba de GolfCourseAPI — Argentina')+'</b> <small>'+T('look up every AAG club and check the data','buscar cada club de la AAG y revisar los datos')+'</small></summary><div id="gcaTest"></div></details>'+
@@ -6832,7 +6864,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
      box.querySelectorAll('[data-fxd]').forEach(function(b){b.onclick=function(){dec(b.getAttribute('data-fxd'),false);};});
      box.querySelectorAll('[data-fxe]').forEach(function(b){b.onclick=function(){var k=b.getAttribute('data-fxe'),ed=el.querySelector('#crEditor');editor(ed,null,function(){adminPanel(el);},{code:k,data:window.COURSES[k]});if(ed.scrollIntoView)ed.scrollIntoView({behavior:'smooth',block:'start'});};});}).catch(function(){box.innerHTML='';});}
  var DBF={q:'',country:'',state:'',status:''};
- function dbList(el){var box=el.querySelector('#crDb');if(!box||!window.COURSES)return;var added={};try{added=JSON.parse(localStorage.getItem('gs-courses')||'{}');}catch(e){}
+ function dbList(el){var box=el.querySelector('#crDb');if(!box||!window.COURSES)return;var added={};try{added=window.__ALLC||JSON.parse(localStorage.getItem('gs-courses')||'{}');}catch(e){}
    var sum=function(a){return a.reduce(function(x,y){return x+(+y||0);},0);},all=Object.keys(window.COURSES),L=function(k){return window.courseLoc?window.courseLoc(k):{country:'—',state:'—',city:''};};
    var uniq=function(a){var o={};a.forEach(function(x){o[x]=1;});return Object.keys(o).sort(function(a,b){return String(a).localeCompare(String(b),'es',{sensitivity:'base'});});},countries=uniq(all.map(function(k){return L(k).country;})),states=uniq(all.filter(function(k){return !DBF.country||L(k).country===DBF.country;}).map(function(k){return L(k).state;}));
    if(DBF.state&&states.indexOf(DBF.state)<0)DBF.state='';

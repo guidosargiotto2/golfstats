@@ -17,9 +17,35 @@ module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'GET') {
     if (!L.hasDb()) return res.status(200).json({ api: true, db: false, signup: true, vars: L.dbVarNames() });
-    let courses = {};   // courses added by the admin from players' requests (merged into the built-in list by the app)
-    try { await L.init(); const rows = await L.db()`select code, data from gs_courses`; rows.forEach(r => { courses[r.code] = typeof r.data === 'string' ? JSON.parse(r.data) : r.data; }); } catch (e) { courses = {}; }
-    return res.status(200).json({ api: true, db: true, signup: true, providers: L.providersOn(), courses });
+    /* The course database stays on the server. The app downloads only the courses a player needs (?codes=), finds the rest by search (?q=)
+       or by closeness to a course (?near=). ?all=1 is the whole list, for the admin's course panel only. */
+    const Q = req.query || {}, pd = r => (typeof r.data === 'string' ? JSON.parse(r.data) : r.data);
+    const light = r => { const d = pd(r) || {}; return { code: r.code, name: d.name, loc: d.loc || {}, empty: d.empty ? true : undefined }; };
+    const ACC_FROM = 'áàâãäéèêëíìîïóòôõöúùûüñç', ACC_TO = 'aaaaaeeeeiiiiooooouuuunc';
+    const plain = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[%_\\]/g, ' ').trim();
+    let courses = {}, results;
+    try {
+      await L.init(); const sql = L.db();
+      if (Q.codes) {
+        const list = String(Q.codes).split(',').map(x => x.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')).filter(Boolean).slice(0, 120);
+        if (list.length) (await sql`select code, data from gs_courses where code = any(${list})`).forEach(r => { courses[r.code] = pd(r); });
+      } else if (Q.q) {
+        const q = plain(Q.q).slice(0, 60);
+        if (q.length >= 2) { const like = '%' + q + '%', pre = q + '%';
+          results = (await sql`select code, data from gs_courses
+            where translate(lower(data->>'name'), ${ACC_FROM}, ${ACC_TO}) like ${like} or translate(lower(coalesce(data->'loc'->>'city','')), ${ACC_FROM}, ${ACC_TO}) like ${like}
+            order by (translate(lower(data->>'name'), ${ACC_FROM}, ${ACC_TO}) like ${pre}) desc, data->>'name' limit 40`).map(light); }
+        else results = [];
+      } else if (Q.near) {
+        const code = String(Q.near).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12), me = await sql`select data from gs_courses where code = ${code}`;
+        const lo = Q.country ? { country: String(Q.country), state: String(Q.state || ''), city: String(Q.city || '') } : (me.length ? (pd(me[0]).loc || {}) : null);
+        results = lo && lo.country ? (await sql`select code, data from gs_courses where data->'loc'->>'country' = ${lo.country} and coalesce(data->'loc'->>'state','') = ${lo.state || ''} and code <> ${code} and (data->>'empty') is null
+            order by (coalesce(data->'loc'->>'city','') = ${lo.city || ''}) desc, data->>'name' limit 10`).map(light) : [];
+      } else if (Q.all) {
+        (await sql`select code, data from gs_courses`).forEach(r => { courses[r.code] = pd(r); });
+      }
+    } catch (e) { courses = {}; }
+    return res.status(200).json({ api: true, db: true, signup: true, providers: L.providersOn(), lazy: true, courses, results });
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
   try {

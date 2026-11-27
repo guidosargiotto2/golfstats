@@ -7,7 +7,9 @@ async function adopt(sql, get, id, me, fullName) {
       const lo = c.location || {}, loc = { country: String(lo.country || '').slice(0, 40), state: String(lo.state || '').slice(0, 40), city: String(lo.city || '').slice(0, 40) };
       const nk = x => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w && !['golf', 'club', 'de', 'del', 'el', 'la', 'los', 'las', 'country', 'the', 'gc', 'cc', 'course', 'y', 'and'].includes(w)).sort().join(' ');
       const pd = x => (typeof x.data === 'string' ? JSON.parse(x.data) : x.data);
-      const all = await sql`select code, data from gs_courses`;
+      /* only the rows that could be this course (same longest word in the name) — never the whole table */
+      const key = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().split(/[^a-z0-9]+/).filter(w => !['golf', 'club', 'country', 'course', 'resort', 'links'].includes(w)).sort((x, y) => y.length - x.length)[0] || '';
+      const all = key.length >= 3 ? await sql`select code, data from gs_courses where translate(lower(data->>'name'), 'áàâãäéèêëíìîïóòôõöúùûüñç', 'aaaaaeeeeiiiiooooouuuunc') like ${'%' + key + '%'}` : await sql`select code, data from gs_courses where lower(data->>'name') = ${name.toLowerCase()}`;
       const have = all.find(x => !pd(x).empty && nk(pd(x).name) === nk(name));
       if (have) return ({ code: have.code, course: pd(have), existed: true });
       // tees: 18-hole sets (a 9-hole card is played twice); men's and ladies' tees with the same yardages become one
@@ -31,7 +33,7 @@ async function adopt(sql, get, id, me, fullName) {
       const first = T0[names[0]], si = first.si || [], okS = si.length === 18 && si.every(v => v >= 1 && v <= 18) && new Set(si).size === 18;
       let base0 = name.split(/[^A-Za-zÀ-ÿ]+/).filter(w => w.length > 2).map(w => w[0]).join('').normalize('NFD').replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 4);
       if (base0.length < 2) base0 = (name.replace(/[^A-Za-z]/g, '').toUpperCase() + 'GC').slice(0, 4);
-      const taken = new Set(all.map(x => x.code).concat(['CGC', 'TER', 'SIG'])); let code = base0, n = 2; while (taken.has(code)) code = base0 + (n++);
+      const taken = new Set((await sql`select code from gs_courses where code like ${base0 + '%'}`).map(x => x.code).concat(['CGC', 'TER', 'SIG'])); let code = base0, n = 2; while (taken.has(code)) code = base0 + (n++);
       for (const st of all.filter(x => pd(x).empty && nk(pd(x).name) === nk(name))) await sql`delete from gs_courses where code = ${st.code}`;
       const data = { name: (want === 9 ? (name + ' (9 x2)').slice(0, 60) : name), loc, unverified: true, noSI: okS ? undefined : true, addedBy: me, abbr: code, pins: { F: 'red', M: 'white', B: 'blue' }, par: first.par, hcp: okS ? si : first.par.map(() => 0), tees };
       await sql`insert into gs_courses (code, data, upd) values (${code}, ${JSON.stringify(data)}, ${Date.now()})`;
