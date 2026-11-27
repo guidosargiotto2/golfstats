@@ -441,7 +441,7 @@ module.exports = async (req, res) => {
       const j = await r.json().catch(() => ({}));
       if (!r.ok) return res.status(502).json({ error: 'gca', status: r.status, message: ((j && (j.message || j.error)) || '') + (r.status === 401 ? ' [key in Vercel: ' + key.length + ' characters, starts "' + key.slice(0, 2) + '", ends "' + key.slice(-2) + '"' + (/[^A-Za-z0-9]/.test(key) ? ', contains a space or symbol' : '') + ']' : '') });
       const loc = c => [c.location && c.location.city, c.location && c.location.state, c.location && c.location.country].filter(Boolean).join(', ');
-      if (action === 'gcaSearch') return ok({ results: (j.courses || []).slice(0, 20).map(c => ({ id: c.id, club: c.club_name, course: c.course_name, where: loc(c) })) });
+      if (action === 'gcaSearch') return ok({ total: (j.courses || []).length, usa: (j.courses || []).filter(c => /united states|^usa?$/i.test((c.location && c.location.country) || '')).length, results: (j.courses || []).slice(0, 20).map(c => ({ id: c.id, club: c.club_name, course: c.course_name, where: loc(c) })) });
       const c = j.course || j;
       const teeList = [].concat((c.tees && c.tees.male) || [], (c.tees && c.tees.female) || []);
       return ok({ course: { id: c.id, club: c.club_name, course: c.course_name, where: loc(c), tees: teeList.map(t => ({ name: t.tee_name, cr: t.course_rating, slope: t.slope_rating, par: t.par_total, holes: (t.holes || []).map(h => ({ par: h.par, yds: h.yardage, si: h.handicap })) })) } });
