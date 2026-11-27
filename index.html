@@ -4252,10 +4252,10 @@ function reviewParts(rec,all){
    var out=zt>3.6||zt<-3.6,cx=X(zt),tx=Math.max(14,Math.min(W-14,cx));
    /* reference values above the bar, today's value under its dot */
    return '<svg viewBox="0 0 '+W+' 50" class="rvS" role="img" aria-label="'+m[1]+'">'+
-     '<text x="'+X(0)+'" y="9" text-anchor="middle" class="rvSa">'+sg(r.avg,dec,sgn)+'</text>'+
-     (function(){var fw=r.floor&&dir<0,fb=r.floor&&dir>0;   /* the zero floor sits on the better side when fewer is better */
-       return '<text x="'+X(zw)+'" y="9" text-anchor="middle" class="'+(fb?'rvSf':'rvSl')+'">'+(fb?'0':sg(dir>0?r.lo:r.hi,dec,sgn))+'</text>'+
-              '<text x="'+X(zb)+'" y="9" text-anchor="middle" class="'+(fw?'rvSf':'rvSl')+'">'+(fw?'0':sg(dir>0?r.hi:r.lo,dec,sgn))+'</text>';})()+
+     (function(){var fw=r.floor&&dir<0,fb=r.floor&&dir>0,tt=sg(r.today,m[3],sgn);   /* the zero floor sits on the better side when fewer is better */
+       /* a reference that says the same as today's value, right above its dot, is not written twice */
+       var lab=function(x,cls,txt){return (txt===tt&&Math.abs(x-cx)<26)?'':'<text x="'+x+'" y="9" text-anchor="middle" class="'+cls+'">'+txt+'</text>';};
+       return lab(X(0),'rvSa',sg(r.avg,dec,sgn))+lab(X(zw),fb?'rvSf':'rvSl',fb?'0':sg(dir>0?r.lo:r.hi,dec,sgn))+lab(X(zb),fw?'rvSf':'rvSl',fw?'0':sg(dir>0?r.hi:r.lo,dec,sgn));})()+
      '<rect x="'+X(-3)+'" y="14" width="'+(X(3)-X(-3))+'" height="14" rx="3" fill="#f3eee0"/>'+
      '<rect x="'+X(-2)+'" y="14" width="'+(X(2)-X(-2))+'" height="14" fill="#ebe3cc"/>'+
      '<rect x="'+X(-1)+'" y="14" width="'+(X(1)-X(-1))+'" height="14" fill="#e0d4b1"/>'+
