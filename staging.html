@@ -1129,6 +1129,24 @@ body.lgPractising #view-log #holenav,body.lgPractising #view-log .holenav,body.l
 #rsheet .rsRec li:before{content:counter(rr);position:absolute;left:16px;top:12px;width:24px;height:24px;border-radius:50%;background:var(--sand,#d8c48c);color:var(--pine,#0f3a2c);font-family:var(--serif);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px}
 #rsheet .rsDepth{margin:16px 0 0;flex-wrap:wrap}#rsheet .rsDepth em{font-style:normal;color:var(--ink-soft,#5c6357)}
 #rsheet .rsIns li b{color:var(--pine,#0f3a2c)}
+.abBlock{border-top:1px solid var(--line,#e2ddcc);padding-top:14px;margin-top:6px}
+.abQ{font-family:var(--serif);font-size:18px;color:var(--pine,#0f3a2c);margin-bottom:2px}
+.abChips{display:flex;flex-wrap:wrap;gap:7px}
+.abChips button{border:1px solid var(--line,#e2ddcc);background:#fff;color:var(--pine,#0f3a2c);border-radius:18px;padding:7px 13px;font-size:13.5px;cursor:pointer;transition:background .15s,color .15s}
+.abChips button.on{background:var(--pine,#0f3a2c);color:#fff;border-color:var(--pine,#0f3a2c)}
+.abGoal .gRow{display:grid;grid-template-columns:118px 1fr;gap:12px;align-items:start;padding:10px 0;border-top:1px dashed var(--line,#e2ddcc)}
+.abGoal .gL{font-family:var(--cond);font-size:12px;color:var(--ink-soft,#5c6357);display:flex;align-items:center;gap:8px;padding-top:4px}
+.abGoal .gL b{width:24px;height:24px;border-radius:5px;background:var(--pine,#0f3a2c);color:var(--sand,#d8c48c);display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:14px}
+.abGoal .gTwo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.abGoal small{font-size:11.5px;color:var(--ink-soft,#5c6357);text-transform:none;letter-spacing:0;font-weight:400}
+.abGoal .gVerdict{font-size:14px;line-height:1.5;padding:9px 12px;border-radius:8px;background:#eef5ee;border-left:3px solid var(--fairway,#1f7a4d)}
+.abGoal .gVerdict.warn{background:#fbf3df;border-left-color:#c99a1e}.abGoal .gVerdict.bad{background:#fbefe9;border-left-color:#a23b2a}
+.abGoal .gSum{margin-top:10px;background:var(--pine,#0f3a2c);color:#f6f2e7;border-radius:12px;padding:14px 16px}
+.abGoal .gSumT{font-family:var(--cond);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--sand,#d8c48c)}
+.abGoal .gSum p{margin:4px 0 10px;font-family:var(--serif);font-size:18px;line-height:1.35}
+.abGoal .gSum small{color:rgba(246,242,231,.8)}
+.abGoal .gBar{height:7px;border-radius:4px;background:rgba(246,242,231,.18);overflow:hidden;margin-bottom:6px}.abGoal .gBar i{display:block;height:100%;background:var(--sand,#d8c48c);border-radius:4px;transition:width .6s ease}
+@media(max-width:600px){.abGoal .gRow{grid-template-columns:1fr}.abGoal .gTwo{grid-template-columns:1fr}}
 </style>
 <style id="gimcss">
 .gimTag{font:600 10px/1 var(--sans,inherit);letter-spacing:.08em;background:var(--pine);color:#fff;border-radius:20px;padding:4px 8px;vertical-align:3px;margin-left:6px}
@@ -3404,7 +3422,7 @@ document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&
 function aboutHTML(){var es=window.__LANG==='es',a=PROF.about||{},T=function(x,y){return es?y:x;},E=function(x){return String(x||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
  var sel=function(k,lbl,O){return '<label>'+lbl+'<select data-ab="'+k+'"><option value="">'+T('— Choose —','— Elegí —')+'</option>'+O.map(function(o){return '<option value="'+o[0]+'"'+((a[k]||'')===o[0]?' selected':'')+'>'+(es?o[2]:o[1])+'</option>';}).join('')+'</select></label>';};
  return '<div id="pf_about" class="pfAbout"><label>'+T('Why do you play the game? The real answer, in your own words','¿Por qué jugás al golf? La respuesta verdadera, con tus palabras')+'<textarea data-ab="why" rows="3" maxlength="600" placeholder="'+T('I play because…','Juego porque…')+'">'+E(a.why)+'</textarea></label>'+
-  '<div class="hisub" style="margin:-4px 0 6px">'+T('It decides what “better” means for you, and after each round you are asked whether you got it.','Define qué significa “mejorar” para vos, y después de cada vuelta se te pregunta si lo conseguiste.')+'</div>'+
+  '<div class="hisub" style="margin:-4px 0 6px">'+T('It decides what “better” means for you, and after each round you are asked whether you got it.','Define qué significa “mejorar” para vos, y después de cada vuelta se te pregunta si lo conseguiste.')+'</div>'+wantHTML(a,es)+goalHTML(a,es)+
   sel('years',T('Playing for','Jugás hace'),[['lt1','Less than a year','Menos de un año'],['1-3','1–3 years','1–3 años'],['3-10','3–10 years','3–10 años'],['10+','More than 10 years','Más de 10 años']])+
   sel('lessons',T('Lessons','Clases'),[['never','Never','Nunca'],['year','A few times a year','Algunas veces al año'],['month','About once a month','Una vez por mes'],['week','Every week or more','Todas las semanas o más']])+
   sel('range',T('Driving range','Driving range'),[['never','Rarely or never','Casi nunca'],['month','A few times a month','Algunas veces por mes'],['week','Once a week','Una vez por semana'],['week2','Several times a week','Varias veces por semana']])+
@@ -3420,6 +3438,44 @@ document.addEventListener('change',function(e){var t=e.target,k=t&&t.getAttribut
 document.addEventListener('input',function(e){var t=e.target,k=t&&t.getAttribute&&t.getAttribute('data-ab');if(k==='why')abSet(k,t.value);});
 function abSet(k,v){PROF.about=PROF.about||{};PROF.about[k]=(k==='why'?String(v).trim():v);if(!PROF.about.at)PROF.about.at=new Date().toISOString().slice(0,10);saveProf();
  clearTimeout(ABOUT_T);ABOUT_T=setTimeout(function(){try{var tok=localStorage.getItem('gs-token');if(tok)fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({action:'setAbout',about:Object.assign({name:PROF.name,hand:PROF.hand||null,drive:PROF.driveYd,nine:PROF.nineIron,homeClub:PROF.homeClub,home:PROF.homeCourse,tee:PROF.defaultTee},PROF.about)})}).catch(function(){});}catch(_){}},1200);}
+/* ---- what the golfer wants from Golfimbul, and one golf goal written the way a business writes a target: specific, measurable, achievable, relevant, time-bound ---- */
+var WANTS=[['leak','Know where I lose strokes','Saber dónde pierdo golpes'],['real','Know if I am really improving','Saber si de verdad estoy mejorando'],['practice','Know what to practise','Saber qué practicar'],['strategy','Play smarter on the course','Jugar más inteligente en la cancha'],['hcp','Lower my handicap','Bajar mi hándicap'],['coach','Work better with my coach','Trabajar mejor con mi profesor'],['friends','Compare with my friends','Compararme con mis amigos'],['record','Keep a record of my rounds','Guardar el registro de mis vueltas']];
+function wantHTML(a,es){var W=a.want||[],E=function(x){return String(x||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+ return '<div class="abBlock"><div class="abQ">'+(es?'¿Qué querés obtener de Golfimbul?':'What do you want to get from Golfimbul?')+'</div><div class="hisub" style="margin:0 0 8px">'+(es?'Elegí todo lo que aplique. Con esto sabemos si la app te está sirviendo.':'Pick everything that applies. This is how we know whether the app is working for you.')+'</div><div class="abChips">'+
+  WANTS.map(function(w){return '<button type="button" data-want="'+w[0]+'" class="'+(W.indexOf(w[0])>=0?'on':'')+'">'+(es?w[2]:w[1])+'</button>';}).join('')+'</div>'+
+  '<input type="text" data-ab="wantText" maxlength="160" value="'+E(a.wantText)+'" placeholder="'+(es?'¿Algo más? Con tus palabras':'Anything else? In your own words')+'" style="margin-top:8px"></div>';}
+var GOALS={hi:{n:['Handicap index','Hándicap index'],u:['',''],step:0.1,pace:1,dec:1},avg:{n:['Average score','Score promedio'],u:[' strokes',' golpes'],step:0.5,pace:1,dec:1},
+ dbl:{n:['Double bogeys per round','Dobles bogeys por vuelta'],u:['',''],step:0.5,pace:1,dec:1},t5:{n:["Tiger 5 mistakes per round",'Errores Tiger 5 por vuelta'],u:['',''],step:0.5,pace:1.5,dec:1},putts:{n:['Putts per round','Putts por vuelta'],u:['',''],step:0.5,pace:1,dec:1}};
+function goalBase(k){try{if(k==='hi'){var h=playerHI();return (h==null||isNaN(+h))?null:+h;}
+  var R0=(window.ALLROUNDS?window.ALLROUNDS():[]).filter(function(r){return (r.holesPlayed||18)>=18;}).sort(function(a,b){return a.date<b.date?1:-1;}).slice(0,10);
+  var key={avg:'score',dbl:'dbl',t5:'mtot',putts:'putts'}[k],v=R0.map(function(r){return r[key];}).filter(function(x){return x!=null&&!isNaN(+x);});if(v.length<3)return null;
+  return Math.round(10*v.reduce(function(a,b){return a+ +b;},0)/v.length)/10;}catch(e){return null;}}
+function goalHTML(a,es){var g=a.goal||{},T=function(x,y){return es?y:x;},M=GOALS[g.metric]||null,base=g.metric?goalBase(g.metric):null,fmtN=function(v){if(v==null||v==='')return '';v=+v;return (g.metric==='hi'&&v<0)?'+'+(-v):String(v);};
+ var from=(g.from!==undefined&&g.from!=='')?g.from:(base!=null?base:''),today=new Date().toISOString().slice(0,10);
+ var h='<div class="abBlock abGoal"><div class="abQ">'+T('Your golf goal','Tu objetivo de golf')+'</div><div class="hisub" style="margin:0 0 10px">'+T('One goal, written the way a business writes a target: what, how much, by when. Vague goals ("play better") cannot be measured, so they cannot be managed.','Un objetivo, escrito como una empresa escribe una meta: qué, cuánto, para cuándo. Los objetivos vagos ("jugar mejor") no se pueden medir, así que no se pueden gestionar.')+'</div>'+
+  '<div class="gRow"><span class="gL"><b>S</b>'+T('Specific','Específico')+'</span><label>'+T('What will you improve?','¿Qué vas a mejorar?')+'<select data-goal="metric"><option value="">'+T('— Choose —','— Elegí —')+'</option>'+Object.keys(GOALS).map(function(k){return '<option value="'+k+'"'+(g.metric===k?' selected':'')+'>'+GOALS[k].n[es?1:0]+'</option>';}).join('')+'</select></label></div>';
+ if(M){
+  h+='<div class="gRow"><span class="gL"><b>M</b>'+T('Measurable','Medible')+'</span><div class="gTwo"><label>'+T('Where you are today','Dónde estás hoy')+'<input type="number" step="'+M.step+'" data-goal="from" value="'+from+'">'+(base!=null?'<small>'+T('from your data: ','según tus datos: ')+fmtN(base)+'</small>':'<small>'+T('not enough rounds yet: type your own number','todavía sin vueltas suficientes: escribí tu número')+'</small>')+'</label><label>'+T('Where you want to be','Dónde querés estar')+'<input type="number" step="'+M.step+'" data-goal="to" value="'+(g.to!=null?g.to:'')+'"></label></div></div>'+
+   '<div class="gRow"><span class="gL"><b>T</b>'+T('Time-bound','Con fecha')+'</span><label>'+T('By when?','¿Para cuándo?')+'<input type="date" data-goal="by" min="'+today+'" value="'+(g.by||'')+'"></label></div>';
+  var ok=from!==''&&g.to!=null&&g.to!==''&&g.by;
+  if(ok){var gap=+from-(+g.to),weeks=Math.max(1,Math.round((new Date(g.by)-new Date())/6048e5)),perMonth=gap/(weeks/4.345),verdict,cls='ok';
+   if(gap<=0){verdict=T('That target is not better than where you are today. Lower is better for this number.','Ese objetivo no es mejor que donde estás hoy. En este número, menos es mejor.');cls='bad';}
+   else if(perMonth>M.pace*1.6){verdict=T('Very ambitious: '+gap.toFixed(1)+' in '+weeks+' weeks is faster than most golfers ever manage. Give it more time or a smaller step, or accept that it is a stretch.','Muy ambicioso: '+gap.toFixed(1)+' en '+weeks+' semanas es más rápido de lo que casi cualquier golfista logra. Dale más tiempo o un paso más chico, o aceptá que es una meta exigente.');cls='warn';}
+   else if(perMonth>M.pace*0.8){verdict=T('Demanding but possible: '+gap.toFixed(1)+' in '+weeks+' weeks needs steady practice and rounds logged every week.','Exigente pero posible: '+gap.toFixed(1)+' en '+weeks+' semanas pide práctica constante y vueltas cargadas todas las semanas.');}
+   else verdict=T('Realistic: '+gap.toFixed(1)+' in '+weeks+' weeks is a pace most committed golfers can hold.','Realista: '+gap.toFixed(1)+' en '+weeks+' semanas es un ritmo que un golfista comprometido puede sostener.');
+   h+='<div class="gRow"><span class="gL"><b>A</b>'+T('Achievable','Alcanzable')+'</span><div class="gVerdict '+cls+'">'+verdict+'</div></div>';}
+  h+='<div class="gRow"><span class="gL"><b>R</b>'+T('Relevant','Relevante')+'</span><label>'+T('Why does this matter to you?','¿Por qué te importa?')+'<input type="text" data-goal="why" maxlength="160" value="'+String(g.why||'').replace(/"/g,'&quot;')+'" placeholder="'+T('e.g. to play the club championship in the first flight','ej. para jugar el campeonato del club en primera categoría')+'"></label></div>';
+  if(ok&&gap>0){var now=base!=null?base:+from,done=Math.max(0,Math.min(1,(+from-now)/gap));
+   h+='<div class="gSum"><div class="gSumT">'+T('Your goal','Tu objetivo')+'</div><p>'+T('Take my <b>'+M.n[0].toLowerCase()+'</b> from <b>'+fmtN(from)+'</b> to <b>'+fmtN(g.to)+'</b> by <b>'+g.by+'</b>'+(g.why?', '+String(g.why).replace(/</g,'&lt;'):'')+'.','Llevar mi <b>'+M.n[1].toLowerCase()+'</b> de <b>'+fmtN(from)+'</b> a <b>'+fmtN(g.to)+'</b> para el <b>'+g.by+'</b>'+(g.why?', '+String(g.why).replace(/</g,'&lt;'):'')+'.')+'</p><div class="gBar"><i style="width:'+Math.round(done*100)+'%"></i></div><small>'+T('Today: ','Hoy: ')+fmtN(now)+' · '+Math.round(done*100)+'% '+T('of the way','del camino')+' · '+T('measured on your last 10 rounds','medido sobre tus últimas 10 vueltas')+'</small></div>';}
+ }
+ return h+'</div>';}
+function abRedraw(){var bx=document.getElementById('pf_about');if(!bx)return;var w=document.createElement('div');w.innerHTML=aboutHTML();bx.replaceWith(w.firstChild);}
+document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('[data-want]');if(!b)return;var k=b.getAttribute('data-want'),W=((PROF.about||{}).want||[]).slice(),i=W.indexOf(k);if(i>=0)W.splice(i,1);else W.push(k);abSet('want',W);b.classList.toggle('on',i<0);});
+document.addEventListener('change',function(e){var t=e.target,k=t&&t.getAttribute&&t.getAttribute('data-goal');if(!k)return;var g=Object.assign({},(PROF.about||{}).goal||{});
+ if(k==='metric'){g={metric:t.value,why:g.why||''};var b0=t.value?goalBase(t.value):null;if(b0!=null)g.from=b0;}
+ else if(k==='from'||k==='to'){g[k]=t.value===''?'':+t.value;}else g[k]=t.value;
+ if(!g.set&&g.metric&&g.to!==''&&g.to!=null&&g.by)g.set=new Date().toISOString().slice(0,10);
+ abSet('goal',g);abRedraw();});
 function favOptsHTML(sel){var E=function(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});},es=window.__LANG==='es';
  return favCourses(sel).map(function(k){return '<option value="'+k+'"'+(k===sel?' selected':'')+'>'+(isFav(k)?'★ ':'')+E(COURSES[k].name)+'</option>';}).join('')+'<option value="__more">🔍 '+(es?'Buscar otra cancha…':'Search another course…')+'</option>';}
 /* course finder: search by name or city, filter by province, star favourites, pick one */
@@ -7252,7 +7308,7 @@ window.IMPMAP=(function(){
  var P=function(){return window.PROF||{};},O=function(){var p=P();p.onb=p.onb||{};return p.onb;};
  var STEPS=[
   {k:'personal',t:['Name & hand','Nombre y mano'],ok:function(){return !!(P().name||'').trim()&&!!P().hand;}},
-  {k:'about',t:['About your game','Sobre tu juego'],ok:function(){var a=P().about||{};return String(a.why||'').trim().length>=15&&!!a.years&&!!a.lessons&&!!a.golfHrs&&!!a.recall&&(a.sit==='yes'||a.live==='yes');}},
+  {k:'about',t:['About your game','Sobre tu juego'],ok:function(){var a=P().about||{};return String(a.why||'').trim().length>=15&&!!a.years&&!!a.lessons&&!!a.golfHrs&&!!a.recall&&(a.sit==='yes'||a.live==='yes')&&((a.want||[]).length>0||!!(a.wantText||'').trim())&&!!(a.goal&&a.goal.metric&&a.goal.to!==''&&a.goal.to!=null&&a.goal.by);}},
   {k:'course',t:['Home club & tees','Club y tees'],ok:function(){return !!(P().homeClub||'').trim()&&!!O().course;}},
   {k:'game',t:['Handicap & distances','Hándicap y distancias'],ok:function(){var hi=false;try{hi=window.playerHI&&window.playerHI()!=null;}catch(e){}return hi&&!!O().dist;}},
   {k:'bag',t:['My bag','Mi bolsa'],ok:function(){var p=P();try{if(window.gsBag&&window.gsBag())return true;}catch(e){}return !!(p.bagManual&&p.bagManual.length)||!!O().bag;}},
@@ -7387,6 +7443,7 @@ window.IMPMAP=(function(){
      '<li>'+T('<b>Your rounds are yours.</b> We never sell them, and you can download or delete everything whenever you want.','<b>Tus vueltas son tuyas.</b> Nunca las vendemos, y podés descargar o borrar todo cuando quieras.')+'</li>'+
      '<li>'+T('<b>Only you see your full rounds</b>, plus the people you choose: followers see a summary, your professor sees everything if you link them, and the founder to prepare your review.','<b>Solo vos ves tus vueltas completas</b>, más quienes elijas: tus seguidores ven un resumen, tu profesor ve todo si lo vinculás, y el fundador para preparar tu revisión.')+'</li>'+
      '<li>'+T('<b>The course database is not yours to copy.</b> It is licensed data: use it inside Golfimbul for your own golf, and do not extract, export or share it.','<b>La base de canchas no es para copiar.</b> Son datos con licencia: usalos dentro de Golfimbul para tu propio golf, y no los extraigas, exportes ni compartas.')+'</li></ul>'+
+     '<p class="tgAsk">'+T('One request, not a rule: when something is wrong or could be better, tell us in <b>Ideas</b>. Golfimbul is built with its golfers.','Un pedido, no una regla: cuando algo esté mal o pueda mejorar, contanos en <b>Ideas</b>. Golfimbul se construye con sus golfistas.')+'</p>'+
      '<label class="tgChk"><input type="checkbox" id="tgOk"> <span>'+T('I have read and accept the <a href="/terms" target="_blank" rel="noopener">Terms of use</a> and the <a href="/privacy" target="_blank" rel="noopener">Privacy page</a>.','Leí y acepto los <a href="/terms" target="_blank" rel="noopener">Términos de uso</a> y la <a href="/privacy" target="_blank" rel="noopener">página de Privacidad</a>.')+'</span></label>'+
      '<div class="tgBtns"><button type="button" class="pf_btn frgrey" id="tgOut">'+T('Log out','Cerrar sesión')+'</button><button type="button" class="pf_btn" id="tgGo" disabled>'+T('Accept and continue','Aceptar y seguir')+'</button></div></div>';
    document.body.appendChild(m);
@@ -7406,6 +7463,7 @@ window.IMPMAP=(function(){
 #termsGate p{margin:0 0 10px;line-height:1.5}#termsGate ul{margin:0 0 16px;padding-left:20px;display:grid;gap:9px;line-height:1.5;font-size:14.5px}
 #termsGate .tgChk{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.45;border-top:1px solid var(--line,#e2ddcc);padding-top:14px;cursor:pointer;text-transform:none;letter-spacing:0;font-weight:400}
 #termsGate .tgChk input{width:18px;height:18px;margin-top:2px;flex:none}#termsGate a{color:var(--fairway,#1f7a4d);font-weight:700}
+#termsGate .tgAsk{font-size:14px;color:var(--ink-soft,#5c6357);margin:0 0 14px}
 #termsGate .tgBtns{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
 @keyframes tgIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 </style>
