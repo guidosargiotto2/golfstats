@@ -7604,6 +7604,27 @@ window.IMPMAP=(function(){
 #termsGate .tgBtns{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
 @keyframes tgIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 </style>
+<style id="wideUse">
+/* ===== use the screen: on wide monitors every page grows with the window instead of sitting in a narrow column.
+   Reading text and forms keep a comfortable line length; tables, charts, cards and scorecards take the room. ===== */
+#rsheet .rsCard .scTbl td{padding:9px 5px}
+#rsheet .rsCard .scTbl td.scLbl{padding-left:10px;padding-right:12px}
+@media(min-width:1200px){
+ .wrap{max-width:min(1560px,94vw)}
+ .lgscope .wrap{max-width:720px}
+ #view-log .wrap{max-width:none}
+ #rsheet .rsIn{max-width:min(1640px,95vw)}
+ #view-ledger>div,#view-friends>div{max-width:min(1560px,94vw)!important}
+ #view-bag>div{max-width:min(1440px,94vw)!important}
+ #view-plans>div{max-width:min(1280px,94vw)!important}
+ #view-profile>div{max-width:920px!important}
+ #view-profile.pgFocus>div{max-width:min(1240px,94vw)!important}
+ #parCard .pcBox{max-width:min(1480px,95vw)}
+ .impCard{max-width:min(1480px,95vw)}
+ .tgModal .tgBox{max-width:min(1100px,92vw)}
+ #onbBar{max-width:min(1560px,94vw)}
+}
+</style>
 
 <style id="v2">
 /* Golfimbul — design layer v2 ("clubhouse ledger"). Loaded only by /staging.
