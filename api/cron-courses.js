@@ -57,6 +57,8 @@ async function runImport(sql, key, runMs) {
   const run = { added: 0, existed: 0, nodata: 0, errors: 0, searches: 0 };
   S.found = S.found || {};
   /* once every country is done, the next batch starts a maintenance pass: the same searches again, keeping only courses not seen before (new courses, new entries) */
+  const MAINTENANCE = false;     // off for now: when every country is done, further batches do nothing (no repeat searches)
+  if (S.ci >= PLAN.length && !MAINTENANCE) return { ...(S.last || {}), added: 0, searches: 0, finished: true, idle: true, totalAdded: S.total || 0 };
   if (S.ci >= PLAN.length) { S.cycle = (S.cycle || 1) + 1; S.ci = 0; S.qi = 0; S.queue = []; S.found = {}; S.per = {}; S.log = (S.log || []).concat([{ day, maintenance: S.cycle }]).slice(-60); }
   S.searches = S.searches || 0;
   while (Date.now() - t0 < runMs && S.calls < DAY_CAP && S.ci < PLAN.length) {
