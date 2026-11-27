@@ -2616,7 +2616,18 @@ function filterRounds(rows,range){
  if(range==='month'){const m=String(now.getMonth()+1).padStart(2,'0');return rows.filter(r=>r.date.startsWith(y+'-'+m));}
  return rows;
 }
-function renderKpis(){
+/* how many more rounds until the control charts can speak: limits appear at 5 rounds logged with shots, and settle at 12 */
+function xmrProg(){var k=document.getElementById('kpiRange');if(!k||!k.parentNode)return;var host=document.getElementById('xmrProgHost');if(!host){host=document.createElement('div');host.id='xmrProgHost';k.parentNode.insertBefore(host,k);}
+ var all=[];try{all=(window.ALLROUNDS?window.ALLROUNDS():[]).filter(function(r){return (r.holesPlayed||18)>=18;});}catch(e){}
+ var n=all.filter(window.T5FULL).length,A=5,B=12,h='';
+ if(n<B){var goal=n<A?A:B,need=goal-n,es=window.__LANG==='es',dots='';for(var i=0;i<goal;i++)dots+='<i class="'+(i<n?'on':'')+'"></i>';
+   var t=n<A?(es?'<b>'+(need===1?'Falta 1 vuelta':'Faltan '+need+' vueltas')+'</b> para tus gráficos de control. Desde la vuelta '+A+' cargada con tiros, Golfimbul te dice qué fue un cambio real y qué fue un día más.'
+                :'<b>'+need+' more round'+(need===1?'':'s')+'</b> until your control charts. From round '+A+' logged with shots, Golfimbul tells you what was a real change and what was just another day.')
+             :(es?'<b>Tus gráficos de control ya hablan.</b> '+(need===1?'Falta 1 vuelta':'Faltan '+need+' vueltas')+' para que los límites queden firmes (a las '+B+').'
+                :'<b>Your control charts are speaking.</b> '+need+' more round'+(need===1?'':'s')+' until the limits are firm (at '+B+').');
+   h='<div class="xprog"><div class="xpDots">'+dots+'</div><div class="xpTxt"><span class="xpN">'+n+' / '+goal+'</span> '+t+'</div></div>';}
+ if(host._h!==h){host._h=h;host.innerHTML=h;}}
+function renderKpis(){try{xmrProg();}catch(e){}
  const el=document.getElementById('kpis'); if(!el)return;
  const rows=R;
  if(!rows.length){el.innerHTML=`<div class="kpi"><div class="lbl">${LX("No rounds in range","Sin vueltas en el rango")}</div><div class="val">—</div></div>`;return;}
@@ -7601,6 +7612,9 @@ window.IMPMAP=(function(){
 @keyframes tgIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 </style>
 <style id="wideUse">
+.xprog{display:flex;align-items:center;gap:16px;flex-wrap:wrap;border:1px solid var(--line);border-left:4px solid var(--fairway);background:var(--paper);border-radius:12px;padding:12px 16px;margin:0 0 14px}
+.xpDots{display:flex;gap:5px}.xpDots i{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--fairway);background:transparent}.xpDots i.on{background:var(--fairway)}
+.xpTxt{flex:1;min-width:240px;font-size:14px;line-height:1.5;color:var(--ink-soft)}.xpTxt b{color:var(--pine)}.xpN{font-family:var(--serif);font-size:18px;color:var(--pine);margin-right:8px}
 /* ===== use the screen: on wide monitors every page grows with the window instead of sitting in a narrow column.
    Reading text and forms keep a comfortable line length; tables, charts, cards and scorecards take the room. ===== */
 #rsheet .rsCard .scTbl td{padding:9px 5px}
