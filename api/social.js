@@ -100,6 +100,10 @@ module.exports = async (req, res) => {
       const rows = await sql`select r.username, p.display, p.avatar, r.data from gs_rounds r join gs_follows f on f.followee = r.username and f.follower = ${me} join gs_profiles p on p.username = r.username where r.deleted = false`;
       const by = {};
       for (const r of rows) { (by[r.username] = by[r.username] || { username: r.username, name: r.display, avatar: r.avatar || '', rounds: [] }).rounds.push(summary(r.data)); }
+      /* their imported history too (club history, earlier spreadsheets): the same summary, never the shots */
+      const hist = await sql`select h.username, p.display, p.avatar, h.rounds from gs_history h join gs_follows f on f.followee = h.username and f.follower = ${me} join gs_profiles p on p.username = h.username`;
+      for (const h of hist) { const L0 = typeof h.rounds === 'string' ? JSON.parse(h.rounds) : (h.rounds || []); const o = (by[h.username] = by[h.username] || { username: h.username, name: h.display, avatar: h.avatar || '', rounds: [] });
+        const have = new Set(o.rounds.map(x => x.date + '|' + x.score)); L0.forEach(x => { if (x && x.date && !have.has(x.date + '|' + x.score)) o.rounds.push(summary(x)); }); }
       const friends = Object.values(by);
       friends.forEach(f => { f.rounds.sort(byDateDesc); f.rounds = f.rounds.slice(0, 60); });
       return ok({ friends });
@@ -130,7 +134,9 @@ module.exports = async (req, res) => {
         : await sql`select display, about from gs_profiles where username = ${target} and professor = ${me} and prof_status = 'accepted'`;
       if (!s.length) return bad(403, 'not-your-student');
       const rows = await sql`select data from gs_rounds where username = ${target} and deleted = false`;
-      return ok({ username: target, name: s[0].display, about: s[0].about || null, rounds: rows.map(r => r.data).sort(byDateDesc).slice(0, 200) });
+      const hs = await sql`select rounds from gs_history where username = ${target}`;
+      const hist = hs.length ? (typeof hs[0].rounds === 'string' ? JSON.parse(hs[0].rounds) : (hs[0].rounds || [])) : [], logged = rows.map(r => r.data), have = new Set(logged.map(x => x.date + '|' + x.score));
+      return ok({ username: target, name: s[0].display, about: s[0].about || null, rounds: logged.concat(hist.filter(x => x && x.date && !have.has(x.date + '|' + x.score))).sort(byDateDesc).slice(0, 400) });
     }
 
     /* ---- teams (4×3 offer): the owner buys, shares a code, up to 4 players join ---- */
@@ -350,8 +356,18 @@ module.exports = async (req, res) => {
       return ok({ v });
     }
     if (action === 'myHistory') {   // a player's imported club history (rounds with a score per hole)
-      const r = await sql`select rounds, upd from gs_history where username = ${me}`;
-      return ok({ rounds: r.length ? (typeof r[0].rounds === 'string' ? JSON.parse(r[0].rounds) : r[0].rounds) : [], upd: r.length ? Number(r[0].upd) : 0 });
+      const r = await sql`select rounds, extra, upd from gs_history where username = ${me}`;
+      const pj = v => (typeof v === 'string' ? JSON.parse(v) : v);
+      return ok({ rounds: r.length ? pj(r[0].rounds) : [], extra: r.length ? (pj(r[0].extra) || null) : null, upd: r.length ? Number(r[0].upd) : 0 });
+    }
+    if (action === 'historySeed') {   // admin: put a player's history (and their bag and per-hole tendencies) on the server, replacing what was built into the page
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      const u = String(b.user || '').trim().toLowerCase(); if (!L.validUser(u)) return bad(400, 'bad-user');
+      const rounds = (Array.isArray(b.rounds) ? b.rounds : []).filter(r => r && r.date).slice(0, 1500), extra = b.extra && typeof b.extra === 'object' ? b.extra : null;
+      if (JSON.stringify(rounds).length + JSON.stringify(extra || {}).length > 3500000) return bad(413, 'too-big');
+      await sql`insert into gs_history (username, rounds, extra, src, upd) values (${u}, ${JSON.stringify(rounds)}, ${extra ? JSON.stringify(extra) : null}, 'seed', ${Date.now()})
+                on conflict (username) do update set rounds = excluded.rounds, extra = coalesce(excluded.extra, gs_history.extra), src = excluded.src, upd = excluded.upd`;
+      return ok({ user: u, rounds: rounds.length, extra: !!extra });
     }
     if (action === 'importStatus' || action === 'importRun') {   // admin: the GolfCourseAPI import, run by hand one batch (< 1 minute) at a time
       if (me !== L.ADMIN) return bad(403, 'admin');
