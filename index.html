@@ -4269,7 +4269,7 @@ function reviewParts(rec,all){
    rows.map(function(r){var m=r.m,sgn=/^(stpNet|sgtot|ott|app|atg|putt)$/.test(m[0]);return '<tr><td>'+m[1]+'</td>'+(enough?(r.avg!=null?'<td class="rvSc">'+strip(r)+'</td><td><span class="rvV '+r.v+'">'+V[r.v]+'</span></td>':'<td class="rvTd">'+sg(r.today,m[3],sgn)+'</td><td></td>'):'<td class="rvTd">'+sg(r.today,m[3],sgn)+'</td>')+'</tr>';}).join('')+'</tbody></table></div>';
  var note=enough?'<p class="pcOpt">'+T('Each strip shows your average (the dark line), the bands 1σ and 2σ either side, and your limits (red dashes); the dot is today, with its value underneath, and better is always to the right. Inside the limits it is your normal variation; only a dot beyond them means something was different. The limits are the same as in your control charts: your current stage, since your game last changed.','Cada franja muestra tu promedio (la línea oscura), las bandas de 1σ y 2σ a cada lado y tus límites (rayas rojas); el punto es hoy, con su valor debajo, y mejor siempre está a la derecha. Dentro de los límites es tu variación normal; solo un punto más allá significa que algo fue distinto. Los límites son los mismos de tus gráficos de control: tu etapa actual, desde la última vez que tu juego cambió.')+'</p>':'';
  var sr=rows.filter(function(r){return r.m[0]==='score';})[0];
- return {head:head,lead:lead,tbl:tbl,note:note,enough:enough,n:(sr&&sr.n)||Math.min(prev.length,20)};}
+ return {head:head,lead:lead,tbl:tbl,note:note,enough:enough,rows:rows,n:(sr&&sr.n)||Math.min(prev.length,20)};}
 function reviewInline(rec,all){try{var p=reviewParts(rec,all),es=window.__LANG==='es';
   return '<div class="rvInline"><div class="rvKick">'+(es?'Tu vuelta, contra tu normalidad':'Your round, against your normal')+(p.enough?' · '+(es?'contra tu etapa actual: ':'against your current stage: ')+p.n+(es?' vueltas':' rounds'):'')+'</div><h3>'+p.head+'</h3><p class="rvLead">'+p.lead+'</p>'+p.tbl+p.note+'</div>';}catch(e){return '';}}
 window.REVIEWINLINE=function(rec){var all=[];try{all=window.ALLROUNDS?window.ALLROUNDS():[];}catch(e){}var r=all.filter(function(x){return x.date===rec.date&&x.score===rec.score&&(x.course===rec.course||!rec.course);})[0]||rec;return reviewInline(r,all);};
@@ -5184,11 +5184,48 @@ function rsHl(r){if(r.hl)return r.hl;if(!r.holes)return null;var LC={tee:'t',fw:
  return H.map(function(h){return [h.par,0,h.shots.filter(function(x){return x.conf!==false;}).map(function(x){var p='';for(var i=0;i<(x.pen||0);i++)p+='*';return (LC[x.lie]||'f')+(+x.dist||0)+p;}).join('')];});}
 function rsPH(r){if(r.ph!=null&&r.ph!=='')return +r.ph;if(r.chcp!=null&&r.chcp!=='')return +r.chcp;if(r.hi!=null&&r.slope&&r.cr)return Math.round(r.hi*r.slope/113+(r.cr-(r.par||72)));return null;}
 function rsMed(a){a=a.filter(function(x){return x!=null&&!isNaN(x);}).sort(function(x,y){return x-y;});if(!a.length)return null;var m=Math.floor(a.length/2);return a.length%2?a[m]:(a[m-1]+a[m])/2;}
+/* ===== what moves a player's score: the pattern across all their detailed rounds, in their own numbers. Never from one round. =====
+   For each costly mistake it compares the rounds with few against the rounds with more; the one that goes most with the score is the lever. Association, not proof of cause. */
+window.SCORELEVER=function(all,MIN){MIN=MIN||12;
+ var R=(all||[]).filter(function(x){return x&&x.score&&(x.holesPlayed||18)>=18&&window.T5FULL&&window.T5FULL(x);}),n=R.length;if(n<MIN)return {n:n,need:MIN-n};
+ var mean=function(a){return a.reduce(function(s,v){return s+v;},0)/a.length;},corr=function(a,b){var ma=mean(a),mb=mean(b),sa=0,sb=0,sab=0;for(var i=0;i<a.length;i++){sa+=(a[i]-ma)*(a[i]-ma);sb+=(b[i]-mb)*(b[i]-mb);sab+=(a[i]-ma)*(b[i]-mb);}return (sa>0&&sb>0)?sab/Math.sqrt(sa*sb):0;};
+ var val=function(x,k){var v=(k==='db')?(x.db!=null?x.db:x.dbl):x[k];return (v==null||isNaN(+v))?null:+v;},best=null,calm=null;
+ ['db','pen','p3','f150','fx','bp5'].forEach(function(k){var P=R.map(function(x){return [val(x,k),+x.score];}).filter(function(p){return p[0]!=null;});if(P.length<MIN)return;
+   var c=corr(P.map(function(p){return p[0];}),P.map(function(p){return p[1];})),thr=0,lo=P.filter(function(p){return p[0]<=0;}),hi=P.filter(function(p){return p[0]>0;});
+   var q=Math.max(4,Math.ceil(P.length*0.2));   /* both kinds of round must be common enough to compare */
+   if(lo.length<q||hi.length<q){var srt=P.map(function(p){return p[0];}).sort(function(a,b){return a-b;});thr=srt[Math.floor((srt.length-1)/2)];lo=P.filter(function(p){return p[0]<=thr;});hi=P.filter(function(p){return p[0]>thr;});}
+   if(lo.length<4||hi.length<4)return;var a=mean(lo.map(function(p){return p[1];})),b=mean(hi.map(function(p){return p[1];}));
+   if(c>=0.3&&b-a>=1&&(!best||c>best.c))best={k:k,c:c,thr:thr,nLo:lo.length,nHi:hi.length,lo:a,hi:b,gap:b-a};});
+ var F=R.map(function(x){return [x.fw,+x.score];}).filter(function(p){return p[0]!=null&&!isNaN(+p[0]);});if(F.length>=MIN){var cf=corr(F.map(function(p){return +p[0];}),F.map(function(p){return p[1];}));if(Math.abs(cf)<0.15)calm='fw';}
+ return {n:n,lever:best,calm:calm};};
+function rsNext(r){var es=window.__LANG==='es',T=function(a,b){return es?b:a;},out=[],all=[];try{all=window.ALLROUNDS?window.ALLROUNDS():[];}catch(e){}
+ var me=all.filter(function(x){return x.date===r.date&&x.score===r.score&&(x.course===r.course||!r.course);})[0]||r,f1=function(v){return (Math.round(v*10)/10).toFixed(1);};
+ if((me.holesPlayed||18)<18)return out;
+ /* 1 · this round against the player's own limits */
+ var p=null;try{p=reviewParts(me,all);}catch(e){}
+ if(p&&p.enough){var sr=(p.rows||[]).filter(function(x){return x.m[0]==='score';})[0];
+   if(sr&&sr.v==='sigW')out.push(T('<b>This round was outside your normal.</b> Something was different today, and it is worth finding while you still remember: the course, the weather, how you slept, a new club, a swing thought. Write it in the notes.','<b>Esta vuelta estuvo fuera de tu normalidad.</b> Hoy algo fue distinto, y vale la pena encontrarlo mientras te acordás: la cancha, el clima, cómo dormiste, un palo nuevo, una idea de swing. Anotalo en las notas.'));
+   else if(sr&&sr.v==='sigB')out.push(T('<b>This round was better than your normal game produces by chance.</b> Something was different. What did you do today that you do not usually do? Write it down now: that is what you want to repeat.','<b>Esta vuelta fue mejor de lo que tu juego normal da por azar.</b> Algo fue distinto. ¿Qué hiciste hoy que no hacés siempre? Anotalo ahora: eso es lo que querés repetir.'));
+   else if(sr&&sr.v)out.push(T('<b>This round was inside your normal.</b> A good or a bad day inside your limits is not a reason to change anything.','<b>Esta vuelta estuvo dentro de tu normalidad.</b> Un día bueno o malo dentro de tus límites no es motivo para cambiar nada.'));}
+ /* 2 · what moves the score, from every detailed round */
+ var L=window.SCORELEVER(all);
+ if(L.need){if(L.n>0||out.length)out.push(T('After 12 rounds logged with shots, Golfimbul shows you what moves your score. You have '+L.n+'.','Con 12 vueltas cargadas con tiros, Golfimbul te muestra qué mueve tu score. Tenés '+L.n+'.'));return out;}
+ var N={db:[T('doubles','los dobles'),T('a double bogey','un doble bogey')],pen:[T('penalties','las penalidades'),T('a penalty','una penalidad')],p3:[T('three-putts','los tres putts'),T('a three-putt','un tres putts')],
+   f150:[T('bogeys with a short iron in hand','los bogeys con hierro corto'),T('one','ninguno')],fx:[T('wasted easy saves','los saves fáciles perdidos'),T('one','ninguno')],bp5:[T('bogeys on par 5s','los bogeys en par 5'),T('a bogey on a par 5','un bogey en par 5')]};
+ if(L.lever){var v=L.lever,nm=N[v.k],tv=(v.k==='db')?(me.db!=null?me.db:me.dbl):me[v.k],t=v.thr;
+   out.push('<b>'+T('What moves your score: ','Lo que mueve tu score: ')+nm[0]+'.</b> '+
+     (t===0&&nm[1]?T('In your '+v.nLo+' rounds without '+nm[1]+' you average <b>'+f1(v.lo)+'</b>; in the '+v.nHi+' with one or more, <b>'+f1(v.hi)+'</b>.','En tus '+v.nLo+' vueltas sin '+nm[1]+' promediás <b>'+f1(v.lo)+'</b>; en las '+v.nHi+' con uno o más, <b>'+f1(v.hi)+'</b>.')
+       :T('In your '+v.nLo+' rounds with '+t+' or fewer you average <b>'+f1(v.lo)+'</b>; in the '+v.nHi+' with more, <b>'+f1(v.hi)+'</b>.','En tus '+v.nLo+' vueltas con '+t+' o menos promediás <b>'+f1(v.lo)+'</b>; en las '+v.nHi+' con más, <b>'+f1(v.hi)+'</b>.'))+
+     (tv!=null&&!isNaN(+tv)?T(' Today: '+tv+'.',' Hoy: '+tv+'.'):'')+
+     T(' That is '+f1(v.gap)+' shots between your two kinds of round. A change there is what moves your limits; one round will not.',' Son '+f1(v.gap)+' golpes entre tus dos tipos de vuelta. Un cambio ahí es lo que mueve tus límites; una vuelta sola no.'));}
+ else out.push(T('<b>No single mistake explains your scores yet.</b> Your rounds vary across the board; keep logging and the pattern will show.','<b>Todavía ningún error explica tus scores.</b> Tus vueltas varían en todo; seguí cargando y el patrón va a aparecer.'));
+ if(L.calm==='fw')out.push(T('<b>What does not: fairways hit.</b> In your '+L.n+' rounds, your score is the same with many or with few.','<b>Lo que no: los fairways.</b> En tus '+L.n+' vueltas, tu score es el mismo con muchos o con pocos.'));
+ return out;}
 function rsAnalysis(r,hl,ph){
  var es=window.__LANG==='es',T=function(a,b){return es?b:a;},ins=[],recs=[],depth=0,miss=[];
  var all=[];try{all=(window.ALLROUNDS?window.ALLROUNDS():[]).filter(function(x){return !(x.date===r.date&&x.score===r.score);}).sort(function(a,b){return a.date<b.date?1:-1;}).slice(0,20);}catch(e){}
  var say=function(icon,txt){ins.push('<li><i>'+icon+'</i><span>'+txt+'</span></li>');};
- var rec=function(txt){if(recs.length<3&&recs.indexOf(txt)<0)recs.push(txt);};
+ var rec=function(){};   /* one round is not a reason to change anything: see rsNext */
  var list=function(a){a=a.map(function(x){return x+1;});return a.length<2?a.join(''):a.slice(0,-1).join(', ')+T(' and ',' y ')+a[a.length-1];};
  var nShots=function(n){n=Math.abs(n);return n+' '+(n===1?T('shot','golpe'):T('shots','golpes'));};
  /* ---- the round in one line: against your own usual ---- */
@@ -5270,10 +5307,10 @@ function rsAnalysis(r,hl,ph){
    if(app.length>=4&&sh2+lo>=3)say('↕',T('Approaches: <b>'+sh2+' short, '+lo+' long</b> of target. ','Approaches: <b>'+sh2+' cortos, '+lo+' largos</b> del objetivo. ')+(sh2>=2*Math.max(1,lo)?T('Take one more club: amateurs come up short far more than long.','Tomá un palo más: el amateur queda corto mucho más que largo.'):''));
  } else if(depth===2)miss.push(T('compliance and dispersion','cumplimiento y dispersión'));
  var lv=[T('Score only','Solo score'),T('Hole by hole','Hoyo por hoyo'),T('Shot by shot','Tiro por tiro'),T('Shots + process','Tiros + proceso')];
- if(!recs.length&&ins.length&&depth>=1)recs.push(T('Nothing to fix from this card. Repeat it: the same targets, the same routine.','Nada para corregir en esta tarjeta. Repetila: los mismos objetivos, la misma rutina.'));
+ recs=[];try{recs=rsNext(r);}catch(e){recs=[];}   /* no tips from a single round: the verdict against the player's normal, and the pattern across all their rounds */
  return '<div class="rsAn">'+
   (ins.length?'<ul class="rsIns">'+ins.join('')+'</ul>':'<p class="rsNone">'+T('Not enough data on this round to say anything honest about it.','No hay datos suficientes en esta vuelta para decir algo honesto.')+'</p>')+
-  (recs.length?'<h3 class="rsH">'+T('For your next round','Para tu próxima vuelta')+'</h3><ol class="rsRec">'+recs.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ol>':'')+
+  (recs.length?'<h3 class="rsH">'+T('What to take from it','Qué llevarte de esta vuelta')+'</h3><ol class="rsRec">'+recs.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ol>':'')+
   '<div class="rsDepth"><span>'+T('How much this round tells us','Cuánto nos dice esta vuelta')+'</span><div class="rsDots">'+[0,1,2,3].map(function(k){return '<i class="'+(k<=depth?'on':'')+'" title="'+lv[k]+'"></i>';}).join('')+'</div><b>'+lv[depth]+'</b>'+(miss.length?'<em>'+T('Log ','Cargá ')+miss[0]+T(' and it tells you more.',' y te dice más.')+'</em>':'')+'</div></div>';}
 function rsE(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function roundSheet(r,opt){opt=opt||{};var es=window.__LANG==='es',T=function(a,b){return es?b:a;},ph=rsPH(r),hl=rsHl(r),card='',ic=null;
@@ -7674,6 +7711,7 @@ window.IMPMAP=(function(){
 @keyframes tgIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 </style>
 <style id="wideUse">
+#rsheet .rsRec li b{color:var(--sand,#d8c48c)}
 #rsheet .hasRev .sgcats2{display:none}
 #rsheet .rvInline{margin:18px 0 6px}
 .scanCard{position:relative;overflow:hidden}.scanCard.demoCard{padding-top:30px}
