@@ -4214,7 +4214,7 @@ var scMode=false;
 function reviewParts(rec,all){
  var es=window.__LANG==='es',T=function(a,b){return es?b:a;},hp=rec.holesPlayed||18;
  var prev=(all||[]).filter(function(x){return x&&x.id!==rec.id&&(x.holesPlayed||18)===hp&&String(x.date||'')<=String(rec.date||'');}).sort(function(a,b){return String(a.date||'')<String(b.date||'')?-1:1;}).slice(-80);   /* enough history for the charts' stages */
- var M=[['score',T('Gross score','Score gross'),1,0],['stpNet',T('Against your par','Contra tu par'),1,0,true],['sgtot',T('Strokes gained','Strokes gained'),0,2],
+ var M=[['score',T('Gross score','Score gross'),1,0],['stpNet',T('Against your par','Contra tu par'),1,0,true],['sgtot',T('Strokes gained','Strokes gained'),0,2],['ott',T('SG off the tee','SG desde el tee'),0,2],['app',T('SG approach','SG approach'),0,2],['atg',T('SG around the green','SG alrededor del green'),0,2],['putt',T('SG putting','SG putting'),0,2],
    ['putts',T('Putts','Putts'),1,0],['p3',T('3-putts','3 putts'),1,0],['db',T('Double bogeys or worse','Dobles bogeys o peor'),1,0],['pen',T('Penalties','Penalidades'),1,0],
    ['fw',T('Fairways hit','Fairways'),0,0],['gir',T('Greens in regulation','Greens en regulación'),0,0],['mtot',T("Tiger 5 mistakes","Errores Tiger 5"),1,0]];
  var med=function(a){var b=a.slice().sort(function(x,y){return x-y;}),n=b.length;return n?(n%2?b[(n-1)/2]:(b[n/2-1]+b[n/2])/2):null;};
@@ -4251,7 +4251,7 @@ function reviewParts(rec,all){
  var V={b3:T('very good · 2σ+','muy buena · 2σ+'),b2:T('good · 1σ+','buena · 1σ+'),b1:T('above avg','sobre el prom.'),avg:T('average','promedio'),w1:T('below avg','bajo el prom.'),w2:T('poor · 1σ+','mala · 1σ+'),w3:T('bad · 2σ+','muy mala · 2σ+'),sigB:T('signal · better','señal · mejor'),sigW:T('signal · worse','señal · peor')};
  /* one strip per number: your average in the middle, 1σ and 2σ bands, your limits, and today as a dot. Better is always to the right */
  var strip=function(r){if(r.avg==null||!(r.sd>0))return '';var m=r.m,dir=m[2]===1?-1:1,Z=function(v){return (v-r.avg)/r.sd*dir;},zt=Z(r.today),zl=Z(r.lo),zh=Z(r.hi),zw=Math.min(zl,zh),zb=Math.max(zl,zh);
-   var W=560,X=function(z){return W/2+Math.max(-3.6,Math.min(3.6,z))*74;},dec=m[3]||1,sgn=m[0]==='stpNet'||m[0]==='sgtot';
+   var W=560,X=function(z){return W/2+Math.max(-3.6,Math.min(3.6,z))*74;},dec=m[3]||1,sgn=/^(stpNet|sgtot|ott|app|atg|putt)$/.test(m[0]);
    var col=r.v==='sigB'||r.v==='b3'||r.v==='b2'||r.v==='b1'?'#1f7a4d':r.v==='sigW'||r.v==='w3'||r.v==='w2'||r.v==='w1'?'#c2502e':'#0f3a2c';
    var out=zt>3.6||zt<-3.6,cx=X(zt),tx=Math.max(14,Math.min(W-14,cx));
    /* reference values above the bar, today's value under its dot */
@@ -4270,7 +4270,7 @@ function reviewParts(rec,all){
      '<text x="'+tx.toFixed(1)+'" y="45" text-anchor="middle" class="rvSt" fill="'+col+'">'+sg(r.today,m[3],sgn)+'</text>'+
      '</svg>';};
  var tbl='<div class="pcWrap"><table class="rvT"><thead><tr><th></th>'+(enough?'':'<th>'+T('Today','Hoy')+'</th>')+(enough?'<th class="rvSh"><span>← '+T('worse','peor')+'</span>'+T('your average · 1σ · 2σ · limits','tu promedio · 1σ · 2σ · límites')+'<span>'+T('better','mejor')+' →</span></th><th></th>':'')+'</tr></thead><tbody>'+
-   rows.map(function(r){var m=r.m,sgn=m[0]==='stpNet'||m[0]==='sgtot';return '<tr><td>'+m[1]+'</td>'+(enough?(r.avg!=null?'<td class="rvSc">'+strip(r)+'</td><td><span class="rvV '+r.v+'">'+V[r.v]+'</span></td>':'<td class="rvTd">'+sg(r.today,m[3],sgn)+'</td><td></td>'):'<td class="rvTd">'+sg(r.today,m[3],sgn)+'</td>')+'</tr>';}).join('')+'</tbody></table></div>';
+   rows.map(function(r){var m=r.m,sgn=/^(stpNet|sgtot|ott|app|atg|putt)$/.test(m[0]);return '<tr><td>'+m[1]+'</td>'+(enough?(r.avg!=null?'<td class="rvSc">'+strip(r)+'</td><td><span class="rvV '+r.v+'">'+V[r.v]+'</span></td>':'<td class="rvTd">'+sg(r.today,m[3],sgn)+'</td><td></td>'):'<td class="rvTd">'+sg(r.today,m[3],sgn)+'</td>')+'</tr>';}).join('')+'</tbody></table></div>';
  var note=enough?'<p class="pcOpt">'+T('Each strip shows your average (the dark line), the bands 1σ and 2σ either side, and your limits (red dashes); the dot is today, with its value underneath, and better is always to the right. Inside the limits it is your normal variation; only a dot beyond them means something was different. The limits are the same as in your control charts: your current stage, since your game last changed.','Cada franja muestra tu promedio (la línea oscura), las bandas de 1σ y 2σ a cada lado y tus límites (rayas rojas); el punto es hoy, con su valor debajo, y mejor siempre está a la derecha. Dentro de los límites es tu variación normal; solo un punto más allá significa que algo fue distinto. Los límites son los mismos de tus gráficos de control: tu etapa actual, desde la última vez que tu juego cambió.')+'</p>':'';
  var sr=rows.filter(function(r){return r.m[0]==='score';})[0];
  return {head:head,lead:lead,tbl:tbl,note:note,enough:enough,n:(sr&&sr.n)||Math.min(prev.length,20)};}
@@ -5282,9 +5282,11 @@ function roundSheet(r,opt){opt=opt||{};var es=window.__LANG==='es',T=function(a,
  if(ic)card=ic.html;else if(r.hs&&r.hp)card=scoreCard(r.hp,r.hs,ph,r.course);
  var stp=r.stp!=null?r.stp:null,old=document.getElementById('rsheet');if(old)old.remove();
  var el=document.createElement('div');el.id='rsheet';el.className='lgscope';
- el.innerHTML='<div class="rsIn"><div class="rsTop"><button type="button" class="pgBackB rsX">← '+T('Back','Volver')+'</button><div class="rsT"><h2>'+rsE(r.course||'')+'</h2><span>'+rsE(r.date||'')+(r.tee?' · '+rsE(r.tee):'')+(ph!=null?' · '+T('playing hcp ','hcp de juego ')+(ph<0?'+'+(-ph):ph):'')+'</span></div><div class="rsScore"><b>'+(r.score||'·')+'</b>'+(stp!=null?'<small>'+(stp>0?'+':'')+stp+'</small>':'')+'</div></div>'+
-  '<div class="rsActs">'+(opt.edit?'<button type="button" class="rsA" data-rs="edit">✎ '+T('Edit round','Editar vuelta')+'</button>':'')+(opt.review?'<button type="button" class="rsA" data-rs="review">◎ '+T('Against your normal','Contra tu normalidad')+'</button>':'')+'<button type="button" class="rsA" data-rs="share">⤴ '+T('Share','Compartir')+'</button></div>'+
+ var rev='';try{if((r.holesPlayed||18)>=18&&window.REVIEWINLINE)rev=window.REVIEWINLINE(r)||'';}catch(e){rev='';}   /* the round against the player's normal, in full view under the card; the strokes-gained split lives there */
+ el.innerHTML='<div class="rsIn'+(rev?' hasRev':'')+'"><div class="rsTop"><button type="button" class="pgBackB rsX">← '+T('Back','Volver')+'</button><div class="rsT"><h2>'+rsE(r.course||'')+'</h2><span>'+rsE(r.date||'')+(r.tee?' · '+rsE(r.tee):'')+(ph!=null?' · '+T('playing hcp ','hcp de juego ')+(ph<0?'+'+(-ph):ph):'')+'</span></div><div class="rsScore"><b>'+(r.score||'·')+'</b>'+(stp!=null?'<small>'+(stp>0?'+':'')+stp+'</small>':'')+'</div></div>'+
+  '<div class="rsActs">'+(opt.edit?'<button type="button" class="rsA" data-rs="edit">✎ '+T('Edit round','Editar vuelta')+'</button>':'')+'<button type="button" class="rsA" data-rs="share">⤴ '+T('Share','Compartir')+'</button></div>'+
   (card?'<div class="rsCard">'+card+'</div>':'<p class="rsNone">'+T('Imported summary: no hole-by-hole card for this round.','Resumen importado: esta vuelta no tiene tarjeta hoyo por hoyo.')+'</p>')+
+  rev+
   '<h3 class="rsH">'+T('What this round says','Qué dice esta vuelta')+'</h3>'+rsAnalysis(r,hl,ph)+
   ((r.notes||r.lesson||r.whyMet)?'<div class="rsNotes">'+(r.lesson?'<div><span>'+T('What I learnt','Qué aprendí')+'</span>'+rsE(r.lesson)+'</div>':'')+(r.notes?'<div><span>'+T('Notes','Notas')+'</span>'+rsE(r.notes)+'</div>':'')+(r.whyMet&&window.whyLbl?'<div><span>'+T('Gave you what you play for?','¿Te dio lo que buscás en el golf?')+'</span>'+window.whyLbl(r.whyMet)+'</div>':'')+'</div>':'')+
   '</div>';
@@ -7673,6 +7675,8 @@ window.IMPMAP=(function(){
 @keyframes tgIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 </style>
 <style id="wideUse">
+#rsheet .hasRev .sgcats2{display:none}
+#rsheet .rvInline{margin:18px 0 6px}
 .scanCard{position:relative;overflow:hidden}.scanCard.demoCard{padding-top:30px}
 .scanRib{position:absolute;top:0;left:0;background:var(--pine,#0f3a2c);color:var(--sand,#d8c48c);font:700 10px var(--cond);letter-spacing:.14em;text-transform:uppercase;padding:5px 14px 5px 16px;border-bottom-right-radius:10px}
 .scanMsg{font-size:13px;line-height:1.5;color:var(--ink-soft);margin-top:6px}.scanMsg:empty{display:none}.scanMsg.warn{color:#8f3418}.scanMsg b{color:var(--pine)}
