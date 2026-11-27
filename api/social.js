@@ -363,8 +363,10 @@ module.exports = async (req, res) => {
     if (action === 'historySeed') {   // admin: put a player's history (and their bag and per-hole tendencies) on the server, replacing what was built into the page
       if (me !== L.ADMIN) return bad(403, 'admin');
       const u = String(b.user || '').trim().toLowerCase(); if (!L.validUser(u)) return bad(400, 'bad-user');
-      const rounds = (Array.isArray(b.rounds) ? b.rounds : []).filter(r => r && r.date).slice(0, 1500), extra = b.extra && typeof b.extra === 'object' ? b.extra : null;
+      let rounds = (Array.isArray(b.rounds) ? b.rounds : []).filter(r => r && r.date).slice(0, 1500); const extra = b.extra && typeof b.extra === 'object' ? b.extra : null;
       if (JSON.stringify(rounds).length + JSON.stringify(extra || {}).length > 3500000) return bad(413, 'too-big');
+      const old = await sql`select rounds from gs_history where username = ${u}`;   // keep what was already imported for them (club history); the seeded round wins on the same day and score
+      if (old.length) { const o = typeof old[0].rounds === 'string' ? JSON.parse(old[0].rounds) : (old[0].rounds || []), have = new Set(rounds.map(x => x.date + '|' + x.score)); o.forEach(x => { if (x && x.date && !have.has(x.date + '|' + x.score)) rounds.push(x); }); }
       await sql`insert into gs_history (username, rounds, extra, src, upd) values (${u}, ${JSON.stringify(rounds)}, ${extra ? JSON.stringify(extra) : null}, 'seed', ${Date.now()})
                 on conflict (username) do update set rounds = excluded.rounds, extra = coalesce(excluded.extra, gs_history.extra), src = excluded.src, upd = excluded.upd`;
       return ok({ user: u, rounds: rounds.length, extra: !!extra });
