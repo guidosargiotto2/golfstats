@@ -6793,6 +6793,7 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
  function api(action,extra){var b={action:action};if(extra)for(var k in extra)b[k]=extra[k];
    return fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:JSON.stringify(b)}).then(function(r){return r.json();});}
  /* ---- shared course list: refresh from the server, cache for offline, re-render the selectors when something new arrives ---- */
+ var AH=function(){return {headers:{'Authorization':'Bearer '+(localStorage.getItem('gs-token')||'')}};},signed=function(){return !!localStorage.getItem('gs-token');};
  function myCodes(){var o={},add=function(k){if(k&&/^[A-Z0-9]{2,12}$/.test(String(k)))o[k]=1;},P=window.PROF||{};
    (P.favCourses||[]).forEach(add);add(P.homeCourse);add(String(P.cardCourse||'').split('|')[0]);
    try{(window.getLoggedRounds?window.getLoggedRounds():[]).forEach(function(r){add(r.courseCode);});}catch(e){}
@@ -6802,16 +6803,17 @@ const BAG={"Guido":{"source":"Garmin","updated":"2026-11-21","clubs":[{"name":"D
    Object.keys(map||{}).forEach(function(k){var x=map[k];if(!x)return;cache[k]=x;if(typeof COURSES!=='undefined'){if(x.empty)window.COURSE_STUBS[k]=x;else if(x.tees&&x.par)COURSES[k]=x;}});
    try{localStorage.setItem('gs-courses',JSON.stringify(cache));}catch(e){}}
  /* the course database lives on the server: a player's device keeps only their home course, starred courses and courses they have played */
- function refreshCourses(){if(adminPanel._all&&window.COURSEALL)window.COURSEALL();var codes=myCodes();if(!codes.length)return;
-   fetch('/api/login?codes='+encodeURIComponent(codes.join(','))).then(function(r){return r.json();}).then(function(j){if(!j||!j.courses)return;
+ function refreshCourses(){if(!signed())return;if(adminPanel._all&&window.COURSEALL)window.COURSEALL();var codes=myCodes();if(!codes.length)return;
+   fetch('/api/login?codes='+encodeURIComponent(codes.join(',')),AH()).then(function(r){return r.json();}).then(function(j){if(!j||!j.courses)return;
      var before=localStorage.getItem('gs-courses');putCourses(j.courses,true);if(before!==localStorage.getItem('gs-courses')){try{if(window.LGR&&window.LGR.card)window.LGR.card();}catch(e){}}}).catch(function(){});}
  /* one course on demand (picked from a search, or starred): fetched once, kept on this device */
  window.COURSEGET=function(code,cb){if(typeof COURSES!=='undefined'&&COURSES[code]){if(cb)cb(COURSES[code]);return;}
-   fetch('/api/login?codes='+encodeURIComponent(code)).then(function(r){return r.json();}).then(function(j){var c=j&&j.courses&&j.courses[code];if(c){var m={};m[code]=c;putCourses(m,false);}if(cb)cb(c&&c.tees?c:null);}).catch(function(){if(cb)cb(null);});};
- window.COURSEFIND=function(q,cb){fetch('/api/login?q='+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(j){cb((j&&j.results)||[]);}).catch(function(){cb([]);});};
- window.COURSENEAR=function(code,cb){var l=(typeof COURSES!=='undefined'&&COURSES[code]&&COURSES[code].loc)||{};fetch('/api/login?near='+encodeURIComponent(code)+(l.country?'&country='+encodeURIComponent(l.country)+'&state='+encodeURIComponent(l.state||'')+'&city='+encodeURIComponent(l.city||''):'')).then(function(r){return r.json();}).then(function(j){cb((j&&j.results)||[]);}).catch(function(){cb([]);});};
+   if(!signed()){if(cb)cb(null);return;}
+   fetch('/api/login?codes='+encodeURIComponent(code),AH()).then(function(r){return r.json();}).then(function(j){var c=j&&j.courses&&j.courses[code];if(c){var m={};m[code]=c;putCourses(m,false);}if(cb)cb(c&&c.tees?c:null);}).catch(function(){if(cb)cb(null);});};
+ window.COURSEFIND=function(q,cb){if(!signed())return cb([]);fetch('/api/login?q='+encodeURIComponent(q),AH()).then(function(r){return r.json();}).then(function(j){cb((j&&j.results)||[]);}).catch(function(){cb([]);});};
+ window.COURSENEAR=function(code,cb){var l=(typeof COURSES!=='undefined'&&COURSES[code]&&COURSES[code].loc)||{};fetch('/api/login?near='+encodeURIComponent(code)+(l.country?'&country='+encodeURIComponent(l.country)+'&state='+encodeURIComponent(l.state||'')+'&city='+encodeURIComponent(l.city||''):''),AH()).then(function(r){return r.json();}).then(function(j){cb((j&&j.results)||[]);}).catch(function(){cb([]);});};
  /* the admin's course panel is the only place that needs the whole list */
- window.COURSEALL=function(cb){fetch('/api/login?all=1').then(function(r){return r.json();}).then(function(j){if(j&&j.courses){window.__ALLC=j.courses;window.COURSE_STUBS={};Object.keys(j.courses).forEach(function(k){var x=j.courses[k];if(x&&x.empty)window.COURSE_STUBS[k]=x;else if(x&&x.tees&&x.par)COURSES[k]=x;});}if(cb)cb();}).catch(function(){if(cb)cb();});};
+ window.COURSEALL=function(cb){fetch('/api/login?all=1',AH()).then(function(r){return r.json();}).then(function(j){if(j&&j.courses){window.__ALLC=j.courses;window.COURSE_STUBS={};Object.keys(j.courses).forEach(function(k){var x=j.courses[k];if(x&&x.empty)window.COURSE_STUBS[k]=x;else if(x&&x.tees&&x.par)COURSES[k]=x;});}if(cb)cb();}).catch(function(){if(cb)cb();});};
  /* ---- duplicates: compare names without accents, case or filler words ("golf", "club", "de"…) ---- */
  var STOPW={golf:1,club:1,de:1,del:1,el:1,la:1,los:1,las:1,country:1,the:1,gc:1,cc:1,course:1,y:1,and:1};
  function nameKey(x){return String(x||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(function(w){return w&&!STOPW[w];}).sort().join(' ');}
@@ -7370,6 +7372,41 @@ window.IMPMAP=(function(){
 .dgRow input,.dgRow select{padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;font:14px var(--sans);text-transform:none;letter-spacing:0}
 .dgTbl{max-height:420px;overflow:auto;margin-top:10px;border:1px solid var(--line);border-radius:10px}.dgTbl table{width:100%;border-collapse:collapse;font-size:13px}.dgTbl th{position:sticky;top:0;background:var(--paper);text-align:left;padding:6px 8px;font-family:var(--cond);font-size:11px;text-transform:uppercase;color:var(--ink-soft)}
 .dgTbl td{padding:5px 8px;border-top:1px solid var(--line);white-space:nowrap}.dgTbl tr.warn td{background:#fbefe9}.dgWarn{background:#fbefe9;border-left:3px solid #a23b2a;padding:6px 10px;border-radius:6px;margin-bottom:8px}
+</style>
+<script>
+/* ===== terms: every player accepts the current Terms and Privacy page once (and again when the version changes) ===== */
+(function(){
+ var TERMS_V=2,ES=function(){return window.__LANG==='es';},T=function(a,b){return ES()?b:a;};
+ function need(){var P=window.PROF;return !!(localStorage.getItem('gs-token')&&localStorage.getItem('app-user')&&P&&(+P.termsV||0)<TERMS_V);}
+ function show(){if(document.getElementById('termsGate')||!need())return;
+   var L=document.getElementById('landing'),ov=document.getElementById('loginOverlay'),hid=function(e){return !e||getComputedStyle(e).display==='none';};if(!hid(L)||!hid(ov))return;
+   var m=document.createElement('div');m.id='termsGate';
+   m.innerHTML='<div class="tgCard" role="dialog" aria-modal="true"><h3>'+T('Before you go on','Antes de seguir')+'</h3>'+
+     '<p>'+T('Golfimbul keeps your golf and shows you what is real in it. Three things worth knowing:','Golfimbul guarda tu golf y te muestra qué es real en él. Tres cosas que conviene saber:')+'</p><ul>'+
+     '<li>'+T('<b>Your rounds are yours.</b> We never sell them, and you can download or delete everything whenever you want.','<b>Tus vueltas son tuyas.</b> Nunca las vendemos, y podés descargar o borrar todo cuando quieras.')+'</li>'+
+     '<li>'+T('<b>Only you see your full rounds</b>, plus the people you choose: followers see a summary, your professor sees everything if you link them, and the founder to prepare your review.','<b>Solo vos ves tus vueltas completas</b>, más quienes elijas: tus seguidores ven un resumen, tu profesor ve todo si lo vinculás, y el fundador para preparar tu revisión.')+'</li>'+
+     '<li>'+T('<b>The course database is not yours to copy.</b> It is licensed data: use it inside Golfimbul for your own golf, and do not extract, export or share it.','<b>La base de canchas no es para copiar.</b> Son datos con licencia: usalos dentro de Golfimbul para tu propio golf, y no los extraigas, exportes ni compartas.')+'</li></ul>'+
+     '<label class="tgChk"><input type="checkbox" id="tgOk"> <span>'+T('I have read and accept the <a href="/terms" target="_blank" rel="noopener">Terms of use</a> and the <a href="/privacy" target="_blank" rel="noopener">Privacy page</a>.','Leí y acepto los <a href="/terms" target="_blank" rel="noopener">Términos de uso</a> y la <a href="/privacy" target="_blank" rel="noopener">página de Privacidad</a>.')+'</span></label>'+
+     '<div class="tgBtns"><button type="button" class="pf_btn frgrey" id="tgOut">'+T('Log out','Cerrar sesión')+'</button><button type="button" class="pf_btn" id="tgGo" disabled>'+T('Accept and continue','Aceptar y seguir')+'</button></div></div>';
+   document.body.appendChild(m);
+   var ok=m.querySelector('#tgOk'),go=m.querySelector('#tgGo');ok.onchange=function(){go.disabled=!ok.checked;};
+   m.querySelector('#tgOut').onclick=function(){var lo=document.getElementById('logoutBtn');if(lo)lo.click();};
+   go.onclick=function(){try{window.PROF.termsV=TERMS_V;window.PROF.termsAt=new Date().toISOString();window.saveProf();}catch(e){}
+     try{fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('gs-token')},body:JSON.stringify({action:'termsAccept',v:TERMS_V})}).catch(function(){});}catch(e){}
+     m.remove();};}
+ /* a moment first, so settings saved on another device (where they may already have accepted) can arrive */
+ var n=0;(function wait(){n++;if(need()&&n>=4)show();if(n<40&&!document.getElementById('termsGate'))setTimeout(wait,1000);})();
+})();
+</script>
+<style>
+#termsGate{position:fixed;inset:0;z-index:9800;background:rgba(15,58,44,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:18px}
+#termsGate .tgCard{background:var(--paper,#fffdf7);border-radius:16px;max-width:560px;width:100%;max-height:92vh;overflow:auto;padding:26px 28px;box-shadow:0 40px 80px -30px rgba(15,58,44,.7);font-family:var(--sans,sans-serif);color:var(--ink,#20261f);animation:tgIn .35s cubic-bezier(.2,.8,.2,1) both}
+#termsGate h3{font-family:var(--serif,Georgia,serif);font-size:24px;color:var(--pine,#0f3a2c);margin:0 0 8px}
+#termsGate p{margin:0 0 10px;line-height:1.5}#termsGate ul{margin:0 0 16px;padding-left:20px;display:grid;gap:9px;line-height:1.5;font-size:14.5px}
+#termsGate .tgChk{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.45;border-top:1px solid var(--line,#e2ddcc);padding-top:14px;cursor:pointer;text-transform:none;letter-spacing:0;font-weight:400}
+#termsGate .tgChk input{width:18px;height:18px;margin-top:2px;flex:none}#termsGate a{color:var(--fairway,#1f7a4d);font-weight:700}
+#termsGate .tgBtns{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+@keyframes tgIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 </style>
 
 <style id="v2">

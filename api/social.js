@@ -344,6 +344,11 @@ module.exports = async (req, res) => {
       await sql`insert into gs_history (username, rounds, src, upd) values (${target}, ${JSON.stringify(all)}, 'digigolf', ${Date.now()}) on conflict (username) do update set rounds = excluded.rounds, src = excluded.src, upd = excluded.upd`;
       return ok({ saved: all.length, added: all.length - old.length });
     }
+    if (action === 'termsAccept') {   // the player accepted the terms and privacy page: keep the version and the moment
+      const v = Math.max(1, Math.min(999, parseInt(b.v, 10) || 1));
+      await sql`insert into gs_settings (k, v) values (${'terms:' + me}, ${JSON.stringify({ v, at: new Date().toISOString() })}) on conflict (k) do update set v = excluded.v`;
+      return ok({ v });
+    }
     if (action === 'myHistory') {   // a player's imported club history (rounds with a score per hole)
       const r = await sql`select rounds, upd from gs_history where username = ${me}`;
       return ok({ rounds: r.length ? (typeof r[0].rounds === 'string' ? JSON.parse(r[0].rounds) : r[0].rounds) : [], upd: r.length ? Number(r[0].upd) : 0 });
@@ -553,6 +558,7 @@ module.exports = async (req, res) => {
       if (String(b.confirm || '') !== 'DELETE') return bad(400, 'confirm');
       if (me === L.ADMIN) return bad(403, 'admin-account');
       await sql`delete from gs_rounds where username = ${me}`;
+      await sql`delete from gs_history where username = ${me}`; await sql`delete from gs_usage where username = ${me}`; await sql`delete from gs_settings where k = ${'terms:' + me}`;
       await sql`delete from gs_follows where follower = ${me} or followee = ${me}`;
       await sql`update gs_profiles set professor = null, prof_status = null where professor = ${me}`;
       const own = await sql`select code from gs_teams where owner = ${me}`;

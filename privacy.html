@@ -4,7 +4,7 @@
 <header class="lg"><a href="/" class="brand"><img src="/golfimbul-icon.svg" alt="">Golfimbul</a><nav><a href="/help">Help</a><a href="/privacy" class="on" data-l="Privacy|Privacidad">Privacy</a><a href="/terms" data-l="Terms|Términos">Terms</a><button id="lang">ES</button></nav></header>
 <main>
 <h1 data-l="Privacy|Privacidad">Privacy</h1>
-<p class="upd" data-l="Last updated: 22 November 2026|Última actualización: 22 de noviembre de 2026">Last updated: 22 November 2026</p>
+<p class="upd" data-l="Last updated: 27 November 2026 · version 2|Última actualización: 27 de noviembre de 2026 · versión 2">Last updated: 27 November 2026 · version 2</p>
 
 <div lang="en">
 <p class="lead">Your game is yours. Golfimbul keeps only what it needs to show you the truth about it, never sells it, and lets you take it with you or delete it at any time.</p>
@@ -13,6 +13,9 @@
 <li><b>Your account:</b> username, display name and your password — stored only as a salted hash, never readable. If you sign in with Google or Microsoft: the account id they give us and your email.</li>
 <li><b>Your golf:</b> the rounds, shots, clubs, notes and lessons you log, and your profile settings (home course, tees, handicap and similar).</li>
 <li><b>Garmin import:</b> your Garmin file is read on your own device and is <b>never uploaded</b>. We keep only the summary it produces: club distances, dispersion, predictions and Tiger 5 per round.</li>
+<li><b>Club history:</b> only if you ask for it, we read your past tournament rounds from your club's public results site (Digigolf) using your name or registration number, and keep the date, event, playing handicap and score on each hole. Nothing else is taken from that site.</li>
+<li><b>About your game:</b> the answers you give in your profile (why you play, how often you practise, and similar), used to recommend how much to log and to prepare your review.</li>
+<li><b>Your acceptance:</b> the date and version of the terms and privacy page you accepted.</li>
 <li><b>Plans, teams and reviews:</b> your plan, team code, and the contact (WhatsApp or email) and note you give when you ask for a review.</li>
 <li><b>AI assistant keys:</b> stored only as a hash, with when they were created and last used.</li>
 <li><b>Technical logs:</b> our hosting provider records standard request data (such as IP address and time) to keep the service running and secure.</li></ul>
@@ -23,9 +26,10 @@
 <li><b>Your professor</b>, only after you send the request and they accept, sees your full rounds, notes and lessons. You can remove them at any time.</li>
 <li><b>Guido</b>, as the person running Golfimbul, can see players' full rounds to prepare reviews and Pro calls and to fix problems. He does not share them with anyone.</li>
 <li><b>Your AI assistant</b>, only if you create a key in Profile. It can read, never change. Revoking the key stops it at once.</li></ul>
-<h2>Services we rely on</h2><p>Vercel (hosting) and Neon (database) store and serve the app and your data, in data centres that may be outside Argentina, including the United States. Google and Microsoft are involved only if you choose to sign in with them. When online payments start, the payment provider will process payments; we will never see or store your card details.</p>
+<h2>Services we rely on</h2><p>Vercel (hosting) and Neon (database) store and serve the app and your data, in data centres that may be outside Argentina, including the United States. GolfCourseAPI provides course data: when you search for a course we send them the name you typed, never anything about you. Digigolf is read only when you ask for your club history. Google and Microsoft are involved only if you choose to sign in with them. When online payments start, the payment provider will process payments; we will never see or store your card details.</p>
+<h2>How we protect it</h2><p>Each account sees only its own rounds: every request is checked against the signed-in player, and rounds are stamped with their owner. Passwords and assistant keys are stored only as hashes. Connections are encrypted. The course database stays on our servers; your device holds only the courses you use, and access to it is limited per account and monitored.</p>
 <h2>How long we keep it</h2><p>For as long as your account exists. When you delete your account, your data is removed from our database at once; copies may remain for a short period in our database provider's backups before they expire.</p>
-<h2>Your rights</h2><p>You can see, correct, download and delete your data yourself in <b>Profile → Account, plan &amp; privacy</b>: <i>Download all my data</i> gives you one file with everything we hold; <i>Delete my account</i> erases it. Under Argentina's Personal Data Protection Law (Ley 25.326) you can also write to us to access, correct or delete your data, and you may complain to the Agencia de Acceso a la Información Pública, the authority that oversees it. If you live elsewhere, you have the rights your local law gives you, and we will honour them.</p>
+<h2>Your rights</h2><p>You can see, correct, download and delete your data yourself in <b>Settings → Account, plan &amp; privacy</b>: <i>Download all my data</i> gives you one file with everything we hold; <i>Delete my account</i> erases it. Under Argentina's Personal Data Protection Law (Ley 25.326) you can also write to us to access, correct or delete your data, and you may complain to the Agencia de Acceso a la Información Pública, the authority that oversees it. If you live elsewhere, you have the rights your local law gives you, and we will honour them.</p>
 <h2>Young golfers</h2><p>Golfimbul is meant for adults. Players under 18 should use it with a parent's or guardian's permission.</p>
 <h2>Changes</h2><p>If this page changes in a way that matters, we will tell you in the app before it applies.</p>
 </div>
@@ -37,6 +41,9 @@
 <li><b>Tu cuenta:</b> usuario, nombre visible y tu contraseña — guardada solo como hash con sal, nunca legible. Si entrás con Google o Microsoft: el identificador que nos dan y tu email.</li>
 <li><b>Tu golf:</b> las vueltas, tiros, palos, notas y aprendizajes que cargás, y la configuración de tu perfil (cancha, tees, hándicap y similares).</li>
 <li><b>Importación de Garmin:</b> tu archivo de Garmin se lee en tu propio dispositivo y <b>nunca se sube</b>. Guardamos solo el resumen: distancias por palo, dispersión, predicciones y Tiger 5 por vuelta.</li>
+<li><b>Historial del club:</b> solo si lo pedís, leemos tus vueltas de torneo pasadas del sitio público de resultados de tu club (Digigolf) con tu nombre o matrícula, y guardamos fecha, torneo, hándicap de juego y score de cada hoyo. No se toma nada más de ese sitio.</li>
+<li><b>Sobre tu juego:</b> las respuestas que das en tu perfil (por qué jugás, cuánto practicás y similares), usadas para recomendarte cuánto cargar y preparar tu revisión.</li>
+<li><b>Tu aceptación:</b> la fecha y la versión de los términos y la página de privacidad que aceptaste.</li>
 <li><b>Planes, equipos y revisiones:</b> tu plan, código de equipo, y el contacto (WhatsApp o email) y la nota que dejás al pedir una revisión.</li>
 <li><b>Claves del asistente de IA:</b> guardadas solo como hash, con fecha de creación y último uso.</li>
 <li><b>Registros técnicos:</b> nuestro proveedor de hosting registra datos estándar de cada pedido (como IP y hora) para mantener el servicio funcionando y seguro.</li></ul>
@@ -47,7 +54,8 @@
 <li><b>Tu profesor</b>, solo después de que vos lo pidas y él acepte, ve tus vueltas completas, notas y aprendizajes. Lo podés quitar cuando quieras.</li>
 <li><b>Guido</b>, como responsable de Golfimbul, puede ver las vueltas completas de los jugadores para preparar revisiones y llamadas Pro y para resolver problemas. No las comparte con nadie.</li>
 <li><b>Tu asistente de IA</b>, solo si creás una clave en Perfil. Puede leer, nunca cambiar. Al revocar la clave deja de funcionar al instante.</li></ul>
-<h2>Servicios que usamos</h2><p>Vercel (hosting) y Neon (base de datos) alojan la app y tus datos, en centros de datos que pueden estar fuera de Argentina, incluido Estados Unidos. Google y Microsoft intervienen solo si elegís entrar con ellos. Cuando empiecen los pagos online, el proveedor de pagos los procesará; nunca vemos ni guardamos los datos de tu tarjeta.</p>
+<h2>Servicios que usamos</h2><p>Vercel (hosting) y Neon (base de datos) alojan la app y tus datos, en centros de datos que pueden estar fuera de Argentina, incluido Estados Unidos. GolfCourseAPI aporta los datos de canchas: cuando buscás una cancha les enviamos el nombre que escribiste, nunca nada sobre vos. Digigolf se consulta solo cuando pedís tu historial del club. Google y Microsoft intervienen solo si elegís entrar con ellos. Cuando empiecen los pagos online, el proveedor de pagos los procesará; nunca vemos ni guardamos los datos de tu tarjeta.</p>
+<h2>Cómo lo protegemos</h2><p>Cada cuenta ve solo sus propias vueltas: cada pedido se verifica contra el jugador que inició sesión, y las vueltas llevan el sello de su dueño. Las contraseñas y las claves del asistente se guardan solo como hash. Las conexiones van cifradas. La base de canchas queda en nuestros servidores; tu dispositivo guarda solo las canchas que usás, y el acceso a ella tiene límite por cuenta y se monitorea.</p>
 <h2>Cuánto tiempo</h2><p>Mientras exista tu cuenta. Cuando la eliminás, tus datos se borran de nuestra base de datos al instante; pueden quedar copias por un período corto en los backups de nuestro proveedor hasta que vencen.</p>
 <h2>Tus derechos</h2><p>Podés ver, corregir, descargar y borrar tus datos vos mismo en <b>Perfil → Cuenta, plan y privacidad</b>: <i>Descargar todos mis datos</i> te da un archivo con todo lo que guardamos; <i>Eliminar mi cuenta</i> lo borra. Según la Ley 25.326 de Protección de Datos Personales también podés escribirnos para acceder, rectificar o suprimir tus datos, y podés reclamar ante la Agencia de Acceso a la Información Pública, órgano de control de esa ley.</p>
 <h2>Golfistas jóvenes</h2><p>Golfimbul está pensado para adultos. Los menores de 18 deberían usarlo con permiso de su madre, padre o tutor.</p>

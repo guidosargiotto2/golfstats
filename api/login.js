@@ -24,8 +24,18 @@ module.exports = async (req, res) => {
     const ACC_FROM = 'áàâãäéèêëíìîïóòôõöúùûüñç', ACC_TO = 'aaaaaeeeeiiiiooooouuuunc';
     const plain = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[%_\\]/g, ' ').trim();
     let courses = {}, results;
+    /* Course data is for signed-in players only, a limited amount per account per day (it is licensed data: no anonymous or bulk reading). */
+    const wants = Q.codes || Q.q || Q.near || Q.all, who = wants ? L.auth(req) : null, DAY_LIMIT = 1500;
+    if (wants && !who) return res.status(401).json({ error: 'auth' });
+    if (Q.all && who !== L.ADMIN) return res.status(403).json({ error: 'admin' });
     try {
       await L.init(); const sql = L.db();
+      if (wants && who !== L.ADMIN) {
+        if (!(await L.alive(sql, who))) return res.status(401).json({ error: 'auth' });
+        const day = new Date().toISOString().slice(0, 10), cost = Q.codes ? Math.max(1, String(Q.codes).split(',').length) : 3;
+        const u = await sql`insert into gs_usage (username, day, n) values (${who}, ${day}, ${cost}) on conflict (username, day) do update set n = gs_usage.n + ${cost} returning n`;
+        if (u.length && u[0].n > DAY_LIMIT) return res.status(429).json({ error: 'daily-limit' });
+      }
       if (Q.codes) {
         const list = String(Q.codes).split(',').map(x => x.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')).filter(Boolean).slice(0, 120);
         if (list.length) (await sql`select code, data from gs_courses where code = any(${list})`).forEach(r => { courses[r.code] = pd(r); });

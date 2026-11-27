@@ -57,6 +57,7 @@ async function init() {
       await s`create table if not exists gs_course_fixes (id text primary key, code text not null, username text not null, hcp jsonb, confirms boolean not null default false, note text, photos jsonb, status text not null default 'pending', created timestamptz default now())`;
       await s`create table if not exists gs_lookups (username text not null, day text not null, n int not null default 0, primary key (username, day))`;
       await s`create table if not exists gs_courses (code text primary key, data jsonb not null, upd bigint not null default 0)`;
+      await s`create table if not exists gs_usage (username text not null, day text not null, n int not null default 0, primary key (username, day))`;   // course-data reads per account per day
       await s`create table if not exists gs_history (username text primary key, rounds jsonb not null, src text, upd bigint not null default 0)`;
       await s`create table if not exists gs_identities (provider text not null, sub text not null, username text not null, email text, created timestamptz default now(), primary key (provider, sub))`;
     })().catch(e => { ready = null; throw e; });
