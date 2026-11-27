@@ -7145,7 +7145,9 @@ window.IMPMAP=(function(){
    document.body.appendChild(ov);var close=function(){ov.remove();document.removeEventListener('keydown',kd);},kd=function(e){if(e.key==='Escape')close();};
    ov.querySelector('.impX').onclick=close;ov.addEventListener('click',function(e){if(e.target===ov)close();});document.addEventListener('keydown',kd);
    api('importStatus').then(function(j){
-     var C=counts(j&&j.db),plan=(j&&j.plan)||[],P={};plan.forEach(function(p,i){P[key(p.country)]={i:i,country:p.country,status:p.status,found:p.found};});
+     var C=counts(j&&j.db),plan0=(j&&j.plan)||[],P={},plan=[];
+     /* a country searched twice (by city, then by club name) is one row: the later pass decides its status */
+     plan0.forEach(function(p){var nm=String(p.country).split(' · ')[0],k=key(nm);if(P[k]){var o=P[k];if(p.status!=='done')o.status=p.status;o.found=Math.max(o.found||0,p.found||0);o.per=p.per||o.per;return;}var o2={country:nm,status:p.status,found:p.found,per:p.per};P[k]=o2;plan.push(o2);});
      /* every country with courses, plus the plan: south to north first, then any other country already in the database */
      var rows=plan.map(function(p){var k=key(p.country),n=C[k]||0;return {k:k,name:p.country,n:n,found:p.found,per:p.per||{},status:p.status==='current'?'now':n>0?'in':(p.status==='done'?'none':'pend')};});
      Object.keys(C).forEach(function(k){if(!P[k])rows.push({k:k,name:k.replace(/\b\w/g,function(c){return c.toUpperCase();}),n:C[k],found:0,status:'in',extra:true});});
@@ -7157,21 +7159,21 @@ window.IMPMAP=(function(){
      load(0,function(err){var el=ov.querySelector('#impMapSvg');if(err||!window.d3||!window.topojson){el.textContent=T('The map could not load (no connection). The table below has the same data.','No se pudo cargar el mapa (sin conexión). La tabla de abajo tiene los mismos datos.');return;}
        fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(function(r){return r.json();}).then(function(w){
          var d3=window.d3,feats=window.topojson.feature(w,w.objects.countries).features.filter(function(f){return f.properties.name!=='Antarctica';});
-         var W=el.clientWidth||760,H=Math.round(W*0.78);el.innerHTML='';
+         var W=el.clientWidth||760,H=Math.round(W*0.52);el.innerHTML='';
          var focus={type:'FeatureCollection',features:feats.filter(function(f){var r=byK[key(f.properties.name)];return r&&!r.extra;})};
-         var proj=d3.geoMercator().fitExtent([[10,10],[W-10,H-10]],focus.features.length?focus:{type:'FeatureCollection',features:feats});
+         var proj=(d3.geoEqualEarth?d3.geoEqualEarth():d3.geoNaturalEarth1()).fitExtent([[6,6],[W-6,H-6]],{type:'FeatureCollection',features:feats});   /* the whole world, not only the Americas */
          var path=d3.geoPath(proj),max=Math.max(1,d3.max(rows,function(r){return r.n;}));
          var green=d3.scaleSqrt().domain([0,max]).range(['#cfe6d7','#0f3a2c']);
          var svg=d3.select(el).append('svg').attr('viewBox','0 0 '+W+' '+H).attr('role','img').attr('aria-label',T('Map of countries imported and pending','Mapa de países importados y pendientes'));
          var tip=ov.querySelector('#impTip');
          svg.append('g').selectAll('path').data(feats).join('path').attr('d',path).attr('class','impC')
            .attr('fill',function(f){var r=byK[key(f.properties.name)];if(!r)return '#efeadb';if(r.status==='now')return '#d8a531';if(r.status==='pend')return '#e2ddcc';if(r.status==='none')return '#c9c3b0';return green(r.n||0);})
-           .attr('stroke','#fffdf7').attr('stroke-width',0.7)
+           .attr('stroke','#fffdf7').attr('stroke-width',0.5)
            .on('mousemove',function(e,f){var r=byK[key(f.properties.name)],rc=el.getBoundingClientRect();tip.style.display='block';tip.style.left=(e.clientX-rc.left+14)+'px';tip.style.top=(e.clientY-rc.top+el.offsetTop+10)+'px';
              tip.innerHTML='<b>'+esc(r?r.name:f.properties.name)+'</b><br>'+(r?(lab[r.status]+' · '+(r.n||0)+' '+T('courses','canchas')+(r.found?' · '+r.found+' '+T('found','encontradas'):'')):T('Not in the plan yet','Todavía fuera del plan'));d3.select(this).attr('stroke','#20261f').attr('stroke-width',1.4).raise();})
            .on('mouseleave',function(){tip.style.display='none';d3.select(this).attr('stroke','#fffdf7').attr('stroke-width',0.7);});
          /* the number of courses on each country with courses */
-         svg.append('g').selectAll('text').data(feats.filter(function(f){var r=byK[key(f.properties.name)];return r&&r.n>0&&path.area(f)>120;})).join('text')
+         svg.append('g').selectAll('text').data(feats.filter(function(f){var r=byK[key(f.properties.name)];return r&&r.n>0&&path.area(f)>260;})).join('text')
            .attr('transform',function(f){var c=path.centroid(f);return 'translate('+c[0]+','+c[1]+')';}).attr('class','impN').attr('text-anchor','middle').attr('dy','0.35em')
            .text(function(f){return byK[key(f.properties.name)].n;});
        }).catch(function(){el.textContent=T('The map could not load. The table below has the same data.','No se pudo cargar el mapa. La tabla de abajo tiene los mismos datos.');});});
