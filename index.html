@@ -1120,6 +1120,11 @@ html.rsOpen{overflow:hidden}
 @keyframes pShake{20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
 #view-log tr.pbad td{background:#fbe9e4!important}#view-log tr.pbad td:first-child{box-shadow:inset 4px 0 0 #a23b2a}
 body.lgPractising #view-log #holenav,body.lgPractising #view-log .holenav,body.lgPractising #view-log .holenavbtns,body.lgPractising #view-log .actbtns{display:none!important}
+#rsheet .rsRec{margin:0;padding:0;list-style:none;counter-reset:rr;display:grid;gap:8px}
+#rsheet .rsRec li{counter-increment:rr;position:relative;background:var(--pine,#0f3a2c);color:#f6f2e7;border-radius:12px;padding:13px 16px 13px 52px;font-size:15px;line-height:1.5}
+#rsheet .rsRec li:before{content:counter(rr);position:absolute;left:16px;top:12px;width:24px;height:24px;border-radius:50%;background:var(--sand,#d8c48c);color:var(--pine,#0f3a2c);font-family:var(--serif);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px}
+#rsheet .rsDepth{margin:16px 0 0;flex-wrap:wrap}#rsheet .rsDepth em{font-style:normal;color:var(--ink-soft,#5c6357)}
+#rsheet .rsIns li b{color:var(--pine,#0f3a2c)}
 </style>
 <style id="gimcss">
 .gimTag{font:600 10px/1 var(--sans,inherit);letter-spacing:.08em;background:var(--pine);color:#fff;border-radius:20px;padding:4px 8px;vertical-align:3px;margin-left:6px}
@@ -4998,35 +5003,58 @@ function rsHl(r){if(r.hl)return r.hl;if(!r.holes)return null;var LC={tee:'t',fw:
 function rsPH(r){if(r.ph!=null&&r.ph!=='')return +r.ph;if(r.chcp!=null&&r.chcp!=='')return +r.chcp;if(r.hi!=null&&r.slope&&r.cr)return Math.round(r.hi*r.slope/113+(r.cr-(r.par||72)));return null;}
 function rsMed(a){a=a.filter(function(x){return x!=null&&!isNaN(x);}).sort(function(x,y){return x-y;});if(!a.length)return null;var m=Math.floor(a.length/2);return a.length%2?a[m]:(a[m-1]+a[m])/2;}
 function rsAnalysis(r,hl,ph){
- var es=window.__LANG==='es',T=function(a,b){return es?b:a;},pm=function(v){v=Math.round(v*10)/10;return (v>0?'+':'')+String(v).replace('.',es?',':'.');},ins=[],depth=0,miss=[];
+ var es=window.__LANG==='es',T=function(a,b){return es?b:a;},ins=[],recs=[],depth=0,miss=[];
  var all=[];try{all=(window.ALLROUNDS?window.ALLROUNDS():[]).filter(function(x){return !(x.date===r.date&&x.score===r.score);}).sort(function(a,b){return a.date<b.date?1:-1;}).slice(0,20);}catch(e){}
  var say=function(icon,txt){ins.push('<li><i>'+icon+'</i><span>'+txt+'</span></li>');};
- /* ---- level 0: the total, against your own normal ---- */
- var ms=rsMed(all.map(function(x){return +x.score;}));
- if(r.score&&ms!=null&&all.length>=5){var d=r.score-ms;say(d<0?'▲':d>0?'▼':'=',T('Score <b>'+r.score+'</b>: '+(d===0?'exactly your median':(Math.abs(d)+' '+(d<0?'better':'worse')+' than your median of '+ms))+' over your last '+all.length+' rounds.','Score <b>'+r.score+'</b>: '+(d===0?'justo tu mediana':(Math.abs(d)+' '+(d<0?'mejor':'peor')+' que tu mediana de '+ms))+' en tus últimas '+all.length+' vueltas.'));}
- [['putts',T('Putts','Putts'),-1],['gir','GIR',1],['fw',T('Fairways','Fairways'),1]].forEach(function(m){var v=r[m[0]],md=rsMed(all.map(function(x){return x[m[0]];}));if(v==null||md==null||all.filter(function(x){return x[m[0]]!=null;}).length<5)return;var d=v-md;if(Math.abs(d)<1.5)return;
-   say((d*m[2]>0)?'▲':'▼',m[1]+' <b>'+v+'</b> '+T('against a usual '+md+'.','contra un habitual de '+md+'.'));});
- /* ---- level 1: hole by hole ---- */
+ var rec=function(txt){if(recs.length<3&&recs.indexOf(txt)<0)recs.push(txt);};
+ var list=function(a){a=a.map(function(x){return x+1;});return a.length<2?a.join(''):a.slice(0,-1).join(', ')+T(' and ',' y ')+a[a.length-1];};
+ var nShots=function(n){n=Math.abs(n);return n+' '+(n===1?T('shot','golpe'):T('shots','golpes'));};
+ /* ---- the round in one line: against your own usual ---- */
+ var ms=rsMed(all.map(function(x){return +x.score;}));if(ms!=null)ms=Math.round(ms);
+ if(r.score&&ms!=null&&all.length>=5){var d=Math.round(r.score-ms);
+   say(d<=-3?'▲':d>=3?'▼':'=',d<=-3?T('<b>A good day.</b> '+nShots(d)+' better than what you usually shoot ('+ms+').','<b>Un buen día.</b> '+nShots(d)+' mejor que lo que hacés habitualmente ('+ms+').')
+     :d>=3?T('<b>A rough one.</b> '+nShots(d)+' more than your usual '+ms+'. One round like this says little: look at where it went, below.','<b>Una vuelta difícil.</b> '+nShots(d)+' más que tu '+ms+' habitual. Una vuelta así dice poco: mirá abajo dónde se fue.')
+     :T('<b>A normal round for you.</b> Right around your usual '+ms+': neither a breakthrough nor a problem.','<b>Una vuelta normal para vos.</b> Cerca de tu '+ms+' habitual: ni un salto ni un problema.'));}
+ /* ---- hole by hole ---- */
  var pars=null,sc=null;
  if(hl&&hl.length){pars=hl.map(function(a){return +a[0];});sc=hl.map(function(a){var n=0;String(a[2]).replace(/[tfrsxp][\d.]+(\**)/g,function(m0,st){n+=1+st.length;return m0;});return n;});}
  else if(r.hs&&r.hp){pars=r.hp.map(Number);sc=r.hs.map(Number);}
  if(pars&&sc&&sc.length===pars.length){depth=1;
-   var NR=(pars.length===18)?netRow(ph,r.course):null,net=!!NR&&PROF.netPar!==false,B=pars.map(function(p,i){return net?p+NR(i):p;}),D=sc.map(function(x,i){return x-B[i];}),lab=net?T(' net',' neto'):'';
-   var tot=D.reduce(function(a,b){return a+b;},0);
-   if(sc.length===18){var f9=D.slice(0,9).reduce(function(a,b){return a+b;},0),b9=tot-f9;
-     say('◐',T('Front nine <b>'+pm(f9)+'</b>'+lab+', back nine <b>'+pm(b9)+'</b>'+lab+'. ','Ida <b>'+pm(f9)+'</b>'+lab+', vuelta <b>'+pm(b9)+'</b>'+lab+'. ')+(Math.abs(f9-b9)>=3?(f9>b9?T('The round got away early; the finish was the real you.','La vuelta se escapó al principio; el cierre fue tu golf real.'):T('A good start, then it slipped. Look at what changed on the back nine: fatigue, focus, or one bad hole.','Buen comienzo y después se fue. Mirá qué cambió en la vuelta: cansancio, foco o un hoyo malo.')):T('An even round: no collapse on either side.','Vuelta pareja: ningún lado se cayó.')));}
-   var bad=D.map(function(d,i){return {i:i,d:d};}).filter(function(o){return o.d>=2;}).sort(function(a,b){return b.d-a.d;}),badS=bad.reduce(function(a,o){return a+o.d;},0);
-   if(bad.length)say('✕',T('<b>'+bad.length+'</b> hole'+(bad.length>1?'s':'')+' at double'+lab+' or worse ('+bad.map(function(o){return (o.i+1);}).join(', ')+') cost <b>'+badS+'</b> strokes'+(tot>0?', '+Math.round(100*Math.min(badS,tot)/tot)+'% of your total over'+lab:'')+'. Those are the strokes to win back first, not birdies.','<b>'+bad.length+'</b> hoyo'+(bad.length>1?'s':'')+' en doble'+lab+' o peor ('+bad.map(function(o){return (o.i+1);}).join(', ')+') costaron <b>'+badS+'</b> golpes'+(tot>0?', el '+Math.round(100*Math.min(badS,tot)/tot)+'% de lo que pasaste'+lab:'')+'. Esos son los golpes a recuperar primero, no los birdies.'));
-   else say('✓',T('No double'+lab+' all round. That is how scores come down.','Ningún doble'+lab+' en toda la vuelta. Así baja el score.'));
-   var bb=0,bn=0;for(var i=0;i+1<D.length;i++)if(D[i]>=1){bn++;if(D[i+1]<=0)bb++;}
-   if(bn>=2)say('↺',T('Bounce-back: after a bogey'+lab+' or worse you made par'+lab+' or better on the next hole <b>'+bb+' of '+bn+'</b> times.'+(bb/bn<0.34?' One bad hole is turning into two.':''),'Rebote: después de un bogey'+lab+' o peor hiciste par'+lab+' o mejor en el hoyo siguiente <b>'+bb+' de '+bn+'</b> veces.'+(bb/bn<0.34?' Un hoyo malo se está convirtiendo en dos.':'')));
-   var byP={};pars.forEach(function(p,i){(byP[p]=byP[p]||[]).push(D[i]);});
-   var pt=Object.keys(byP).sort().map(function(p){var a=byP[p],m=a.reduce(function(x,y){return x+y;},0)/a.length;return {p:p,m:m,n:a.length};});
-   if(pt.length>1){var worst=pt.slice().sort(function(a,b){return b.m-a.m;})[0];say('◇',pt.map(function(o){return 'Par '+o.p+' <b>'+pm(o.m)+'</b>';}).join(' · ')+T(' per hole'+lab+'. ',' por hoyo'+lab+'. ')+(worst.m>0.5?T('Par '+worst.p+'s are where this round leaked.','Los par '+worst.p+' fueron donde se escapó esta vuelta.'):''));}
+   var NR=(pars.length===18)?netRow(ph,r.course):null,net=!!NR&&PROF.netPar!==false,B=pars.map(function(p,i){return net?p+NR(i):p;}),D=sc.map(function(x,i){return x-B[i];}),G=sc.map(function(x,i){return x-pars[i];});
+   var tot=D.reduce(function(a,b){return a+b;},0),nine=function(a,z){var t=0;for(var q=a;q<z;q++)t+=D[q];return t;};
+   if(net)say(tot<=-2?'▲':tot>=3?'▼':'✓',tot===0?T('You played <b>exactly to your handicap</b>.','Jugaste <b>exactamente tu hándicap</b>.'):tot<0?T('You <b>beat your handicap by '+nShots(tot)+'</b>.','Le <b>ganaste a tu hándicap por '+nShots(tot)+'</b>.'):T('You finished <b>'+nShots(tot)+' over your handicap</b>.','Terminaste <b>'+nShots(tot)+' sobre tu hándicap</b>.'));
+   /* where the round was made and lost: the best and worst three holes in a row */
+   if(sc.length>=9){var best=null,worst=null;for(var q=0;q+3<=D.length;q++){var t3=D[q]+D[q+1]+D[q+2];if(best==null||t3<best.t)best={q:q,t:t3};if(worst==null||t3>worst.t)worst={q:q,t:t3};}
+     if(worst&&worst.t>=3)say('▼',T('<b>Where it got away:</b> holes '+(worst.q+1)+' to '+(worst.q+3)+' cost you '+nShots(worst.t)+'. Three holes, most of the damage.','<b>Dónde se escapó:</b> los hoyos '+(worst.q+1)+' a '+(worst.q+3)+' te costaron '+nShots(worst.t)+'. Tres hoyos, casi todo el daño.'));
+     if(best&&best.t<=-2)say('▲',T('<b>Your best golf:</b> holes '+(best.q+1)+' to '+(best.q+3)+', '+nShots(best.t)+' better than expected. That player is in there.','<b>Tu mejor golf:</b> los hoyos '+(best.q+1)+' a '+(best.q+3)+', '+nShots(best.t)+' mejor de lo esperado. Ese jugador está ahí.'));}
+   if(sc.length===18){var f9=nine(0,9),b9=nine(9,18);
+     if(b9-f9>=4){say('◐',T('<b>You ran out of steam.</b> The back nine cost '+nShots(b9-f9)+' more than the front.','<b>Te quedaste sin nafta.</b> La vuelta te costó '+nShots(b9-f9)+' más que la ida.'));rec(T('Eat and drink something at the turn, and play the first holes of the back nine to the fat part of the green.','Comé y tomá algo en el hoyo 9, y jugá los primeros hoyos de la vuelta al centro del green.'));}
+     else if(f9-b9>=4){say('◐',T('<b>A slow start.</b> The front nine cost '+nShots(f9-b9)+' more than the back; once you settled, you played well.','<b>Arranque lento.</b> La ida te costó '+nShots(f9-b9)+' más que la vuelta; cuando te acomodaste, jugaste bien.'));rec(T('Arrive 20 minutes earlier: ten putts and ten wedges before the first tee are worth more than a bucket of drivers.','Llegá 20 minutos antes: diez putts y diez wedges antes del tee del 1 valen más que un balde de drivers.'));}
+     var last3=D[15]+D[16]+D[17];if(last3>=4&&!(b9-f9>=4)){say('⚑',T('<b>The finish hurt:</b> '+nShots(last3)+' dropped on the last three holes.','<b>El cierre dolió:</b> '+nShots(last3)+' perdidos en los últimos tres hoyos.'));rec(T('On the last three holes, pick the safest target on every shot. Tired swings need big targets.','En los últimos tres hoyos, elegí el objetivo más seguro en cada tiro. Los swings cansados necesitan objetivos grandes.'));}}
+   /* the big numbers: gross doubles are what every handicap can remove */
+   var dbl=[];G.forEach(function(g,i){if(g>=2)dbl.push(i);});var dblCost=dbl.reduce(function(a,i){return a+(G[i]-1);},0);
+   if(dbl.length>=2){say('✕',T('<b>'+dbl.length+' holes got out of hand</b> (double bogey or worse on '+list(dbl)+'). Turn each into a simple bogey and this is a <b>'+(r.score-dblCost)+'</b>.','<b>'+dbl.length+' hoyos se te fueron de las manos</b> (doble bogey o peor en el '+list(dbl)+'). Si cada uno fuera un bogey simple, esto es un <b>'+(r.score-dblCost)+'</b>.'));
+     rec(T('When you are in trouble, get the ball back in play and accept the bogey. That alone is worth about '+nShots(dblCost)+' a round to you.','Cuando estés en problemas, devolvé la pelota al juego y aceptá el bogey. Solo eso te vale unos '+nShots(dblCost)+' por vuelta.'));}
+   else if(dbl.length===0&&sc.length===18)say('✓',T('<b>No disasters.</b> Not one double bogey: that is the habit that lowers a handicap.','<b>Sin desastres.</b> Ni un doble bogey: ese es el hábito que baja un hándicap.'));
+   /* par 5s: the holes where there is room to breathe */
+   var p5=[],p5bad=[];pars.forEach(function(p,i){if(p===5){p5.push(i);if(G[i]>=1+(net?NR(i):0))p5bad.push(i);}});
+   if(p5.length>=2&&p5bad.length>=Math.ceil(p5.length/2)){say('◇',T('<b>The par 5s cost you:</b> you dropped shots on '+p5bad.length+' of '+p5.length+' ('+list(p5bad)+'). They are the holes with the most room for error.','<b>Los par 5 te costaron:</b> perdiste golpes en '+p5bad.length+' de '+p5.length+' ('+list(p5bad)+'). Son los hoyos con más margen de error.'));
+     rec(T('Play the par 5s as three calm shots: lay up to your favourite wedge distance instead of chasing the green.','Jugá los par 5 en tres tiros tranquilos: dejala a tu distancia favorita de wedge en vez de buscar el green.'));}
+   /* which kind of hole suited you */
+   var byP={};pars.forEach(function(p,i){(byP[p]=byP[p]||[]).push(D[i]);});var pt=Object.keys(byP).map(function(p){var a=byP[p];return {p:p,m:a.reduce(function(x,y){return x+y;},0)/a.length,n:a.length};}).filter(function(o){return o.n>=3;}).sort(function(a,b){return a.m-b.m;});
+   if(pt.length>=2&&pt[pt.length-1].m-pt[0].m>=0.5){var bp=pt[0],wp=pt[pt.length-1];
+     say('◇',T('<b>The par '+bp.p+'s were your best holes; the par '+wp.p+'s your worst.</b>','<b>Los par '+bp.p+' fueron tus mejores hoyos; los par '+wp.p+', los peores.</b>')+' '+(wp.p==='3'?T('On par 3s the miss is usually short: take one more club.','En los par 3 el error suele ser quedarse corto: tomá un palo más.'):wp.p==='4'?T('On par 4s the tee shot decides: fairway first, distance second.','En los par 4 decide la salida: primero fairway, después distancia.'):''));
+     if(wp.p==='3')rec(T('On every par 3, take one more club than you think and aim at the middle of the green.','En cada par 3, tomá un palo más del que pensás y apuntá al centro del green.'));}
+   /* hard holes against easy holes, only when the story is clear */
    var SI=null;try{var ck=Object.keys(COURSES).filter(function(k){return COURSES[k].name===r.course;})[0];if(ck&&COURSES[ck].hcp&&COURSES[ck].hcp.length===pars.length&&COURSES[ck].hcp.some(function(x){return x>0;}))SI=COURSES[ck].hcp;}catch(e){}
-   if(SI&&pars.length===18){var hard=[],easy=[];SI.forEach(function(x,i){if(x<=6)hard.push(D[i]);if(x>=13)easy.push(D[i]);});var mh=hard.reduce(function(a,b){return a+b;},0),me=easy.reduce(function(a,b){return a+b;},0);
-     say('⚖',T('Six hardest holes <b>'+pm(mh)+'</b>'+lab+', six easiest <b>'+pm(me)+'</b>'+lab+'. ','Los seis hoyos más difíciles <b>'+pm(mh)+'</b>'+lab+', los seis más fáciles <b>'+pm(me)+'</b>'+lab+'. ')+(me>=mh?T('You gave strokes away where the course gives them to you.','Regalaste golpes donde la cancha te los regala.'):T('The hard holes did the damage, as they should; the easy ones held.','Los difíciles hicieron el daño, como corresponde; los fáciles aguantaron.')));}
- } else miss.push(T('hole-by-hole scores','el score de cada hoyo'));
+   if(SI&&pars.length===18){var mh=0,me=0;SI.forEach(function(x,i){if(x<=6)mh+=D[i];if(x>=13)me+=D[i];});
+     if(me-mh>=3){say('⚖',T('<b>You handled the hard holes and gave shots back on the easy ones</b> ('+nShots(me-mh)+' of difference). The easy holes are where you relaxed.','<b>Te bancaste los hoyos difíciles y regalaste en los fáciles</b> ('+nShots(me-mh)+' de diferencia). En los fáciles te relajaste.'));rec(T('Give the easy holes the same routine as the hard ones: pick a target and commit, especially off the tee.','Dale a los hoyos fáciles la misma rutina que a los difíciles: elegí un objetivo y comprometete, sobre todo en la salida.'));}
+     else if(mh-me>=4)say('⚖',T('<b>The hard holes did the damage, as they should.</b> On the easy ones you held your own.','<b>El daño lo hicieron los hoyos difíciles, como corresponde.</b> En los fáciles te mantuviste.'));}
+   /* after a bad hole */
+   var bb=0,bn=0;for(var i2=0;i2+1<D.length;i2++)if(D[i2]>=1){bn++;if(D[i2+1]<=0)bb++;}
+   if(bn>=3){if(bb/bn>=0.6)say('↺',T('<b>You shook off bad holes:</b> after '+bn+' of them, you came straight back '+bb+' times.','<b>Te sacudiste los hoyos malos:</b> después de '+bn+', te recuperaste enseguida '+bb+' veces.'));
+     else if(bb/bn<=0.34){say('↺',T('<b>One bad hole turned into two:</b> after '+bn+' bad holes you only recovered on the next one '+(bb===0?'never':bb+' time'+(bb>1?'s':''))+'.','<b>Un hoyo malo se convirtió en dos:</b> después de '+bn+' hoyos malos, en el siguiente te recuperaste '+(bb===0?'nunca':bb+' vez'+(bb>1?'ces':''))+'.'));rec(T('After a bad hole, hit the next tee shot with the club you trust most, even if it is not the driver.','Después de un hoyo malo, pegá la siguiente salida con el palo en el que más confiás, aunque no sea el driver.'));}}
+ } else miss.push(T('the score on each hole','el score de cada hoyo'));
  /* ---- level 2: shot by shot ---- */
  if(hl&&hl.length){depth=2;var LM={t:'tee',f:'fw',r:'rough',s:'sand',x:'rec',p:'putt'};
    var H=hl.map(function(a){var sh=[],re=/([tfrsxp])([\d.]+)(\**)/g,m;while((m=re.exec(a[2])))sh.push({lie:LM[m[1]],dist:+m[2],pen:m[3].length});return {par:+a[0],shots:sh};});
@@ -5036,12 +5064,15 @@ function rsAnalysis(r,hl,ph){
      var strokesBefore=0;for(var q=0;q<(pi<0?h.shots.length:pi);q++)strokesBefore+=1+(h.shots[q].pen||0);if(pi>=0&&strokesBefore<=h.par-2)gir++;if(pi>=0)fp.push(h.shots[pi].dist);h.shots.forEach(function(x){pen+=x.pen||0;});});
    var CN={ott:T('off the tee','desde el tee'),app:T('approach','approach'),atg:T('around the green','alrededor del green'),putt:T('putting','putting')};
    var ks=Object.keys(cat).sort(function(a,b){return cat[a]-cat[b];});
-   say('⛳',T('Strokes gained: biggest leak <b>'+CN[ks[0]]+' '+fmt(cat[ks[0]])+'</b>, best <b>'+CN[ks[3]]+' '+fmt(cat[ks[3]])+'</b>. That leak is where practice time pays this week.','Strokes gained: la mayor pérdida <b>'+CN[ks[0]]+' '+fmt(cat[ks[0]])+'</b>, lo mejor <b>'+CN[ks[3]]+' '+fmt(cat[ks[3]])+'</b>. Esa pérdida es donde la práctica rinde esta semana.'));
-   if(worstH)say('⚑',T('Worst hole: <b>'+(worstH.i+1)+'</b> ('+fmt(worstH.g)+' SG). Tap it on the card to replay the shots: was it one decision or one swing?','Peor hoyo: <b>'+(worstH.i+1)+'</b> ('+fmt(worstH.g)+' SG). Tocalo en la tarjeta para ver los tiros: ¿fue una decisión o un swing?'));
+   say('⛳',T('<b>Your weakest part today was '+CN[ks[0]]+'</b>: about '+nShots(Math.round(cat[ks[0]]))+' lost there. Your strongest was '+CN[ks[3]]+'.','<b>Lo más flojo hoy fue '+CN[ks[0]]+'</b>: unos '+nShots(Math.round(cat[ks[0]]))+' perdidos ahí. Lo más fuerte, '+CN[ks[3]]+'.'));
+   rec({ott:T('Off the tee: for the next round pick the club that finds the fairway on the tight holes, not the longest one.','Desde el tee: para la próxima, en los hoyos angostos elegí el palo que encuentra el fairway, no el más largo.'),app:T('Approaches: aim at the middle of the green on every one for a round, and see what it does to your score.','Approaches: durante una vuelta apuntá al centro del green en todos, y mirá qué le hace a tu score.'),atg:T('Around the green: twenty minutes with one chip, one landing spot. Getting it on the green every time comes before getting it close.','Alrededor del green: veinte minutos con un solo chip y un punto de pique. Dejarla siempre en el green viene antes que dejarla cerca.'),putt:T('Putting: twenty minutes of long putts, only trying to leave them inside a club length.','Putting: veinte minutos de putts largos, buscando solo dejarlos a menos de un palo.')}[ks[0]]);
+   if(worstH)say('⚑',T('<b>Hole '+(worstH.i+1)+' was the costliest.</b> Tap it on the card and replay the shots: was it one bad decision, or one bad swing?','<b>El hoyo '+(worstH.i+1)+' fue el más caro.</b> Tocalo en la tarjeta y repasá los tiros: ¿fue una mala decisión, o un mal swing?'));
    var t5n=t5.p3+t5.db+t5.bp5+t5.f150+t5.short,T5N={p3:T('3-putts','3 putts'),db:T('doubles','dobles'),bp5:T('bogeys on par 5','bogeys en par 5'),f150:T('bogeys with a short iron in hand','bogeys con hierro corto'),short:T('wasted easy saves','saves fáciles perdidos')};
    say(t5n?'✕':'✓',"Tiger 5: <b>"+t5n+'</b>'+(t5n?' — '+Object.keys(t5).filter(function(k){return t5[k];}).map(function(k){return t5[k]+' '+T5N[k];}).join(', ')+'.':T('. A clean card on the mistakes that cost amateurs the most.','. Tarjeta limpia en los errores que más le cuestan al amateur.')));
-   var fpm=rsMed(fp);say('◉',T('Putting: <b>'+putts+'</b> putts, '+p1+' one-putt'+(p1!==1?'s':'')+', '+p3n+' three-putt'+(p3n!==1?'s':'')+(fpm!=null?'; first putts from a median of '+Math.round(fpm)+' ft':'')+'. ','Putting: <b>'+putts+'</b> putts, '+p1+' de un putt, '+p3n+' de tres'+(fpm!=null?'; primeros putts desde una mediana de '+Math.round(fpm)+' pies':'')+'. ')+(fpm!=null&&fpm>25?T('The putter is paying for the approach play: get closer before blaming the stroke.','El putter está pagando los approaches: acercala antes de culpar al golpe.'):''));
-   say('◎','GIR <b>'+gir+'/'+H.length+'</b>'+(pen?T(' · penalties <b>'+pen+'</b>',' · penalidades <b>'+pen+'</b>'):''));
+   var fpm=rsMed(fp);say('◉',T('<b>'+putts+' putts</b>'+(p3n?', with '+p3n+' three-putt'+(p3n>1?'s':''):', and no three-putts')+'. ','<b>'+putts+' putts</b>'+(p3n?', con '+p3n+' de tres putts':', y ninguno de tres')+'. ')+(fpm!=null&&fpm>25?T('Your first putts started from far away ('+Math.round(fpm)+' ft on a typical green): that is the approach play, not the putter.','Tus primeros putts arrancaron de lejos ('+Math.round(fpm)+' pies en un green típico): eso son los approaches, no el putter.'):(p3n>=3?T('Three-putts are almost always the first putt left too far away.','Los tres putts casi siempre son un primer putt que quedó lejos.'):'')));
+   if(p3n>=3)rec(T('Three-putts: before the next round, roll ten long putts just for distance. Speed first, line second.','Tres putts: antes de la próxima vuelta, tirá diez putts largos solo por distancia. Primero velocidad, después línea.'));
+   say('◎',T('You hit <b>'+gir+' greens</b> in regulation out of '+H.length+(pen?', and took <b>'+pen+' penalty stroke'+(pen>1?'s':'')+'</b>':'')+'.','Tomaste <b>'+gir+' greens</b> en regulación de '+H.length+(pen?', y tuviste <b>'+pen+' golpe'+(pen>1?'s':'')+' de penalidad</b>':'')+'.'));
+   if(pen>=2)rec(T('Penalties: on the holes with trouble, aim away from it by a full fairway width. '+pen+' strokes went there today.','Penalidades: en los hoyos con peligro, apuntá lejos por todo un ancho de fairway. Hoy se fueron '+pen+' golpes ahí.'));
  } else if(depth===1)miss.push(T('every shot (where from, how far)','cada tiro (desde dónde, a qué distancia)'));
  /* ---- level 3: process — compliance, clubs, misses (rounds logged in Golfimbul) ---- */
  var SH=[];(r.holes||[]).forEach(function(h){(h.shots||[]).forEach(function(x,k){if(x.conf!==false)SH.push({x:x,k:k});});});
@@ -5054,9 +5085,11 @@ function rsAnalysis(r,hl,ph){
    if(app.length>=4&&sh2+lo>=3)say('↕',T('Approaches: <b>'+sh2+' short, '+lo+' long</b> of target. ','Approaches: <b>'+sh2+' cortos, '+lo+' largos</b> del objetivo. ')+(sh2>=2*Math.max(1,lo)?T('Take one more club: amateurs come up short far more than long.','Tomá un palo más: el amateur queda corto mucho más que largo.'):''));
  } else if(depth===2)miss.push(T('compliance and dispersion','cumplimiento y dispersión'));
  var lv=[T('Score only','Solo score'),T('Hole by hole','Hoyo por hoyo'),T('Shot by shot','Tiro por tiro'),T('Shots + process','Tiros + proceso')];
- return '<div class="rsAn"><div class="rsDepth"><span>'+T('Analysis depth','Profundidad del análisis')+'</span><div class="rsDots">'+[0,1,2,3].map(function(k){return '<i class="'+(k<=depth?'on':'')+'" title="'+lv[k]+'"></i>';}).join('')+'</div><b>'+lv[depth]+'</b></div>'+
+ if(!recs.length&&ins.length&&depth>=1)recs.push(T('Nothing to fix from this card. Repeat it: the same targets, the same routine.','Nada para corregir en esta tarjeta. Repetila: los mismos objetivos, la misma rutina.'));
+ return '<div class="rsAn">'+
   (ins.length?'<ul class="rsIns">'+ins.join('')+'</ul>':'<p class="rsNone">'+T('Not enough data on this round to say anything honest about it.','No hay datos suficientes en esta vuelta para decir algo honesto.')+'</p>')+
-  (miss.length?'<p class="rsMore">'+T('Log ','Cargá ')+miss[0]+T(' and this page tells you more.',' y esta página te dice más.')+'</p>':'')+'</div>';}
+  (recs.length?'<h3 class="rsH">'+T('For your next round','Para tu próxima vuelta')+'</h3><ol class="rsRec">'+recs.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ol>':'')+
+  '<div class="rsDepth"><span>'+T('How much this round tells us','Cuánto nos dice esta vuelta')+'</span><div class="rsDots">'+[0,1,2,3].map(function(k){return '<i class="'+(k<=depth?'on':'')+'" title="'+lv[k]+'"></i>';}).join('')+'</div><b>'+lv[depth]+'</b>'+(miss.length?'<em>'+T('Log ','Cargá ')+miss[0]+T(' and it tells you more.',' y te dice más.')+'</em>':'')+'</div></div>';}
 function rsE(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function roundSheet(r,opt){opt=opt||{};var es=window.__LANG==='es',T=function(a,b){return es?b:a;},ph=rsPH(r),hl=rsHl(r),card='',ic=null;
  try{if(hl&&hl.length)ic=importCard(hl,{ph:ph,course:r.course});}catch(e){ic=null;}
