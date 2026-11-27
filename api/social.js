@@ -350,6 +350,20 @@ module.exports = async (req, res) => {
       await sql`insert into gs_history (username, rounds, src, upd) values (${target}, ${JSON.stringify(all)}, 'digigolf', ${Date.now()}) on conflict (username) do update set rounds = excluded.rounds, src = excluded.src, upd = excluded.upd`;
       return ok({ saved: all.length, added: all.length - old.length });
     }
+    if (action === 'scanStatus' || action === 'scanCard') {   // read a photo of the printed scorecard: a few per day, and only once the reader is switched on
+      const SC = require('./_scan'), day = new Date().toISOString().slice(0, 10);
+      const u = await sql`select n from gs_scans where username = ${me} and day = ${day}`, used = u.length ? Number(u[0].n) : 0;
+      if (action === 'scanStatus') return ok({ ready: SC.ready(), used, limit: SC.LIMIT });
+      if (!SC.ready()) return res.status(200).json({ error: 'scan-not-ready', used, limit: SC.LIMIT });
+      if (used >= SC.LIMIT) return res.status(200).json({ error: 'scan-limit', used, limit: SC.LIMIT });
+      const c = b.ctx && typeof b.ctx === 'object' ? b.ctx : {};
+      const ctx = { lang: c.lang === 'es' ? 'es' : 'en', units: c.units === 'm' ? 'm' : 'yd', rows: Math.max(4, Math.min(12, parseInt(c.rows, 10) || 8)), comp: !!c.comp, club: !!c.club, read: !!c.read,
+        disp: ['off', 'tee', 'app', 'all'].includes(c.disp) ? c.disp : 'off',
+        clubs: (Array.isArray(c.clubs) ? c.clubs : []).slice(0, 20).map(x => ({ code: String(x && x.code || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 4), label: String(x && x.label || '').replace(/[^A-Za-z0-9 ]/g, '').slice(0, 12) })).filter(x => x.code && x.label) };
+      await sql`insert into gs_scans (username, day, n) values (${me}, ${day}, 1) on conflict (username, day) do update set n = gs_scans.n + 1`;   // counted before the read, so a failed photo still uses one
+      try { const card = await SC.read(b.image, ctx); return ok({ card, used: used + 1, limit: SC.LIMIT }); }
+      catch (e) { return res.status(200).json({ error: e.message || 'reader-failed', used: used + 1, limit: SC.LIMIT }); }
+    }
     if (action === 'termsAccept') {   // the player accepted the terms and privacy page: keep the version and the moment
       const v = Math.max(1, Math.min(999, parseInt(b.v, 10) || 1));
       await sql`insert into gs_settings (k, v) values (${'terms:' + me}, ${JSON.stringify({ v, at: new Date().toISOString() })}) on conflict (k) do update set v = excluded.v`;

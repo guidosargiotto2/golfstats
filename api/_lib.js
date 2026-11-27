@@ -57,6 +57,7 @@ async function init() {
       await s`create table if not exists gs_course_fixes (id text primary key, code text not null, username text not null, hcp jsonb, confirms boolean not null default false, note text, photos jsonb, status text not null default 'pending', created timestamptz default now())`;
       await s`create table if not exists gs_lookups (username text not null, day text not null, n int not null default 0, primary key (username, day))`;
       await s`create table if not exists gs_courses (code text primary key, data jsonb not null, upd bigint not null default 0)`;
+      await s`create table if not exists gs_scans (username text not null, day text not null, n int not null default 0, primary key (username, day))`;   // scorecard photos read per player per day
       await s`create table if not exists gs_usage (username text not null, day text not null, n int not null default 0, primary key (username, day))`;   // course-data reads per account per day
       await s`create table if not exists gs_history (username text primary key, rounds jsonb not null, src text, upd bigint not null default 0)`;
       await s`alter table gs_history add column if not exists extra jsonb`;   // a player's own bag and per-hole tendencies, kept with their history
