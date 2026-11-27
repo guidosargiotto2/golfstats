@@ -2064,6 +2064,9 @@ const uckey=()=>'golf-ledger-custom-'+(localStorage.getItem('app-user')||'anon')
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}};
 const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 let CUSTOM=load(ckey(),[]), R=[];
+/* Tiger 5 total: only rounds that carry all five parts count. A scorecard-only round knows two of the five, so it never enters the total */
+window.T5FULL=function(r){return !!(r&&!r.t5part&&r.mtot!=null&&r.p3!=null&&r.f150!=null&&r.fx!=null);};window.T5NEED=8;
+const t5v=r=>window.T5FULL(r)?r.mtot:null;
 
 const F={pine:'#0f3a2c',fairway:'#1f7a4d',moss:'#3f9c6d',clay:'#c2502e',sand:'#b89a52',blue:'#2f6f9c',amber:'#c99a1e',inkSoft:'#5c6357',line:'#e2ddcc'};
 if(typeof Chart!=='undefined'){Chart.defaults.font.family="'Optima','Segoe UI',Candara,sans-serif"; Chart.defaults.color=F.inkSoft; Chart.defaults.font.size=12;}
@@ -2273,7 +2276,7 @@ function segLimits(v,count){
  const notes=[];
  return {segs,segOf,mr,r1,r4,breaks,notes,signals,sigSet,outs};}
 function np(){return false;}   /* Statistics are always gross: a net figure follows the handicap, so it cannot show improvement over time. Net is for the round itself (scorecard, hole view). */
-const metrics={'SG: Total':r=>r.sgtot,'SG: Tee-to-green':r=>(r.ott==null||r.app==null||r.atg==null)?null:Math.round((r.ott+r.app+r.atg)*100)/100,'SG: Off tee':r=>r.ott,'SG: Approach':r=>r.app,'SG: Around green':r=>r.atg,'SG: Putting':r=>r.putt,'Mistakes: total':r=>(np()&&r.mtotNet!=null)?r.mtotNet:r.mtot,'Mistakes: 3-putts':r=>r.p3,'Mistakes: double bogeys':r=>(np()&&r.dbNet!=null)?r.dbNet:r.db,'Mistakes: bogey par-5':r=>(np()&&r.bp5Net!=null)?r.bp5Net:r.bp5,'Mistakes: 3+ from 150':r=>(np()&&r.f150Net!=null)?r.f150Net:r.f150,'Mistakes: 3+ from 40':r=>r.fx,'Fairways / round':r=>r.fw,'Driving accuracy %':r=>r.fw==null?null:Math.round(1000*r.fw/(r.fwAtt||14))/10,'Greens / round':r=>(np()&&r.girNet!=null)?r.girNet:r.gir,'GIR %':r=>{var g=(np()&&r.girNet!=null)?r.girNet:r.gir;return g==null?null:Math.round(1000*g/(r.holesPlayed||18))/10;},'Scrambling %':r=>r.scrmb==null?null:r.scrmb,'Putts per GIR':r=>r.pptgir==null?null:r.pptgir,'Short-game proximity (ft)':r=>r.sgprox==null?null:r.sgprox,'Greenside inside 6 ft %':r=>r.in6==null?null:r.in6,'Greenside outside 15 ft %':r=>r.out15==null?null:r.out15,'Putts / round':r=>r.putts,'Penalties / round':r=>r.pen,'Tee shot distance':r=>r.dist,'Bogey avoidance %':r=>r.bog==null?null:Math.round(1000*(r.bog+r.dbl)/18)/10,'Birdies / round':r=>r.bir==null?null:r.bir,'Score to par':r=>(np()&&r.stpNet!=null)?r.stpNet:r.stp};
+const metrics={'SG: Total':r=>r.sgtot,'SG: Tee-to-green':r=>(r.ott==null||r.app==null||r.atg==null)?null:Math.round((r.ott+r.app+r.atg)*100)/100,'SG: Off tee':r=>r.ott,'SG: Approach':r=>r.app,'SG: Around green':r=>r.atg,'SG: Putting':r=>r.putt,'Mistakes: total':r=>!window.T5FULL(r)?null:((np()&&r.mtotNet!=null)?r.mtotNet:r.mtot),'Mistakes: 3-putts':r=>r.p3,'Mistakes: double bogeys':r=>(np()&&r.dbNet!=null)?r.dbNet:r.db,'Mistakes: bogey par-5':r=>(np()&&r.bp5Net!=null)?r.bp5Net:r.bp5,'Mistakes: 3+ from 150':r=>(np()&&r.f150Net!=null)?r.f150Net:r.f150,'Mistakes: 3+ from 40':r=>r.fx,'Fairways / round':r=>r.fw,'Driving accuracy %':r=>r.fw==null?null:Math.round(1000*r.fw/(r.fwAtt||14))/10,'Greens / round':r=>(np()&&r.girNet!=null)?r.girNet:r.gir,'GIR %':r=>{var g=(np()&&r.girNet!=null)?r.girNet:r.gir;return g==null?null:Math.round(1000*g/(r.holesPlayed||18))/10;},'Scrambling %':r=>r.scrmb==null?null:r.scrmb,'Putts per GIR':r=>r.pptgir==null?null:r.pptgir,'Short-game proximity (ft)':r=>r.sgprox==null?null:r.sgprox,'Greenside inside 6 ft %':r=>r.in6==null?null:r.in6,'Greenside outside 15 ft %':r=>r.out15==null?null:r.out15,'Putts / round':r=>r.putts,'Penalties / round':r=>r.pen,'Tee shot distance':r=>r.dist,'Bogey avoidance %':r=>r.bog==null?null:Math.round(1000*(r.bog+r.dbl)/18)/10,'Birdies / round':r=>r.bir==null?null:r.bir,'Score to par':r=>(np()&&r.stpNet!=null)?r.stpNet:r.stp};
 const TOURAVG={'Bogey avoidance %':15.77,'Birdies / round':3.79};
 const TRAD=['Fairways / round','Greens / round','Putts / round','Penalties / round','Birdies / round'];
 const isCount=k=>k.startsWith('Mistakes')||TRAD.includes(k);
@@ -2627,7 +2630,11 @@ function renderKpis(){
   {lbl:'Rounds',val:rows.length},
   {lbl:'Avg score to par',val:(avgStp>=0?'+':'')+rnd(avgStp,1)},
   {lbl:'Avg SG total',val:av('sgtot')},
-  {lbl:part?LX("Tiger's 5 (doubles + bogey par-5)","Tiger 5 (dobles + bogey en par 5)"):"Tiger's 5",val:av('mtot')},
+  (function(){const full=rows.filter(window.T5FULL);
+    if(!part)return {lbl:"Tiger's 5",val:full.length?rnd(mean(full.map(r=>r.mtot)),1):null};
+    /* club-portal rounds know only doubles and bogey on par 5: the total waits for enough rounds logged with all five */
+    if(full.length>=window.T5NEED)return {lbl:"Tiger's 5",val:rnd(mean(full.map(r=>r.mtot)),1)};
+    return {lbl:"Tiger's 5",val:`<span style="font-size:.55em;line-height:1.25;display:block">${full.length} ${LX('of','de')} ${window.T5NEED} ${LX('rounds logged with all five','vueltas cargadas con los cinco')}</span>`};})(),
   {lbl:'3-putts',val:av('p3')},
   {lbl:'Doubles',val:av('db')},
   {lbl:'Bogey par-5',val:av('bp5')},
@@ -3191,7 +3198,8 @@ function hBar(cvId,arr){ // arr:[{label,v}] ascending
     else{ctx.fillStyle='#fff';ctx.textAlign=a.v<0?'left':'right';ctx.fillText(valTxt, a.v<0? x+8 : x-8, cy);}
     ctx.font="11px 'Optima','Segoe UI',Candara,sans-serif";});
 }
-function stackBar(cvId,mcats){
+function stackBar(cvId,mcats){const keep=R;if(R.some(r=>r.t5part)&&R.some(window.T5FULL))R=R.filter(window.T5FULL);try{stackBar0(cvId,mcats);}finally{R=keep;}}   /* once there are rounds with all five, the chart shows only those */
+function stackBar0(cvId,mcats){
   const cv=document.getElementById(cvId); const g=cvInit(cv,()=>stackBar(cvId,mcats)); if(!g)return; const {ctx,W,H}=g;
   const mL=30,mR=10,mT=28,mB=40, pw=W-mL-mR, ph=H-mT-mB, n=R.length;
   const maxT=Math.max(1,...R.map(r=>r.mtot))+2, yOf=v=>mT+(maxT-v)/maxT*ph, bw=Math.min(18,pw/n*0.72), xOf=i=>mL+(i+0.5)/n*pw;
@@ -3230,7 +3238,7 @@ function renderDrivers(){
   const head=document.getElementById('driversHead'); const N=R.length;
   if(N<5){ if(head)head.innerHTML=LX(`<strong>Not enough rounds yet.</strong> Once there are at least 5 logged rounds the relationships between your stats and your score become meaningful. Currently ${N}.`,`<strong>Todavía faltan vueltas.</strong> Con al menos 5 vueltas cargadas, las relaciones entre tus stats y tu score empiezan a tener sentido. Hoy hay ${N}.`); const cv=document.getElementById('driversChart'); if(cv&&cv.getContext){const c=cv.getContext('2d');c.clearRect(0,0,cv.width,cv.height);} return; }
   const arr=driverStats();
-  const mt=corr(R.map(r=>r.mtot),R.map(r=>r.stp));
+  const RT=R.filter(window.T5FULL),mt=RT.length>=3?corr(RT.map(r=>r.mtot),RT.map(r=>r.stp)):NaN;
   if(mt===mt) arr.push({l:LX("Tiger's 5 (total)","Tiger 5 (total)"),r:mt,total:true});
   driversBar('driversChart',arr);
   const comp=arr.filter(o=>!o.total);
@@ -3479,7 +3487,7 @@ var GOALS={hi:{n:['Handicap index','Hándicap index'],u:['',''],step:0.1,pace:1,
  dbl:{n:['Double bogeys per round','Dobles bogeys por vuelta'],u:['',''],step:0.5,pace:1,dec:1},t5:{n:["Tiger 5 mistakes per round",'Errores Tiger 5 por vuelta'],u:['',''],step:0.5,pace:1.5,dec:1},putts:{n:['Putts per round','Putts por vuelta'],u:['',''],step:0.5,pace:1,dec:1}};
 function goalBase(k){try{if(k==='hi'){var h=playerHI();return (h==null||isNaN(+h))?null:+h;}
   var R0=(window.ALLROUNDS?window.ALLROUNDS():[]).filter(function(r){return (r.holesPlayed||18)>=18;}).sort(function(a,b){return a.date<b.date?1:-1;}).slice(0,10);
-  var key={avg:'score',dbl:'dbl',t5:'mtot',putts:'putts'}[k],v=R0.map(function(r){return r[key];}).filter(function(x){return x!=null&&!isNaN(+x);});if(v.length<3)return null;
+  var key={avg:'score',dbl:'dbl',t5:'mtot',putts:'putts'}[k];if(k==='t5')R0=R0.filter(function(r){return !r.t5part;});var v=R0.map(function(r){return r[key];}).filter(function(x){return x!=null&&!isNaN(+x);});if(v.length<3)return null;
   return Math.round(10*v.reduce(function(a,b){return a+ +b;},0)/v.length)/10;}catch(e){return null;}}
 /* the golfer answers two plain questions (what, by when); the app does the SMART part: today's number from their data, a realistic target, the date */
 /* ---- the reason behind the goal: why they play decides which goal makes sense, and is what the goal is finally judged against ---- */
@@ -3544,7 +3552,7 @@ function goalReview(){var es=window.__LANG==='es',T=function(x,y){return es?y:x;
  var all=(window.ALLROUNDS?window.ALLROUNDS():[]).filter(function(r){return (r.holesPlayed||18)>=18;}).sort(function(a,b){return a.date<b.date?-1:1;}),since=all.filter(function(r){return r.date>=set;});
  var key={avg:'score',dbl:'dbl',t5:'mtot',putts:'putts'}[g.metric],now=null,n=since.length;
  if(g.metric==='hi'){var h=null;try{h=playerHI();}catch(e){}now=(h==null||isNaN(+h))?null:+h;}
- else{var v=since.slice(-10).map(function(r){return r[key];}).filter(function(x){return x!=null&&!isNaN(+x);});if(v.length)now=v.reduce(function(a,b){return a+ +b;},0)/v.length;}
+ else{var v=(g.metric==='t5'?since.filter(function(r){return !r.t5part;}):since).slice(-10).map(function(r){return r[key];}).filter(function(x){return x!=null&&!isNaN(+x);});if(v.length)now=v.reduce(function(a,b){return a+ +b;},0)/v.length;}
  var gap=+g.from-(+g.to),t0=new Date(set).getTime(),t1=new Date(g.by).getTime(),tn=Date.now(),time=Math.max(0,Math.min(1,(tn-t0)/Math.max(1,t1-t0))),done=(now==null||gap<=0)?0:Math.max(0,Math.min(1,(+g.from-now)/gap));
  var daysLeft=Math.round((t1-tn)/864e5),verdict,cls='';
  if(n<5&&g.metric!=='hi'){verdict=T('Too early to say: '+n+' round'+(n===1?'':'s')+' since you set this goal. A few rounds prove nothing, good or bad. Keep logging.','Muy pronto para decir: '+n+' vuelta'+(n===1?'':'s')+' desde que pusiste este objetivo. Unas pocas vueltas no prueban nada, ni para bien ni para mal. Seguí cargando.');cls='wait';}
@@ -4203,7 +4211,7 @@ function reviewParts(rec,all){
  var sg=function(v,d,signed){var t=f(v,d);return (signed&&v>0?'+':'')+t;};
  var rows=[],better=[],worse=[],enough=prev.length>=5;
  M.forEach(function(m){var k=m[0],today=rec[k];if(today==null||isNaN(today))return;if(m[4]&&!(rec.ph))return;
-   var hv=prev.map(function(x){return x[k];}).filter(function(v){return v!=null&&!isNaN(v);});var row={m:m,today:+today};
+   if(k==='mtot'&&rec.t5part)return;var hv=(k==='mtot'?prev.filter(function(x){return !x.t5part;}):prev).map(function(x){return x[k];}).filter(function(v){return v!=null&&!isNaN(v);});var row={m:m,today:+today};
    if(enough&&hv.length>=5){
      /* the same limits as the control charts: the current stage, i.e. the rounds since this number last changed */
      var CNT={putts:1,p3:1,db:1,pen:1,fw:1,gir:1,mtot:1},done0=false;
@@ -5992,7 +6000,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
  function agg(rounds,n){
    var all=(rounds||[]).filter(function(r){return r&&r.date&&(r.holesPlayed==null||r.holesPlayed>=18);}).sort(function(a,b){return a.date<b.date?1:(a.date>b.date?-1:0);}),rs=all.slice(0,n||10);
    var av=function(k){var v=rs.map(function(r){return num(r[k]);}).filter(function(x){return x!=null;});return v.length?v.reduce(function(s,x){return s+x;},0)/v.length:null;};
-   return {n:rs.length,total:all.length,stp:av('stp'),sg:av('sgtot'),ott:av('ott'),app:av('app'),atg:av('atg'),putt:av('putt'),t5:av('mtot'),last:rs.length?rs[0].date:''};
+   return {n:rs.length,total:all.length,stp:av('stp'),sg:av('sgtot'),ott:av('ott'),app:av('app'),atg:av('atg'),putt:av('putt'),t5:(function(){var v=rs.filter(function(r){return !r.t5part&&num(r.p3)!=null;}).map(function(r){return num(r.mtot);}).filter(function(x){return x!=null;});return v.length?v.reduce(function(s,x){return s+x;},0)/v.length:null;})(),last:rs.length?rs[0].date:''};
  }
  function friendRounds(f){var srv=[];FEED.forEach(function(x){if(x.username===f.username)srv=x.rounds||[];});
    var emb=embedded(f.display);if(!emb.length&&f.username){try{var k=Object.keys(PLAYERS).filter(function(n){return n.toLowerCase()===String(f.username).toLowerCase();})[0];if(k)emb=PLAYERS[k];}catch(e){}}
