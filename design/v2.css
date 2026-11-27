@@ -1,0 +1,180 @@
+/* Golfimbul — design layer v2 ("clubhouse ledger"). Loaded only by /staging.
+   Principles: fewer boxes, hairlines instead of shadows, one accent (brass), flat squared controls,
+   a real type system (Fraunces for titles, Schibsted Grotesk for text, IBM Plex Mono for every number),
+   sentence case almost everywhere, motion only where it explains something. */
+
+:root{
+  --pine:#12352a; --fairway:#1d6b47; --moss:#4f8f6c;
+  --sand:#d9c79a; --sand-deep:#9c7a35; --clay:#b4472a;
+  --cream:#f4f0e6; --paper:#fbf9f3; --ink:#1b211c; --ink-soft:#5a6157;
+  --line:#dcd6c4; --line-soft:#e9e4d5;
+  --serif:'Fraunces','Iowan Old Style','Palatino Linotype',Georgia,serif;
+  --sans:'Schibsted Grotesk','Segoe UI',system-ui,sans-serif;
+  --cond:'Schibsted Grotesk','Segoe UI',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --r:6px; --r2:10px;
+}
+html.v2{font-feature-settings:"ss01","cv11";-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html.v2 body{background:var(--cream);font-family:var(--sans);color:var(--ink);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .12 0 0 0 0 .1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+html.v2 ::selection{background:var(--sand);color:var(--pine)}
+html.v2 :focus-visible{outline:2px solid var(--sand-deep);outline-offset:2px}
+html.v2 *{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+
+/* ---------- type ---------- */
+html.v2 h1,html.v2 h2,html.v2 h3,html.v2 h4{font-family:var(--serif);font-weight:500;letter-spacing:-.012em;font-variation-settings:"opsz" 72,"SOFT" 30;color:var(--pine)}
+html.v2 .lgscope h2,html.v2 #view-stats h2,html.v2 h2{font-size:26px;line-height:1.15}
+html.v2 .lgscope .frsec h3,html.v2 .frsec h3{font-size:19px;margin-bottom:4px}
+/* every figure in the app is set in the same tabular mono */
+html.v2 .scTbl td,html.v2 .ledsc,html.v2 .ledsg,html.v2 .leddate,html.v2 input.lc,html.v2 input.p,html.v2 input[type=number],html.v2 .sgc,html.v2 .kpi .v,html.v2 .kpi b,html.v2 .rsScore b,html.v2 .rsScore small,html.v2 .plUsd,html.v2 .sgcat b,html.v2 .hn+*,html.v2 .parchip,html.v2 .impTbl td.n,html.v2 .onbN,html.v2 .pacc b,html.v2 .lvCard small,html.v2 table td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+/* small capitals: kept for table heads and section markers only */
+html.v2 .lgscope .pform label,html.v2 .lgscope .scNotes label,html.v2 .dgRow label,html.v2 .scCC label{text-transform:none;letter-spacing:0;font-size:13px;font-weight:500;color:var(--ink-soft);font-family:var(--sans)}
+html.v2 .lgscope .pgHead,html.v2 #landing .kick,html.v2 .ldh,html.v2 .whyL,html.v2 .impKick{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--sand-deep)}
+html.v2 .frsub,html.v2 .hisub,html.v2 .hisub2{font-size:13.5px;line-height:1.55;color:var(--ink-soft);text-transform:none;letter-spacing:0;font-family:var(--sans)}
+
+/* ---------- controls: flat, squared, quiet ---------- */
+html.v2 .lgscope .pf_btn,html.v2 .pf_btn,html.v2 #landing .btn1,html.v2 .tabnav button.navlog,html.v2 .tnext,html.v2 .obNext,html.v2 #scPrintOpen,html.v2 #demoOpen,html.v2 #practiceOpen{
+  background:var(--pine)!important;color:#f6f2e7!important;border:1px solid var(--pine)!important;border-radius:var(--r)!important;box-shadow:none!important;
+  font-family:var(--sans)!important;font-weight:600!important;font-size:14px!important;letter-spacing:0!important;text-transform:none!important;padding:10px 18px!important;
+  transition:background .18s ease,transform .18s ease!important}
+html.v2 .lgscope .pf_btn:hover,html.v2 .pf_btn:hover,html.v2 #landing .btn1:hover,html.v2 .tabnav button.navlog:hover{background:#0b261e!important;transform:none!important}
+html.v2 .pf_btn:active,html.v2 #landing .btn1:active{transform:translateY(1px)!important}
+html.v2 .lgscope .pf_btn.frgrey,html.v2 .pf_btn.frgrey,html.v2 #landing .btn2,html.v2 .rsA,html.v2 .pgBackB,html.v2 #pgBackBtn,html.v2 .tback,html.v2 .obBack{
+  background:transparent!important;color:var(--pine)!important;border:1px solid var(--line)!important;border-radius:var(--r)!important;box-shadow:none!important;
+  font-family:var(--sans)!important;font-weight:600!important;font-size:14px!important;letter-spacing:0!important;text-transform:none!important;padding:9px 16px!important}
+html.v2 .pf_btn.frgrey:hover,html.v2 #landing .btn2:hover,html.v2 .rsA:hover,html.v2 .pgBackB:hover,html.v2 #pgBackBtn:hover{border-color:var(--pine)!important;transform:none!important}
+html.v2 .pf_btn:disabled,html.v2 .tnext:disabled{opacity:.4!important}
+html.v2 input,html.v2 select,html.v2 textarea{font-family:var(--sans);border-radius:var(--r)!important;border-color:var(--line)!important;box-shadow:none!important;background-color:#fff}
+html.v2 input:focus,html.v2 select:focus,html.v2 textarea:focus{border-color:var(--pine)!important;outline:none;box-shadow:0 0 0 3px rgba(18,53,42,.08)!important}
+html.v2 .controls button,html.v2 #ledgerMode button{border-radius:var(--r);text-transform:none;letter-spacing:0;font-family:var(--sans);font-weight:500;font-size:13px;padding:6px 12px;background:transparent}
+html.v2 .controls button.on,html.v2 #ledgerMode button.on{background:var(--pine);color:#f6f2e7;border-color:var(--pine)}
+
+/* ---------- surfaces: hairlines, not boxes ---------- */
+html.v2 .lgscope .frsec,html.v2 .frsec,html.v2 .kpi,html.v2 .panel,html.v2 .lgscope .pgrp,html.v2 .lgscope .ledrow,html.v2 .lvCard,html.v2 #landing .tier,html.v2 .lgscope .plCard,html.v2 #rsheet .rsCard,html.v2 #rsheet .rsIns li{
+  border-radius:var(--r2)!important;box-shadow:none!important;border:1px solid var(--line)!important;background:var(--paper)}
+html.v2 .lgscope .hiblock{background:transparent;border:0;border-top:1px solid var(--line);border-radius:0;padding:18px 0 4px;margin-top:10px}
+html.v2 .lgscope .hiblock .hirow span{font-family:var(--serif);font-size:18px;color:var(--pine);font-variation-settings:"opsz" 36}
+html.v2 .demoCard,html.v2 .lgscope .plTeam,html.v2 .whyAsk{background:transparent!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;padding:16px 0!important}
+html.v2 .lgscope .ledrow{border-width:0 0 1px!important;border-radius:0!important;background:transparent;padding:16px 4px;margin:0;transition:background .15s}
+html.v2 .lgscope .ledrow:hover{background:rgba(18,53,42,.035)}
+html.v2 .lgscope .ledrow .ledcourse{font-family:var(--serif);font-size:19px;font-variation-settings:"opsz" 36}
+html.v2 .lgscope .ledsc{font-size:22px;font-weight:500;color:var(--pine)}
+html.v2 .ledsrc,html.v2 .estchip,html.v2 .badge,html.v2 .netchip,html.v2 .parchip,html.v2 .impSt,html.v2 #landing .tbadge,html.v2 .lvCard em{
+  border-radius:3px!important;background:transparent!important;border:1px solid var(--line)!important;color:var(--ink-soft)!important;font-family:var(--mono)!important;font-size:10.5px!important;font-weight:500!important;letter-spacing:.06em!important;text-transform:uppercase!important;padding:2px 6px!important;box-shadow:none!important}
+html.v2 .ledsrc.lg,html.v2 .lvCard em,html.v2 #landing .tbadge{border-color:var(--sand-deep)!important;color:var(--sand-deep)!important}
+html.v2 .ledshare,html.v2 .ledgo{font-family:var(--sans);text-transform:none;letter-spacing:0;font-weight:500;font-size:13px;color:var(--ink-soft)}
+html.v2 .ledgo{color:var(--pine);font-weight:600}
+
+/* ---------- top bar ---------- */
+html.v2 .tabnav{background:var(--cream);border-bottom:1px solid var(--pine);box-shadow:0 0 0 100vmax var(--cream);padding-top:10px;gap:2px}
+html.v2 .tabnav .navbrand{font-family:var(--serif);font-size:22px;font-weight:500;letter-spacing:-.02em;font-variation-settings:"opsz" 72,"SOFT" 50}
+html.v2 .tabnav button{font-family:var(--sans);text-transform:none;letter-spacing:0;font-size:14.5px;font-weight:500;color:var(--ink-soft);padding:12px 16px;border-bottom:2px solid transparent;margin-bottom:-1px}
+html.v2 .tabnav button.on{color:var(--pine);border-bottom-color:var(--pine);font-weight:600}
+html.v2 .tabnav button.navlog{margin:0 8px 6px!important;padding:9px 16px!important;border-bottom:1px solid var(--pine)!important}
+html.v2 .tabnav .acct .acctBtn{border-radius:var(--r);background:transparent;border-color:var(--line)}
+html.v2 .acctAv{border-radius:4px;font-family:var(--serif)}
+html.v2 .acct .whoami{font-family:var(--sans);text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:500}
+html.v2 .acctDd{border-radius:var(--r2);box-shadow:0 24px 48px -28px rgba(18,53,42,.5);padding:4px}
+html.v2 .acctDd button{font-family:var(--sans);text-transform:none;letter-spacing:0;font-size:14px;font-weight:500;border-radius:4px}
+html.v2 .tourbtn{border-radius:var(--r)!important;background:transparent!important;border:1px solid var(--line)!important;box-shadow:none!important}
+
+/* ---------- scorecard: the ledger ---------- */
+html.v2 .lgscope .scTbl{border-collapse:collapse}
+html.v2 .lgscope .scTbl td{border-bottom:1px solid var(--line-soft);font-size:14px;padding:10px 9px}
+html.v2 .lgscope .scTbl tr.scRh td{background:transparent!important;color:var(--ink-soft)!important;border-bottom:1px solid var(--pine);font-size:11.5px}
+html.v2 .lgscope .scTbl td.scLbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--ink-soft);text-align:left;background:transparent!important}
+html.v2 .lgscope .scTbl tr.scRs td{font-size:16px;font-weight:500;color:var(--pine)}
+html.v2 .lgscope .scTbl td.scTotH{background:rgba(18,53,42,.04)!important;color:var(--pine)!important;font-weight:600}
+html.v2 .lgscope .scTbl td.scGrand{background:var(--pine)!important;color:#f6f2e7!important}
+html.v2 .lgscope .scBir{border:1px solid var(--fairway);min-width:26px;line-height:24px}
+html.v2 .lgscope .scEag{border:1px solid var(--fairway);border-radius:999px;box-shadow:0 0 0 2px var(--paper),0 0 0 3px var(--fairway);display:inline-block;min-width:26px;line-height:24px}
+html.v2 .lgscope .scBog{border:1px solid var(--clay);min-width:24px;line-height:22px}
+html.v2 .lgscope .scDbl{border:1px solid var(--clay);box-shadow:0 0 0 2px var(--paper),0 0 0 3px var(--clay);min-width:24px;line-height:22px}
+html.v2 .lgscope .scTbl tr.scRn td{background:transparent;color:var(--fairway)}
+html.v2 .lgscope .scT5.bad{color:var(--clay);font-size:11px}
+html.v2 #lgTable th{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;font-weight:500;background:var(--pine)}
+html.v2 #lgTable,html.v2 .lgscope .bar{border-radius:0}
+html.v2 input.lc{font-size:16px;border-radius:4px!important}
+
+/* ---------- round sheet ---------- */
+html.v2 #rsheet{background:var(--cream)}
+html.v2 #rsheet .rsT h2{font-size:34px}
+html.v2 #rsheet .rsScore b{font-size:56px;font-weight:400;letter-spacing:-.04em}
+html.v2 #rsheet .rsIns{grid-template-columns:1fr;gap:0;border-top:1px solid var(--line)}
+html.v2 #rsheet .rsIns li{border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:transparent;padding:14px 2px;font-size:16px;line-height:1.5;max-width:780px}
+html.v2 #rsheet .rsIns li i{background:transparent;color:var(--sand-deep);width:20px;height:24px;font-size:12px;border-radius:0}
+html.v2 #rsheet .rsRec li{border-radius:var(--r2);background:var(--pine);font-size:16px;max-width:780px}
+html.v2 #rsheet .rsRec li:before{border-radius:3px;font-family:var(--mono);font-weight:500;font-size:12px}
+html.v2 #rsheet .rsH{font-size:24px;margin-top:34px}
+
+/* ---------- setup strip, tour, bubbles: same language ---------- */
+html.v2 #onbBar .onbIn{border-radius:var(--r2);box-shadow:none}
+html.v2 #onbBar .onbS{border-radius:var(--r);font-family:var(--sans);font-weight:500}
+html.v2 #onbBar .onbS em{border-radius:3px}
+html.v2 #onbBar .onbHd b{font-family:var(--serif);font-size:19px}
+html.v2 .tourcard{border-radius:var(--r2)!important;box-shadow:0 30px 60px -30px rgba(18,53,42,.55)!important;border:1px solid var(--pine)!important}
+html.v2 .tourcard h4{font-size:21px}
+html.v2 .tk{font-family:var(--mono);border-radius:3px;font-size:.85em}
+html.v2 #pAid{border-radius:var(--r);font-family:var(--sans)}
+html.v2 .crBox,html.v2 .impCard,html.v2 .obCard{border-radius:var(--r2)!important;box-shadow:0 40px 80px -40px rgba(18,53,42,.6)!important}
+
+/* ---------- motion: one entrance, nothing that performs ---------- */
+html.v2 .tnext.pready,html.v2 #landing .valArt .vpulse{animation:none!important}
+html.v2 .tnext.pready{box-shadow:0 0 0 3px var(--sand)!important}
+html.v2 .lgscope>div,html.v2 #view-stats .wrap{animation:v2in .5s cubic-bezier(.2,.7,.2,1) both}
+@keyframes v2in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){html.v2 *{animation:none!important;transition:none!important}}
+
+/* =====================  LANDING  ===================== */
+html.v2 #landing{background:var(--cream);font-family:var(--sans);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .12 0 0 0 0 .1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+html.v2 #landing .lw{max-width:1180px;padding:0 36px}
+html.v2 #landing .lnav{background:rgba(244,240,230,.9);border-bottom:1px solid var(--line)}
+html.v2 #landing .lnav .lw{height:68px}
+html.v2 #landing .lbrand{font-family:var(--serif);font-size:23px;font-weight:500;letter-spacing:-.02em}
+html.v2 #landing .lnav a.ll{font-family:var(--sans);text-transform:none;letter-spacing:0;font-size:14.5px;font-weight:500;border-radius:4px}
+html.v2 #landing .lang{border-radius:4px;font-family:var(--mono);font-size:11px}
+/* hero: an editorial page, not a product card */
+html.v2 #landing .hero{grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:64px;padding:92px 0 56px;align-items:end}
+html.v2 #landing h1{font-size:clamp(46px,7.2vw,104px);line-height:.95;letter-spacing:-.035em;font-weight:400;font-variation-settings:"opsz" 144,"SOFT" 40;margin:0 0 28px;color:var(--pine)}
+html.v2 #landing h1 em{font-style:italic;color:var(--pine);font-variation-settings:"opsz" 144,"SOFT" 100}
+html.v2 #landing h1 .h1sub{font-family:var(--sans);font-size:clamp(17px,1.5vw,21px);font-weight:500;letter-spacing:-.005em;line-height:1.4;color:var(--ink-soft);margin-top:26px;max-width:30ch;font-variation-settings:normal}
+html.v2 #landing .lead{font-size:17px;line-height:1.65;max-width:58ch;color:var(--ink)}
+html.v2 #landing .lbuilt{border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;padding:18px 0 0;margin-top:34px;font-size:14px;line-height:1.6;max-width:58ch}
+html.v2 #landing .card{transform:none;border-radius:var(--r2);box-shadow:none;border:1px solid var(--pine);background:var(--paper);padding:22px}
+html.v2 #landing .blk{padding:84px 0;border-top:1px solid var(--line)}
+html.v2 #landing .blk h2{font-size:clamp(30px,3.6vw,50px);line-height:1.04;letter-spacing:-.028em;font-weight:400;max-width:20ch;display:block}
+html.v2 #landing .blk .sub{font-size:17px;line-height:1.65;max-width:62ch;color:var(--ink)}
+/* each section is numbered in the margin, like chapters */
+html.v2 #landing{counter-reset:sec}
+html.v2 #landing .blk .kick{counter-increment:sec;display:flex;align-items:center;gap:12px;margin-bottom:22px}
+html.v2 #landing .blk .kick:before{content:counter(sec,decimal-leading-zero);color:var(--pine);font-weight:600}
+html.v2 #landing .blk .kick:after{content:'';flex:0 0 56px;height:1px;background:var(--sand-deep);order:-1;display:none}
+html.v2 #landing .tiers{gap:0;border:1px solid var(--pine);border-radius:var(--r2);overflow:hidden}
+html.v2 #landing .tier{border:0!important;border-right:1px solid var(--line)!important;border-radius:0!important;padding:28px 24px}
+html.v2 #landing .tier:last-of-type{border-right:0!important}
+html.v2 #landing .tier .tn{font-family:var(--mono);font-size:11px;letter-spacing:.14em}
+html.v2 #landing .tier .tp{font-family:var(--serif);font-size:30px;letter-spacing:-.02em}
+html.v2 #landing .tier ul{font-size:14.5px;line-height:1.55}
+html.v2 #landing #l-start{background:var(--pine);border-top:0}
+html.v2 #landing #l-start h2,html.v2 #landing #l-start p{color:#f6f2e7}
+/* the signal line: drawn once under the headline */
+html.v2 .v2sig{display:block;width:min(560px,100%);height:74px;margin:6px 0 26px;overflow:visible}
+html.v2 .v2sig .lim{stroke:var(--clay);stroke-width:1;stroke-dasharray:3 5;opacity:.55}
+html.v2 .v2sig .mid{stroke:var(--line);stroke-width:1}
+html.v2 .v2sig .run{fill:none;stroke:var(--pine);stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:1200;stroke-dashoffset:1200;animation:v2draw 2.2s .35s cubic-bezier(.4,0,.2,1) forwards}
+html.v2 .v2sig .pt{fill:var(--paper);stroke:var(--pine);stroke-width:1.4;opacity:0;animation:v2pt .3s forwards}
+html.v2 .v2sig .hit{fill:var(--clay);stroke:var(--clay);opacity:0;animation:v2pt .4s 2.3s forwards}
+html.v2 .v2sig text{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;fill:var(--ink-soft);opacity:0;animation:v2pt .5s 2.5s forwards}
+html.v2 .v2sig text.sg{fill:var(--clay)}
+@keyframes v2draw{to{stroke-dashoffset:0}}
+@keyframes v2pt{to{opacity:1}}
+html.v2 #landing .rv{opacity:0;transform:translateY(14px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+html.v2 #landing .rv.in{opacity:1;transform:none}
+html.v2 #stagingTag{position:fixed;left:12px;bottom:12px;z-index:99999;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;background:var(--clay);color:#fff;padding:4px 8px;border-radius:3px;pointer-events:none;opacity:.9}
+@media(max-width:860px){
+  html.v2 #landing .hero{grid-template-columns:1fr;padding:56px 0 36px;gap:36px}
+  html.v2 #landing .lw{padding:0 22px}
+  html.v2 #landing .blk{padding:56px 0}
+  html.v2 #landing .tiers{border:0}html.v2 #landing .tier{border:1px solid var(--line)!important;border-radius:var(--r2)!important;margin-bottom:10px}
+}
