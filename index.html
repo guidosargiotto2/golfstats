@@ -7124,11 +7124,19 @@ window.IMPMAP=(function(){
  function line(j){if(!j||!j.ok)return '';if(!j.started)return T('Not started yet. Each batch runs for under a minute.','Todavía no empezó. Cada tanda dura menos de un minuto.');var L=j.last||{};
    return '<b>'+T('Last batch','Última tanda')+'</b> '+esc(String(L.at||'').slice(0,16).replace('T',' '))+' UTC · '+(L.pass>1?T('maintenance pass ','repaso de mantenimiento ')+L.pass+' · ':'')+esc(L.country||'')+' · +'+(L.added||0)+' '+T('new','nuevas')+', '+(L.existed||0)+' '+T('already in','ya estaban')+', '+(L.nodata||0)+' '+T('without data','sin datos')+' · '+T('total imported','total importadas')+' <b>'+j.total+'</b> · '+T('API calls today','llamadas hoy')+' <b>'+j.callsToday+'</b> / '+(j.cap||2000)+(j.searchCap?' · '+T('searches in total','búsquedas en total')+' <b>'+(j.searches||0)+'</b> / '+j.searchCap:'');}
  function mount(box){if(!box)return;
-   box.innerHTML='<div class="imp"><div class="impLine" id="impLine">'+T('Loading…','Cargando…')+'</div><div class="impBtns"><button type="button" class="pf_btn" id="impRun">'+T('Import a batch','Importar una tanda')+'</button><button type="button" class="pf_btn frgrey" id="impMapBtn">'+T('Courses map','Mapa de canchas')+'</button></div></div>';
+   box.innerHTML='<div class="imp"><div class="impLine" id="impLine">'+T('Loading…','Cargando…')+'</div><div class="impBtns"><button type="button" class="pf_btn" id="impRun">'+T('Import a batch','Importar una tanda')+'</button><button type="button" class="pf_btn" id="impAll">'+T('Run until today\'s limit','Correr hasta el límite de hoy')+'</button><button type="button" class="pf_btn frgrey" id="impMapBtn">'+T('Courses map','Mapa de canchas')+'</button></div></div>';
    var ln=box.querySelector('#impLine');
    api('importStatus').then(function(j){ln.innerHTML=line(j);});
    box.querySelector('#impRun').onclick=function(){var b=this;b.disabled=true;var old=b.textContent;b.textContent=T('Importing… (up to a minute)','Importando… (hasta un minuto)');
      api('importRun').then(function(j){b.disabled=false;b.textContent=old;if(!j||!j.ok){ln.textContent=T('That did not work: ','No funcionó: ')+(j&&j.error||'error');return;}ln.innerHTML=line(j);if(j.callsToday>=(j.cap||2000))b.disabled=true;});};
+   /* batch after batch, a pause between them, until today's 2,000 calls are used, the search allowance runs out or the list is finished; press again to stop */
+   var ab=box.querySelector('#impAll'),going=false;ab.onclick=function(){if(going){going=false;ab.textContent=T('Stopping…','Frenando…');return;}
+     going=true;var n=0,one=box.querySelector('#impRun');one.disabled=true;
+     (function next(){if(!going){ab.textContent=T('Run until today\'s limit','Correr hasta el límite de hoy');one.disabled=false;return;}
+       ab.textContent=T('Stop','Frenar')+' · '+T('batch ','tanda ')+(++n)+'…';
+       api('importRun').then(function(j){if(!j||!j.ok){ln.textContent=T('That did not work: ','No funcionó: ')+(j&&j.error||'error');going=false;return next();}
+         ln.innerHTML=line(j);var R=j.run||{};if(j.callsToday>=(j.cap||2000)-30||R.capped||R.finished||R.idle){going=false;ln.innerHTML+=' · <b>'+(R.capped?T('search allowance used up','se usó el total de búsquedas'):R.finished||R.idle?T('list finished','lista terminada'):T('today\'s limit reached — continue tomorrow','límite de hoy alcanzado — seguí mañana'))+'</b>';return next();}
+         setTimeout(next,2500);}).catch(function(){setTimeout(next,8000);});})();};
    box.querySelector('#impMapBtn').onclick=open;}
  var LIBS=['https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js','https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js'];
  function load(i,cb){if(i>=LIBS.length)return cb();if((i===0&&window.d3)||(i===1&&window.topojson))return load(i+1,cb);var s=document.createElement('script');s.src=LIBS[i];s.onload=function(){load(i+1,cb);};s.onerror=function(){cb(new Error('lib'));};document.head.appendChild(s);}
