@@ -38,9 +38,9 @@ const PLAN = [
 ];
 /* second pass, after the last country: search every known club by name (lists in _clubnames.js) — how Argentina got its coverage */
 const NAMES = require('./_clubnames');
-['Uruguay', 'Chile', 'Brazil', 'Mexico'].forEach(c => { if (NAMES[c] && NAMES[c].length) PLAN.push([c, NAMES[c], true]); });
+['Uruguay', 'Chile', 'Brazil', 'Mexico', 'United States'].forEach(c => { if (NAMES[c] && NAMES[c].length) PLAN.push([c, NAMES[c], true]); });
 const norm = x => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
-const ALIAS = { 'brazil': ['brasil'], 'mexico': ['méxico'], 'peru': ['perú'], 'panama': ['panamá'], 'dominican republic': ['republica dominicana'] };
+const ALIAS = { 'united states': ['usa', 'us', 'united states of america'], 'brazil': ['brasil'], 'mexico': ['méxico'], 'peru': ['perú'], 'panama': ['panamá'], 'dominican republic': ['republica dominicana'] };
 const inCountry = (c, country) => { const k = norm(c && c.location && c.location.country), want = norm(country); return k === want || (ALIAS[want] || []).map(norm).includes(k) || (want === 'puerto rico' && /puerto rico|\bpr\b/.test(k)); };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
