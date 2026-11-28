@@ -119,4 +119,83 @@ async function list(sql, what, country, limit) {
   return (await sql`select code, slug, country, r from gs_gc_cmp where r->>'v' = ${String(what || 'par')} and (${c} = '' or country = ${c}) order by code limit ${n}`).map(x => Object.assign({ code: x.code, slug: x.slug, country: x.country }, pj(x.r)));
 }
 
-module.exports = { run, status, list, compare, key, iso };
+
+/* ---- fill what ours lacks, from the GolfCore course it matched hole for hole: the stroke index, and the link GolfCore's terms ask for ---- */
+async function fill(sql) {
+  await init(sql); const out = { checked: 0, si: 0, link: 0 };
+  const rows = await sql`select m.code, m.r, c.data, d.d from gs_gc_cmp m join gs_courses c on c.code = m.code join gs_gc_detail d on d.slug = m.slug where m.r->>'v' in ('same', 'close')`;
+  for (const x of rows) { out.checked++;
+    const o = pj(x.data), d = pj(x.d), r = pj(x.r); let ch = false;
+    if (!o.gcUrl && d.url) { o.gcUrl = d.url; ch = true; out.link++; }
+    const noSI = o.noSI || !(o.hcp || []).some(v => v > 0);
+    if (noSI) { const tn = (r.tee || [])[1] || ''; let si = null;
+      (d.layouts || []).forEach(L => { if (si) return; const hit = (L.tees || []).some(t => (t.name + (t.gender ? ' ' + t.gender : '')) === tn); if (!hit) return;
+        const H = (L.holes || []).slice().sort((a, b) => a.position - b.position).map(h => h.stroke_index);
+        if (H.length === 18 && H.every(v => Number.isInteger(v) && v >= 1 && v <= 18) && new Set(H).size === 18) si = H; });
+      if (si) { o.hcp = si; delete o.noSI; o.siFrom = 'golfcore'; ch = true; out.si++; } }
+    if (ch) await sql`update gs_courses set data = ${JSON.stringify(o)}, upd = ${Date.now()} where code = ${x.code}`;
+  }
+  return out;
+}
+
+/* ---- a GolfCore course as Golfimbul stores courses: one per layout, only tees whose own hole pars agree with the layout's card ---- */
+const NAME = { ar: 'Argentina', uy: 'Uruguay', cl: 'Chile', py: 'Paraguay', bo: 'Bolivia', br: 'Brazil', pe: 'Peru', ec: 'Ecuador', co: 'Colombia', ve: 'Venezuela', pa: 'Panama', cr: 'Costa Rica', ni: 'Nicaragua', hn: 'Honduras',
+  sv: 'El Salvador', gt: 'Guatemala', bz: 'Belize', do: 'Dominican Republic', pr: 'Puerto Rico', cu: 'Cuba', jm: 'Jamaica', bs: 'Bahamas', mx: 'Mexico', us: 'United States', ca: 'Canada', es: 'Spain', pt: 'Portugal' };
+const tidy = x => String(x || '').replace(/^\s*\d{1,4}\s+/, '').replace(/\s+/g, ' ').trim();
+function convert(d) {
+  const res = [], many = (d.layouts || []).length > 1;
+  (d.layouts || []).forEach(L => {
+    let LH = (L.holes || []).slice().sort((a, b) => a.position - b.position); const nine = LH.length === 9; if (nine) LH = LH.concat(LH);
+    if (LH.length !== 18 || !LH.every(h => h.par >= 3 && h.par <= 6)) return;
+    const par = LH.map(h => h.par), si0 = nine ? [] : LH.map(h => h.stroke_index), okS = si0.length === 18 && si0.every(v => Number.isInteger(v) && v >= 1 && v <= 18) && new Set(si0).size === 18;
+    const tees = {}, rated = (L.tees || []).filter(t => t.rating > 20 && t.slope >= 55 && t.yards);
+    (L.tees || []).forEach(t => { let H = (t.holes || []).slice().sort((a, b) => a.position - b.position); if (H.length === 9 && nine) H = H.concat(H);
+      if (H.length !== 18 || !H.every(h => h.yards >= 40 && h.yards <= 800)) return;
+      if (H.some((h, i) => h.par != null && h.par !== par[i])) return;                    // this tee's holes belong to another card: leave it out
+      const yds = H.map(h => h.yards), tot = yds.reduce((a, b) => a + b, 0); let cr = t.rating > 20 ? t.rating : null, sl = t.slope >= 55 ? t.slope : null, est = false;
+      if (cr && nine && cr < 50) cr = Math.round(cr * 20) / 10;
+      if (!cr || !sl) { const near = rated.filter(r => (r.gender || 'M') !== 'F' && Math.abs(r.yards - (nine ? tot / 2 : tot)) <= 40).sort((a, b) => Math.abs(a.yards - tot) - Math.abs(b.yards - tot))[0];
+        if (near) { cr = nine && near.rating < 50 ? Math.round(near.rating * 20) / 10 : near.rating; sl = near.slope; est = true; }   // borrowed from the rated tee of the same length: close, not official
+        else { cr = Math.round((tot / 220 + 40.9) * 10) / 10; sl = 113; est = true; } }           // the standard yardage rating when no rating is published
+      let nm = String(t.name || 'Tee').replace(/[^A-Za-zÀ-ÿ0-9 ]/g, '').trim().slice(0, 20) || 'Tee'; if (t.gender === 'F' && !/damas|ladies|women/i.test(nm)) nm += ' Damas';
+      if (tees[nm]) return; tees[nm] = { label: nm, cr, slope: sl, est, yds }; });
+    if (!Object.keys(tees).length) return;
+    const nm = tidy(d.name), ln = tidy(L.name);
+    res.push({ name: ((many && ln && strip(ln) !== strip(nm) ? nm + ' — ' + ln : nm) + (nine ? ' (9 x2)' : '')).slice(0, 60), loc: { country: NAME[d.country] || String(d.country || '').toUpperCase(), state: String(d.region || '').slice(0, 40), city: String(d.city || '').slice(0, 40) },
+      unverified: true, noSI: okS ? undefined : true, addedBy: 'golfcore', src: 'golfcore', gcUrl: d.url || null, pins: { F: 'red', M: 'white', B: 'blue' }, par, hcp: okS ? si0 : par.map(() => 0), tees });
+  });
+  return res;
+}
+
+/* ---- bring in the courses GolfCore has with a hole card and we lack (one request each), country by country ---- */
+async function importMissing(sql, runMs) {
+  const k = key(); if (!k) return { error: 'no-golfcore-key' };
+  await init(sql); const t0 = Date.now(), out = { added: 0, nodata: 0, existed: 0, requests: 0 };
+  const row = await sql`select v from gs_settings where k = 'gc_imp'`, S = row.length ? JSON.parse(row[0].v) : { last: '', added: 0 };
+  let lastReq = 0;
+  while (Date.now() - t0 < runMs) {
+    const L = await sql`select i.slug, i.country from gs_gc_index i where i.slug > ${S.last} and i.country <> all(${LATER}::text[]) and (i.d->'coverage'->>'scorecard') = 'true'
+        and not exists (select 1 from gs_gc_cmp m where m.slug = i.slug and m.r->>'v' in ('same', 'close', 'par', 'yards')) order by i.slug limit 20`;
+    if (!L.length) { out.finished = true; break; }
+    for (const x of L) { if (Date.now() - t0 >= runMs) break;
+      let det = await sql`select d from gs_gc_detail where slug = ${x.slug}`, d = det.length ? pj(det[0].d) : null;
+      if (!d) { const w = GAP_MS - (Date.now() - lastReq); if (w > 0) await sleep(w); lastReq = Date.now(); out.requests++;
+        const r = await fetch(BASE + '/courses/' + encodeURIComponent(x.slug), { headers: { Authorization: 'Bearer ' + k, Accept: 'application/json', 'User-Agent': 'Golfimbul/1.0 (+https://golfimbul.vercel.app)' } });
+        if (r.status === 429) { out.limited = +r.headers.get('retry-after') || 60; break; } if (!r.ok) { S.last = x.slug; continue; }
+        d = await r.json().catch(() => null); if (!d) { S.last = x.slug; continue; }
+        await sql`insert into gs_gc_detail (slug, d, at) values (${x.slug}, ${JSON.stringify(d)}, ${Date.now()}) on conflict (slug) do update set d = excluded.d, at = excluded.at`; }
+      const cs = convert(d); if (!cs.length) out.nodata++;
+      for (const data of cs) {
+        const dup = await sql`select code from gs_courses where data->>'gcUrl' = ${data.gcUrl} and data->>'name' = ${data.name} limit 1`; if (dup.length) { out.existed++; continue; }
+        let base0 = data.name.split(/[^A-Za-zÀ-ÿ]+/).filter(w => w.length > 2).map(w => w[0]).join('').normalize('NFD').replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 4);
+        if (base0.length < 2) base0 = (data.name.replace(/[^A-Za-z]/g, '').toUpperCase() + 'GC').slice(0, 4);
+        const taken = new Set((await sql`select code from gs_courses where code like ${base0 + '%'}`).map(y => y.code).concat(['CGC', 'TER', 'SIG'])); let code = base0, n = 2; while (taken.has(code)) code = base0 + (n++);
+        data.abbr = code; await sql`insert into gs_courses (code, data, upd) values (${code}, ${JSON.stringify(data)}, ${Date.now()})`; out.added++; S.added = (S.added || 0) + 1; }
+      S.last = x.slug; }
+    if (out.limited) break;
+  }
+  await sql`insert into gs_settings (k, v) values ('gc_imp', ${JSON.stringify(S)}) on conflict (k) do update set v = excluded.v`;
+  return Object.assign(out, { totalAdded: S.added || 0, last: S.last });
+}
+
+module.exports = { run, status, list, compare, key, iso, fill, convert, importMissing };
