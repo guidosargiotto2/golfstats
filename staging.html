@@ -7422,7 +7422,7 @@ window.IMPMAP=(function(){
  var esc=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
  var norm=function(x){return String(x||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\./g,'').trim();};
  /* map names (world atlas) ↔ plan names ↔ how courses store their country */
- var ALIAS={'brasil':'brazil','mexico':'mexico','peru':'peru','panama':'panama','republica dominicana':'dominican republic','dominican rep':'dominican republic','united states of america':'united states','usa':'united states','us':'united states','estados unidos':'united states','españa':'spain','espana':'spain'};
+ var ALIAS={'brasil':'brazil','mexico':'mexico','peru':'peru','panama':'panama','republica dominicana':'dominican republic','dominican rep':'dominican republic','united states of america':'united states','usa':'united states','us':'united states','estados unidos':'united states','españa':'spain','espana':'spain','england':'united kingdom','scotland':'united kingdom','wales':'united kingdom','northern ireland':'united kingdom','great britain':'united kingdom','uk':'united kingdom','czech republic':'czechia','turkiye':'turkey','holland':'netherlands'};
  var key=function(x){var k=norm(x);return ALIAS[k]||k;};
  /* courses per country: the shared database (fresh from the server) plus the built-in courses of the app */
  function counts(db){var o={},seen={};(db||[]).forEach(function(x){seen[x[0]]=1;var k=key(x[1]);if(k)o[k]=(o[k]||0)+1;});try{Object.keys(window.COURSES||{}).forEach(function(c){if(seen[c])return;var d=window.COURSES[c];if(!d||d.empty)return;var k=key(d.loc&&d.loc.country);if(!k)return;o[k]=(o[k]||0)+1;});}catch(e){}return o;}
@@ -7456,6 +7456,8 @@ window.IMPMAP=(function(){
      plan0.forEach(function(p){var nm=String(p.country).split(' · ')[0],k=key(nm);if(P[k]){var o=P[k];if(p.status!=='done')o.status=p.status;o.found=Math.max(o.found||0,p.found||0);o.per=p.per||o.per;return;}var o2={country:nm,status:p.status,found:p.found,per:p.per};P[k]=o2;plan.push(o2);});
      /* every country with courses, plus the plan: south to north first, then any other country already in the database */
      var rows=plan.map(function(p){var k=key(p.country),n=C[k]||0;return {k:k,name:p.country,n:n,found:p.found,per:p.per||{},status:p.status==='current'?'now':n>0?'in':(p.status==='done'?'none':'pend')};});
+     /* Europe: next on the list. Shown as pending until its import starts */
+     ['United Kingdom','Ireland','Spain','Portugal','France','Italy','Germany','Netherlands','Belgium','Luxembourg','Switzerland','Austria','Denmark','Sweden','Norway','Finland','Iceland','Poland','Czechia','Slovakia','Hungary','Slovenia','Croatia','Greece','Turkey','Bulgaria','Romania','Estonia','Latvia','Lithuania','Cyprus','Malta'].forEach(function(nm){var k=key(nm);if(P[k])return;P[k]={country:nm};var n=C[k]||0;rows.push({k:k,name:nm,n:n,found:0,per:{},status:n>0?'in':'pend'});});
      Object.keys(C).forEach(function(k){if(!P[k])rows.push({k:k,name:k.replace(/\b\w/g,function(c){return c.toUpperCase();}),n:C[k],found:0,status:'in',extra:true});});
      var tot=rows.reduce(function(a,r){return a+r.n;},0),done=rows.filter(function(r){return r.n>0;}).length;
      var lab={in:T('In Golfimbul','En Golfimbul'),now:T('Next in line','Próximo en la fila'),pend:T('Pending','Pendiente'),none:T('Searched · no complete scorecards','Buscado · sin tarjetas completas')};

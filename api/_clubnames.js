@@ -14,5 +14,8 @@ const out = {};
 // United States: search terms built from a list of 15,232 US course names — the fewest words that between them match 98% of those names
 // (each term matches at most 18 of them, under the 25 results a search returns).
 out['United States'] = require('./_usterms.json');
+// Canada: built from a list of about 720 Canadian clubs. 6 in 10 of them are already matched by the United States terms (that pass keeps Canadian results too);
+// these are the extra words for the rest, each one rare enough among US names not to fill the 25 results of a search.
+out['Canada'] = require('./_caterms.json');
 Object.keys(RAW).forEach(k => { const seen = {}; out[k] = RAW[k].split('|').map(x => core(x)).filter(x => { const key = x.toLowerCase(); if (!x || seen[key]) return false; seen[key] = 1; return true; }); });
 module.exports = out;
