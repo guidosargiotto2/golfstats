@@ -205,7 +205,7 @@ async function indexAll(sql, runMs) {
 /* ---- bring in the courses GolfCore has with a hole card and we lack (one request each), country by country ---- */
 const EUROPE = ['gb', 'ie', 'es', 'pt', 'fr', 'it', 'de', 'nl', 'be', 'lu', 'ch', 'at', 'dk', 'se', 'no', 'fi', 'is', 'pl', 'cz', 'sk', 'hu', 'si', 'hr', 'gr', 'tr', 'bg', 'ro', 'ee', 'lv', 'lt', 'cy', 'mt', 'rs', 'ba', 'me', 'mk', 'al', 'ad', 'mc', 'li', 'sm', 'je', 'gg', 'im', 'fo', 'ua', 'md'];
 async function importMissing(sql, runMs, reset, scope) {
-  const only = scope === 'europe' ? EUROPE : null;
+  const only = scope === 'europe' ? EUROPE : scope === 'oceania' ? ['nz', 'au'] : null;   // New Zealand first: it fits whole in what is left of the month
   const k = key(); if (!k) return { error: 'no-golfcore-key' };
   await init(sql); const t0 = Date.now(), out = { added: 0, nodata: 0, existed: 0, requests: 0 };
   const B = await budget(sql, k); out.budget = B; if (B.left != null && B.left <= 0) return Object.assign(out, { capped: true });
