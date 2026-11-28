@@ -1777,6 +1777,7 @@ body.lgPractising #view-log #holenav,body.lgPractising #view-log .holenav,body.l
   <div class="tier pro"><div class="tn">Pro</div><div class="tp" data-l="6 balls / month|6 pelotas / mes">6 balls / month</div><div class="tu" data-l="≈ US$29.50 a month|≈ US$29,50 por mes">≈ US$29.50 a month</div><ul><li data-l="Everything in Plus|Todo lo de Plus">Everything in Plus</li><li data-l="The call with me every month|La llamada conmigo todos los meses">The call with me every month</li><li data-l="Priority support|Soporte prioritario">Priority support</li></ul></div>
  <div class="lteam"><div class="lteamB">4×3</div><div><b data-l="Teams of four: 25% off any plan.|Equipos de cuatro: 25% de descuento en cualquier plan.">Teams of four: 25% off any plan.</b><span data-l="One of you creates the team and shares a code.|Uno crea el equipo y comparte un código.">One of you creates the team and shares a code.</span></div></div>
  </div>
+ <p class="lguar" data-lh="<b>Our guarantee.</b> Log 8 rounds. If by then Golfimbul has not shown you something about your game that is worth what you pay, tell us and you do not pay. And you can cancel at any time.|<b>Nuestra garantía.</b> Cargá 8 vueltas. Si para entonces Golfimbul no te mostró algo de tu juego que valga lo que pagás, avisanos y no pagás. Y podés cancelar cuando quieras."><b>Our guarantee.</b> Log 8 rounds. If by then Golfimbul has not shown you something about your game that is worth what you pay, tell us and you do not pay. And you can cancel at any time.</p>
 </div></section>
 
 <section class="blk" id="l-about"><div class="lw rv two">
@@ -1871,6 +1872,7 @@ body.lgPractising #view-log #holenav,body.lgPractising #view-log .holenav,body.l
   </div></div>
   <div id="view-plans" class="lgscope" style="display:none"><div style="max-width:980px;margin:0 auto;padding-top:4px">
     <h2 style="font-family:var(--serif);color:var(--pine);font-weight:600;font-size:22px;margin:4px 0 6px" data-i18n="Pricing">Pricing</h2>
+    <p class="lguar" id="plGuar"></p>
     <div id="plansBody"></div>
   </div></div>
   <div id="view-ideas" class="lgscope" style="display:none"><div class="ideaswrap">
@@ -2623,7 +2625,7 @@ function filterRounds(rows,range){
 /* how many more rounds until the control charts can speak: limits appear at 5 rounds logged with shots, and settle at 12 */
 function xmrProg(){var k=document.getElementById('kpiRange');if(!k||!k.parentNode)return;var host=document.getElementById('xmrProgHost');if(!host){host=document.createElement('div');host.id='xmrProgHost';k.parentNode.insertBefore(host,k);}
  var all=[];try{all=(window.ALLROUNDS?window.ALLROUNDS():[]).filter(function(r){return (r.holesPlayed||18)>=18;});}catch(e){}
- var n=all.filter(window.T5FULL).length,A=5,B=12,h='';
+ var n=all.filter(window.T5FULL).length,A=8,B=12,h='';
  if(n<B){var goal=n<A?A:B,need=goal-n,es=window.__LANG==='es',dots='';for(var i=0;i<goal;i++)dots+='<i class="'+(i<n?'on':'')+'"></i>';
    var t=n<A?(es?'<b>'+(need===1?'Falta 1 vuelta':'Faltan '+need+' vueltas')+'</b> para tus gráficos de control. Desde la vuelta '+A+' cargada con tiros, Golfimbul te dice qué fue un cambio real y qué fue un día más.'
                 :'<b>'+need+' more round'+(need===1?'':'s')+'</b> until your control charts. From round '+A+' logged with shots, Golfimbul tells you what was a real change and what was just another day.')
@@ -3068,7 +3070,7 @@ function drawXmr(sfx){
    return;
  }
  const v=RR.map(metrics[key]),cnt=isCount(key),S=segLimits(v,cnt),idx=RR.map((_,i)=>i+1),N=v.length;
- const XMR_MIN=5,XMR_FULL=12;
+ const XMR_MIN=8,XMR_FULL=12;
  if(N<XMR_MIN){   /* too few rounds for limits: show the rounds and their average, and say how many are missing */
    const m0=mean(v);let lo0=Math.min(...v),hi0=Math.max(...v);const pd=((hi0-lo0)||Math.abs(m0)||1)*0.35;lo0-=pd;hi0+=pd;if(cnt&&lo0<0)lo0=0;
    xmrLine('xmr_'+sfx,{v,cenA:v.map(()=>rnd(m0,2)),upA:v.map(()=>hi0),loA:v.map(()=>lo0),cols:v.map(()=>F.blue),pbc:v.map(()=>F.blue),pbw:v.map(()=>0),rad:v.map(()=>3.5),lo:lo0,hi:hi0,cnt,breaks:[],brkLabels:[],key,noLim:true});
@@ -4222,10 +4224,10 @@ function reviewParts(rec,all){
  var med=function(a){var b=a.slice().sort(function(x,y){return x-y;}),n=b.length;return n?(n%2?b[(n-1)/2]:(b[n/2-1]+b[n/2])/2):null;};
  var f=function(v,d){if(v==null||isNaN(v))return '·';var r=d?(+v).toFixed(d):String(Math.round(v*10)/10);return r;};
  var sg=function(v,d,signed){var t=f(v,d);return (signed&&v>0?'+':'')+t;};
- var rows=[],better=[],worse=[],enough=prev.length>=5;
+ var rows=[],better=[],worse=[],enough=prev.length>=8;
  M.forEach(function(m){var k=m[0],today=rec[k];if(today==null||isNaN(today))return;if(m[4]&&!(rec.ph))return;
    if(k==='mtot'&&rec.t5part)return;var hv=(k==='mtot'?prev.filter(function(x){return !x.t5part;}):prev).map(function(x){return x[k];}).filter(function(v){return v!=null&&!isNaN(v);});var row={m:m,today:+today};
-   if(enough&&hv.length>=5){
+   if(enough&&hv.length>=8){
      /* the same limits as the control charts: the current stage, i.e. the rounds since this number last changed */
      var CNT={putts:1,p3:1,db:1,pen:1,fw:1,gir:1,mtot:1},done0=false;
      if(typeof window.segLimits==='function'){try{var S=window.segLimits(hv,!!CNT[k]),g=S.segs[S.segs.length-1];if(g&&isFinite(g.u)&&isFinite(g.l)){var cur=hv.slice(g.start);row.typ=med(cur.length?cur:hv);row.avg=g.m;row.sd=(g.mrb/1.128)||0;row.lo=g.l;row.hi=g.u;row.n=cur.length;done0=true;}}catch(e){}}
@@ -4238,7 +4240,7 @@ function reviewParts(rec,all){
    rows.push(row);});
  var list=function(a){return a.length<2?a.join(''):a.slice(0,-1).join(', ')+T(' and ',' y ')+a[a.length-1];};
  var head,lead;
- if(!enough){head=T('Saved. Your normal comes next.','Guardada. Tu normalidad viene después.');lead=T('To tell you whether a round was normal for you, Golfimbul needs at least 5 earlier rounds of the same length. This one has '+prev.length+'. Keep logging: from round 5 every round gets measured against your own game.','Para decirte si una vuelta fue normal para vos, Golfimbul necesita al menos 5 vueltas anteriores del mismo largo. Esta tiene '+prev.length+'. Seguí cargando: desde la vuelta 5 cada vuelta se mide contra tu propio juego.');}
+ if(!enough){head=T('Saved. Your normal comes next.','Guardada. Tu normalidad viene después.');lead=T('To tell you whether a round was normal for you, Golfimbul needs at least 8 earlier rounds of the same length. This one has '+prev.length+'. Keep logging: from round 8 every round gets measured against your own game.','Para decirte si una vuelta fue normal para vos, Golfimbul necesita al menos 8 vueltas anteriores del mismo largo. Esta tiene '+prev.length+'. Seguí cargando: desde la vuelta 8 cada vuelta se mide contra tu propio juego.');}
  else if(!better.length&&!worse.length){var hr=rows.filter(function(r){return r.m[0]==='score';})[0]||rows.filter(function(r){return r.m[0]==='sgtot';})[0],zz=hr&&hr.z!=null?hr.z:0,sz=Math.abs(zz).toFixed(1);
    var HD={b3:T('A very good round.','Una muy buena vuelta.'),b2:T('A good round.','Una buena vuelta.'),b1:T('Better than your average.','Mejor que tu promedio.'),avg:T('Right on your average.','Justo en tu promedio.'),w1:T('A bit below your average.','Un poco peor que tu promedio.'),w2:T('A poor round.','Una mala vuelta.'),w3:T('A bad round.','Una vuelta muy mala.')};
    head=HD[(hr&&hr.v)||'avg']||T('This was your round.','Esta fue tu vuelta.');
@@ -7779,7 +7781,11 @@ window.IMPMAP=(function(){
  if(document.body)mount();else document.addEventListener('DOMContentLoaded',mount);
 })();
 </script>
+<script>/* the guarantee on the Plans page, in the golfer's language */
+(function(){var EN='<b>Our guarantee.</b> Log 8 rounds. If by then Golfimbul has not shown you something about your game that is worth what you pay, tell us and you do not pay. And you can cancel at any time.',ES='<b>Nuestra garantía.</b> Cargá 8 vueltas. Si para entonces Golfimbul no te mostró algo de tu juego que valga lo que pagás, avisanos y no pagás. Y podés cancelar cuando quieras.';function p(){var e=document.getElementById('plGuar');if(e){var t=window.__LANG==='es'?ES:EN;if(e._t!==t){e._t=t;e.innerHTML=t;}}}p();setInterval(p,2000);})();</script>
 <style id="wideUse">
+.lguar{border-left:4px solid var(--fairway,#1f7a4d);background:rgba(31,122,77,.07);border-radius:10px;padding:12px 16px;margin:18px 0 0;font-size:15px;line-height:1.55;color:var(--ink)}.lguar b{font-family:var(--serif);color:var(--pine)}
+#view-plans .lguar{margin:6px 0 14px}
 #impBar{position:fixed;left:0;right:0;bottom:0;z-index:10050;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;background:#8f3418;color:#fff;font-family:var(--cond);font-size:13.5px;padding:9px 14px;box-shadow:0 -6px 18px rgba(0,0,0,.18)}
 #impBar b{color:#ffe6b0}#impBar button{border:1px solid rgba(255,255,255,.7);background:transparent;color:#fff;border-radius:16px;padding:5px 12px;font-family:var(--cond);font-weight:700;font-size:12.5px;cursor:pointer}#impBar button:hover{background:#fff;color:#8f3418}
 body.impOn{padding-bottom:46px}
