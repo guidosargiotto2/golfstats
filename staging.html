@@ -4428,7 +4428,7 @@ function renderScorecard(){
    catRow+
    ((R._editId&&R._editId!=='dup')?(function(){try{var all=window.ALLROUNDS?window.ALLROUNDS():(window.getLoggedRounds?window.getLoggedRounds():[]),rc=all.filter(function(x){return x.id===R._editId;})[0];return rc?reviewInline(rc,all):'';}catch(e){return '';}})():'')+
    (function(){var ES=(window.__LANG==='es'),K=[['3P',ES?'3 putts':'3-putt'],['D',ES?'doble bogey':'double bogey'],['P5',ES?'bogey en par 5':'bogey on a par 5'],['B',ES?'bogey con hierro 9 o menos':'bogey with 9-iron or less'],['S',ES?'salvada desperdiciada':'blow-out save']];
-   return '<div class="scHint">'+(ES?'Tocá cualquier hoyo para editarlo.':'Tap any hole to edit it.')+'</div>'+
+   return '<div class="scHint">'+(ES?'Tocá cualquier hoyo para editarlo.':'Tap any hole to edit it.')+(COURSES[R.course]?' <button type="button" class="cfix" data-cfix="'+R.course+'">'+(ES?'¿Algo mal en la tarjeta?':'Something wrong on the card?')+'</button>':'')+'</div>'+
      '<div class="scLegend"><div class="scLegRow"><span class="scLegT">SG</span><span>'+(ES?'strokes gained por hoyo, contra scratch':'strokes gained per hole, against scratch')+'</span></div>'+
      '<div class="scLegRow"><span class="scLegT">Tiger 5</span>'+K.map(function(k){return '<span class="scKey"><b>'+k[0]+'</b>'+k[1]+'</span>';}).join('')+'</div></div>';})()+
    notesBlk+
@@ -5357,6 +5357,10 @@ function rsAnalysis(r,hl,ph){
   (recs.length?'<h3 class="rsH">'+T('What to take from it','Qué llevarte de esta vuelta')+'</h3><ol class="rsRec">'+recs.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ol>':'')+
   '<div class="rsDepth"><span>'+T('How much this round tells us','Cuánto nos dice esta vuelta')+'</span><div class="rsDots">'+[0,1,2,3].map(function(k){return '<i class="'+(k<=depth?'on':'')+'" title="'+lv[k]+'"></i>';}).join('')+'</div><b>'+lv[depth]+'</b>'+(miss.length?'<em>'+T('Log ','Cargá ')+miss[0]+T(' and it tells you more.',' y te dice más.')+'</em>':'')+'</div></div>';}
 function rsE(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+/* a quiet way to say the course data on a card is wrong: the same small form as "help complete this course", for that one course */
+function cardFixCode(name){try{if(COURSES[name])return name;var k=Object.keys(COURSES).filter(function(x){return COURSES[x].name===name;})[0];return k||null;}catch(e){return null;}}
+function rsFixLink(r){var c=cardFixCode(r.course);return c?'<div class="cfixW"><button type="button" class="cfix" data-cfix="'+c+'">'+(window.__LANG==='es'?'¿Algo mal en la tarjeta?':'Something wrong on the card?')+'</button></div>':'';}
+document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('[data-cfix]');if(!b)return;e.preventDefault();e.stopPropagation();if(window.COURSEREQ&&window.COURSEREQ.help)window.COURSEREQ.help(b.getAttribute('data-cfix'));},true);
 function roundSheet(r,opt){opt=opt||{};var es=window.__LANG==='es',T=function(a,b){return es?b:a;},ph=rsPH(r),hl=rsHl(r),card='',ic=null;
  try{if(hl&&hl.length)ic=importCard(hl,{ph:ph,course:r.course});}catch(e){ic=null;}
  if(ic)card=ic.html;else if(r.hs&&r.hp)card=scoreCard(r.hp,r.hs,ph,r.course);
@@ -5365,7 +5369,7 @@ function roundSheet(r,opt){opt=opt||{};var es=window.__LANG==='es',T=function(a,
  var rev='';try{if((r.holesPlayed||18)>=18&&window.REVIEWINLINE)rev=window.REVIEWINLINE(r)||'';}catch(e){rev='';}   /* the round against the player's normal, in full view under the card; the strokes-gained split lives there */
  el.innerHTML='<div class="rsIn'+(rev?' hasRev':'')+'"><div class="rsTop"><button type="button" class="pgBackB rsX">← '+T('Back','Volver')+'</button><div class="rsT"><h2>'+rsE(r.course||'')+'</h2><span>'+rsE(r.date||'')+(r.tee?' · '+rsE(r.tee):'')+(ph!=null?' · '+T('playing hcp ','hcp de juego ')+(ph<0?'+'+(-ph):ph):'')+'</span></div><div class="rsScore"><b>'+(r.score||'·')+'</b>'+(stp!=null?'<small>'+(stp>0?'+':'')+stp+'</small>':'')+'</div></div>'+
   '<div class="rsActs">'+(opt.edit?'<button type="button" class="rsA" data-rs="edit">✎ '+T('Edit round','Editar vuelta')+'</button>':'')+'<button type="button" class="rsA" data-rs="share">⤴ '+T('Share','Compartir')+'</button></div>'+
-  (card?'<div class="rsCard">'+card+'</div>':'<p class="rsNone">'+T('Imported summary: no hole-by-hole card for this round.','Resumen importado: esta vuelta no tiene tarjeta hoyo por hoyo.')+'</p>')+
+  (card?'<div class="rsCard">'+card+'</div>'+rsFixLink(r):'<p class="rsNone">'+T('Imported summary: no hole-by-hole card for this round.','Resumen importado: esta vuelta no tiene tarjeta hoyo por hoyo.')+'</p>')+
   rev+
   '<h3 class="rsH">'+T('What this round says','Qué dice esta vuelta')+'</h3>'+rsAnalysis(r,hl,ph)+
   ((r.notes||r.lesson||r.whyMet)?'<div class="rsNotes">'+(r.lesson?'<div><span>'+T('What I learned','Qué aprendí')+'</span>'+rsE(r.lesson)+'</div>':'')+(r.notes?'<div><span>'+T('Notes','Notas')+'</span>'+rsE(r.notes)+'</div>':'')+(r.whyMet&&window.whyLbl?'<div><span>'+T('Gave you what you play for?','¿Te dio lo que buscás en el golf?')+'</span>'+window.whyLbl(r.whyMet)+'</div>':'')+'</div>':'')+
@@ -7799,6 +7803,10 @@ window.IMPMAP=(function(){
 <script>/* the guarantee on the Plans page, in the golfer's language */
 (function(){var EN='<b>Our guarantee.</b> Log 8 rounds. If by then Golfimbul has not shown you something about your game that is worth what you pay, tell us and you do not pay. And you can cancel at any time.',ES='<b>Nuestra garantía.</b> Cargá 8 vueltas. Si para entonces Golfimbul no te mostró algo de tu juego que valga lo que pagás, avisanos y no pagás. Y podés cancelar cuando quieras.';function p(){var e=document.getElementById('plGuar');if(e){var t=window.__LANG==='es'?ES:EN;if(e._t!==t){e._t=t;e.innerHTML=t;}}}p();setInterval(p,2000);})();</script>
 <style id="wideUse">
+.cfixW{text-align:right;margin:4px 2px 0}
+.cfix{border:0;background:none;padding:0;font-family:var(--cond);font-size:11px;color:#a59f8c;cursor:pointer;letter-spacing:.01em;text-decoration:none;opacity:.75;transition:opacity .15s,color .15s}
+.cfix:hover,.cfix:focus-visible{opacity:1;color:var(--pine,#0f3a2c);text-decoration:underline}
+.scHint .cfix{margin-left:10px}
 /* members & plans: one aligned table */
 .mbSum{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:4px 0 12px}
 .mbPl{display:inline-block;font-family:var(--cond);font-weight:700;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 10px;background:#ece7d8;color:#5c6357}
