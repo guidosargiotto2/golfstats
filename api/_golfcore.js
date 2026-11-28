@@ -199,7 +199,9 @@ async function indexAll(sql, runMs) {
 }
 
 /* ---- bring in the courses GolfCore has with a hole card and we lack (one request each), country by country ---- */
-async function importMissing(sql, runMs, reset) {
+const EUROPE = ['gb', 'ie', 'es', 'pt', 'fr', 'it', 'de', 'nl', 'be', 'lu', 'ch', 'at', 'dk', 'se', 'no', 'fi', 'is', 'pl', 'cz', 'sk', 'hu', 'si', 'hr', 'gr', 'tr', 'bg', 'ro', 'ee', 'lv', 'lt', 'cy', 'mt', 'rs', 'ba', 'me', 'mk', 'al', 'ad', 'mc', 'li', 'sm', 'je', 'gg', 'im', 'fo', 'ua', 'md'];
+async function importMissing(sql, runMs, reset, scope) {
+  const only = scope === 'europe' ? EUROPE : null;
   const k = key(); if (!k) return { error: 'no-golfcore-key' };
   await init(sql); const t0 = Date.now(), out = { added: 0, nodata: 0, existed: 0, requests: 0 };
   const B = await budget(sql, k); out.budget = B; if (B.left != null && B.left <= 0) return Object.assign(out, { capped: true });
@@ -208,15 +210,19 @@ async function importMissing(sql, runMs, reset) {
   if (reset) S.last = '';        // the list grew (more countries indexed): walk it again from the start; courses already brought in are skipped without a request
   let lastReq = 0;
   while (Date.now() - t0 < runMs) {
-    const L = await sql`select i.slug, i.country from gs_gc_index i where i.slug > ${S.last} and i.country <> all(${IMPORT_LATER}::text[]) and (i.d->'coverage'->>'scorecard') = 'true'
+    /* a region asked for: its countries in the order given, taking the courses not read yet (no cursor: a course whose card we already fetched is done) */
+    const L = only ? await sql`select i.slug, i.country from gs_gc_index i where i.country = any(${only}::text[]) and (i.d->'coverage'->>'scorecard') = 'true'
+        and not exists (select 1 from gs_gc_detail d where d.slug = i.slug) order by array_position(${only}::text[], i.country), i.slug limit 20`
+      : await sql`select i.slug, i.country from gs_gc_index i where i.slug > ${S.last} and i.country <> all(${IMPORT_LATER}::text[]) and (i.d->'coverage'->>'scorecard') = 'true'
         and not exists (select 1 from gs_gc_cmp m where m.slug = i.slug and m.r->>'v' in ('same', 'close', 'par', 'yards')) order by i.slug limit 20`;
     if (!L.length) { out.finished = true; break; }
     for (const x of L) { if (Date.now() - t0 >= runMs) break;
       let det = await sql`select d from gs_gc_detail where slug = ${x.slug}`, d = det.length ? pj(det[0].d) : null;
       if (!d) { if (room <= 0) { out.capped = true; break; } room--; const w = GAP_MS - (Date.now() - lastReq); if (w > 0) await sleep(w); lastReq = Date.now(); out.requests++;
         const r = await fetch(BASE + '/courses/' + encodeURIComponent(x.slug), { headers: { Authorization: 'Bearer ' + k, Accept: 'application/json', 'User-Agent': 'Golfimbul/1.0 (+https://golfimbul.vercel.app)' } });
-        if (r.status === 429) { out.limited = +r.headers.get('retry-after') || 60; break; } if (!r.ok) { S.last = x.slug; continue; }
-        d = await r.json().catch(() => null); if (!d) { S.last = x.slug; continue; }
+        if (r.status === 429) { out.limited = +r.headers.get('retry-after') || 60; break; }
+        d = r.ok ? await r.json().catch(() => null) : null;
+        if (!d) { if (only) await sql`insert into gs_gc_detail (slug, d, at) values (${x.slug}, ${JSON.stringify({ failed: r.status })}, ${Date.now()}) on conflict (slug) do nothing`; else S.last = x.slug; continue; }
         await sql`insert into gs_gc_detail (slug, d, at) values (${x.slug}, ${JSON.stringify(d)}, ${Date.now()}) on conflict (slug) do update set d = excluded.d, at = excluded.at`; }
       const cs = convert(d); if (!cs.length) out.nodata++;
       for (const data of cs) {
@@ -225,7 +231,7 @@ async function importMissing(sql, runMs, reset) {
         if (base0.length < 2) base0 = (data.name.replace(/[^A-Za-z]/g, '').toUpperCase() + 'GC').slice(0, 4);
         const taken = new Set((await sql`select code from gs_courses where code like ${base0 + '%'}`).map(y => y.code).concat(['CGC', 'TER', 'SIG'])); let code = base0, n = 2; while (taken.has(code)) code = base0 + (n++);
         data.abbr = code; await sql`insert into gs_courses (code, data, upd) values (${code}, ${JSON.stringify(data)}, ${Date.now()})`; out.added++; S.added = (S.added || 0) + 1; }
-      S.last = x.slug; }
+      if (!only) S.last = x.slug; }
     if (out.limited || out.capped) break;
   }
   await sql`insert into gs_settings (k, v) values ('gc_imp', ${JSON.stringify(S)}) on conflict (k) do update set v = excluded.v`;

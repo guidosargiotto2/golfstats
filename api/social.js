@@ -414,7 +414,7 @@ module.exports = async (req, res) => {
       const GC = require('./_golfcore');
       if (action === 'gcRun') return ok({ run: await GC.run(sql, 45000) });
       if (action === 'gcFill') return ok({ fill: await GC.fill(sql) });
-      if (action === 'gcImport') return ok({ run: await GC.importMissing(sql, 45000, !!b.reset) });
+      if (action === 'gcImport') return ok({ run: await GC.importMissing(sql, 45000, !!b.reset, b.scope === 'europe' ? 'europe' : '') });
       if (action === 'gcIndex') return ok({ run: await GC.indexAll(sql, 45000) });
       if (action === 'gcCap') { const n = Math.max(0, Math.min(200000, parseInt(b.cap, 10) || 0)); await sql`insert into gs_settings (k, v) values ('gc_cap', ${String(n)}) on conflict (k) do update set v = excluded.v`; return ok({ cap: n }); }
       if (action === 'gcWorld') return ok({ budget: await GC.budget(sql, GC.key()), countries: await sql`select country, count(*)::int as total, (count(*) filter (where (d->'coverage'->>'scorecard') = 'true'))::int as cards from gs_gc_index group by 1 order by 2 desc` });
