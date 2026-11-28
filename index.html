@@ -7443,7 +7443,7 @@ window.IMPMAP=(function(){
  var LIBS=['https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js','https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js'];
  function load(i,cb){if(i>=LIBS.length)return cb();if((i===0&&window.d3)||(i===1&&window.topojson))return load(i+1,cb);var s=document.createElement('script');s.src=LIBS[i];s.onload=function(){load(i+1,cb);};s.onerror=function(){cb(new Error('lib'));};document.head.appendChild(s);}
  function open(){
-   var ov=document.createElement('div');ov.className='impOv';ov.innerHTML='<div class="impCard"><button type="button" class="impX" aria-label="Close">×</button><div class="impKick">'+T('Course database','Base de canchas')+'</div><h3>'+T('Countries imported and pending','Países importados y pendientes')+'</h3><div class="impLeg"><span><i class="lg1"></i>'+T('In Golfimbul','En Golfimbul')+'</span><span><i class="lg2"></i>'+T('Next in line','Próximo en la fila')+'</span><span><i class="lg3"></i>'+T('Pending','Pendiente')+'</span></div><div class="impMap" id="impMapSvg">'+T('Loading map…','Cargando mapa…')+'</div><div class="impTip" id="impTip"></div><div class="impTbl" id="impTbl"></div></div>';
+   var ov=document.createElement('div');ov.className='impOv';ov.innerHTML='<div class="impCard"><button type="button" class="impX" aria-label="Close">×</button><div class="impKick">'+T('Course database','Base de canchas')+'</div><h3>'+T('Countries imported and pending','Países importados y pendientes')+'</h3><div class="impLeg"><span><i class="lg1"></i>'+T('In Golfimbul','En Golfimbul')+'</span><span><i class="lg2"></i>'+T('Next in line','Próximo en la fila')+'</span><span><i class="lg3"></i>'+T('Pending','Pendiente')+'</span></div><div class="impMap" id="impMapSvg">'+T('Loading map…','Cargando mapa…')+'</div><div class="impTip" id="impTip"></div><div class="impPow">'+T('Powered by','Con datos de')+' <a href="https://golfcourseapi.com" target="_blank" rel="noopener">GolfCourseAPI</a></div><div class="impTbl" id="impTbl"></div></div>';
    document.body.appendChild(ov);var close=function(){ov.remove();document.removeEventListener('keydown',kd);},kd=function(e){if(e.key==='Escape')close();};
    ov.querySelector('.impX').onclick=close;ov.addEventListener('click',function(e){if(e.target===ov)close();});document.addEventListener('keydown',kd);
    api('importStatus').then(function(j){
@@ -7715,6 +7715,7 @@ window.IMPMAP=(function(){
 @keyframes tgIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 </style>
 <style id="wideUse">
+.impPow{text-align:right;font-family:var(--cond);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:4px 2px 8px}.impPow a{color:var(--pine);font-weight:700;text-decoration:none;border-bottom:1px solid var(--sand-deep,#b89a52)}
 #rsheet .rsRec li b{color:var(--sand,#d8c48c)}
 #rsheet .hasRev .sgcats2{display:none}
 #rsheet .rvInline{margin:18px 0 6px}
