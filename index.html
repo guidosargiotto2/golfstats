@@ -6245,8 +6245,16 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    }
    return h+'</div></div>';
  }
- function membersHTML(list){var N=['free','lite','plus','pro'];
-   return list.map(function(m){return '<div class="frline"><span><b>'+esc(m.display)+'</b> <small>@'+esc(m.username)+'</small></span><select data-plan="'+esc(m.username)+'"'+(m.username===ME.username?' disabled':'')+'>'+N.map(function(n){return '<option value="'+n+'"'+(m.plan===n?' selected':'')+'>'+n[0].toUpperCase()+n.slice(1)+'</option>';}).join('')+'</select>'+(m.username===ME.username?'':' <button class="pf_btn frgrey" style="padding:5px 9px;font-size:11px" data-rpw="'+esc(m.username)+'" title="'+T('Reset password','Resetear contraseña')+'">🔑</button> <button class="pf_btn frgrey" style="padding:5px 9px;font-size:11px" data-imp="'+esc(m.username)+'" data-impn="'+esc(m.display)+'" title="'+T('Open this account to help set it up','Abrir esta cuenta para ayudar a configurarla')+'">'+T('Open as','Abrir como')+'</button>')+'</div>';}).join('');
+ function membersHTML(list){var N=['free','lite','plus','pro'],PL={free:'Free',lite:'Lite',plus:'Plus',pro:'Pro'};
+   var cnt={};list.forEach(function(m){cnt[m.plan]=(cnt[m.plan]||0)+1;});
+   var ini=function(n){return String(n||'?').trim().split(/\s+/).map(function(w){return w.charAt(0);}).join('').slice(0,2).toUpperCase();};
+   return '<div class="mbSum">'+list.length+' '+T('members','miembros')+' · '+N.filter(function(n){return cnt[n];}).map(function(n){return '<span class="mbPl '+n+'">'+PL[n]+' '+cnt[n]+'</span>';}).join('')+'</div>'+
+     '<div class="mbT" role="table"><div class="mbR mbH" role="row"><span>'+T('Player','Jugador')+'</span><span>'+T('Plan','Plan')+'</span><span>'+T('Team','Equipo')+'</span><span></span></div>'+
+     list.map(function(m){var me=m.username===ME.username;
+       return '<div class="mbR" role="row"><span class="mbN"><i class="mbAv">'+esc(ini(m.display))+'</i><span><b>'+esc(m.display)+'</b><small>@'+esc(m.username)+'</small></span></span>'+
+         '<span>'+(me?'<span class="mbPl '+esc(m.plan)+'">'+PL[m.plan]+'</span> <small class="mbYou">'+T('you','vos')+'</small>':'<select class="mbSel" data-plan="'+esc(m.username)+'">'+N.map(function(n){return '<option value="'+n+'"'+(m.plan===n?' selected':'')+'>'+PL[n]+'</option>';}).join('')+'</select>')+'</span>'+
+         '<span class="mbTeam">'+(m.team?esc(m.team):'<small>—</small>')+'</span>'+
+         '<span class="mbAct">'+(me?'':'<button type="button" class="mbB" data-rpw="'+esc(m.username)+'">'+T('Reset password','Resetear clave')+'</button><button type="button" class="mbB mbGo" data-imp="'+esc(m.username)+'" data-impn="'+esc(m.display)+'">'+T('Open as','Abrir como')+' →</button>')+'</span></div>';}).join('')+'</div>';
  }
  function adminHTML(){
    if(!ME.admin)return '';
@@ -7780,6 +7788,22 @@ window.IMPMAP=(function(){
 <script>/* the guarantee on the Plans page, in the golfer's language */
 (function(){var EN='<b>Our guarantee.</b> Log 8 rounds. If by then Golfimbul has not shown you something about your game that is worth what you pay, tell us and you do not pay. And you can cancel at any time.',ES='<b>Nuestra garantía.</b> Cargá 8 vueltas. Si para entonces Golfimbul no te mostró algo de tu juego que valga lo que pagás, avisanos y no pagás. Y podés cancelar cuando quieras.';function p(){var e=document.getElementById('plGuar');if(e){var t=window.__LANG==='es'?ES:EN;if(e._t!==t){e._t=t;e.innerHTML=t;}}}p();setInterval(p,2000);})();</script>
 <style id="wideUse">
+/* members & plans: one aligned table */
+.mbSum{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-family:var(--cond);font-size:13px;color:var(--ink-soft);margin:4px 0 12px}
+.mbPl{display:inline-block;font-family:var(--cond);font-weight:700;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 10px;background:#ece7d8;color:#5c6357}
+.mbPl.lite{background:#efe1b8;color:#6b5418}.mbPl.plus{background:#dfeee4;color:#1f7a4d}.mbPl.pro{background:var(--pine,#0f3a2c);color:#f6f2e7}
+.mbT{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fffdf7}
+.mbR{display:grid;grid-template-columns:minmax(200px,1.4fr) 140px minmax(80px,.6fr) minmax(250px,1fr);align-items:center;gap:14px;padding:10px 16px;border-top:1px solid var(--line-soft,#eee9da)}
+.mbR:first-child{border-top:0}.mbR:not(.mbH):hover{background:rgba(15,58,44,.03)}
+.mbH{background:var(--paper);font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);padding-top:9px;padding-bottom:9px}
+.mbN{display:flex;align-items:center;gap:11px;min-width:0}.mbN b{display:block;font-family:var(--serif);font-size:15.5px;font-weight:600;color:var(--pine)}.mbN small{display:block;font-family:var(--cond);font-size:12px;color:var(--ink-soft)}
+.mbAv{flex:none;width:34px;height:34px;border-radius:50%;background:var(--paper);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-style:normal;font-family:var(--cond);font-weight:700;font-size:12.5px;color:var(--pine)}
+.mbSel{width:120px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:6px 8px;font-family:var(--cond);font-size:14px;color:var(--ink);cursor:pointer}.mbSel:focus{outline:2px solid var(--fairway,#1f7a4d);outline-offset:1px}
+.mbYou{font-family:var(--cond);font-size:12px;color:var(--ink-soft);margin-left:4px}.mbTeam{font-family:var(--cond);font-size:13.5px;color:var(--ink)}.mbTeam small{color:#b5ae9a}
+.mbAct{display:flex;justify-content:flex-end;gap:8px}
+.mbB{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:8px;padding:6px 12px;font-family:var(--cond);font-weight:700;font-size:12.5px;cursor:pointer;transition:border-color .15s,color .15s,background .15s}
+.mbB:hover{border-color:var(--ink-soft);color:var(--ink)}.mbB.mbGo{border-color:var(--pine,#0f3a2c);color:var(--pine,#0f3a2c)}.mbB.mbGo:hover{background:var(--pine,#0f3a2c);color:#fff}
+@media(max-width:760px){.mbR{grid-template-columns:1fr auto;row-gap:8px}.mbH{display:none}.mbTeam{display:none}.mbAct{grid-column:1/-1;justify-content:flex-start}}
 .lguar{border-left:4px solid var(--fairway,#1f7a4d);background:rgba(31,122,77,.07);border-radius:10px;padding:12px 16px;margin:18px 0 0;font-size:15px;line-height:1.55;color:var(--ink)}.lguar b{font-family:var(--serif);color:var(--pine)}
 #view-plans .lguar{margin:6px 0 14px}
 #impBar{position:fixed;left:0;right:0;bottom:0;z-index:10050;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;background:#8f3418;color:#fff;font-family:var(--cond);font-size:13.5px;padding:9px 14px;box-shadow:0 -6px 18px rgba(0,0,0,.18)}
