@@ -164,8 +164,18 @@ module.exports = async (req, res) => {
       const js = JSON.stringify(pr);
       if (js.length > 30000) return bad(413, 'too-big');
       const upd = Number(b.upd) || Date.now();
-      await sql`update gs_profiles set prefs = ${js}, prefs_upd = ${upd} where username = ${me}`;
-      return ok({ upd });
+      /* setting by setting: each one carries when it was last changed (_t). An incoming setting replaces the stored one only if it is newer, so a device with an old copy cannot bring old settings back */
+      const r0 = await sql`select prefs from gs_profiles where username = ${me}`;
+      const cur = r0.length && r0[0].prefs ? (typeof r0[0].prefs === 'string' ? JSON.parse(r0[0].prefs) : r0[0].prefs) : null;
+      let out = pr;
+      if (cur && typeof cur === 'object') {
+        const ct = cur._t || {}, it = pr._t || {}, ot = Object.assign({}, ct); out = Object.assign({}, cur);
+        for (const k of Object.keys(pr)) { if (k.charAt(0) === '_') continue; const a = Number(it[k]) || 0, c = Number(ct[k]) || 0; if (!(k in cur) || a > c) { out[k] = pr[k]; if (a) ot[k] = a; } }
+        out._t = ot; out._upd = Math.max(Number(cur._upd) || 0, upd); delete out._first; delete out._diff;
+      }
+      const js2 = JSON.stringify(out); if (js2.length > 40000) return bad(413, 'too-big');
+      await sql`update gs_profiles set prefs = ${js2}, prefs_upd = ${upd} where username = ${me}`;
+      return ok({ upd, prefs: out });
     }
     if (action === 'setAbout') {   // first-login answers: why they play, experience, practice habits, course, index, distances
       const a = b.about && typeof b.about === 'object' ? b.about : null;

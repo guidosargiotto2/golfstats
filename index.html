@@ -3920,6 +3920,8 @@ function cardLvlSel(){var es=window.__LANG==='es',cur=cardLevelNow(),O=['ess','p
  return '<label style="margin:0">'+(es?'Tarjeta para el nivel':'Card for the level')+'<select id="pf_cardlvl">'+O.map(function(k){return '<option value="'+k+'"'+(k===cur?' selected':'')+'>'+LOGLVL.L[k].n[es?1:0]+'</option>';}).join('')+'<option value="custom"'+(cur==='custom'?' selected':'')+'>'+(es?'Mi configuración (personalizado)':'My settings (custom)')+'</option></select></label>';}
 function loadProf(){try{return Object.assign({},PROF_DEF,JSON.parse(localStorage.getItem(PROFK))||{})}catch(e){return Object.assign({},PROF_DEF)}}
 let PROF=loadProf();
+/* every setting carries the moment it was last changed (PROF._t), so devices merge setting by setting: an old phone saving one thing can never bring back its old copy of everything else */
+var PSNAP={};function psnap(){PSNAP={};Object.keys(PROF).forEach(function(k){if(k.charAt(0)!=='_')PSNAP[k]=JSON.stringify(PROF[k]);});}psnap();
 /* ===== profile photo: kept on the device and on the server (gs_profiles.avatar), shown to friends ===== */
 function avKey(){return (localStorage.getItem('app-user')||'')+'::avatar';}
 function myAvatar(){try{return localStorage.getItem(avKey())||'';}catch(e){return '';}}
@@ -3931,20 +3933,20 @@ function setAvatar(d){try{if(d)localStorage.setItem(avKey(),d);else localStorage
  var tok=localStorage.getItem('gs-token');if(!tok)return Promise.resolve({ok:true,local:true});
  return fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({action:'setAvatar',avatar:d||''})}).then(function(r){return r.json();});}
 window.avatarHTML=avatarHTML;window.myAvatar=myAvatar;
-function saveProf(){PROF._upd=Date.now();delete PROF._first;localStorage.setItem(PROFK,JSON.stringify(PROF));prefPush();}
-/* settings sync: the profile follows the player to every device (newest change wins) */
+function saveProf(){var now=Date.now(),t=PROF._t||(PROF._t={});Object.keys(PROF).forEach(function(k){if(k.charAt(0)==='_')return;var j=JSON.stringify(PROF[k]);if(PSNAP[k]!==j){t[k]=now;PSNAP[k]=j;}});
+ PROF._upd=now;delete PROF._first;delete PROF._diff;localStorage.setItem(PROFK,JSON.stringify(PROF));prefPush();}
+/* settings sync: the profile follows the player to every device, setting by setting (the newest change of each setting wins; on a tie the server's copy stays) */
 var _prefT=null;
 function prefCall(body){return fetch('/api/social',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(localStorage.getItem('gs-token')||'')},body:JSON.stringify(body)}).then(function(r){return r.json();});}
-function prefDiff(o){var n=0;Object.keys(o||{}).forEach(function(k){if(k.charAt(0)==='_')return;if(JSON.stringify(o[k])!==JSON.stringify(PROF_DEF[k]))n++;});return n;}
-function prefPush(now){if(!localStorage.getItem('gs-token'))return;clearTimeout(_prefT);_prefT=setTimeout(function(){prefCall({action:'prefsSet',prefs:PROF,upd:PROF._upd||Date.now()}).catch(function(){});},now?0:1500);}
-function prefPull(){if(!localStorage.getItem('gs-token'))return;prefCall({action:'prefsGet'}).then(function(j){if(!j||!j.ok)return;var sv=j.prefs,su=+j.upd||0,synced=!!PROF._upd&&!PROF._first;
-   var take=function(){Object.keys(sv).forEach(function(k){PROF[k]=sv[k];});PROF._upd=su;delete PROF._first;localStorage.setItem(PROFK,JSON.stringify(PROF));var was=window.__LANG;window.__LANG=PROF.lang||was;
-     try{if(was!==window.__LANG)applyI18n();}catch(e){}try{renderProf();}catch(e){}try{render();renderSel();}catch(e){}try{if(window.PGRP)window.PGRP.build();}catch(e){}};
-   var giveFirst=function(){PROF._upd=Date.now();PROF._first=true;PROF._diff=prefDiff(PROF);localStorage.setItem(PROFK,JSON.stringify(PROF));prefPush(true);};
-   if(!sv){giveFirst();return;}
-   if(synced){if(su>PROF._upd)take();else if(PROF._upd>su)prefPush(true);return;}
-   /* this device has never synced: the profile with more settings changed from the defaults wins the first time */
-   if(sv._first&&prefDiff(PROF)>(+sv._diff||0))giveFirst();else take();}).catch(function(){});}
+function prefMerge(sv){if(!sv||typeof sv!=='object')return false;var st=sv._t||{},lt=PROF._t||(PROF._t={}),ch=false;
+ Object.keys(sv).forEach(function(k){if(k.charAt(0)==='_')return;var a=+st[k]||0,b=+lt[k]||0;if(a<b)return;var j=JSON.stringify(sv[k]);if(JSON.stringify(PROF[k])!==j){PROF[k]=sv[k];ch=true;}if(a)lt[k]=a;PSNAP[k]=j;});
+ localStorage.setItem(PROFK,JSON.stringify(PROF));return ch;}
+function prefShow(){var was=window.__LANG;window.__LANG=PROF.lang||was;try{if(was!==window.__LANG)applyI18n();}catch(e){}try{renderProf();}catch(e){}try{render();renderSel();}catch(e){}try{if(window.PGRP)window.PGRP.build();}catch(e){}}
+function prefPush(now){if(!localStorage.getItem('gs-token'))return;clearTimeout(_prefT);_prefT=setTimeout(function(){prefCall({action:'prefsSet',prefs:PROF,upd:PROF._upd||Date.now(),merge:1}).then(function(j){if(j&&j.ok&&j.prefs&&prefMerge(j.prefs))prefShow();}).catch(function(){});},now?0:1500);}
+function prefPull(){if(!localStorage.getItem('gs-token'))return;prefCall({action:'prefsGet'}).then(function(j){if(!j||!j.ok)return;var sv=j.prefs;
+   if(!sv){prefPush(true);return;}
+   var ch=prefMerge(sv),st=sv._t||{},lt=PROF._t||{},mine=Object.keys(lt).some(function(k){return (+lt[k]||0)>(+st[k]||0);});
+   if(ch)prefShow();if(mine)prefPush(true);}).catch(function(){});}
 /* ===== i18n (Stage 1: on-course flow) ===== */
 var I18N_ES={"Club":"Palo","Tournament round":"Vuelta de torneo","Counts for my handicap":"Cuenta para mi hándicap","Not for handicap":"No cuenta para hándicap","Tournament":"Torneo","Dispersion & process":"Dispersión y proceso","Your par line":"Tu línea de par","Every hole is a small production line: the tee shot, the approach, the first putt, the second. A clean par needs every step to work on the same hole. This shows how often each step works, and which one breaks the line most.":"Cada hoyo es una pequeña línea de producción: la salida, el approach, el primer putt, el segundo. Un par limpio necesita que todos los pasos funcionen en el mismo hoyo. Esto muestra cuántas veces funciona cada paso, y cuál corta más la línea.","Where your shots finish and whether you did what you had decided to do. Built only from what you mark on each shot when you log a round.":"Dónde terminan tus tiros y si hiciste lo que habías decidido hacer. Se arma solo con lo que marcás en cada tiro al cargar una vuelta.","Compl.":"Cumpl.","Read":"Lectura","Disp.":"Disp.","My bag":"Mi bolsa","← Profile":"← Perfil","Plans":"Planes","Pricing":"Precios","Approach":"Approach","Around grn":"Juego corto","Copy for sheet":"Copiar para planilla","pen":"pen","Friends":"Amigos","Share":"Compartir","NET PAR":"PAR NETO","NET STATUS":"ESTADO NETO","thru":"hasta","Circles and squares are against par; NET STATUS is against net par (handicap strokes applied).":"Círculos y cuadrados son contra el par; ESTADO NETO es contra el par neto (con golpes de hándicap).","Cards":"Tarjetas","List":"Lista","Rounds":"Vueltas","Avg score to par":"Score al par prom.","Avg SG total":"SG total prom.","3-putts":"3 putts","Doubles":"Dobles","Bogey par-5":"Bogey en par-5","All":"Todo","YTD":"Este año","Last 12 mo":"Últimos 12 meses","This month":"Este mes","shot-by-shot strokes gained":"strokes gained tiro a tiro","No rounds in range":"Sin vueltas en el rango",
  "Log a round":"Cargar vuelta","← Settings":"← Configuración","Profile":"Perfil","Settings":"Configuración","+ Log a round":"+ Cargar vuelta","Rounds":"Vueltas","Profile & settings":"Perfil y configuración","Plan":"Plan","Admin":"Admin","Statistics":"Estadísticas","Round ledger":"Mis vueltas","Profile":"Perfil","Ideas":"Ideas","Log out":"Salir",
