@@ -6252,7 +6252,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
  function membersHTML(list){var N=['free','lite','plus','pro'],PL={free:'Free',lite:'Lite',plus:'Plus',pro:'Pro'};
    var cnt={};list.forEach(function(m){cnt[m.plan]=(cnt[m.plan]||0)+1;});
    var stH=function(m){var d=m.daysLeft;
-     if(m.status==='trial')return '<span class="mbSt trial'+(d<=7?' soon':'')+'">'+T('Free month','Mes gratis')+'</span><small class="mbStD">'+(d===1?T('1 day left','1 día'):d+T(' days left',' días'))+'</small>';
+     if(m.status==='trial')return '<span class="mbSt trial'+(d<=7?' soon':'')+'">'+T('Free month','Mes gratis')+'</span><small class="mbStD">'+(d===1?T('1 day left','queda 1 día'):d+T(' days left',' días'))+T(' · has Pro until then',' · tiene Pro hasta entonces')+'</small>';
      if(m.status==='ended')return '<span class="mbSt ended">'+T('Month over','Mes terminado')+'</span><small class="mbStD">'+T('no plan chosen','sin plan elegido')+'</small>';
      if(m.status==='founder')return '<span class="mbSt founder">'+T('Founder','Fundador')+'</span>';
      return '<span class="mbSt set">'+T('Plan set','Plan asignado')+'</span>';};
@@ -7804,7 +7804,7 @@ window.IMPMAP=(function(){
 .mbPl{display:inline-block;font-family:var(--cond);font-weight:700;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 10px;background:#ece7d8;color:#5c6357}
 .mbPl.lite{background:#efe1b8;color:#6b5418}.mbPl.plus{background:#dfeee4;color:#1f7a4d}.mbPl.pro{background:var(--pine,#0f3a2c);color:#f6f2e7}
 .mbT{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fffdf7}
-.mbR{display:grid;grid-template-columns:minmax(190px,1.3fr) 150px 130px minmax(70px,.5fr) minmax(250px,1fr);align-items:center;gap:14px;padding:10px 16px;border-top:1px solid var(--line-soft,#eee9da)}
+.mbR{display:grid;grid-template-columns:minmax(190px,1.3fr) 190px 130px minmax(70px,.5fr) minmax(250px,1fr);align-items:center;gap:14px;padding:10px 16px;border-top:1px solid var(--line-soft,#eee9da)}
 .mbR:first-child{border-top:0}.mbR:not(.mbH):hover{background:rgba(15,58,44,.03)}
 .mbH{background:var(--paper);font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);padding-top:9px;padding-bottom:9px}
 .mbN{display:flex;align-items:center;gap:11px;min-width:0}.mbN b{display:block;font-family:var(--serif);font-size:15.5px;font-weight:600;color:var(--pine)}.mbN small{display:block;font-family:var(--cond);font-size:12px;color:var(--ink-soft)}
