@@ -246,10 +246,15 @@ module.exports = async (req, res) => {
     }
     if (action === 'members') {
       if (me !== L.ADMIN) return bad(403, 'admin');
-      const rows = await sql`select p.username, p.display, p.plan, m.code from gs_profiles p left join gs_team_members m on m.username = p.username order by p.display`;
+      const rows = await sql`select p.username, p.display, p.plan, m.code, u.created from gs_profiles p left join gs_team_members m on m.username = p.username left join gs_users u on u.username = p.username order by p.display`;
       const teams = await sql`select t.code, t.owner, t.paid, t.plan, count(m.username)::int as n from gs_teams t left join gs_team_members m on m.code = t.code group by t.code, t.owner, t.paid, t.plan, t.created order by t.created`;
       const out = [];
-      for (const r of rows) out.push({ username: r.username, display: r.display, plan: L.planOf(r.username, r.plan), team: r.code || null });
+      for (const r of rows) {   /* where each one stands: founder, in the free month (days left), month over with no plan chosen, or a plan set by hand */
+        const decided = ['free', 'lite', 'plus', 'pro'].includes(r.plan), founder = r.username === L.ADMIN || !!L.LEGACY[r.username];
+        const end = r.created ? new Date(r.created).getTime() + L.TRIAL_DAYS * 864e5 : 0, left = Math.ceil((end - Date.now()) / 864e5);
+        const status = founder ? 'founder' : decided ? 'set' : (end && left > 0) ? 'trial' : 'ended';
+        out.push({ username: r.username, display: r.display, plan: L.planOf(r.username, r.plan), team: r.code || null, status, daysLeft: status === 'trial' ? left : null, since: r.created || null });
+      }
       return ok({ members: out, teams });
     }
     if (action === 'setPlan') {

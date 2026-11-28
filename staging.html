@@ -6251,11 +6251,18 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
  }
  function membersHTML(list){var N=['free','lite','plus','pro'],PL={free:'Free',lite:'Lite',plus:'Plus',pro:'Pro'};
    var cnt={};list.forEach(function(m){cnt[m.plan]=(cnt[m.plan]||0)+1;});
+   var stH=function(m){var d=m.daysLeft;
+     if(m.status==='trial')return '<span class="mbSt trial'+(d<=7?' soon':'')+'">'+T('Free month','Mes gratis')+'</span><small class="mbStD">'+(d===1?T('1 day left','1 día'):d+T(' days left',' días'))+'</small>';
+     if(m.status==='ended')return '<span class="mbSt ended">'+T('Month over','Mes terminado')+'</span><small class="mbStD">'+T('no plan chosen','sin plan elegido')+'</small>';
+     if(m.status==='founder')return '<span class="mbSt founder">'+T('Founder','Fundador')+'</span>';
+     return '<span class="mbSt set">'+T('Plan set','Plan asignado')+'</span>';};
+   var tr=list.filter(function(m){return m.status==='trial';}).length,en=list.filter(function(m){return m.status==='ended';}).length;
    var ini=function(n){return String(n||'?').trim().split(/\s+/).map(function(w){return w.charAt(0);}).join('').slice(0,2).toUpperCase();};
-   return '<div class="mbSum">'+list.length+' '+T('members','miembros')+' · '+N.filter(function(n){return cnt[n];}).map(function(n){return '<span class="mbPl '+n+'">'+PL[n]+' '+cnt[n]+'</span>';}).join('')+'</div>'+
-     '<div class="mbT" role="table"><div class="mbR mbH" role="row"><span>'+T('Player','Jugador')+'</span><span>'+T('Plan','Plan')+'</span><span>'+T('Team','Equipo')+'</span><span></span></div>'+
+   return '<div class="mbSum">'+list.length+' '+T('members','miembros')+' · '+N.filter(function(n){return cnt[n];}).map(function(n){return '<span class="mbPl '+n+'">'+PL[n]+' '+cnt[n]+'</span>';}).join('')+(tr?'<span class="mbSt trial">'+T('In free month','En mes gratis')+' '+tr+'</span>':'')+(en?'<span class="mbSt ended">'+T('Month over','Mes terminado')+' '+en+'</span>':'')+'</div>'+
+     '<div class="mbT" role="table"><div class="mbR mbH" role="row"><span>'+T('Player','Jugador')+'</span><span>'+T('Status','Estado')+'</span><span>'+T('Plan','Plan')+'</span><span>'+T('Team','Equipo')+'</span><span></span></div>'+
      list.map(function(m){var me=m.username===ME.username;
        return '<div class="mbR" role="row"><span class="mbN"><i class="mbAv">'+esc(ini(m.display))+'</i><span><b>'+esc(m.display)+'</b><small>@'+esc(m.username)+'</small></span></span>'+
+         '<span>'+stH(m)+'</span>'+
          '<span>'+(me?'<span class="mbPl '+esc(m.plan)+'">'+PL[m.plan]+'</span> <small class="mbYou">'+T('you','vos')+'</small>':'<select class="mbSel" data-plan="'+esc(m.username)+'">'+N.map(function(n){return '<option value="'+n+'"'+(m.plan===n?' selected':'')+'>'+PL[n]+'</option>';}).join('')+'</select>')+'</span>'+
          '<span class="mbTeam">'+(m.team?esc(m.team):'<small>—</small>')+'</span>'+
          '<span class="mbAct">'+(me?'':'<button type="button" class="mbB" data-rpw="'+esc(m.username)+'">'+T('Reset password','Resetear clave')+'</button><button type="button" class="mbB mbGo" data-imp="'+esc(m.username)+'" data-impn="'+esc(m.display)+'">'+T('Open as','Abrir como')+' →</button>')+'</span></div>';}).join('')+'</div>';
@@ -7797,7 +7804,7 @@ window.IMPMAP=(function(){
 .mbPl{display:inline-block;font-family:var(--cond);font-weight:700;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 10px;background:#ece7d8;color:#5c6357}
 .mbPl.lite{background:#efe1b8;color:#6b5418}.mbPl.plus{background:#dfeee4;color:#1f7a4d}.mbPl.pro{background:var(--pine,#0f3a2c);color:#f6f2e7}
 .mbT{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fffdf7}
-.mbR{display:grid;grid-template-columns:minmax(200px,1.4fr) 140px minmax(80px,.6fr) minmax(250px,1fr);align-items:center;gap:14px;padding:10px 16px;border-top:1px solid var(--line-soft,#eee9da)}
+.mbR{display:grid;grid-template-columns:minmax(190px,1.3fr) 150px 130px minmax(70px,.5fr) minmax(250px,1fr);align-items:center;gap:14px;padding:10px 16px;border-top:1px solid var(--line-soft,#eee9da)}
 .mbR:first-child{border-top:0}.mbR:not(.mbH):hover{background:rgba(15,58,44,.03)}
 .mbH{background:var(--paper);font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);padding-top:9px;padding-bottom:9px}
 .mbN{display:flex;align-items:center;gap:11px;min-width:0}.mbN b{display:block;font-family:var(--serif);font-size:15.5px;font-weight:600;color:var(--pine)}.mbN small{display:block;font-family:var(--cond);font-size:12px;color:var(--ink-soft)}
@@ -7805,6 +7812,10 @@ window.IMPMAP=(function(){
 .mbSel{width:120px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:6px 8px;font-family:var(--cond);font-size:14px;color:var(--ink);cursor:pointer}.mbSel:focus{outline:2px solid var(--fairway,#1f7a4d);outline-offset:1px}
 .mbYou{font-family:var(--cond);font-size:12px;color:var(--ink-soft);margin-left:4px}.mbTeam{font-family:var(--cond);font-size:13.5px;color:var(--ink)}.mbTeam small{color:#b5ae9a}
 .mbAct{display:flex;justify-content:flex-end;gap:8px}
+.mbSt{display:inline-block;font-family:var(--cond);font-weight:700;font-size:11.5px;letter-spacing:.04em;border-radius:6px;padding:3px 8px;border:1px solid transparent}
+.mbSt.trial{background:#e7f1fb;color:#235a8a;border-color:#c9def3}.mbSt.trial.soon{background:#f9eeda;color:#8a5a12;border-color:#efd9a9}.mbSt.ended{background:#fbebeb;color:#8f3418;border-color:#f0cfc7}
+.mbSt.founder{background:var(--paper);color:var(--sand-deep);border-color:var(--line)}.mbSt.set{background:transparent;color:var(--ink-soft);border-color:var(--line)}
+.mbStD{display:block;font-family:var(--cond);font-size:12px;color:var(--ink-soft);margin-top:2px}
 .mbB{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:8px;padding:6px 12px;font-family:var(--cond);font-weight:700;font-size:12.5px;cursor:pointer;transition:border-color .15s,color .15s,background .15s}
 .mbB:hover{border-color:var(--ink-soft);color:var(--ink)}.mbB.mbGo{border-color:var(--pine,#0f3a2c);color:var(--pine,#0f3a2c)}.mbB.mbGo:hover{background:var(--pine,#0f3a2c);color:#fff}
 @media(max-width:760px){.mbR{grid-template-columns:1fr auto;row-gap:8px}.mbH{display:none}.mbTeam{display:none}.mbAct{grid-column:1/-1;justify-content:flex-start}}
