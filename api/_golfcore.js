@@ -5,6 +5,8 @@
 const BASE = 'https://api.golfcore.org/v1';
 const key = () => String(process.env.GOLFCORE_API_KEY || '').trim().replace(/^["']|["']$/g, '').replace(/^Bearer\s+/i, '').trim();
 const LATER = ['us', 'ca'];      // United States and Canada: left for a later run
+const IMPORT_LATER = ['us', 'ca'];   // importing: every country but the United States and Canada for now
+const CAP_DEFAULT = 9800;         // requests a month we stay under unless the owner raises it (Starter includes 10,000; beyond that is billed)
 const GAP_MS = 1100;            // Starter plan: 60 requests a minute
 const ISO = { 'argentina': 'ar', 'uruguay': 'uy', 'chile': 'cl', 'paraguay': 'py', 'bolivia': 'bo', 'brazil': 'br', 'brasil': 'br', 'peru': 'pe', 'ecuador': 'ec', 'colombia': 'co', 'venezuela': 've',
   'panama': 'pa', 'costa rica': 'cr', 'nicaragua': 'ni', 'honduras': 'hn', 'el salvador': 'sv', 'guatemala': 'gt', 'belize': 'bz', 'dominican republic': 'do', 'puerto rico': 'pr', 'cuba': 'cu',
@@ -141,6 +143,7 @@ async function fill(sql) {
 /* ---- a GolfCore course as Golfimbul stores courses: one per layout, only tees whose own hole pars agree with the layout's card ---- */
 const NAME = { ar: 'Argentina', uy: 'Uruguay', cl: 'Chile', py: 'Paraguay', bo: 'Bolivia', br: 'Brazil', pe: 'Peru', ec: 'Ecuador', co: 'Colombia', ve: 'Venezuela', pa: 'Panama', cr: 'Costa Rica', ni: 'Nicaragua', hn: 'Honduras',
   sv: 'El Salvador', gt: 'Guatemala', bz: 'Belize', do: 'Dominican Republic', pr: 'Puerto Rico', cu: 'Cuba', jm: 'Jamaica', bs: 'Bahamas', mx: 'Mexico', us: 'United States', ca: 'Canada', es: 'Spain', pt: 'Portugal' };
+let DN = null; const countryName = c => { c = String(c || '').toLowerCase(); if (NAME[c]) return NAME[c]; try { DN = DN || new Intl.DisplayNames(['en'], { type: 'region' }); return DN.of(c.toUpperCase()) || c.toUpperCase(); } catch (e) { return c.toUpperCase(); } };
 const tidy = x => String(x || '').replace(/^\s*\d{1,4}\s+/, '').replace(/\s+/g, ' ').trim();
 function convert(d) {
   const res = [], many = (d.layouts || []).length > 1;
@@ -161,25 +164,56 @@ function convert(d) {
       if (tees[nm]) return; tees[nm] = { label: nm, cr, slope: sl, est, yds }; });
     if (!Object.keys(tees).length) return;
     const nm = tidy(d.name), ln = tidy(L.name);
-    res.push({ name: ((many && ln && strip(ln) !== strip(nm) ? nm + ' — ' + ln : nm) + (nine ? ' (9 x2)' : '')).slice(0, 60), loc: { country: NAME[d.country] || String(d.country || '').toUpperCase(), state: String(d.region || '').slice(0, 40), city: String(d.city || '').slice(0, 40) },
+    res.push({ name: ((many && ln && strip(ln) !== strip(nm) ? nm + ' — ' + ln : nm) + (nine ? ' (9 x2)' : '')).slice(0, 60), loc: { country: countryName(d.country), state: String(d.region || '').slice(0, 40), city: String(d.city || '').slice(0, 40) },
       unverified: true, noSI: okS ? undefined : true, addedBy: 'golfcore', src: 'golfcore', gcUrl: d.url || null, pins: { F: 'red', M: 'white', B: 'blue' }, par, hcp: okS ? si0 : par.map(() => 0), tees });
   });
   return res;
 }
 
+/* the month's usage as GolfCore counts it, against the cap we keep (gs_settings 'gc_cap', or the default) */
+async function budget(sql, k) {
+  const c = await sql`select v from gs_settings where k = 'gc_cap'`, cap = c.length ? (parseInt(c[0].v, 10) || CAP_DEFAULT) : CAP_DEFAULT;
+  const r = await fetch(BASE + '/usage', { headers: { Authorization: 'Bearer ' + k, Accept: 'application/json', 'User-Agent': 'Golfimbul/1.0 (+https://golfimbul.vercel.app)' } });
+  const j = r.ok ? await r.json().catch(() => ({})) : {};
+  return { cap, consumed: j.consumed == null ? null : +j.consumed, included: j.included || null, plan: j.plan || null, left: j.consumed == null ? null : cap - (+j.consumed) };
+}
+
+/* ---- the whole GolfCore library as a list (200 a request): which courses exist, where, and whether they carry a hole card ---- */
+async function indexAll(sql, runMs) {
+  const k = key(); if (!k) return { error: 'no-golfcore-key' };
+  await init(sql); const t0 = Date.now(), out = { indexed: 0, requests: 0 };
+  const B = await budget(sql, k); out.budget = B; if (B.left != null && B.left <= 0) return Object.assign(out, { capped: true });
+  const row = await sql`select v from gs_settings where k = 'gc_idx'`, S = row.length ? JSON.parse(row[0].v) : { off: 0, total: null };
+  let lastReq = 0, room = B.left == null ? 1e9 : B.left;
+  while (Date.now() - t0 < runMs && !S.done && room > 0) {
+    const w = GAP_MS - (Date.now() - lastReq); if (w > 0) await sleep(w); lastReq = Date.now(); out.requests++; room--;
+    const r = await fetch(BASE + '/courses?limit=200&offset=' + S.off, { headers: { Authorization: 'Bearer ' + k, Accept: 'application/json', 'User-Agent': 'Golfimbul/1.0 (+https://golfimbul.vercel.app)' } });
+    if (r.status === 429) { out.limited = +r.headers.get('retry-after') || 60; break; } if (!r.ok) { out.error = 'golfcore-' + r.status; break; }
+    const j = await r.json().catch(() => ({})), L = (j.courses || []).map(x => ({ slug: x.slug, country: String(x.country || '').toLowerCase(), name: x.name || '', city: x.city || '', region: x.region || '', d: { url: x.url, par_total: x.par_total, hole_count: x.hole_count, lat: x.lat, lng: x.lng, coverage: x.coverage || {} } }));
+    if (L.length) await sql`insert into gs_gc_index (slug, country, name, city, region, d) select slug, country, name, city, region, d from jsonb_to_recordset(${JSON.stringify(L)}::jsonb) as x(slug text, country text, name text, city text, region text, d jsonb) on conflict (slug) do update set name = excluded.name, city = excluded.city, region = excluded.region, d = excluded.d`;
+    out.indexed += L.length; S.off += L.length; S.total = j.total || S.total;
+    if (!L.length || (S.total && S.off >= S.total)) S.done = true;
+  }
+  await sql`insert into gs_settings (k, v) values ('gc_idx', ${JSON.stringify(S)}) on conflict (k) do update set v = excluded.v`;
+  return Object.assign(out, { off: S.off, total: S.total, finished: !!S.done });
+}
+
 /* ---- bring in the courses GolfCore has with a hole card and we lack (one request each), country by country ---- */
-async function importMissing(sql, runMs) {
+async function importMissing(sql, runMs, reset) {
   const k = key(); if (!k) return { error: 'no-golfcore-key' };
   await init(sql); const t0 = Date.now(), out = { added: 0, nodata: 0, existed: 0, requests: 0 };
+  const B = await budget(sql, k); out.budget = B; if (B.left != null && B.left <= 0) return Object.assign(out, { capped: true });
+  let room = B.left == null ? 1e9 : B.left;
   const row = await sql`select v from gs_settings where k = 'gc_imp'`, S = row.length ? JSON.parse(row[0].v) : { last: '', added: 0 };
+  if (reset) S.last = '';        // the list grew (more countries indexed): walk it again from the start; courses already brought in are skipped without a request
   let lastReq = 0;
   while (Date.now() - t0 < runMs) {
-    const L = await sql`select i.slug, i.country from gs_gc_index i where i.slug > ${S.last} and i.country <> all(${LATER}::text[]) and (i.d->'coverage'->>'scorecard') = 'true'
+    const L = await sql`select i.slug, i.country from gs_gc_index i where i.slug > ${S.last} and i.country <> all(${IMPORT_LATER}::text[]) and (i.d->'coverage'->>'scorecard') = 'true'
         and not exists (select 1 from gs_gc_cmp m where m.slug = i.slug and m.r->>'v' in ('same', 'close', 'par', 'yards')) order by i.slug limit 20`;
     if (!L.length) { out.finished = true; break; }
     for (const x of L) { if (Date.now() - t0 >= runMs) break;
       let det = await sql`select d from gs_gc_detail where slug = ${x.slug}`, d = det.length ? pj(det[0].d) : null;
-      if (!d) { const w = GAP_MS - (Date.now() - lastReq); if (w > 0) await sleep(w); lastReq = Date.now(); out.requests++;
+      if (!d) { if (room <= 0) { out.capped = true; break; } room--; const w = GAP_MS - (Date.now() - lastReq); if (w > 0) await sleep(w); lastReq = Date.now(); out.requests++;
         const r = await fetch(BASE + '/courses/' + encodeURIComponent(x.slug), { headers: { Authorization: 'Bearer ' + k, Accept: 'application/json', 'User-Agent': 'Golfimbul/1.0 (+https://golfimbul.vercel.app)' } });
         if (r.status === 429) { out.limited = +r.headers.get('retry-after') || 60; break; } if (!r.ok) { S.last = x.slug; continue; }
         d = await r.json().catch(() => null); if (!d) { S.last = x.slug; continue; }
@@ -192,10 +226,10 @@ async function importMissing(sql, runMs) {
         const taken = new Set((await sql`select code from gs_courses where code like ${base0 + '%'}`).map(y => y.code).concat(['CGC', 'TER', 'SIG'])); let code = base0, n = 2; while (taken.has(code)) code = base0 + (n++);
         data.abbr = code; await sql`insert into gs_courses (code, data, upd) values (${code}, ${JSON.stringify(data)}, ${Date.now()})`; out.added++; S.added = (S.added || 0) + 1; }
       S.last = x.slug; }
-    if (out.limited) break;
+    if (out.limited || out.capped) break;
   }
   await sql`insert into gs_settings (k, v) values ('gc_imp', ${JSON.stringify(S)}) on conflict (k) do update set v = excluded.v`;
   return Object.assign(out, { totalAdded: S.added || 0, last: S.last });
 }
 
-module.exports = { run, status, list, compare, key, iso, fill, convert, importMissing };
+module.exports = { run, status, list, compare, key, iso, fill, convert, importMissing, indexAll, budget };

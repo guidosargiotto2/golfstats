@@ -409,12 +409,15 @@ module.exports = async (req, res) => {
         plan: IMP.PLAN.map((p, i) => ({ country: p[0] + (p[2] ? ' · by club name' : ''), names: p[2] ? p[1].length : 0, status: i < ci ? 'done' : i === ci ? 'current' : 'pending', found: (S.found || {})[p[0]] || 0, per: (S.per || {})[p[0]] || {} })),
         db: (await sql`select code, coalesce(data->'loc'->>'country','') as country from gs_courses where (data->>'empty') is null`).map(x => [x.code, x.country]) });
     }
-    if (action === 'gcRun' || action === 'gcStatus' || action === 'gcList' || action === 'gcFill' || action === 'gcImport') {   // admin: check our courses against GolfCore, and list what we lack
+    if (action === 'gcRun' || action === 'gcStatus' || action === 'gcList' || action === 'gcFill' || action === 'gcImport' || action === 'gcIndex' || action === 'gcCap' || action === 'gcWorld') {   // admin: check our courses against GolfCore, and list what we lack
       if (me !== L.ADMIN) return bad(403, 'admin');
       const GC = require('./_golfcore');
       if (action === 'gcRun') return ok({ run: await GC.run(sql, 45000) });
       if (action === 'gcFill') return ok({ fill: await GC.fill(sql) });
-      if (action === 'gcImport') return ok({ run: await GC.importMissing(sql, 45000) });
+      if (action === 'gcImport') return ok({ run: await GC.importMissing(sql, 45000, !!b.reset) });
+      if (action === 'gcIndex') return ok({ run: await GC.indexAll(sql, 45000) });
+      if (action === 'gcCap') { const n = Math.max(0, Math.min(200000, parseInt(b.cap, 10) || 0)); await sql`insert into gs_settings (k, v) values ('gc_cap', ${String(n)}) on conflict (k) do update set v = excluded.v`; return ok({ cap: n }); }
+      if (action === 'gcWorld') return ok({ budget: await GC.budget(sql, GC.key()), countries: await sql`select country, count(*)::int as total, (count(*) filter (where (d->'coverage'->>'scorecard') = 'true'))::int as cards from gs_gc_index group by 1 order by 2 desc` });
       if (action === 'gcList') return ok({ rows: await GC.list(sql, b.what, b.country, b.limit) });
       return ok(Object.assign({ ready: !!GC.key() }, await GC.status(sql)));
     }
