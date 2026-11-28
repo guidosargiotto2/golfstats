@@ -234,6 +234,16 @@ module.exports = async (req, res) => {
       if (b.plan === 'lite' || b.plan === 'plus' || b.plan === 'pro') await sql`update gs_teams set plan = ${b.plan} where code = ${String(b.code || '').toUpperCase()}`;
       return ok();
     }
+    if (action === 'impersonate' || action === 'impLog') {   // the founder opens a golfer's account to help them set it up: two hours, recorded every time
+      if (me !== L.ADMIN || L.isImp(req)) return bad(403, 'admin');
+      if (action === 'impLog') return ok({ log: await sql`select at, admin, target, what from gs_audit order by at desc limit 40` });
+      if (!L.validUser(target) || target === L.ADMIN) return bad(400, 'bad-user');
+      if (!(await L.alive(sql, target))) return bad(404, 'no-account');
+      const pr = await sql`select display from gs_profiles where username = ${target}`;
+      const mins = 120, until = Date.now() + mins * 6e4;
+      await sql`insert into gs_audit (at, admin, target, what) values (${Date.now()}, ${me}, ${target}, 'open-account')`;
+      return ok({ token: L.signFor(target, mins), name: pr.length ? pr[0].display : (L.FIRST[target] || target), username: target, until });
+    }
     if (action === 'members') {
       if (me !== L.ADMIN) return bad(403, 'admin');
       const rows = await sql`select p.username, p.display, p.plan, m.code from gs_profiles p left join gs_team_members m on m.username = p.username order by p.display`;
@@ -617,6 +627,7 @@ module.exports = async (req, res) => {
       return ok({ exported: new Date().toISOString(), app: 'Golfimbul', account: user, profile, plan: myPlan, signIns, following, followers, team: team[0] || null, review: review[0] || null, garminBag: bag.length ? bag[0].data : null, homework: tasks, rounds: rounds.map(r => Object.assign({ id: r.id, updated: Number(r.upd) }, { data: r.data })) });
     }
     if (action === 'deleteAccount') {
+      if (L.isImp(req)) return bad(403, 'not-while-helping');   // only the golfer deletes their own account
       if (String(b.confirm || '') !== 'DELETE') return bad(400, 'confirm');
       if (me === L.ADMIN) return bad(403, 'admin-account');
       await sql`delete from gs_rounds where username = ${me}`;

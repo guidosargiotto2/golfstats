@@ -6248,7 +6248,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    return h+'</div></div>';
  }
  function membersHTML(list){var N=['free','lite','plus','pro'];
-   return list.map(function(m){return '<div class="frline"><span><b>'+esc(m.display)+'</b> <small>@'+esc(m.username)+'</small></span><select data-plan="'+esc(m.username)+'"'+(m.username===ME.username?' disabled':'')+'>'+N.map(function(n){return '<option value="'+n+'"'+(m.plan===n?' selected':'')+'>'+n[0].toUpperCase()+n.slice(1)+'</option>';}).join('')+'</select>'+(m.username===ME.username?'':' <button class="pf_btn frgrey" style="padding:5px 9px;font-size:11px" data-rpw="'+esc(m.username)+'" title="'+T('Reset password','Resetear contraseña')+'">🔑</button>')+'</div>';}).join('');
+   return list.map(function(m){return '<div class="frline"><span><b>'+esc(m.display)+'</b> <small>@'+esc(m.username)+'</small></span><select data-plan="'+esc(m.username)+'"'+(m.username===ME.username?' disabled':'')+'>'+N.map(function(n){return '<option value="'+n+'"'+(m.plan===n?' selected':'')+'>'+n[0].toUpperCase()+n.slice(1)+'</option>';}).join('')+'</select>'+(m.username===ME.username?'':' <button class="pf_btn frgrey" style="padding:5px 9px;font-size:11px" data-rpw="'+esc(m.username)+'" title="'+T('Reset password','Resetear contraseña')+'">🔑</button> <button class="pf_btn frgrey" style="padding:5px 9px;font-size:11px" data-imp="'+esc(m.username)+'" data-impn="'+esc(m.display)+'" title="'+T('Open this account to help set it up','Abrir esta cuenta para ayudar a configurarla')+'">'+T('Open as','Abrir como')+'</button>')+'</div>';}).join('');
  }
  function adminHTML(){
    if(!ME.admin)return '';
@@ -6368,7 +6368,13 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    var cra=el.querySelector('#crAdmin');if(cra&&window.COURSEREQ)window.COURSEREQ.admin(cra);var ist=el.querySelector('#impStat');if(ist&&window.IMPMAP)window.IMPMAP.mount(ist);var dgi=el.querySelector('#dgImp');if(dgi&&window.DGIMP)window.DGIMP.mount(dgi);
    var ml=el.querySelector('#frMemLoad');if(ml)ml.onclick=function(){api('members').then(function(j){var box=el.querySelector('#frMembers');if(!box)return;if(!j||!j.ok){box.innerHTML='<p class="frsub">'+T('Could not load.','No se pudo cargar.')+'</p>';return;}
      box.innerHTML=membersHTML(j.members||[])+((j.teams&&j.teams.length)?'<h4 style="font-family:var(--serif);color:var(--pine);margin:14px 0 4px">'+T('Teams','Equipos')+'</h4>'+j.teams.map(function(tm){return '<div class="frline"><span><b>'+esc(tm.code)+'</b> · @'+esc(tm.owner)+' · '+tm.n+'/4</span><span><select data-tplan="'+esc(tm.code)+'"><option value="lite"'+(tm.plan!=='pro'&&tm.plan!=='plus'?' selected':'')+'>Lite</option><option value="plus"'+(tm.plan==='plus'?' selected':'')+'>Plus</option><option value="pro"'+(tm.plan==='pro'?' selected':'')+'>Pro</option></select> <label class="frchk"><input type="checkbox" data-tpaid="'+esc(tm.code)+'"'+(tm.paid?' checked':'')+'> '+T('paid','pagado')+'</label></span></div>';}).join(''):'');
-     box.querySelectorAll('[data-tplan]').forEach(function(se){se.onchange=function(){var cb=box.querySelector('[data-tpaid="'+se.getAttribute('data-tplan')+'"]');api('teamSetPaid',{code:se.getAttribute('data-tplan'),paid:!!(cb&&cb.checked),plan:se.value});};});box.querySelectorAll('[data-tpaid]').forEach(function(cb){cb.onchange=function(){api('teamSetPaid',{code:cb.getAttribute('data-tpaid'),paid:cb.checked,plan:(box.querySelector('[data-tplan="'+cb.getAttribute('data-tpaid')+'"]')||{}).value}).then(function(r){cb.parentNode.style.color=(r&&r.ok)?'var(--fairway)':'var(--clay)';});};});box.querySelectorAll('[data-rpw]').forEach(function(b){b.onclick=function(){var u=b.getAttribute('data-rpw');if(!confirm(T('Reset the password of @','¿Resetear la contraseña de @')+u+T('? They will sign in with their username as password and must choose a new one.','? Va a entrar con su usuario como contraseña y tendrá que elegir una nueva.')))return;api('adminResetPass',{user:u}).then(function(r){alert((r&&r.ok)?T('Done. Tell @','Listo. Decile a @')+u+T(' to sign in with password: ',' que entre con la contraseña: ')+u:T('That did not work.','No funcionó.'));});};});box.querySelectorAll('select[data-plan]').forEach(function(sel){sel.onchange=function(){api('setPlan',{user:sel.getAttribute('data-plan'),plan:sel.value}).then(function(r){MSG=(r&&r.ok)?T('Plan updated.','Plan actualizado.'):T('That did not work.','No funcionó.');var m=el.querySelector('.frmsgx');sel.style.outline=(r&&r.ok)?'2px solid var(--fairway)':'2px solid var(--clay)';});};});});};
+     box.querySelectorAll('[data-tplan]').forEach(function(se){se.onchange=function(){var cb=box.querySelector('[data-tpaid="'+se.getAttribute('data-tplan')+'"]');api('teamSetPaid',{code:se.getAttribute('data-tplan'),paid:!!(cb&&cb.checked),plan:se.value});};});box.querySelectorAll('[data-tpaid]').forEach(function(cb){cb.onchange=function(){api('teamSetPaid',{code:cb.getAttribute('data-tpaid'),paid:cb.checked,plan:(box.querySelector('[data-tplan="'+cb.getAttribute('data-tpaid')+'"]')||{}).value}).then(function(r){cb.parentNode.style.color=(r&&r.ok)?'var(--fairway)':'var(--clay)';});};});box.querySelectorAll('[data-imp]').forEach(function(b){b.onclick=function(){var u=b.getAttribute('data-imp'),nm=b.getAttribute('data-impn')||u;
+       if(!confirm(T('Open the account of ','¿Abrir la cuenta de ')+nm+T(' to help them set it up?\n\nYou will see and change their account as they do, for up to 2 hours. It is recorded. You cannot change their password or delete the account.','para ayudar a configurarla?\n\nVas a ver y cambiar su cuenta como ellos, hasta 2 horas. Queda registrado. No podés cambiar su contraseña ni borrar la cuenta.')))return;
+       api('impersonate',{user:u}).then(function(r){if(!r||!r.ok||!r.token){alert(r&&r.error==='no-account'?T('That player has never signed in, so there is no account to open yet.','Ese jugador nunca entró, así que todavía no hay cuenta para abrir.'):T('That did not work.','No funcionó.'));return;}
+         try{localStorage.setItem('gs-admin-back',JSON.stringify({token:localStorage.getItem('gs-token'),user:localStorage.getItem('app-user'),plan:localStorage.getItem('gs-plan')}));
+           localStorage.setItem('gs-imp',JSON.stringify({name:r.name,username:r.username,until:r.until}));localStorage.setItem('gs-token',r.token);localStorage.setItem('app-user',r.name);localStorage.removeItem('gs-plan');localStorage.removeItem('gs-mustchange');}catch(e){}
+         location.href=location.pathname;});};});
+     box.querySelectorAll('[data-rpw]').forEach(function(b){b.onclick=function(){var u=b.getAttribute('data-rpw');if(!confirm(T('Reset the password of @','¿Resetear la contraseña de @')+u+T('? They will sign in with their username as password and must choose a new one.','? Va a entrar con su usuario como contraseña y tendrá que elegir una nueva.')))return;api('adminResetPass',{user:u}).then(function(r){alert((r&&r.ok)?T('Done. Tell @','Listo. Decile a @')+u+T(' to sign in with password: ',' que entre con la contraseña: ')+u:T('That did not work.','No funcionó.'));});};});box.querySelectorAll('select[data-plan]').forEach(function(sel){sel.onchange=function(){api('setPlan',{user:sel.getAttribute('data-plan'),plan:sel.value}).then(function(r){MSG=(r&&r.ok)?T('Plan updated.','Plan actualizado.'):T('That did not work.','No funcionó.');var m=el.querySelector('.frmsgx');sel.style.outline=(r&&r.ok)?'2px solid var(--fairway)':'2px solid var(--clay)';});};});});};
    var pw=el.querySelector('#frPw');if(pw)pw.onclick=function(e){e.preventDefault();if(window.GSPASS)window.GSPASS.open();};
    var ff=el.querySelector('#frFind');if(ff)ff.onchange=function(){act('setFindable',{findable:ff.checked});};
    var ps=el.querySelector('#frProfSet');if(ps)ps.onclick=function(){var v=(el.querySelector('#frProf').value||'').trim().toLowerCase();if(v)act('setProfessor',{user:v},T('Request sent.','Solicitud enviada.'));};
@@ -7721,7 +7727,8 @@ window.IMPMAP=(function(){
 /* ===== terms: every player accepts the current Terms and Privacy page once (and again when the version changes) ===== */
 (function(){
  var TERMS_V=2,ES=function(){return window.__LANG==='es';},T=function(a,b){return ES()?b:a;};
- function need(){var P=window.PROF;return !!(localStorage.getItem('gs-token')&&localStorage.getItem('app-user')&&P&&(+P.termsV||0)<TERMS_V);}
+ function need(){if(localStorage.getItem('gs-imp'))return false;   /* the founder helping in someone's account never accepts the terms for them */
+   var P=window.PROF;return !!(localStorage.getItem('gs-token')&&localStorage.getItem('app-user')&&P&&(+P.termsV||0)<TERMS_V);}
  function show(){if(document.getElementById('termsGate')||!need())return;
    var L=document.getElementById('landing'),ov=document.getElementById('loginOverlay'),hid=function(e){return !e||getComputedStyle(e).display==='none';};if(!hid(L)||!hid(ov))return;
    var m=document.createElement('div');m.id='termsGate';
@@ -7754,7 +7761,28 @@ window.IMPMAP=(function(){
 #termsGate .tgBtns{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
 @keyframes tgIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 </style>
+<script>
+/* ===== the founder inside a golfer's account (to help them set it up): a bar that says so, the way back, and an automatic exit when the two hours end ===== */
+(function(){
+ var raw=null;try{raw=JSON.parse(localStorage.getItem('gs-imp')||'null');}catch(e){}
+ if(!raw)return;
+ var back=function(){var b=null;try{b=JSON.parse(localStorage.getItem('gs-admin-back')||'null');}catch(e){}
+   try{localStorage.removeItem('gs-imp');localStorage.removeItem('gs-admin-back');localStorage.removeItem('gs-plan');localStorage.removeItem('gs-mustchange');
+     if(b&&b.token){localStorage.setItem('gs-token',b.token);localStorage.setItem('app-user',b.user||'');if(b.plan)localStorage.setItem('gs-plan',b.plan);}else{localStorage.removeItem('gs-token');localStorage.removeItem('app-user');}}catch(e){}
+   location.href=location.pathname;};
+ if(!raw.until||Date.now()>=raw.until){back();return;}
+ var es=function(){return window.__LANG==='es';},bar=document.createElement('div');bar.id='impBar';
+ var paint=function(){var m=Math.max(0,Math.round((raw.until-Date.now())/6e4));if(m<=0){back();return;}
+   bar.innerHTML='<span>'+(es()?'Estás en la cuenta de <b>':'You are in the account of <b>')+String(raw.name||'').replace(/[<>&]/g,'')+'</b>'+(es()?' para ayudar a configurarla · quedan '+m+' min':' to help set it up · '+m+' min left')+'</span><button type="button">'+(es()?'Volver a mi cuenta':'Back to my account')+'</button>';
+   bar.querySelector('button').onclick=back;};
+ var mount=function(){document.body.appendChild(bar);document.body.classList.add('impOn');paint();setInterval(paint,30000);};
+ if(document.body)mount();else document.addEventListener('DOMContentLoaded',mount);
+})();
+</script>
 <style id="wideUse">
+#impBar{position:fixed;left:0;right:0;bottom:0;z-index:10050;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;background:#8f3418;color:#fff;font-family:var(--cond);font-size:13.5px;padding:9px 14px;box-shadow:0 -6px 18px rgba(0,0,0,.18)}
+#impBar b{color:#ffe6b0}#impBar button{border:1px solid rgba(255,255,255,.7);background:transparent;color:#fff;border-radius:16px;padding:5px 12px;font-family:var(--cond);font-weight:700;font-size:12.5px;cursor:pointer}#impBar button:hover{background:#fff;color:#8f3418}
+body.impOn{padding-bottom:46px}
 .fbrief{border:1px solid var(--line);border-left:4px solid var(--pine);background:var(--paper);border-radius:12px;padding:14px 16px;margin:14px 0}
 .fbK{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--sand-deep);margin-bottom:8px}
 .fbP{font-size:14px;line-height:1.55;margin:8px 0;color:var(--ink)}.fbP small,.fbT small{color:var(--ink-soft)}.fbN{font-size:12.5px;line-height:1.5;color:var(--ink-soft);margin:10px 0 0;font-style:italic}

@@ -66,6 +66,7 @@ module.exports = async (req, res) => {
     /* ---- change password ---- */
     if (b.action === 'setpass') {
       const me = L.auth(req);
+      if (L.isImp(req)) return res.status(403).json({ error: 'not-while-helping' });   // a password is only ever changed by its owner
       if (!me) return res.status(401).json({ error: 'auth' });
       const np = String(b.pass || '');
       if (np.length < 6) return res.status(400).json({ error: 'short-password' });

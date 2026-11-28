@@ -58,6 +58,7 @@ async function init() {
       await s`create table if not exists gs_lookups (username text not null, day text not null, n int not null default 0, primary key (username, day))`;
       await s`create table if not exists gs_courses (code text primary key, data jsonb not null, upd bigint not null default 0)`;
       await s`create table if not exists gs_scans (username text not null, day text not null, n int not null default 0, primary key (username, day))`;   // scorecard photos read per player per day
+      await s`create table if not exists gs_audit (at bigint not null, admin text not null, target text not null, what text not null)`;   // every time the founder opens a golfer's account
       await s`create table if not exists gs_usage (username text not null, day text not null, n int not null default 0, primary key (username, day))`;   // course-data reads per account per day
       await s`create table if not exists gs_history (username text primary key, rounds jsonb not null, src text, upd bigint not null default 0)`;
       await s`alter table gs_history add column if not exists extra jsonb`;   // a player's own bag and per-hole tendencies, kept with their history
@@ -98,17 +99,26 @@ function sign(user) {
   const mac = crypto.createHmac('sha256', secret()).update(body).digest('hex');
   return Buffer.from(body + '|' + mac).toString('base64url');
 }
-function verify(token) {
+/* a token the founder gets to open a golfer's account and help them set it up: short-lived, and signed differently so the server always knows it is not the golfer */
+function signFor(user, minutes) {
+  const body = user + '|' + (Date.now() + (minutes || 120) * 6e4);
+  const mac = crypto.createHmac('sha256', secret()).update(body + '|imp').digest('hex');
+  return Buffer.from(body + '|' + mac).toString('base64url');
+}
+function check(token) {
   try {
     const parts = Buffer.from(String(token || ''), 'base64url').toString().split('|');
     if (parts.length !== 3) return null;
     const [user, exp, mac] = parts;
-    const want = crypto.createHmac('sha256', secret()).update(user + '|' + exp).digest('hex');
-    if (mac.length !== want.length || !crypto.timingSafeEqual(Buffer.from(mac), Buffer.from(want))) return null;
     if (+exp < Date.now() || !validUser(user)) return null;
-    return user;
+    const eq = w => mac.length === w.length && crypto.timingSafeEqual(Buffer.from(mac), Buffer.from(w));
+    if (eq(crypto.createHmac('sha256', secret()).update(user + '|' + exp).digest('hex'))) return { user, imp: false };
+    if (eq(crypto.createHmac('sha256', secret()).update(user + '|' + exp + '|imp').digest('hex'))) return { user, imp: true };
+    return null;
   } catch (e) { return null; }
 }
+function verify(token) { const c = check(token); return c ? c.user : null; }
+function isImp(req) { const c = check(String((req.headers && req.headers.authorization) || '').replace(/^Bearer\s+/i, '')); return !!(c && c.imp); }
 // short-lived signed blobs (OAuth state)
 function signBlob(obj, minutes) {
   const body = Buffer.from(JSON.stringify(Object.assign({}, obj, { exp: Date.now() + (minutes || 10) * 6e4 }))).toString('base64url');
@@ -145,4 +155,4 @@ function fail(res, e) {
   return res.status(500).json({ error: 'server' });
 }
 
-module.exports = { TESTERS, FIRST, alive, effectivePlan, inTrial, TRIAL_DAYS, signBlob, verifyBlob, PROVIDERS, providersOn, planOf, rank, dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };
+module.exports = { signFor, isImp, TESTERS, FIRST, alive, effectivePlan, inTrial, TRIAL_DAYS, signBlob, verifyBlob, PROVIDERS, providersOn, planOf, rank, dbVarNames, LEGACY, ADMIN, hasDb, db, init, validUser, sign, verify, auth, hashPass, safeEq, body, fail, crypto };

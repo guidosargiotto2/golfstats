@@ -1,8 +1,8 @@
 // Cross-check: the courses imported from GolfCore, read against GolfCourseAPI (the second source), hole by hole.
-// One search and at most two course reads per course, inside GolfCourseAPI's limits as agreed: 2,000 calls a day and 7,000 searches in all
+// One search and at most two course reads per course, inside GolfCourseAPI's limits as agreed: 6,000 calls a day and 7,000 searches in all
 // (the searches already spent by the name import count toward the same 7,000).
 const GC = require('./_golfcore');
-const SEARCH_CAP = 7000, DAY_CAP = 2000, PAUSE_MS = 320;
+const SEARCH_CAP = 7000, DAY_CAP = 6000, PAUSE_MS = 320;
 const EUROPE = ['United Kingdom', 'Ireland', 'Spain', 'Portugal', 'France', 'Italy', 'Germany', 'Netherlands', 'Belgium', 'Luxembourg', 'Switzerland', 'Austria', 'Denmark', 'Sweden', 'Norway', 'Finland', 'Iceland', 'Poland', 'Czechia', 'Slovakia', 'Hungary', 'Slovenia', 'Croatia', 'Greece', 'Türkiye', 'Bulgaria', 'Romania', 'Estonia', 'Latvia', 'Lithuania', 'Cyprus', 'Malta', 'Isle of Man', 'Jersey', 'Guernsey', 'Serbia', 'Andorra'];
 const strip = x => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const GENERIC = ['golf', 'golfe', 'club', 'clube', 'de', 'del', 'do', 'da', 'el', 'la', 'le', 'les', 'du', 'des', 'di', 'los', 'las', 'country', 'the', 'gc', 'cc', 'course', 'y', 'and', 'e', 'at', 'of', 'resort', 'links', 'park', 'golfclub', 'golfbaan', 'golfklubb', 'gk', 'ev', 'x2', '9', 'standard'];

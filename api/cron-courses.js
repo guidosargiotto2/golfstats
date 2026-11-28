@@ -6,7 +6,7 @@ const L = require('./_lib');
 const CI = require('./_courseimp');
 
 const SEARCH_CAP = 7000;       // searches in total, as agreed with the provider; the import stops searching when it gets there
-const DAY_CAP = 2000;          // API calls per day (search + course), the provider's limit
+const DAY_CAP = 6000;          // API calls per day (search + course), the provider's limit
 const RUN_MS = 50000;          // stop well before the 60 s function limit
 const PAUSE_MS = 300;          // gap between calls, so the import never hits them all at once
 
