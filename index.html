@@ -6299,7 +6299,7 @@ render();renderSel();applyI18n();window.LGR={review:function(id){var all=[];try{
    if(!ME){if(el)el.innerHTML='<p class="frsub">'+(MSG||'…')+'</p>';if(ac)ac.innerHTML=MSG?'<p class="frsub">'+esc(MSG)+'</p>':'';return;}
    if(el){el.innerHTML=msg+compareHTML()+feedHTML()+studentsHTML()+allPlayersHTML()+findHTML();
      var st=document.getElementById('frStu'),sa=document.getElementById('frStuA'),tgt=(st&&STU&&(ME.students||[]).some(function(x){return x.username===STU.username&&x.prof_status==='accepted';}))?st:(sa||st);if(tgt)tgt.innerHTML=studentHTML();wire(el);var hc=document.getElementById('hwCoach');if(hc&&STU&&window.HW)window.HW.mountCoach(hc,STU.username,STU._all||[]);}
-   if(ac){ac.innerHTML=msg+planHTML()+profHTML()+privacyHTML()+aiHTML()+dataHTML()+(ME.admin?'<div class="pgHead">Admin</div>':'')+adminHTML();if(window.PGRP&&window.PGRP.fold)window.PGRP.fold(ac);wire(ac);wireData(ac);wireAI(ac);
+   if(ac){ac.innerHTML=msg+planHTML()+profHTML()+privacyHTML()+aiHTML()+dataHTML()+(ME.admin?'<div class="pgHead pgAdmH">Admin</div>':'')+adminHTML();if(window.PGRP&&window.PGRP.fold)window.PGRP.fold(ac);wire(ac);wireData(ac);wireAI(ac);
      var pc=document.getElementById('plChooser');if(pc&&window.PLANS&&window.PLANS.chooser)window.PLANS.chooser(pc);}
  }
  function load(msg){MSG=msg||'';if(!tok()){draw();return;}
@@ -6967,7 +6967,7 @@ const BAG={};
  function hook(){var pf=document.getElementById('pform');if(!pf)return;build();try{new MutationObserver(function(){if(!busy&&pf.children.length)setTimeout(build,0);}).observe(pf,{childList:true});}catch(e){}
    pf.parentNode.addEventListener('change',function(){setTimeout(function(){var box=document.getElementById('profGroups');if(box)box.querySelectorAll('.pgrp[data-k]').forEach(function(d){var g=G.filter(function(x){return x.k===d.dataset.k;})[0],ps=d.querySelector('.pgS');if(g&&ps&&!g.sub)ps.textContent=hint(g.k);});},60);});}
  /* Profile (you: personal + about your game) and Settings (everything else) are two screens over the same cards */
- window.PFMODE=function(m){var v=view();if(!v)return;var me=m==='me';v.classList.toggle('pfMe',me);v.classList.toggle('pfSet',!me);back();var h=document.getElementById('pfTitle');if(h)h.setAttribute('data-i18n',me?'Profile':'Settings');if(h)h.textContent=me?(ES()?'Perfil':'Profile'):(ES()?'Configuración':'Settings');};
+ window.PFMODE=function(m){var v=view();if(!v)return;var me=m==='me',ad=m==='admin';v.classList.toggle('pfMe',me);v.classList.toggle('pfSet',!me&&!ad);v.classList.toggle('pfAdmin',ad);back();var h=document.getElementById('pfTitle');if(h)h.setAttribute('data-i18n',me?'Profile':ad?'Admin':'Settings');if(h)h.textContent=me?(ES()?'Perfil':'Profile'):ad?'Admin':(ES()?'Configuración':'Settings');};   /* three screens over the same cards: you · settings · admin (founder only) */
  window.PGRP={build:build,fold:fold,back:back,open:function(k){window.PFMODE((k==='personal'||k==='about')?'me':'set');var d=document.querySelector('.pgrp[data-k="'+k+'"]');if(!d&&k==='account'){var pc=document.getElementById('plChooser');d=pc&&pc.closest?pc.closest('details'):null;}if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}}};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hook);else hook();
  var nav=document.getElementById('tabnav');if(nav)nav.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('button');if(b&&b.dataset.v==='profile')back();});
@@ -7503,7 +7503,7 @@ window.IMPMAP=(function(){
  var pr=document.getElementById('acctProfile');if(pr)pr.onclick=function(){if(window.showView)window.showView('profile');if(window.PFMODE)window.PFMODE('me');};
  var st=document.getElementById('acctSettings');if(st)st.addEventListener('click',function(){setTimeout(function(){if(window.PFMODE)window.PFMODE('set');},0);});   /* Profile = you (name, photo, birthday); Settings = everything else */
  var pl=document.getElementById('acctPlan');if(pl)pl.onclick=function(){if(window.PLANS&&window.PLANS.open)window.PLANS.open();};
- var ad=document.getElementById('acctAdmin');if(ad)ad.onclick=function(){if(window.showView)window.showView('profile');if(window.PFMODE)window.PFMODE('set');setTimeout(function(){var h=[].slice.call(document.querySelectorAll('#view-profile .pgHead')).filter(function(x){return /admin/i.test(x.textContent);})[0];if(h)h.scrollIntoView({behavior:'smooth',block:'start'});},450);};
+ var ad=document.getElementById('acctAdmin');if(ad)ad.onclick=function(){if(window.showView)window.showView('profile');if(window.PFMODE)window.PFMODE('admin');window.scrollTo(0,0);};   /* Admin is its own screen: only the founder's tools */
  var ini=function(){var n=(who.textContent||'').split('·')[0].trim();av.textContent=n?n.charAt(0).toUpperCase():'·';};
  if(who){ini();new MutationObserver(ini).observe(who,{childList:true,characterData:true,subtree:true});}
  var ll=document.getElementById('ledLog');if(ll)ll.onclick=function(){if(window.showView)window.showView('log');};
@@ -7715,6 +7715,11 @@ window.IMPMAP=(function(){
 @keyframes tgIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 </style>
 <style id="wideUse">
+/* Admin screen: only the cards under the Admin heading; Settings no longer carries them */
+#view-profile.pfAdmin .pgrp,#view-profile.pfAdmin .pgHead,#view-profile.pfAdmin #obRedo,#view-profile.pfAdmin #bagEntry,#view-profile.pfAdmin #pform{display:none!important}
+#view-profile.pfAdmin #acctBody>.pgAdmH~*{display:block!important}
+#view-profile.pfAdmin>div{max-width:min(1240px,94vw)!important}
+#view-profile.pfSet #acctBody>.pgAdmH,#view-profile.pfSet #acctBody>.pgAdmH~*{display:none!important}
 .impPow{text-align:right;font-family:var(--cond);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:4px 2px 8px}.impPow a{color:var(--pine);font-weight:700;text-decoration:none;border-bottom:1px solid var(--sand-deep,#b89a52)}
 #rsheet .rsRec li b{color:var(--sand,#d8c48c)}
 #rsheet .hasRev .sgcats2{display:none}
