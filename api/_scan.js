@@ -17,7 +17,7 @@ function prompt(ctx) {
   return `You are reading a photo of a golf scorecard filled in by hand. It is a Golfimbul card: A4, portrait, two tables (holes 1-9 on top, 10-18 below). Columns are holes. Rows are "Shot 1" to "Shot ${ctx.rows || 8}", then "Score" and "Pen". The card is written in ${es ? 'Spanish' : 'English'}.
 
 Each shot cell has, on top, where the shot was played from plus the distance to the hole:
-- T tee, F fairway, R rough, ${es ? 'B bunker (sand)' : 'S sand'}, X recovery: distance in ${ctx.units === 'm' ? 'metres' : 'yards'}.
+- T tee, F fairway, R rough, ${es ? 'B bunker (sand)' : 'S sand'}, X recovery: distance in ${ctx.units === 'm' ? 'meters' : 'yards'}.
 - G green (a putt): distance in feet.
 - Shot 1 is always the tee shot; often only the number is written (the hole length), or it is left blank.
 ${ctx.comp ? '- A small box in the top-right corner may carry a tick (process followed) or a cross (not followed).\n' : ''}${ctx.club ? `- Bottom-left box: the club. The player's labels and their codes: ${clubs || 'Dr, 3W, 5W, 3H, 4i-9i, PW, GW, SW, LW, Pt'}.\n` : ''}${ctx.disp && ctx.disp !== 'off' ? `- Dispersion box: where the ball finished against the target. ${es
