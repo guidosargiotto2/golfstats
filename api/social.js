@@ -421,6 +421,13 @@ module.exports = async (req, res) => {
       if (action === 'gcList') return ok({ rows: await GC.list(sql, b.what, b.country, b.limit) });
       return ok(Object.assign({ ready: !!GC.key() }, await GC.status(sql)));
     }
+    if (action === 'xcRun' || action === 'xcStatus' || action === 'xcList') {   // admin: the GolfCore imports read against GolfCourseAPI
+      if (me !== L.ADMIN) return bad(403, 'admin');
+      const XC = require('./_xcheck');
+      if (action === 'xcRun') { const key = require('./cron-courses').keyOf(); if (!key) return bad(503, 'no-key'); return ok({ run: await XC.run(sql, key, 45000) }); }
+      if (action === 'xcList') return ok({ rows: await XC.list(sql, b.what, b.limit) });
+      return ok(await XC.status(sql));
+    }
     if (action === 'courseDelete') {   // admin removes a course added to the shared database (a built-in course with the same code comes back)
       if (me !== L.ADMIN) return bad(403, 'admin');
       await sql`delete from gs_courses where code = ${String(b.code || '').toUpperCase().slice(0, 8)}`;
