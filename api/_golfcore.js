@@ -162,7 +162,11 @@ function convert(d) {
         else { cr = Math.round((tot / 220 + 40.9) * 10) / 10; sl = 113; est = true; } }           // the standard yardage rating when no rating is published
       let nm = String(t.name || 'Tee').replace(/[^A-Za-zÀ-ÿ0-9 ]/g, '').trim().slice(0, 20) || 'Tee'; if (t.gender === 'F' && !/damas|ladies|women/i.test(nm)) nm += ' Damas';
       if (tees[nm]) return; tees[nm] = { label: nm, cr, slope: sl, est, yds }; });
-    if (!Object.keys(tees).length) return;
+    if (!Object.keys(tees).length) {            // no tee carries its own holes: the course's reference card is better than no course, marked as an estimate
+      const yds = LH.map(h => h.yards); if (!yds.every(v => v >= 40 && v <= 800)) return;
+      const tot = yds.reduce((a, b) => a + b, 0), near = rated.filter(r => (r.gender || 'M') !== 'F').sort((a, b) => Math.abs(a.yards - (nine ? tot / 2 : tot)) - Math.abs(b.yards - (nine ? tot / 2 : tot)))[0];
+      const ok = near && Math.abs(near.yards - (nine ? tot / 2 : tot)) <= 40;
+      tees.Standard = { label: 'Standard', cr: ok ? (nine && near.rating < 50 ? Math.round(near.rating * 20) / 10 : near.rating) : Math.round((tot / 220 + 40.9) * 10) / 10, slope: ok ? near.slope : 113, est: true, yds }; }
     const nm = tidy(d.name), ln = tidy(L.name);
     res.push({ name: ((many && ln && strip(ln) !== strip(nm) ? nm + ' — ' + ln : nm) + (nine ? ' (9 x2)' : '')).slice(0, 60), loc: { country: countryName(d.country), state: String(d.region || '').slice(0, 40), city: String(d.city || '').slice(0, 40) },
       unverified: true, noSI: okS ? undefined : true, addedBy: 'golfcore', src: 'golfcore', gcUrl: d.url || null, pins: { F: 'red', M: 'white', B: 'blue' }, par, hcp: okS ? si0 : par.map(() => 0), tees });
